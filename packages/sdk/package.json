@@ -1,6 +1,6 @@
 {
   "name": "@codai/memorai-sdk",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "TypeScript SDK for Memorai MCP - Agent-native memory management",
   "type": "module",
   "main": "./dist/index.js",
@@ -32,9 +32,8 @@
     "typescript"
   ],
   "author": "CodeAI",
-  "license": "MIT",
-  "dependencies": {
-    "@codai/memorai-core": "workspace:*",
+  "license": "MIT",  "dependencies": {
+    "@codai/memorai-core": "^1.0.0",
     "zod": "^3.22.4"
   },
   "devDependencies": {

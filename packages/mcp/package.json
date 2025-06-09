@@ -1,0 +1,86 @@
+{
+  "name": "@codai/memorai-mcp",
+  "version": "1.0.3",
+  "description": "Memorai MCP - Enterprise-grade memory management for AI agents",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "bin": {
+    "memorai-mcp": "./dist/server.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./server": {
+      "types": "./dist/server.d.ts",
+      "import": "./dist/server.js"
+    }
+  },  "files": [
+    "dist",
+    "README.md",
+    "mcp.config.json",
+    ".env.example"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/server.ts",
+    "start": "node dist/server.js",
+    "test": "vitest",
+    "lint": "eslint src --ext .ts",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "pnpm run build"
+  },
+  "keywords": [
+    "mcp",
+    "memory",
+    "ai",
+    "agent",
+    "context",
+    "protocol",
+    "memorai",
+    "enterprise",
+    "vscode",
+    "copilot"
+  ],
+  "author": "CodeAI",
+  "license": "MIT",
+  "homepage": "https://github.com/dragoscv/memorai-mcp#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dragoscv/memorai-mcp.git",
+    "directory": "packages/mcp"
+  },
+  "bugs": {
+    "url": "https://github.com/dragoscv/memorai-mcp/issues"
+  },
+  "dependencies": {
+    "@codai/memorai-core": "^1.0.0",
+    "@codai/memorai-server": "^0.1.2",
+    "@modelcontextprotocol/sdk": "^0.5.0",
+    "zod": "^3.22.4",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.24",
+    "tsx": "^4.7.1",
+    "typescript": "^5.4.2",
+    "vitest": "^1.3.1"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "mcp": {
+    "name": "memorai",
+    "description": "Enterprise-grade memory management for AI agents",
+    "version": "1.0.0",
+    "server": {
+      "command": "memorai-mcp",
+      "args": []
+    }
+  }
+}

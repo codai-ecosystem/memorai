@@ -1,6 +1,6 @@
 {
   "name": "@codai/memorai-server",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "Enterprise MCP server for agent-native memory management",
   "type": "module",
   "main": "./dist/index.js",
@@ -10,8 +10,7 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     }
-  },
-  "bin": {
+  },  "bin": {
     "memorai-server": "./dist/cli.js"
   },
   "files": [
@@ -36,9 +35,8 @@
     "protocol"
   ],
   "author": "CodeAI",
-  "license": "MIT",
-  "dependencies": {
-    "@codai/memorai-core": "workspace:*",
+  "license": "MIT",  "dependencies": {
+    "@codai/memorai-core": "^1.0.0",
     "@modelcontextprotocol/sdk": "^0.5.0",
     "fastify": "^4.26.2",
     "@fastify/cors": "^9.0.1",

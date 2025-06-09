@@ -1,0 +1,24 @@
+{
+  "name": "memorai",
+  "description": "Enterprise-grade memory management for AI agents",
+  "version": "1.0.0",
+  "server": {
+    "command": "memorai-mcp",
+    "args": [],
+    "env": {
+      "MEMORAI_STORAGE_TYPE": "memory",
+      "MEMORAI_LOG_LEVEL": "info"
+    }
+  },
+  "capabilities": [
+    "memory_management",
+    "knowledge_graph",
+    "semantic_search",
+    "entity_relations",
+    "observations",
+    "multi_tenant"
+  ],
+  "requirements": {
+    "node": ">=20.0.0"
+  }
+}

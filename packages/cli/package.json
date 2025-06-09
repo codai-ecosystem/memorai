@@ -1,12 +1,11 @@
 {
   "name": "@codai/memorai-cli",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "CLI tools for Memorai MCP - Agent memory management",
   "type": "module",
   "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "bin": {
-    "memorai": "./dist/cli.js"
+  "types": "./dist/index.d.ts",  "bin": {
+    "memorai": "./dist/bin/memorai.js"
   },
   "files": [
     "dist",
@@ -27,10 +26,9 @@
     "mcp"
   ],
   "author": "CodeAI",
-  "license": "MIT",
-  "dependencies": {
-    "@codai/memorai-core": "workspace:*",
-    "@codai/memorai-sdk": "workspace:*",
+  "license": "MIT",  "dependencies": {
+    "@codai/memorai-core": "^1.0.0",
+    "@codai/memorai-sdk": "^0.1.2",
     "commander": "^12.0.0",
     "chalk": "^5.3.0",
     "ora": "^8.0.1",
