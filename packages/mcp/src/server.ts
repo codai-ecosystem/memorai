@@ -24,7 +24,7 @@ async function createServer() {
   const server = new Server(
     {
       name: 'memorai-mcp',
-      version: '1.0.3',
+      version: '1.0.4',
     },
     {
       capabilities: {
