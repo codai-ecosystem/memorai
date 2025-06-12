@@ -92,17 +92,40 @@ export const MemoryConfigSchema = z.object({
     api_key: z.string().optional(),
     collection: z.string().default('memories'),
     dimension: z.number().int().min(1).default(1536),
-  }),
-  redis: z.object({
+  }), redis: z.object({
     url: z.string().url(),
     password: z.string().optional(),
     db: z.number().int().min(0).default(0),
   }),
+  // OpenAI/Azure configuration for language model
+  openai: z.object({
+    provider: z.enum(['openai', 'azure']).default('openai'),
+    api_key: z.string().optional(),
+    model: z.string().default('gpt-4'),
+
+    // Standard OpenAI configuration
+    base_url: z.string().url().optional(),
+
+    // Azure OpenAI specific configuration
+    azure_endpoint: z.string().url().optional(),
+    azure_deployment: z.string().optional(),
+    azure_api_version: z.string().optional(),
+  }).optional(),
   embedding: z.object({
     provider: z.enum(['openai', 'azure', 'local']).default('openai'),
     model: z.string().default('text-embedding-3-small'),
     api_key: z.string().optional(),
+
+    // Standard OpenAI configuration
     endpoint: z.string().url().optional(),
+
+    // Azure OpenAI specific configuration
+    azure_endpoint: z.string().url().optional(),
+    azure_deployment: z.string().optional(),
+    azure_api_version: z.string().optional(),
+
+    // Additional Azure settings
+    dimensions: z.number().int().min(1).optional(),
   }),
   performance: z.object({
     max_query_time_ms: z.number().int().min(1).default(100),

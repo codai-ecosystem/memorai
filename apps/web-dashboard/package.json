@@ -1,0 +1,31 @@
+{
+  "name": "@codai/memorai-web-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Modern web dashboard for Memorai memory management and configuration",
+  "main": "src/server.js",  "scripts": {
+    "dev": "node src/server.js",
+    "start": "node src/server.js",
+    "build": "node scripts/build.js",
+    "lint": "eslint src/**/*.js",
+    "test": "jest --config jest.config.json",
+    "test:validate": "node test.js"
+  },"dependencies": {
+    "express": "^4.19.2",
+    "socket.io": "^4.7.5",
+    "cors": "^2.8.5",
+    "helmet": "^7.1.0",
+    "express-rate-limit": "^7.2.0",
+    "winston": "^3.13.0",
+    "dotenv": "^16.4.5",
+    "multer": "^1.4.5-lts.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.30",
+    "eslint": "^8.57.0",
+    "jest": "^29.7.0"
+  },
+  "keywords": ["memorai", "ai", "memory", "dashboard", "web"],
+  "author": "Codai Team",
+  "license": "MIT"
+}

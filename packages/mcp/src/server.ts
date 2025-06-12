@@ -11,7 +11,7 @@ import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
-import { MemoryEngine } from '@codai/memorai-core';
+import { UnifiedMemoryEngine } from '@codai/memorai-core';
 import { config } from 'dotenv';
 
 // Load environment variables
@@ -31,51 +31,39 @@ async function createServer() {
         tools: {},
       },
     }
-  );
-  // Initialize memory engine
-  let memoryEngine: MemoryEngine | null = null;
-  try {
-    // Check for required environment variables
-    if (!process.env.MEMORAI_OPENAI_API_KEY) {
-      console.error('⚠️  MEMORAI_OPENAI_API_KEY not set - memory operations will be disabled');
-      console.error('💡 Set environment variables or use .env file for full functionality');
-    } else {
-      memoryEngine = new MemoryEngine({
-        vector_db: {
-          url: process.env.MEMORAI_QDRANT_URL || 'http://localhost:6333',
-          api_key: process.env.MEMORAI_QDRANT_API_KEY,
-          collection: 'memorai_mcp',
-          dimension: 1536
-        },
-        redis: {
-          url: process.env.MEMORAI_REDIS_URL || 'redis://localhost:6379',
-          password: process.env.MEMORAI_REDIS_PASSWORD,
-          db: 0
-        },
-        embedding: {
-          provider: 'openai',
-          model: 'text-embedding-3-small',
-          api_key: process.env.MEMORAI_OPENAI_API_KEY
-        },
-        performance: {
-          max_query_time_ms: 100,
-          cache_ttl_seconds: 300,
-          batch_size: 100
-        },
-        security: {
-          encryption_key: process.env.MEMORAI_ENCRYPTION_KEY || 'memorai-default-key-32-chars-long-1234',
-          tenant_isolation: true,
-          audit_logs: true
-        }
-      });
+  );  // Initialize memory engine with unified architecture
+  let memoryEngine: UnifiedMemoryEngine | null = null;
+  try {    // Initialize with auto-detection and fallback enabled
+    memoryEngine = new UnifiedMemoryEngine({
+      autoDetect: true,
+      enableFallback: true,
 
-      await memoryEngine.initialize();
-      console.error('✅ Memory engine initialized successfully');
-    }
+      // Local AI configuration
+      localEmbedding: {
+        model: 'all-MiniLM-L6-v2',
+        pythonPath: process.env.PYTHON_PATH || 'python',
+        ...(process.env.MEMORAI_CACHE_PATH ? { cachePath: process.env.MEMORAI_CACHE_PATH } : {})
+      },
+
+      // Mock configuration for testing
+      mock: {
+        simulateDelay: false,
+        delayMs: 0,
+        failureRate: 0
+      }
+    });
+
+    await memoryEngine.initialize();
+
+    // Log the active tier
+    const tierInfo = memoryEngine.getTierInfo();
+    console.log(`🧠 ${tierInfo.message}`);
+    console.log(`🔧 Capabilities: ${JSON.stringify(tierInfo.capabilities, null, 2)}`);
+
   } catch (error) {
     console.error('❌ Failed to initialize memory engine:', error);
-    console.error('⚠️  Server will continue but memory operations will return configuration errors');
-    // Continue with null engine - tools will return appropriate errors
+    console.log('🔄 Server will start with limited functionality');
+    memoryEngine = null;
   }
 
   // List available tools
@@ -168,7 +156,7 @@ async function createServer() {
 
   // Handle tool calls
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
-    const { name, arguments: args } = request.params;    if (!memoryEngine) {
+    const { name, arguments: args } = request.params; if (!memoryEngine) {
       return {
         content: [
           {
@@ -184,7 +172,8 @@ async function createServer() {
     }
 
     try {
-      switch (name) {        case 'remember': {
+      switch (name) {
+        case 'remember': {
           const { agentId, content, metadata } = args as any;
           const memoryId = await memoryEngine.remember(content, agentId, agentId, metadata);
           return {
@@ -199,7 +188,7 @@ async function createServer() {
               }
             ]
           };
-        }        case 'recall': {
+        } case 'recall': {
           const { agentId, query, limit = 10 } = args as any;
           const results = await memoryEngine.recall(query, agentId, agentId, { limit });
           return {
@@ -214,23 +203,24 @@ async function createServer() {
               }
             ]
           };
-        }        case 'forget': {
+        } case 'forget': {
           const { agentId, memoryId } = args as any;
-          const count = await memoryEngine.forget(memoryId, agentId, agentId);
+          const count = await memoryEngine.forget(memoryId);
           return {
             content: [
               {
                 type: 'text',
                 text: JSON.stringify({
                   success: true,
-                  message: `Forgotten ${count} memories successfully`
+                  message: `Forgotten memory successfully`
                 })
               }
             ]
           };
-        }        case 'context': {
+        }
+        case 'context': {
           const { agentId, contextSize = 5 } = args as any;
-          const contextResponse = await memoryEngine.context({
+          const contextResponse = await memoryEngine.getContext({
             tenant_id: agentId,
             agent_id: agentId,
             max_memories: contextSize
@@ -241,7 +231,7 @@ async function createServer() {
                 type: 'text',
                 text: JSON.stringify({
                   success: true,
-                  context: contextResponse.context,
+                  context: contextResponse.context || contextResponse.summary,
                   memories: contextResponse.memories,
                   summary: contextResponse.summary
                 })
@@ -291,7 +281,7 @@ async function main() {
     console.error('📡 Server created, connecting to stdio transport...');
     const transport = new StdioServerTransport();
     await server.connect(transport);
-    
+
     // Log to stderr so it doesn't interfere with MCP protocol
     console.error('🧠 Memorai MCP Server started successfully');
     console.error('📋 Available tools: remember, recall, forget, context');

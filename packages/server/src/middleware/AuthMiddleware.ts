@@ -12,11 +12,11 @@ import { Logger } from '../utils/Logger.js';
  */
 export class AuthMiddleware {
   private config: ServerConfig;
-  
+
   constructor() {
     this.config = ServerConfig.getInstance();
   }
-  
+
   /**
    * Fastify hook for authentication
    */
@@ -26,42 +26,42 @@ export class AuthMiddleware {
   ): Promise<void> {
     try {
       const token = this.extractToken(request);
-      
+
       if (!token) {
         return this.sendAuthError(reply, 'Authentication token required');
       }
-      
+
       const authContext = await this.validateToken(token);
-      
+
       // Add auth context to request
       (request as any).auth = authContext;
-      
+
       Logger.debug('Authentication successful', {
         userId: authContext.userId,
         tenantId: authContext.tenantId
       });
-      
+
     } catch (error) {
       Logger.error('Authentication failed', error);
       return this.sendAuthError(reply, 'Invalid authentication token');
     }
   }
-  
+
   /**
    * Extract JWT token from request headers
    */
   private extractToken(request: FastifyRequest): string | null {
     const authHeader = request.headers.authorization;
-    
+
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return null;
     }
-    
+
     return authHeader.substring(7);
   }
-    /**
-   * Validate JWT token and return auth context
-   */
+  /**
+ * Validate JWT token and return auth context
+ */
   private async validateToken(token: string): Promise<AuthContext> {
     try {
       // Development mode: simplified validation
@@ -82,15 +82,15 @@ export class AuthMiddleware {
         const parts = token.split('.');
         if (parts.length !== 3) {
           throw new Error('Invalid JWT format');
-        }        try {
+        } try {
           // Decode payload (basic validation - in production, use proper JWT library)
           const payloadStr = parts[1];
           if (!payloadStr) {
             throw new Error('Missing JWT payload');
           }
-          
+
           const payload = JSON.parse(Buffer.from(payloadStr, 'base64').toString());
-          
+
           // Validate expiration
           if (payload.exp && payload.exp * 1000 < Date.now()) {
             throw new Error('Token expired');
@@ -113,14 +113,14 @@ export class AuthMiddleware {
           throw new Error('Invalid token payload');
         }
       }
-    
+
       // In production, implement proper JWT verification here
       throw new Error('Token validation not implemented');
     } catch (error) {
       throw new Error(`Authentication failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
-  
+
   /**
    * Send authentication error response
    */
@@ -140,7 +140,7 @@ export class AuthMiddleware {
       }
     });
   }
-  
+
   /**
    * Check if user has required permission
    */
@@ -148,10 +148,10 @@ export class AuthMiddleware {
     auth: AuthContext,
     permission: string
   ): boolean {
-    return auth.permissions.includes(permission) || 
-           auth.permissions.includes('*');
+    return auth.permissions.includes(permission) ||
+      auth.permissions.includes('*');
   }
-  
+
   /**
    * Check if user has required role
    */

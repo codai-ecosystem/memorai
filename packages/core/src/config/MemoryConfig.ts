@@ -16,14 +16,26 @@ function createDefaultConfig(): IMemoryConfig {
     },
     redis: {
       url: process.env.REDIS_URL ?? 'redis://localhost:6379',
-      password: process.env.REDIS_PASSWORD,
-      db: 0,
+      password: process.env.REDIS_PASSWORD, db: 0,
+    },
+    openai: {
+      provider: (process.env.MEMORAI_OPENAI_PROVIDER as 'openai' | 'azure') || 'openai',
+      api_key: process.env.MEMORAI_OPENAI_API_KEY || process.env.OPENAI_API_KEY || process.env.AZURE_OPENAI_API_KEY,
+      model: process.env.MEMORAI_MODEL || 'gpt-4',
+      ...(process.env.OPENAI_BASE_URL && { base_url: process.env.OPENAI_BASE_URL }),
+      ...(process.env.AZURE_OPENAI_ENDPOINT && { azure_endpoint: process.env.AZURE_OPENAI_ENDPOINT }),
+      ...(process.env.AZURE_OPENAI_DEPLOYMENT_NAME && { azure_deployment: process.env.AZURE_OPENAI_DEPLOYMENT_NAME }),
+      ...(process.env.AZURE_OPENAI_API_VERSION && { azure_api_version: process.env.AZURE_OPENAI_API_VERSION })
     },
     embedding: {
-      provider: 'openai',
-      model: 'text-embedding-3-small',
-      api_key: process.env.OPENAI_API_KEY,
-      endpoint: process.env.OPENAI_ENDPOINT,
+      provider: (process.env.MEMORAI_EMBEDDING_PROVIDER as 'openai' | 'azure' | 'local') || 'openai',
+      model: process.env.MEMORAI_EMBEDDING_MODEL || 'text-embedding-3-small',
+      api_key: process.env.OPENAI_API_KEY || process.env.AZURE_OPENAI_API_KEY,
+      ...(process.env.OPENAI_ENDPOINT && { endpoint: process.env.OPENAI_ENDPOINT }),
+      ...(process.env.AZURE_OPENAI_ENDPOINT && { azure_endpoint: process.env.AZURE_OPENAI_ENDPOINT }),
+      ...(process.env.AZURE_OPENAI_DEPLOYMENT_NAME && { azure_deployment: process.env.AZURE_OPENAI_DEPLOYMENT_NAME }),
+      ...(process.env.AZURE_OPENAI_API_VERSION && { azure_api_version: process.env.AZURE_OPENAI_API_VERSION }),
+      ...(process.env.MEMORAI_EMBEDDING_DIMENSIONS && { dimensions: parseInt(process.env.MEMORAI_EMBEDDING_DIMENSIONS) })
     },
     performance: {
       max_query_time_ms: 100,
@@ -91,7 +103,7 @@ export class MemoryConfigManager {
       performance: { ...defaultConfig.performance, ...(safeOverrides.performance || {}) },
       security: { ...defaultConfig.security, ...(safeOverrides.security || {}) },
     };
-  }private validate(): void {    // Validate encryption key
+  } private validate(): void {    // Validate encryption key
     if (!this.config.security.encryption_key || this.config.security.encryption_key.length < 32) {
       throw new Error('Invalid memory configuration: Encryption key must be at least 32 characters long');
     }

@@ -1,9 +1,14 @@
 // Memory Core - Agent-Native Memory Engine
 export * from './engine/MemoryEngine.js';
+export { UnifiedMemoryEngine, type UnifiedMemoryConfig } from './engine/UnifiedMemoryEngine.js';
+export { BasicMemoryEngine } from './engine/BasicMemoryEngine.js';
+export { MockMemoryEngine, type MockMemoryConfig } from './engine/MockMemoryEngine.js';
+export * from './engine/MemoryTier.js';
 export * from './vector/VectorStore.js';
 export * from './context/ContextEngine.js';
 export * from './types/index.js';
 export * from './embedding/EmbeddingService.js';
+export { LocalEmbeddingService, type LocalEmbeddingConfig } from './embedding/LocalEmbeddingService.js';
 export * from './storage/StorageAdapter.js';
 export * from './classification/MemoryClassifier.js';
 export * from './temporal/TemporalEngine.js';
