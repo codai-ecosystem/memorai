@@ -14,7 +14,7 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsx src/cli.ts",
-    "test": "vitest",
+    "test": "vitest run",
     "lint": "eslint src --ext .ts",
     "typecheck": "tsc --noEmit"
   },

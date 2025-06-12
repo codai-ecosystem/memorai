@@ -59,27 +59,66 @@ export class AuthMiddleware {
     
     return authHeader.substring(7);
   }
-  
-  /**
+    /**
    * Validate JWT token and return auth context
    */
   private async validateToken(token: string): Promise<AuthContext> {
-    // TODO: Implement proper JWT validation with your JWT library
-    // For now, return a mock context for development
+    try {
+      // Development mode: simplified validation
+      if (this.config.isDevelopment() && token === 'dev-token') {
+        return {
+          userId: 'dev-user',
+          tenantId: 'dev-tenant',
+          roles: ['user'],
+          permissions: ['memory:read', 'memory:write'],
+          token,
+          expiresAt: Date.now() + 86400000 // 24 hours
+        };
+      }
+
+      // Production JWT validation
+      if (!this.config.isDevelopment()) {
+        // Basic JWT structure validation
+        const parts = token.split('.');
+        if (parts.length !== 3) {
+          throw new Error('Invalid JWT format');
+        }        try {
+          // Decode payload (basic validation - in production, use proper JWT library)
+          const payloadStr = parts[1];
+          if (!payloadStr) {
+            throw new Error('Missing JWT payload');
+          }
+          
+          const payload = JSON.parse(Buffer.from(payloadStr, 'base64').toString());
+          
+          // Validate expiration
+          if (payload.exp && payload.exp * 1000 < Date.now()) {
+            throw new Error('Token expired');
+          }
+
+          // Validate required fields
+          if (!payload.sub || !payload.tenant_id) {
+            throw new Error('Invalid token payload');
+          }
+
+          return {
+            userId: payload.sub,
+            tenantId: payload.tenant_id,
+            roles: payload.roles || ['user'],
+            permissions: payload.permissions || ['memory:read'],
+            token,
+            expiresAt: payload.exp ? payload.exp * 1000 : Date.now() + 3600000
+          };
+        } catch (parseError) {
+          throw new Error('Invalid token payload');
+        }
+      }
     
-    if (this.config.isDevelopment() && token === 'dev-token') {
-      return {
-        userId: 'dev-user',
-        tenantId: 'dev-tenant',
-        roles: ['user'],
-        permissions: ['memory:read', 'memory:write'],
-        token,
-        expiresAt: Date.now() + 86400000 // 24 hours
-      };
+      // In production, implement proper JWT verification here
+      throw new Error('Token validation not implemented');
+    } catch (error) {
+      throw new Error(`Authentication failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
-    
-    // In production, implement proper JWT verification here
-    throw new Error('Token validation not implemented');
   }
   
   /**

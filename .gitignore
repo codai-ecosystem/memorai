@@ -85,3 +85,52 @@ test-integration.mjs
 
 # Yarn Integrity file
 .yarn-integrity
+
+# Debug files (prevent debug scripts from being committed)
+debug_*.mjs
+debug_*.js
+debug_*.ts
+
+# Coverage directories (prevent coverage artifacts)
+coverage/
+.coverage/
+.tmp/
+
+# macOS files (better cross-platform support)
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Log files (comprehensive log prevention)
+*.log
+server-test.log
+test.log
+output.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Temporary files
+*.temp
+*.cache
+*.swp
+*.swo
+*~
+
+# Package artifacts (prevent accidental commits)
+*.tgz
+*.tar.gz
+
+# Build artifacts
+.turbo/
+*.tsbuildinfo
+
+# IDE files
+.vscode/settings.json
+.idea/
+*.iml

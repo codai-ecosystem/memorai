@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 // Core Memory Types
-export const MemoryTypeSchema = z.enum(['personality', 'procedure', 'preference', 'fact', 'thread']);
+export const MemoryTypeSchema = z.enum(['personality', 'procedure', 'preference', 'fact', 'thread', 'task', 'emotion']);
 export type MemoryType = z.infer<typeof MemoryTypeSchema>;
 
 export const MemoryMetadataSchema = z.object({
@@ -63,6 +63,9 @@ export const ContextResponseSchema = z.object({
   summary: z.string(),
   confidence: z.number().min(0).max(1),
   generated_at: z.date(),
+  // Additional fields for comprehensive testing
+  total_count: z.number().int().min(0),
+  context_summary: z.string(),
 });
 
 export type ContextResponse = z.infer<typeof ContextResponseSchema>;

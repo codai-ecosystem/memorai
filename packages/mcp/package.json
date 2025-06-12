@@ -27,7 +27,7 @@
     "build": "tsc",
     "dev": "tsx src/server.ts",
     "start": "node dist/server.js",
-    "test": "vitest",
+    "test": "vitest run",
     "lint": "eslint src --ext .ts",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "pnpm run build"

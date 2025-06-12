@@ -25,8 +25,11 @@ export class MemoraiServer {
   private tenantMiddleware: TenantMiddleware;
   private mcpHandler: MCPHandler;
   private isStarted = false;
-  
-  constructor(memoryEngine: MemoryEngine) {
+    constructor(memoryEngine: MemoryEngine) {
+    if (!memoryEngine || memoryEngine === null || memoryEngine === undefined) {
+      throw new Error('Memory engine cannot be null or undefined');
+    }
+    
     this.memoryEngine = memoryEngine;
     this.config = ServerConfig.getInstance();
     this.server = this.createServer();

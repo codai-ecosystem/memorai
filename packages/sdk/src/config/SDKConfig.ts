@@ -25,24 +25,22 @@ export class SDKConfig {
     this.retryAttempts = options.retryAttempts || 3;
     this.retryDelay = options.retryDelay || 1000; // 1 second default
     this.loggingEnabled = options.logging || false;
-    
-    // Cache configuration
+      // Cache configuration
     this.cacheOptions = {
       enabled: options.cache?.enabled || false,
-      ttl: options.cache?.ttl || 300, // 5 minutes default
-      maxSize: options.cache?.maxSize || 1000,
+      ttl: options.cache?.ttl !== undefined ? options.cache.ttl : 300, // 5 minutes default
+      maxSize: options.cache?.maxSize !== undefined ? options.cache.maxSize : 1000,
       strategy: options.cache?.strategy || 'lru'
     };
     this.cacheEnabled = this.cacheOptions.enabled;
-  }
-  /**
+  }  /**
    * Get connection options for MCP client
    */
   public getConnectionOptions(): ConnectionOptions {
     const options: ConnectionOptions = {
       serverUrl: this.serverUrl,
       timeout: this.timeout,
-      headers: this.apiKey ? {
+      headers: (this.apiKey && this.apiKey.length > 0) ? {
         'Authorization': `Bearer ${this.apiKey}`,
         'Content-Type': 'application/json'
       } : {
@@ -50,7 +48,7 @@ export class SDKConfig {
       }
     };
     
-    if (this.apiKey) {
+    if (this.apiKey !== undefined) {
       options.apiKey = this.apiKey;
     }
     
@@ -79,24 +77,21 @@ export class SDKConfig {
 
     if (this.retryDelay < 100 || this.retryDelay > 10000) {
       throw new Error('Retry delay must be between 100ms and 10 seconds');
-    }
-
-    if (this.cacheOptions.maxSize && (this.cacheOptions.maxSize < 1 || this.cacheOptions.maxSize > 100000)) {
+    }    if (this.cacheOptions.enabled && this.cacheOptions.maxSize !== undefined && (this.cacheOptions.maxSize < 1 || this.cacheOptions.maxSize > 100000)) {
       throw new Error('Cache max size must be between 1 and 100,000');
     }
 
-    if (this.cacheOptions.ttl && (this.cacheOptions.ttl < 1 || this.cacheOptions.ttl > 86400)) {
+    if (this.cacheOptions.enabled && this.cacheOptions.ttl !== undefined && (this.cacheOptions.ttl < 1 || this.cacheOptions.ttl > 86400)) {
       throw new Error('Cache TTL must be between 1 second and 1 day');
     }
   }
-
   /**
    * Get configuration as plain object
    */
   public toObject(): Record<string, any> {
     return {
       serverUrl: this.serverUrl,
-      apiKey: this.apiKey ? '***REDACTED***' : undefined,
+      apiKey: (this.apiKey !== undefined && this.apiKey.length > 0) ? '***REDACTED***' : undefined,
       timeout: this.timeout,
       retryAttempts: this.retryAttempts,
       retryDelay: this.retryDelay,

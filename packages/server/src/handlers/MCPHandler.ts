@@ -102,11 +102,13 @@ export class MCPHandler {
       throw new Error('Content is required for remember operation');
     }
     
-    const memory = await this.memoryEngine.remember(content, {
-      userId: request.auth.userId,
-      tenantId: request.auth.tenantId,
-      ...context
-    });
+    const { result: memory, processingTime } = await this.withTiming(() => 
+      this.memoryEngine.remember(content, {
+        userId: request.auth.userId,
+        tenantId: request.auth.tenantId,
+        ...context
+      })
+    );
     
     return {
       success: true,
@@ -114,7 +116,7 @@ export class MCPHandler {
       metadata: {
         requestId: this.generateRequestId(),
         timestamp: new Date().toISOString(),
-        processingTime: 0 // TODO: Add timing
+        processingTime
       }
     };
   }
@@ -131,7 +133,9 @@ export class MCPHandler {
     if (!query) {
       throw new Error('Query is required for recall operation');
     }
-      const memories = await this.memoryEngine.recall(
+    
+    const { result: memories, processingTime } = await this.withTiming(() => 
+      this.memoryEngine.recall(
       query,
       request.auth.tenantId,
       request.auth.userId,
@@ -139,14 +143,15 @@ export class MCPHandler {
         limit,
         threshold
       }
-    );
-      return {
+    ));
+    
+    return {
       success: true,
       memories: memories.map(result => result.memory),
       metadata: {
         requestId: this.generateRequestId(),
         timestamp: new Date().toISOString(),
-        processingTime: 0 // TODO: Add timing
+        processingTime
       }
     };
   }
@@ -163,11 +168,13 @@ export class MCPHandler {
     if (!memoryId && !query) {
       throw new Error('Either memoryId or query is required for forget operation');
     }
-      const result = await this.memoryEngine.forget(
+    
+    const { result, processingTime } = await this.withTiming(() => 
+      this.memoryEngine.forget(
       query || `id:${memoryId}`,
       request.auth.tenantId,
       request.auth.userId
-    );
+    ));
     
     return {
       success: true,
@@ -175,7 +182,7 @@ export class MCPHandler {
       metadata: {
         requestId: this.generateRequestId(),
         timestamp: new Date().toISOString(),
-        processingTime: 0 // TODO: Add timing
+        processingTime
       }
     };
   }
@@ -188,13 +195,15 @@ export class MCPHandler {
     request: AuthenticatedRequest
   ): Promise<MemoryResponse> {
     const { topic, timeframe, limit = 50 } = params;
-      const context = await this.memoryEngine.context({
+    
+    const { result: context, processingTime } = await this.withTiming(() => 
+      this.memoryEngine.context({
       topic,
       time_range: timeframe,
       max_memories: limit,
       tenant_id: request.auth.tenantId,
       agent_id: request.auth.userId
-    });
+    }));
     
     return {
       success: true,
@@ -202,7 +211,7 @@ export class MCPHandler {
       metadata: {
         requestId: this.generateRequestId(),
         timestamp: new Date().toISOString(),
-        processingTime: 0 // TODO: Add timing
+        processingTime
       }
     };
   }
@@ -272,5 +281,15 @@ export class MCPHandler {
    */
   private generateRequestId(): string {
     return `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+  
+  /**
+   * Utility to measure execution time of async operations
+   */
+  private async withTiming<T>(operation: () => Promise<T>): Promise<{ result: T; processingTime: number }> {
+    const startTime = Date.now();
+    const result = await operation();
+    const processingTime = Date.now() - startTime;
+    return { result, processingTime };
   }
 }

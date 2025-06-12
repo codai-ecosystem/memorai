@@ -8,3 +8,8 @@ export * from './storage/StorageAdapter.js';
 export * from './classification/MemoryClassifier.js';
 export * from './temporal/TemporalEngine.js';
 export { MemoryConfigManager, MemoryConfigFactory } from './config/MemoryConfig.js';
+
+// Advanced Enterprise Features
+export * from './security/SecurityManager.js';
+export * from './resilience/ResilienceManager.js';
+export * from './monitoring/PerformanceMonitor.js';

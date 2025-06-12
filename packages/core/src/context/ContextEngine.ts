@@ -49,8 +49,7 @@ export class ContextEngine {
 
   /**
    * Generate structured context for agent consumption
-   */
-  public generateAgentContext(memories: MemoryResult[]): ContextResponse {
+   */  public generateAgentContext(memories: MemoryResult[]): ContextResponse {
     const contextText = this.generateContextText(memories);
     const summary = this.generateContextSummary(memories);
     const confidence = this.calculateContextConfidence(memories);
@@ -61,6 +60,8 @@ export class ContextEngine {
       summary,
       confidence,
       generated_at: new Date(),
+      total_count: memories.length,
+      context_summary: summary,
     };
   }
 

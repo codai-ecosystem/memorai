@@ -22,6 +22,7 @@ export interface VectorStore {
   delete(ids: string[]): Promise<void>;
   count(tenantId: string): Promise<number>;
   healthCheck(): Promise<boolean>;
+  close?(): Promise<void>;
 }
 
 export class QdrantVectorStore implements VectorStore {
@@ -328,12 +329,29 @@ export class MemoryVectorStore {
     await this.ensureInitialized();
     return this.store.count(tenantId);
   }
-
   public async healthCheck(): Promise<boolean> {
     if (!this.isInitialized) {
       return false;
     }
     return this.store.healthCheck();
+  }
+  public async close(): Promise<void> {
+    if (this.store.close) {
+      await this.store.close();
+    }
+    this.isInitialized = false;
+  }
+
+  public async getHealth(): Promise<{ status: string; error?: string }> {
+    try {
+      const isHealthy = await this.healthCheck();
+      return { status: isHealthy ? 'healthy' : 'unhealthy' };
+    } catch (error) {
+      return {
+        status: 'unhealthy',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
+    }
   }
 
   private async ensureInitialized(): Promise<void> {

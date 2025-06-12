@@ -22,12 +22,11 @@ export class MemoryCache {
   private cache = new Map<string, CacheEntry>();
   private options: CacheOptions;
   private accessOrder: string[] = []; // For LRU strategy
-
   constructor(options: CacheOptions) {
     this.options = {
       enabled: options.enabled || false,
-      ttl: options.ttl || 300, // 5 minutes default
-      maxSize: options.maxSize || 1000,
+      ttl: 'ttl' in options ? options.ttl : 300, // Use provided TTL (including undefined) or default to 300
+      maxSize: options.maxSize ?? 1000,
       strategy: options.strategy || 'lru'
     };
 
@@ -64,7 +63,6 @@ export class MemoryCache {
 
     return entry.value;
   }
-
   /**
    * Set item in cache
    */
@@ -73,12 +71,20 @@ export class MemoryCache {
       return;
     }
 
+    const maxSize = this.options.maxSize ?? 1000;
+    
+    // Handle edge case where maxSize is 0
+    if (maxSize === 0) {
+      return; // Don't add anything to cache
+    }
+
     // Check cache size and evict if necessary
-    if (this.cache.size >= (this.options.maxSize || 1000)) {
+    if (this.cache.size >= maxSize && !this.cache.has(key)) {
       this.evict();
     }
 
-    const now = Date.now();    const entry: CacheEntry = {
+    const now = Date.now();
+    const entry: CacheEntry = {
       value,
       timestamp: now,
       ttl: ttl ?? this.options.ttl,

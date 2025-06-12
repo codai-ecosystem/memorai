@@ -39,8 +39,7 @@ export const DEFAULT_DECAY_PARAMETERS: Record<MemoryType, DecayParameters> = {
     frequency: 0.6,
     emotional: 0.8,
     baseDecayRate: 0.01 // Medium decay
-  },
-  fact: {
+  },  fact: {
     importance: 0.6,
     frequency: 0.7,
     emotional: 0.3,
@@ -51,6 +50,18 @@ export const DEFAULT_DECAY_PARAMETERS: Record<MemoryType, DecayParameters> = {
     frequency: 0.5,
     emotional: 0.4,
     baseDecayRate: 0.05 // Fastest decay
+  },
+  task: {
+    importance: 0.8,
+    frequency: 0.7,
+    emotional: 0.6,
+    baseDecayRate: 0.03 // Medium-fast decay
+  },
+  emotion: {
+    importance: 0.7,
+    frequency: 0.6,
+    emotional: 0.95,
+    baseDecayRate: 0.015 // Medium-slow decay
   }
 };
 
