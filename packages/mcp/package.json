@@ -1,6 +1,6 @@
 {
   "name": "@codai/memorai-mcp",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Memorai MCP - Enterprise-grade memory management for AI agents",
   "type": "module",
   "main": "./dist/index.js",
