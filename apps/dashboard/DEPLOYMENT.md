@@ -16,7 +16,7 @@ This guide covers deploying the Memorai Web Dashboard in production environments
 
 ```bash
 # Navigate to dashboard directory
-cd apps/web-dashboard
+cd apps/dashboard
 
 # Install dependencies
 pnpm install

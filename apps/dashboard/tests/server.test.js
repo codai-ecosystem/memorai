@@ -30,7 +30,7 @@ describe('Web Dashboard', () => {
     const packageJsonPath = path.join(__dirname, '../package.json');
     const packageJsonContent = fs.readFileSync(packageJsonPath, 'utf8');
     const packageJson = JSON.parse(packageJsonContent);
-    expect(packageJson.name).toBe('@codai/memorai-web-dashboard');
+    expect(packageJson.name).toBe('@codai/memorai-dashboard');
     expect(packageJson.version).toBe('2.0.0');
     expect(packageJson.main).toBe('src/server.js');
   });

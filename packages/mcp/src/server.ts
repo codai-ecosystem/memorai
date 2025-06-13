@@ -13,7 +13,6 @@ import {
 } from '@modelcontextprotocol/sdk/types.js';
 import { MemoryEngine } from '@codai/memorai-core';
 import { InputValidator, SecurityManager } from '@codai/memorai-core';
-import { config } from 'dotenv';
 import { spawn, ChildProcess } from 'child_process';
 import { createConnection } from 'net';
 import path from 'path';
@@ -25,8 +24,7 @@ import { Command } from 'commander';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Load environment variables
-// First try to load from workspace-ai directory, then fallback to local
+// Load environment variables (simplified without dotenv)
 const envPaths = [
   path.resolve(__dirname, '../../../../../workspace-ai/.env'),
   path.resolve(__dirname, '../../../.env'),
@@ -36,15 +34,25 @@ const envPaths = [
 let envLoaded = false;
 for (const envPath of envPaths) {
   if (fs.existsSync(envPath)) {
-    config({ path: envPath });
-    console.error(`📁 Loaded environment variables from: ${envPath}`);
-    envLoaded = true;
-    break;
+    try {
+      const envContent = fs.readFileSync(envPath, 'utf8');
+      const envLines = envContent.split('\n').filter(line => line.trim() && !line.startsWith('#'));
+      for (const line of envLines) {
+        const [key, ...valueParts] = line.split('=');
+        if (key && valueParts.length) {
+          process.env[key.trim()] = valueParts.join('=').trim();
+        }
+      }
+      console.error(`📁 Loaded environment variables from: ${envPath}`);
+      envLoaded = true;
+      break;
+    } catch (error) {
+      console.error(`Failed to load ${envPath}:`, error);
+    }
   }
 }
 
 if (!envLoaded) {
-  config(); // Fallback to default behavior
   console.error('⚠️  No .env file found, using system environment variables');
 }
 
@@ -171,15 +179,14 @@ async function startDashboard(port?: number): Promise<ChildProcess | null> {
   if (!portAvailable) {
     console.error(`⚠️  Port ${dashboardPort} is in use by another process`);
     console.error(`🔍 Please check what's running on port ${dashboardPort} and stop it`);
-    return null;
-  }
+    return null;  }
 
   // Find dashboard directory
   const dashboardPaths = [
-    path.resolve(__dirname, '../../../apps/web-dashboard'),
-    path.resolve(__dirname, '../../apps/web-dashboard'),
-    path.resolve(process.cwd(), 'apps/web-dashboard'),
-    path.resolve(process.cwd(), '../apps/web-dashboard')
+    path.resolve(__dirname, '../../../apps/dashboard'),
+    path.resolve(__dirname, '../../apps/dashboard'),
+    path.resolve(process.cwd(), 'apps/dashboard'),
+    path.resolve(process.cwd(), '../apps/dashboard')
   ];
 
   let dashboardPath: string | null = null;
@@ -191,7 +198,7 @@ async function startDashboard(port?: number): Promise<ChildProcess | null> {
   }
 
   if (!dashboardPath) {
-    console.log('⚠️  Dashboard not found. Please ensure the web-dashboard is available.');
+    console.log('⚠️  Dashboard not found. Please ensure the dashboard is available.');
     return null;
   }
   console.error('🚀 Starting Memorai Web Dashboard...');

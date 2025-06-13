@@ -2,7 +2,7 @@
 
 ## Challenge Accepted: Test Everything!
 
-This document outlines the complete testing strategy for every possible flow, page, section, and component in the web-dashboard project.
+This document outlines the complete testing strategy for every possible flow, page, section, and component in the dashboard project.
 
 ## Test Categories
 

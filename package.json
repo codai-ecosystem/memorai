@@ -16,7 +16,7 @@
         "lint": "turbo lint",
         "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
         "clean": "turbo clean && rm -rf node_modules",
-        "start:dashboard": "cd apps/web-dashboard && npm run dev",
+        "start:dashboard": "cd apps/dashboard && npm run dev",
         "start:api": "cd apps/api && npm run dev",
         "start:mcp": "node packages/mcp/dist/server.js"
     },

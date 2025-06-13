@@ -58,7 +58,7 @@ const logger = winston.createLogger({
   ),
   transports: [
     new winston.transports.Console(),
-    new winston.transports.File({ filename: 'logs/web-dashboard.log' })
+    new winston.transports.File({ filename: 'logs/dashboard.log' })
   ],
 });
 
@@ -283,7 +283,7 @@ app.get('/api/memory/export', async (req, res) => {
         exportDate: new Date().toISOString(),
         format,
         version: '1.0.0',
-        source: 'memorai-web-dashboard'
+        source: 'memorai-dashboard'
       },
       total: memories ? memories.length : 0
     };

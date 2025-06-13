@@ -44,7 +44,7 @@ async function build() {
 
     // Create production package.json
     const packageJson = {
-      name: "@codai/memorai-web-dashboard",
+      name: "@codai/memorai-dashboard",
       version: "1.0.0",
       private: true,
       main: "server/server.js",

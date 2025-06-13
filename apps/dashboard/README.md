@@ -31,7 +31,7 @@ A modern, feature-rich web interface for managing AI memories and system configu
 
 1. **Install Dependencies**:
    ```bash
-   cd apps/web-dashboard
+   cd apps/dashboard
    npm install
    ```
 
