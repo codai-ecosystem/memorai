@@ -175,7 +175,7 @@ describe('SDKConfig - Comprehensive Coverage', () => {
           'Content-Type': 'application/json'
         }
       });
-    });    it('should handle empty string API key in connection options', () => {
+    }); it('should handle empty string API key in connection options', () => {
       const config = new SDKConfig({
         serverUrl: 'https://api.example.com',
         apiKey: ''
@@ -229,7 +229,7 @@ describe('SDKConfig - Comprehensive Coverage', () => {
 
     it('should accept HTTP URLs', () => {
       const config = new SDKConfig({
-        serverUrl: 'http://localhost:3000'
+        serverUrl: 'http://localhost:6367'
       });
 
       expect(() => config.validate()).not.toThrow();
@@ -514,7 +514,7 @@ describe('SDKConfig - Comprehensive Coverage', () => {
         },
         loggingEnabled: false
       });
-    });    it('should serialize configuration with empty string API key', () => {
+    }); it('should serialize configuration with empty string API key', () => {
       const config = new SDKConfig({
         serverUrl: 'https://api.example.com',
         apiKey: ''
@@ -559,7 +559,7 @@ describe('SDKConfig - Comprehensive Coverage', () => {
 
     it('should handle complex URL patterns', () => {
       const urls = [
-        'http://localhost:3000',
+        'http://localhost:6367',
         'https://api.example.com:8080',
         'https://sub.domain.com/path',
         'http://192.168.1.1:8080'

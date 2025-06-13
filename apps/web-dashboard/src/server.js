@@ -21,7 +21,7 @@ try {
   // Try to load from the workspace first
   const path = require('path');
   const corePackagePath = path.resolve(__dirname, '../../../packages/core');
-  
+
   try {
     UnifiedMemoryEngine = require(corePackagePath).UnifiedMemoryEngine;
     console.log('✅ Loaded UnifiedMemoryEngine from workspace');
@@ -45,7 +45,7 @@ const io = new SocketIOServer(server, {
   }
 });
 
-const PORT = process.env.WEB_PORT || 3002;
+const PORT = process.env.WEB_PORT || 6366;
 
 // Logger setup
 const logger = winston.createLogger({
@@ -67,10 +67,11 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com", "https://cdn.tailwindcss.com"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://cdn.tailwindcss.com", "https://cdn.jsdelivr.net", "https://unpkg.com", "https://cdn.socket.io"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'", "ws:", "wss:"],
     },
   },
 }));
@@ -88,8 +89,20 @@ app.use(limiter);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static files
-app.use(express.static(path.join(__dirname, '../public')));
+// Enhanced dashboard routes (BEFORE static middleware to override index.html)
+app.get('/', (req, res) => {
+  // Serve enhanced dashboard by default
+  res.sendFile(path.join(__dirname, '../public/index.html'));
+});
+
+app.get('/classic', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/index.html'));
+});
+
+// Serve static files (but skip index.html since we handle it above)
+app.use(express.static(path.join(__dirname, '../public'), {
+  index: false  // Don't serve index.html automatically
+}));
 
 // Global memory engine instance
 let memoryEngine = null;
@@ -117,10 +130,10 @@ async function initializeMemoryEngine() {
     });
 
     await memoryEngine.initialize();
-    
+
     const tierInfo = memoryEngine.getTierInfo();
     logger.info(`Memory engine initialized: ${tierInfo.message}`);
-    
+
     return memoryEngine;
   } catch (error) {
     logger.error('Failed to initialize memory engine:', error);
@@ -220,7 +233,7 @@ app.get('/api/analytics/performance', async (req, res) => {
 app.post('/api/memory/search/advanced', async (req, res) => {
   try {
     const { query, filters = {}, limit = 20 } = req.body;
-    
+
     if (!query || typeof query !== 'string' || query.trim().length === 0) {
       return res.status(400).json({ error: 'Query is required' });
     }
@@ -255,7 +268,7 @@ app.post('/api/memory/search/advanced', async (req, res) => {
 app.get('/api/memory/export', async (req, res) => {
   try {
     const format = req.query.format || 'json';
-    
+
     let memories;
     if (memoryEngine && memoryEngine.exportAll) {
       memories = await memoryEngine.exportAll();
@@ -285,7 +298,7 @@ app.get('/api/memory/export', async (req, res) => {
 app.post('/api/memory/import', async (req, res) => {
   try {
     const { memories } = req.body;
-    
+
     if (!Array.isArray(memories)) {
       return res.status(400).json({ error: 'Memories must be an array' });
     }
@@ -355,14 +368,14 @@ app.get('/api/diagnostics/health', async (req, res) => {
 app.put('/api/config/tier', async (req, res) => {
   try {
     const { tier } = req.body;
-    
+
     if (!tier || !['advanced', 'smart', 'basic', 'mock'].includes(tier)) {
       return res.status(400).json({ error: 'Invalid tier specified' });
     }
 
     // Note: In a real implementation, this would switch memory tiers
     logger.info(`Tier switch requested: ${tier}`);
-    
+
     res.json({
       success: true,
       newTier: tier,
@@ -392,14 +405,14 @@ function generateMockGrowthData() {
 // Enhanced mock memory engine with additional features
 const enhancedMockMemoryEngine = {
   ...mockMemoryEngine,
-  
+
   searchWithFilters(options) {
     const { query, filters = {}, limit = 20 } = options;
-    
+
     // Generate mock filtered results
     const baseResults = this.recall(query);
     let filteredResults = baseResults;
-    
+
     // Apply date filter
     if (filters.dateRange && (filters.dateRange.start || filters.dateRange.end)) {
       filteredResults = filteredResults.filter(result => {
@@ -409,24 +422,24 @@ const enhancedMockMemoryEngine = {
         return resultDate >= start && resultDate <= end;
       });
     }
-    
+
     // Apply similarity filter
     if (filters.similarity) {
-      filteredResults = filteredResults.filter(result => 
+      filteredResults = filteredResults.filter(result =>
         result.similarity >= filters.similarity.min && result.similarity <= filters.similarity.max
       );
     }
-    
+
     // Apply tag filter
     if (filters.tags && filters.tags.length > 0) {
       filteredResults = filteredResults.filter(result =>
         filters.tags.some(tag => (result.metadata?.tags || []).includes(tag))
       );
     }
-    
+
     return filteredResults.slice(0, limit);
   },
-  
+
   getAllMemories() {
     return this.memories.map((memory, index) => ({
       id: index + 1,
@@ -466,12 +479,12 @@ app.post('/api/memory/remember', async (req, res) => {
   try {
     const { agentId, content, metadata } = req.body;
     const engine = memoryEngine || mockMemoryEngine;
-    
+
     const result = await engine.remember(agentId, content, metadata);
-    
+
     // Broadcast to WebSocket clients
     io.emit('memory:created', { agentId, memory: result });
-    
+
     res.json({ success: true, memory: result });
   } catch (error) {
     logger.error('Memory remember failed:', error);
@@ -483,9 +496,9 @@ app.post('/api/memory/recall', async (req, res) => {
   try {
     const { agentId, query, limit = 10 } = req.body;
     const engine = memoryEngine || mockMemoryEngine;
-    
+
     const memories = await engine.recall(agentId, query, limit);
-    
+
     res.json({ success: true, memories, count: memories.length });
   } catch (error) {
     logger.error('Memory recall failed:', error);
@@ -497,9 +510,9 @@ app.delete('/api/memory/forget', async (req, res) => {
   try {
     const { agentId, memoryId } = req.body;
     const engine = memoryEngine || mockMemoryEngine;
-    
+
     const success = await engine.forget(agentId, memoryId);
-    
+
     if (success) {
       io.emit('memory:deleted', { agentId, memoryId });
       res.json({ success: true });
@@ -516,9 +529,9 @@ app.post('/api/memory/context', async (req, res) => {
   try {
     const { agentId, contextSize = 10 } = req.body;
     const engine = memoryEngine || mockMemoryEngine;
-    
+
     const context = await engine.getContext(agentId, contextSize);
-    
+
     res.json({ success: true, context });
   } catch (error) {
     logger.error('Memory context failed:', error);
@@ -542,6 +555,40 @@ app.get('/api/config', (req, res) => {
   });
 });
 
+// Get all memories
+app.get('/api/memories', async (req, res) => {
+  try {
+    const engine = memoryEngine || mockMemoryEngine;
+    let memories = [];
+
+    if (engine.getAllMemories) {
+      memories = await engine.getAllMemories();
+    } else {
+      // Generate mock memories for demonstration
+      memories = Array.from({ length: 10 }, (_, i) => ({
+        id: `memory_${i + 1}`,
+        content: `Sample memory content ${i + 1}`,
+        metadata: {
+          agentId: `agent-${Math.floor(Math.random() * 3) + 1}`,
+          timestamp: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
+          tags: ['sample', 'mock', 'data'],
+          similarity: 0.7 + Math.random() * 0.3
+        }
+      }));
+    }
+
+    res.json({
+      success: true,
+      memories,
+      total: memories.length,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    logger.error('Failed to fetch memories:', error);
+    res.status(500).json({ error: 'Failed to fetch memories' });
+  }
+});
+
 // Statistics
 app.get('/api/stats', (req, res) => {
   res.json({
@@ -558,7 +605,7 @@ app.get('/api/stats', (req, res) => {
 // WebSocket handling
 io.on('connection', (socket) => {
   logger.info(`WebSocket client connected: ${socket.id}`);
-  
+
   socket.on('disconnect', () => {
     logger.info(`WebSocket client disconnected: ${socket.id}`);
   });
@@ -568,11 +615,6 @@ io.on('connection', (socket) => {
     tier: (memoryEngine || mockMemoryEngine).getTierInfo(),
     timestamp: new Date().toISOString()
   });
-});
-
-// Serve the main dashboard
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
 // 404 handler
@@ -590,12 +632,12 @@ app.use((error, req, res, next) => {
 async function startServer() {
   try {
     await initializeMemoryEngine();
-    
+
     server.listen(PORT, () => {
       logger.info(`🚀 Memorai Web Dashboard running on http://localhost:${PORT}`);
       logger.info(`📊 API endpoints available at http://localhost:${PORT}/api/`);
       logger.info(`🔌 WebSocket connection at ws://localhost:${PORT}`);
-      
+
       if (!memoryEngine) {
         logger.warn('⚠️  Running in mock mode - install @codai/memorai-core for full functionality');
       }

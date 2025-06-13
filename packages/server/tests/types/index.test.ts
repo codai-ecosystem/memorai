@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import type { 
-  ServerOptions, 
-  RateLimitOptions, 
-  JWTOptions, 
+import type {
+  ServerOptions,
+  RateLimitOptions,
+  JWTOptions,
   LoggingOptions,
   MCPRequest,
   MCPResponse,
@@ -26,7 +26,7 @@ describe('Types Definition Coverage', () => {
   describe('Type Definitions', () => {
     it('should define ServerOptions correctly', () => {
       const serverOptions: ServerOptions = {
-        port: 3000,
+        port: 6367,
         host: 'localhost',
         cors: true,
         helmet: true,
@@ -45,7 +45,7 @@ describe('Types Definition Coverage', () => {
         }
       };
 
-      expect(serverOptions.port).toBe(3000);
+      expect(serverOptions.port).toBe(6367);
       expect(serverOptions.host).toBe('localhost');
       expect(serverOptions.cors).toBe(true);
       expect(serverOptions.helmet).toBe(true);
@@ -163,11 +163,11 @@ describe('Types Definition Coverage', () => {
       expect(tenantContext.tenantId).toBe('tenant123');
       expect(tenantContext.name).toBe('Test Tenant');
       expect(tenantContext.plan).toBe('enterprise');
-    });    it('should define MemoryRequest correctly', () => {
+    }); it('should define MemoryRequest correctly', () => {
       const memoryRequest: MemoryRequest = {
         operation: 'remember',
         data: { content: 'test memory' },
-        query: { 
+        query: {
           tenant_id: 'tenant123',
           query: 'search query',
           limit: 10,
@@ -250,7 +250,7 @@ describe('Types Definition Coverage', () => {
   describe('Union Types', () => {
     it('should handle tenant plan union types', () => {
       const plans: Array<'free' | 'pro' | 'enterprise'> = ['free', 'pro', 'enterprise'];
-      
+
       plans.forEach(plan => {
         const tenant: TenantContext = {
           tenantId: 'test',
@@ -269,27 +269,27 @@ describe('Types Definition Coverage', () => {
             vectorDimensions: 1536
           }
         };
-        
+
         expect(['free', 'pro', 'enterprise']).toContain(tenant.plan);
       });
     });
 
     it('should handle log level union types', () => {
       const levels: Array<'error' | 'warn' | 'info' | 'debug'> = ['error', 'warn', 'info', 'debug'];
-      
+
       levels.forEach(level => {
         const logging: LoggingOptions = {
           level,
           format: 'json'
         };
-        
+
         expect(['error', 'warn', 'info', 'debug']).toContain(logging.level);
       });
     });
 
     it('should handle health status union types', () => {
       const statuses: Array<'healthy' | 'degraded' | 'unhealthy'> = ['healthy', 'degraded', 'unhealthy'];
-      
+
       statuses.forEach(status => {
         const health: HealthStatus = {
           status,
@@ -304,7 +304,7 @@ describe('Types Definition Coverage', () => {
             errorRate: 0
           }
         };
-        
+
         expect(['healthy', 'degraded', 'unhealthy']).toContain(health.status);
       });
     });

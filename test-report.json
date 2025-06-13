@@ -1,0 +1,71 @@
+{
+  "timestamp": "2025-06-12T11:17:33.888Z",
+  "summary": {
+    "totalTests": 0,
+    "passedTests": 0,
+    "failedTests": 0
+  },
+  "results": {
+    "endpoints": {},
+    "ui": {},
+    "functionality": {
+      "frontend": {
+        "loads": false,
+        "error": "fetch is not a function"
+      },
+      "memory": {
+        "create": false,
+        "recall": false,
+        "context": false,
+        "search": false
+      },
+      "analytics": {
+        "insights": false,
+        "performance": false,
+        "stats": false
+      },
+      "configuration": {
+        "config": false,
+        "health": false,
+        "diagnostics": false
+      },
+      "data": {
+        "list": false,
+        "export": false
+      },
+      "performance": true
+    },
+    "performance": {
+      "averageResponseTime": 0.1,
+      "concurrentRequests": 10,
+      "totalTime": 1
+    },
+    "errors": [
+      "POST /api/memory/remember: fetch is not a function",
+      "POST /api/memory/recall: fetch is not a function",
+      "POST /api/memory/context: fetch is not a function",
+      "POST /api/memory/search/advanced: fetch is not a function",
+      "GET /api/analytics/insights: fetch is not a function",
+      "GET /api/analytics/performance: fetch is not a function",
+      "GET /api/stats: fetch is not a function",
+      "GET /api/config: fetch is not a function",
+      "GET /api/health: fetch is not a function",
+      "GET /api/diagnostics/health: fetch is not a function",
+      "GET /api/memories: fetch is not a function",
+      "GET /api/memory/export: fetch is not a function",
+      "GET /api/health: fetch is not a function",
+      "GET /api/health: fetch is not a function",
+      "GET /api/health: fetch is not a function",
+      "GET /api/health: fetch is not a function",
+      "GET /api/health: fetch is not a function",
+      "GET /api/health: fetch is not a function",
+      "GET /api/health: fetch is not a function",
+      "GET /api/health: fetch is not a function",
+      "GET /api/health: fetch is not a function",
+      "GET /api/health: fetch is not a function"
+    ]
+  },
+  "recommendations": [
+    "Fix API endpoint errors"
+  ]
+}

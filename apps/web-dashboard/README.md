@@ -41,7 +41,7 @@ A modern, feature-rich web interface for managing AI memories and system configu
    ```
 
 3. **Open Dashboard**:
-   Navigate to `http://localhost:3002`
+   Navigate to `http://localhost:6366`
 
 ## Architecture
 
@@ -107,7 +107,7 @@ MEMORAI_OPENAI_API_KEY=your_key npm run dev
 ```
 
 ### Environment Variables
-- `WEB_PORT` - Server port (default: 3002)
+- `WEB_PORT` - Server port (default: 6366)
 - `MEMORAI_OPENAI_API_KEY` - OpenAI API key
 - `AZURE_OPENAI_ENDPOINT` - Azure OpenAI endpoint
 - `AZURE_OPENAI_API_KEY` - Azure OpenAI API key

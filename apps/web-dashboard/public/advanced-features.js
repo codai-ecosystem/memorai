@@ -35,10 +35,10 @@ class AdvancedSearch {
         // Populate date range
         const today = new Date().toISOString().split('T')[0];
         const lastWeek = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-        
+
         document.getElementById('date-start').value = lastWeek;
         document.getElementById('date-end').value = today;
-        
+
         // Populate similarity range
         document.getElementById('similarity-min').value = this.filters.similarity.min;
         document.getElementById('similarity-max').value = this.filters.similarity.max;
@@ -136,7 +136,7 @@ class MemoryAnalytics {
         // Update analytics cards
         document.getElementById('total-memories-count').textContent = this.analytics.totalMemories.toLocaleString();
         document.getElementById('avg-similarity-score').textContent = this.analytics.averageSimilarity.toFixed(3);
-        
+
         // Update top tags
         const tagsContainer = document.getElementById('top-tags-list');
         if (tagsContainer) {
@@ -211,20 +211,20 @@ class SystemDiagnostics {
 
     async runDiagnostics() {
         console.log('🔍 Running system diagnostics...');
-        
+
         try {
             // Test API endpoints
             await this.testApiEndpoints();
-            
+
             // Check memory tier status
             await this.checkMemoryTier();
-            
+
             // Monitor performance
             await this.checkPerformance();
-            
+
             // Update diagnostics display
             this.updateDiagnosticsDisplay();
-            
+
             console.log('✅ Diagnostics completed');
         } catch (error) {
             console.error('❌ Diagnostics failed:', error);
@@ -244,7 +244,7 @@ class SystemDiagnostics {
                 const start = performance.now();
                 const response = await fetch(endpoint.path);
                 const end = performance.now();
-                
+
                 this.diagnostics.apiStatus[endpoint.name] = {
                     status: response.ok ? 'healthy' : 'unhealthy',
                     responseTime: Math.round(end - start),
@@ -292,10 +292,9 @@ class SystemDiagnostics {
         Object.entries(this.diagnostics.apiStatus).forEach(([name, status]) => {
             const indicator = document.getElementById(`api-${name.toLowerCase()}-status`);
             if (indicator) {
-                indicator.className = `w-3 h-3 rounded-full ${
-                    status.status === 'healthy' ? 'bg-green-500' : 
-                    status.status === 'unhealthy' ? 'bg-yellow-500' : 'bg-red-500'
-                }`;
+                indicator.className = `w-3 h-3 rounded-full ${status.status === 'healthy' ? 'bg-green-500' :
+                        status.status === 'unhealthy' ? 'bg-yellow-500' : 'bg-red-500'
+                    }`;
                 indicator.title = `${name}: ${status.status} (${status.responseTime || 'N/A'}ms)`;
             }
         });
@@ -332,8 +331,7 @@ class SystemDiagnostics {
         ];
 
         container.innerHTML = notifications.map(notif => `
-            <div class="p-3 rounded-lg ${
-                notif.type === 'error' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
+            <div class="p-3 rounded-lg ${notif.type === 'error' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
                 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
             }">
                 <div class="flex items-center">
@@ -363,7 +361,7 @@ class ExportManager {
 
             const data = await response.json();
             this.downloadFile(data, `memorai-export-${new Date().toISOString().split('T')[0]}.${format}`);
-            
+
             this.dashboard.showToast('Memories exported successfully', 'success');
         } catch (error) {
             console.error('Export failed:', error);
@@ -391,14 +389,14 @@ class ExportManager {
     downloadFile(data, filename) {
         const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
-        
+
         const a = document.createElement('a');
         a.href = url;
         a.download = filename;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
-        
+
         URL.revokeObjectURL(url);
     }
 
@@ -406,7 +404,7 @@ class ExportManager {
         try {
             const text = await file.text();
             const data = JSON.parse(text);
-            
+
             if (!Array.isArray(data.memories)) {
                 throw new Error('Invalid import format');
             }
@@ -433,7 +431,7 @@ class ExportManager {
 // Add these enhanced features to the main dashboard
 if (typeof MemoraiDashboard !== 'undefined') {
     // Extend dashboard with advanced features
-    MemoraiDashboard.prototype.initAdvancedFeatures = function() {
+    MemoraiDashboard.prototype.initAdvancedFeatures = function () {
         this.advancedSearch = new AdvancedSearch(this);
         this.analytics = new MemoryAnalytics(this);
         this.diagnostics = new SystemDiagnostics(this);
@@ -443,7 +441,7 @@ if (typeof MemoraiDashboard !== 'undefined') {
         this.initAdvancedEventListeners();
     };
 
-    MemoraiDashboard.prototype.initAdvancedEventListeners = function() {
+    MemoraiDashboard.prototype.initAdvancedEventListeners = function () {
         // Advanced search
         const advancedSearchBtn = document.getElementById('advanced-search-btn');
         if (advancedSearchBtn) {
@@ -480,10 +478,10 @@ if (typeof MemoraiDashboard !== 'undefined') {
         }
     };
 
-    MemoraiDashboard.prototype.searchWithFilters = function(filters) {
+    MemoraiDashboard.prototype.searchWithFilters = function (filters) {
         // Enhanced search with filters
         const query = document.getElementById('search-input').value;
-        
+
         const searchData = {
             query,
             filters,
@@ -493,7 +491,7 @@ if (typeof MemoraiDashboard !== 'undefined') {
         this.performSearch(searchData);
     };
 
-    MemoraiDashboard.prototype.addMemoryDirect = async function(memoryData) {
+    MemoraiDashboard.prototype.addMemoryDirect = async function (memoryData) {
         const response = await fetch('/api/memory/remember', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

@@ -10,28 +10,28 @@ const path = require('path');
 
 async function build() {
   console.log('🔨 Building Memorai Web Dashboard...');
-  
+
   try {
     // Create dist directory
     const distDir = path.join(__dirname, '../dist');
     await fs.mkdir(distDir, { recursive: true });
-    
+
     // Copy public files to dist
     const publicDir = path.join(__dirname, '../public');
     const files = await fs.readdir(publicDir);
-    
+
     for (const file of files) {
       const srcPath = path.join(publicDir, file);
       const destPath = path.join(distDir, file);
       await fs.copyFile(srcPath, destPath);
       console.log(`✅ Copied ${file} to dist/`);
     }
-    
+
     // Copy server files
     const serverDir = path.join(__dirname, '../src');
     const distServerDir = path.join(distDir, 'server');
     await fs.mkdir(distServerDir, { recursive: true });
-    
+
     const serverFiles = await fs.readdir(serverDir);
     for (const file of serverFiles) {
       if (file.endsWith('.js')) {
@@ -41,7 +41,7 @@ async function build() {
         console.log(`✅ Copied server/${file} to dist/server/`);
       }
     }
-    
+
     // Create production package.json
     const packageJson = {
       name: "@codai/memorai-web-dashboard",
@@ -61,26 +61,26 @@ async function build() {
         "dotenv": "^16.4.5"
       }
     };
-    
+
     await fs.writeFile(
       path.join(distDir, 'package.json'),
       JSON.stringify(packageJson, null, 2)
     );
     console.log('✅ Created production package.json');
-    
+
     // Create startup script
     const startScript = `#!/usr/bin/env node
 require('dotenv').config();
 require('./server/server.js');
 `;
-    
+
     await fs.writeFile(path.join(distDir, 'start.js'), startScript);
     console.log('✅ Created startup script');
-    
+
     console.log('\n🎉 Build completed successfully!');
     console.log('📁 Output directory: dist/');
     console.log('🚀 To run: cd dist && npm install && node start.js');
-    
+
   } catch (error) {
     console.error('❌ Build failed:', error);
     process.exit(1);

@@ -13,7 +13,7 @@ vi.mock('../../src/config/ServerConfig.js', () => ({
   ServerConfig: {
     getInstance: vi.fn(() => ({
       options: {
-        port: 3000,
+        port: 6367,
         host: 'localhost',
         cors: true,
         helmet: true,
@@ -52,7 +52,7 @@ describe('MemoraiServer Coverage Tests', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     memoryEngine = {
       initialize: vi.fn().mockResolvedValue(undefined),
       close: vi.fn().mockResolvedValue(undefined),
@@ -77,45 +77,45 @@ describe('MemoraiServer Coverage Tests', () => {
   describe('Server Lifecycle Coverage', () => {
     it('should start server and set isStarted flag', async () => {
       server = new MemoraiServer(memoryEngine);
-      
+
       await server.start();
-      
+
       expect(memoryEngine.initialize).toHaveBeenCalled();
       expect(mockFastifyInstance.listen).toHaveBeenCalledWith({
         host: 'localhost',
-        port: 3000
+        port: 6367
       });
     });
 
     it('should prevent double start', async () => {
       server = new MemoraiServer(memoryEngine);
       await server.start();
-      
+
       await expect(server.start()).rejects.toThrow('Server is already started');
     });
 
     it('should handle initialization error', async () => {
       const error = new Error('Init failed');
       memoryEngine.initialize.mockRejectedValue(error);
-      
+
       server = new MemoraiServer(memoryEngine);
-      
+
       await expect(server.start()).rejects.toThrow(error);
     });
 
     it('should handle listen error', async () => {
       const error = new Error('Listen failed');
       mockFastifyInstance.listen.mockRejectedValue(error);
-      
+
       server = new MemoraiServer(memoryEngine);
-      
+
       await expect(server.start()).rejects.toThrow(error);
-    });    it('should handle stop when not started', async () => {
+    }); it('should handle stop when not started', async () => {
       server = new MemoraiServer(memoryEngine);
-      
+
       // Should not throw
       await server.stop();
-      
+
       expect(mockFastifyInstance.close).not.toHaveBeenCalled();
       expect(memoryEngine.close).not.toHaveBeenCalled();
     });
@@ -234,7 +234,7 @@ describe('MemoraiServer Coverage Tests', () => {
   describe('Route Registration Coverage', () => {
     it('should register routes during construction', () => {
       server = new MemoraiServer(memoryEngine);
-      
+
       // Verify route registration calls
       expect(mockFastifyInstance.post).toHaveBeenCalledWith('/mcp', expect.any(Function));
       expect(mockFastifyInstance.get).toHaveBeenCalledWith('/health', expect.any(Function));
@@ -244,7 +244,7 @@ describe('MemoraiServer Coverage Tests', () => {
 
     it('should register middleware during construction', () => {
       server = new MemoraiServer(memoryEngine);
-      
+
       // Verify middleware registration
       expect(mockFastifyInstance.register).toHaveBeenCalled();
       expect(mockFastifyInstance.addHook).toHaveBeenCalledWith('preHandler', expect.any(Function));
@@ -255,7 +255,7 @@ describe('MemoraiServer Coverage Tests', () => {
   describe('Route Handler Coverage', () => {
     it('should handle health route with healthy status code', async () => {
       server = new MemoraiServer(memoryEngine);
-      
+
       // Get the health route handler
       const healthCall = mockFastifyInstance.get.mock.calls.find(
         call => call[0] === '/health'
@@ -281,7 +281,7 @@ describe('MemoraiServer Coverage Tests', () => {
 
     it('should handle health route with unhealthy status code', async () => {
       server = new MemoraiServer(memoryEngine);
-      
+
       const healthCall = mockFastifyInstance.get.mock.calls.find(
         call => call[0] === '/health'
       );
@@ -289,7 +289,7 @@ describe('MemoraiServer Coverage Tests', () => {
       const mockReply = {
         code: vi.fn().mockReturnThis(),
         send: vi.fn().mockResolvedValue(undefined)
-      };      memoryEngine.getHealth.mockResolvedValue({
+      }; memoryEngine.getHealth.mockResolvedValue({
         status: 'unhealthy',
         initialized: false,
         components: {}
@@ -303,7 +303,7 @@ describe('MemoraiServer Coverage Tests', () => {
 
     it('should handle capabilities route', async () => {
       server = new MemoraiServer(memoryEngine);
-      
+
       const capabilitiesCall = mockFastifyInstance.get.mock.calls.find(
         call => call[0] === '/capabilities'
       );
@@ -323,7 +323,7 @@ describe('MemoraiServer Coverage Tests', () => {
 
     it('should handle metrics route', async () => {
       server = new MemoraiServer(memoryEngine);
-      
+
       const metricsCall = mockFastifyInstance.get.mock.calls.find(
         call => call[0] === '/metrics'
       );
@@ -343,10 +343,10 @@ describe('MemoraiServer Coverage Tests', () => {
   describe('Error Handler Coverage', () => {
     it('should handle errors with JSON-RPC format', async () => {
       server = new MemoraiServer(memoryEngine);
-      
+
       const errorHandlerCall = mockFastifyInstance.setErrorHandler.mock.calls[0];
       const errorHandler = errorHandlerCall[0];
-      
+
       const mockError = new Error('Test error');
       const mockRequest = {};
       const mockReply = {
@@ -374,12 +374,12 @@ describe('MemoraiServer Coverage Tests', () => {
   describe('PreHandler Hook Coverage', () => {
     it('should skip auth for health endpoint', async () => {
       server = new MemoraiServer(memoryEngine);
-      
+
       const preHandlerCall = mockFastifyInstance.addHook.mock.calls.find(
         call => call[0] === 'preHandler'
       );
       const preHandler = preHandlerCall![1];
-      
+
       const mockRequest = { url: '/health' };
       const mockReply = {};
 
@@ -389,12 +389,12 @@ describe('MemoraiServer Coverage Tests', () => {
 
     it('should skip auth for capabilities endpoint', async () => {
       server = new MemoraiServer(memoryEngine);
-      
+
       const preHandlerCall = mockFastifyInstance.addHook.mock.calls.find(
         call => call[0] === 'preHandler'
       );
       const preHandler = preHandlerCall![1];
-      
+
       const mockRequest = { url: '/capabilities' };
       const mockReply = {};
 

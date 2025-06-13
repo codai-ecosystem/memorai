@@ -25,19 +25,19 @@ class DashboardTester {
         try {
             // Start the server
             await this.startServer();
-            
+
             // Wait for server to start
             await this.waitForServer();
-            
+
             // Run tests
             await this.testHealthEndpoint();
             await this.testMemoryAPI();
             await this.testConfigAPI();
             await this.testStatsAPI();
-            
+
             // Report results
             this.reportResults();
-            
+
         } catch (error) {
             console.error('❌ Test failed:', error.message);
         } finally {
@@ -49,7 +49,7 @@ class DashboardTester {
     async startServer() {
         return new Promise((resolve, reject) => {
             console.log('🚀 Starting web dashboard server...');
-            
+
             this.serverProcess = spawn('node', ['src/server.js'], {
                 cwd: path.join(__dirname),
                 stdio: ['pipe', 'pipe', 'pipe']
@@ -84,7 +84,7 @@ class DashboardTester {
 
     async waitForServer() {
         console.log('⏳ Waiting for server to be ready...');
-        
+
         for (let i = 0; i < 30; i++) {
             try {
                 await this.makeRequest('GET', '/api/health');
@@ -94,17 +94,17 @@ class DashboardTester {
                 await this.sleep(1000);
             }
         }
-        
+
         throw new Error('Server never became ready');
     }
 
     async testHealthEndpoint() {
         console.log('🏥 Testing health endpoint...');
-        
+
         try {
             const response = await this.makeRequest('GET', '/api/health');
             const data = JSON.parse(response);
-            
+
             if (data.status === 'healthy') {
                 console.log('✅ Health endpoint working');
                 this.testResults.health = true;
@@ -118,7 +118,7 @@ class DashboardTester {
 
     async testMemoryAPI() {
         console.log('🧠 Testing memory API...');
-        
+
         try {
             // Test remember
             const rememberData = JSON.stringify({
@@ -126,23 +126,23 @@ class DashboardTester {
                 content: 'This is a test memory',
                 metadata: { type: 'test' }
             });
-            
+
             const rememberResponse = await this.makeRequest('POST', '/api/memory/remember', rememberData);
             const rememberResult = JSON.parse(rememberResponse);
-            
+
             if (rememberResult.success) {
                 console.log('✅ Memory remember working');
-                
+
                 // Test recall
                 const recallData = JSON.stringify({
                     agentId: 'test-agent',
                     query: 'test memory',
                     limit: 10
                 });
-                
+
                 const recallResponse = await this.makeRequest('POST', '/api/memory/recall', recallData);
                 const recallResult = JSON.parse(recallResponse);
-                
+
                 if (recallResult.success) {
                     console.log('✅ Memory recall working');
                     this.testResults.api = true;
@@ -159,11 +159,11 @@ class DashboardTester {
 
     async testConfigAPI() {
         console.log('⚙️ Testing config API...');
-        
+
         try {
             const response = await this.makeRequest('GET', '/api/config');
             const data = JSON.parse(response);
-            
+
             if (data.success && data.config) {
                 console.log('✅ Config API working');
                 console.log(`   Tier: ${data.config.tier?.level || 'unknown'}`);
@@ -177,11 +177,11 @@ class DashboardTester {
 
     async testStatsAPI() {
         console.log('📊 Testing stats API...');
-        
+
         try {
             const response = await this.makeRequest('GET', '/api/stats');
             const data = JSON.parse(response);
-            
+
             if (data.success && data.stats) {
                 console.log('✅ Stats API working');
                 console.log(`   Uptime: ${data.stats.uptime || 0}s`);
@@ -196,19 +196,19 @@ class DashboardTester {
     reportResults() {
         console.log('\n📋 Test Results:');
         console.log('================');
-        
+
         Object.entries(this.testResults).forEach(([test, passed]) => {
             const icon = passed ? '✅' : '❌';
             const status = passed ? 'PASSED' : 'FAILED';
             console.log(`${icon} ${test.toUpperCase()}: ${status}`);
         });
-        
+
         const allPassed = Object.values(this.testResults).every(result => result);
-        
+
         console.log('\n🏁 Overall Result:');
         if (allPassed) {
             console.log('✅ ALL TESTS PASSED - Dashboard is ready!');
-            console.log('🌐 Access dashboard at: http://localhost:3002');
+            console.log('🌐 Access dashboard at: http://localhost:6366');
         } else {
             console.log('❌ SOME TESTS FAILED - Check the issues above');
         }
@@ -218,7 +218,7 @@ class DashboardTester {
         return new Promise((resolve, reject) => {
             const options = {
                 hostname: 'localhost',
-                port: 3002,
+                port: 6366,
                 path: path,
                 method: method,
                 headers: {
@@ -232,11 +232,11 @@ class DashboardTester {
 
             const req = http.request(options, (res) => {
                 let responseData = '';
-                
+
                 res.on('data', (chunk) => {
                     responseData += chunk;
                 });
-                
+
                 res.on('end', () => {
                     if (res.statusCode >= 200 && res.statusCode < 300) {
                         resolve(responseData);
@@ -253,7 +253,7 @@ class DashboardTester {
             if (data) {
                 req.write(data);
             }
-            
+
             req.end();
         });
     }
@@ -274,14 +274,14 @@ class DashboardTester {
 // Run tests if this script is executed directly
 if (require.main === module) {
     const tester = new DashboardTester();
-    
+
     // Handle graceful shutdown
     process.on('SIGINT', () => {
         console.log('\n🛑 Received SIGINT, shutting down gracefully...');
         tester.stopServer();
         process.exit(0);
     });
-    
+
     tester.runTests().catch(error => {
         console.error('❌ Test runner failed:', error);
         process.exit(1);

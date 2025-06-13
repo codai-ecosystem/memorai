@@ -13,7 +13,7 @@ describe('MemoraiClient', () => {
   beforeEach(() => {
     // Reset all mocks
     vi.clearAllMocks();
-    
+
     // Create a mock connection instance
     mockConnection = {
       connect: vi.fn(),
@@ -26,7 +26,7 @@ describe('MemoraiClient', () => {
     (MCPConnection as any).mockImplementation(() => mockConnection);
 
     const clientOptions: ClientOptions & { agentId: string; sessionId?: string; tenantId?: string } = {
-      serverUrl: 'http://localhost:3000',
+      serverUrl: 'http://localhost:6367',
       agentId: 'test-agent',
       sessionId: 'test-session',
       tenantId: 'test-tenant'

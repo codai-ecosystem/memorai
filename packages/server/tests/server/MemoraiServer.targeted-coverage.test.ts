@@ -25,7 +25,7 @@ vi.mock('../config/ServerConfig.js', () => ({
     getInstance: vi.fn(() => ({
       options: {
         host: 'localhost',
-        port: 3000,
+        port: 6367,
         cors: true,
         helmet: true,
         rateLimit: { max: 100, timeWindow: 60000 },
@@ -76,7 +76,7 @@ describe('MemoraiServer Targeted Coverage Tests', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     mockMemoryEngine = {
       initialize: vi.fn().mockResolvedValue(undefined),
       close: vi.fn().mockResolvedValue(undefined),
@@ -120,9 +120,9 @@ describe('MemoraiServer Targeted Coverage Tests', () => {
 
     it('should return healthy status when memory engine is healthy', async () => {
       mockMemoryEngine.getHealth = vi.fn().mockResolvedValue({ status: 'healthy' });
-      
+
       const health = await server.getHealth();
-      
+
       expect(health.status).toBe('healthy');
       expect(health.checks).toHaveLength(2);
       expect(health.checks[0].name).toBe('memory_engine');
@@ -131,12 +131,12 @@ describe('MemoraiServer Targeted Coverage Tests', () => {
 
     it('should return degraded status when memory engine is unhealthy', async () => {
       mockMemoryEngine.getHealth = vi.fn().mockResolvedValue({ status: 'unhealthy' });
-      
+
       const health = await server.getHealth();
-      
+
       expect(health.status).toBe('degraded');
       expect(health.checks[0].status).toBe('fail');
-    });    it('should warn about high memory usage', async () => {
+    }); it('should warn about high memory usage', async () => {
       // Mock high memory usage (over 1GB)
       const originalMemoryUsage = process.memoryUsage;
       process.memoryUsage = vi.fn().mockReturnValue({
@@ -148,10 +148,10 @@ describe('MemoraiServer Targeted Coverage Tests', () => {
       }) as any;
 
       const health = await server.getHealth();
-      
+
       expect(health.checks[1].status).toBe('warn');
       expect(health.checks[1].message).toContain('MB used');
-      
+
       // Restore original
       process.memoryUsage = originalMemoryUsage;
     });
@@ -168,9 +168,9 @@ describe('MemoraiServer Targeted Coverage Tests', () => {
       }) as any;
 
       const health = await server.getHealth();
-      
+
       expect(health.checks[1].status).toBe('pass');
-      
+
       // Restore original
       process.memoryUsage = originalMemoryUsage;
     });
@@ -184,14 +184,14 @@ describe('MemoraiServer Targeted Coverage Tests', () => {
     it('should handle double start error', async () => {
       // Manually set isStarted to true to simulate already started server
       (server as any).isStarted = true;
-      
+
       await expect(server.start()).rejects.toThrow('Server is already started');
     });
 
     it('should handle stop when not started gracefully', async () => {
       // Server is not started by default
       expect((server as any).isStarted).toBe(false);
-      
+
       // Should not throw and should return cleanly
       await expect(server.stop()).resolves.toBeUndefined();
     });
@@ -199,7 +199,7 @@ describe('MemoraiServer Targeted Coverage Tests', () => {
     it('should handle memory engine initialization failure', async () => {
       const initError = new Error('Engine init failed');
       mockMemoryEngine.initialize = vi.fn().mockRejectedValue(initError);
-      
+
       await expect(server.start()).rejects.toThrow('Engine init failed');
     });
 
@@ -207,28 +207,28 @@ describe('MemoraiServer Targeted Coverage Tests', () => {
       const listenError = new Error('Port already in use');
       const mockServer = (server as any).server;
       mockServer.listen = vi.fn().mockRejectedValue(listenError);
-      
+
       await expect(server.start()).rejects.toThrow('Port already in use');
     });
 
     it('should handle server close error during stop', async () => {
       // Start server first
       await server.start();
-      
+
       const closeError = new Error('Close failed');
       const mockServer = (server as any).server;
       mockServer.close = vi.fn().mockRejectedValue(closeError);
-      
+
       await expect(server.stop()).rejects.toThrow('Close failed');
     });
 
     it('should handle memory engine close error during stop', async () => {
       // Start server first
       await server.start();
-      
+
       const closeError = new Error('Engine close failed');
       mockMemoryEngine.close = vi.fn().mockRejectedValue(closeError);
-      
+
       await expect(server.stop()).rejects.toThrow('Engine close failed');
     });
   });
@@ -243,7 +243,7 @@ describe('MemoraiServer Targeted Coverage Tests', () => {
       expect(fastifyInstance).toBeDefined();
       expect(typeof fastifyInstance).toBe('object');
     });
-  });  describe('Route Handler Coverage', () => {
+  }); describe('Route Handler Coverage', () => {
     beforeEach(() => {
       server = new MemoraiServer(mockMemoryEngine);
     });

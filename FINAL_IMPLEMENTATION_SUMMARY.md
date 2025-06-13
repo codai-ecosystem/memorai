@@ -125,7 +125,7 @@ MEMORAI_AZURE_DEPLOYMENT=...
 
 # Server Configuration  
 WEB_PORT=3002
-MCP_PORT=3001
+MCP_PORT=6367
 NODE_ENV=production
 
 # Security

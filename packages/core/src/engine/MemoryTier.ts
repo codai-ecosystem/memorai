@@ -149,16 +149,21 @@ export class MemoryTierDetector {
             // Check for Azure OpenAI configuration
             const azureEndpoint = process.env.AZURE_OPENAI_ENDPOINT;
             const azureApiKey = process.env.AZURE_OPENAI_API_KEY;
+            const azureDeployment = process.env.AZURE_OPENAI_DEPLOYMENT_NAME;
 
-            if (azureEndpoint && azureApiKey) {
-                // Test Azure OpenAI availability
+            if (azureEndpoint && azureApiKey && azureDeployment) {
+                // Test Azure OpenAI availability with a minimal chat request
                 const azureApiVersion = process.env.AZURE_OPENAI_API_VERSION || '2024-02-15-preview';
-                const response = await fetch(`${azureEndpoint}/openai/deployments?api-version=${azureApiVersion}`, {
-                    method: 'GET',
+                const response = await fetch(`${azureEndpoint}/openai/deployments/${azureDeployment}/chat/completions?api-version=${azureApiVersion}`, {
+                    method: 'POST',
                     headers: {
                         'api-key': azureApiKey,
                         'Content-Type': 'application/json'
-                    }
+                    },
+                    body: JSON.stringify({
+                        messages: [{ role: 'user', content: 'test' }],
+                        max_tokens: 1
+                    })
                 });
 
                 if (response.ok) return true;

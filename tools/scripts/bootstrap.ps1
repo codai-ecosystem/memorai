@@ -52,7 +52,7 @@ if (-not (Test-Path ".env")) {
 NODE_ENV=development
 
 # Server Configuration
-PORT=3000
+PORT=6367
 HOST=localhost
 
 # Database Configuration

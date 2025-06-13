@@ -1,0 +1,293 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { motion } from 'framer-motion'
+import {
+    BarChart3,
+    TrendingUp,
+    Users,
+    Clock,
+    Brain,
+    Activity,
+    PieChart,
+    Calendar,
+    Filter,
+    Download
+} from 'lucide-react'
+import { useMemoryStore } from '../../stores/memory-store'
+import { cn } from '../../lib/utils'
+
+interface AnalyticsDashboardProps {
+    className?: string
+}
+
+export function AnalyticsDashboard({ className }: AnalyticsDashboardProps) {
+    const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d' | '1y'>('30d')
+    const [selectedMetrics, setSelectedMetrics] = useState<string[]>(['memories', 'interactions', 'agents'])
+
+    const { memories, stats, fetchStats, fetchMemories } = useMemoryStore()
+
+    useEffect(() => {
+        fetchStats()
+        fetchMemories()
+    }, [fetchStats, fetchMemories])
+    // Calculate analytics data from memories
+    const analyticsData = {
+        totalMemories: memories.length,
+        memoriesThisWeek: memories.filter(m => {
+            const date = new Date(m.metadata.timestamp)
+            const weekAgo = new Date()
+            weekAgo.setDate(weekAgo.getDate() - 7)
+            return date > weekAgo
+        }).length,
+        memoriesThisMonth: memories.filter(m => {
+            const date = new Date(m.metadata.timestamp)
+            const monthAgo = new Date()
+            monthAgo.setMonth(monthAgo.getMonth() - 1)
+            return date > monthAgo
+        }).length,
+        avgSimilarity: memories.length > 0
+            ? memories.reduce((sum, m) => sum + (m.metadata.similarity || 0), 0) / memories.length
+            : 0,
+        uniqueAgents: [...new Set(memories.map(m => m.metadata.agentId))].length,
+        topTags: memories.reduce((tags, memory) => {
+            memory.metadata.tags?.forEach((tag: string) => {
+                tags[tag] = (tags[tag] || 0) + 1
+            })
+            return tags
+        }, {} as Record<string, number>)
+    }
+
+    const chartData = [
+        { name: 'Mon', memories: 12, interactions: 45 },
+        { name: 'Tue', memories: 19, interactions: 67 },
+        { name: 'Wed', memories: 8, interactions: 23 },
+        { name: 'Thu', memories: 15, interactions: 58 },
+        { name: 'Fri', memories: 22, interactions: 81 },
+        { name: 'Sat', memories: 18, interactions: 43 },
+        { name: 'Sun', memories: 10, interactions: 29 }
+    ]
+
+    const MetricCard = ({
+        title,
+        value,
+        change,
+        icon: Icon,
+        color = 'blue'
+    }: {
+        title: string
+        value: string | number
+        change?: string
+        icon: any
+        color?: 'blue' | 'green' | 'purple' | 'orange'
+    }) => {
+        const colorClasses = {
+            blue: 'bg-blue-500 text-blue-50',
+            green: 'bg-green-500 text-green-50',
+            purple: 'bg-purple-500 text-purple-50',
+            orange: 'bg-orange-500 text-orange-50'
+        }
+
+        return (
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6"
+            >
+                <div className="flex items-center justify-between">
+                    <div>
+                        <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{title}</p>
+                        <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{value}</p>
+                        {change && (
+                            <p className="text-sm text-green-600 dark:text-green-400 mt-1">
+                                {change}
+                            </p>
+                        )}
+                    </div>
+                    <div className={cn('p-3 rounded-lg', colorClasses[color])}>
+                        <Icon className="h-6 w-6" />
+                    </div>
+                </div>
+            </motion.div>
+        )
+    }
+
+    return (
+        <div className={cn('space-y-6', className)}>
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Analytics Dashboard</h2>
+                    <p className="text-gray-600 dark:text-gray-400 mt-1">
+                        Monitor memory usage and performance metrics
+                    </p>
+                </div>
+
+                <div className="flex items-center gap-3">
+                    <select
+                        value={timeRange}
+                        onChange={(e) => setTimeRange(e.target.value as any)}
+                        className="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
+                    >
+                        <option value="7d">Last 7 days</option>
+                        <option value="30d">Last 30 days</option>
+                        <option value="90d">Last 90 days</option>
+                        <option value="1y">Last year</option>
+                    </select>
+
+                    <button className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        <Download className="h-4 w-4" />
+                        Export
+                    </button>
+                </div>
+            </div>
+
+            {/* Key Metrics */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <MetricCard
+                    title="Total Memories"
+                    value={analyticsData.totalMemories}
+                    change={`+${analyticsData.memoriesThisWeek} this week`}
+                    icon={Brain}
+                    color="blue"
+                />
+                <MetricCard
+                    title="Active Agents"
+                    value={analyticsData.uniqueAgents}
+                    change="+2 new this month"
+                    icon={Users}
+                    color="green"
+                />
+                <MetricCard
+                    title="Avg Similarity"
+                    value={`${(analyticsData.avgSimilarity * 100).toFixed(1)}%`}
+                    change="+5.2% from last month"
+                    icon={TrendingUp}
+                    color="purple"
+                />
+                <MetricCard
+                    title="Memories This Month"
+                    value={analyticsData.memoriesThisMonth}
+                    change="+12% from last month"
+                    icon={Calendar}
+                    color="orange"
+                />
+            </div>
+
+            {/* Charts */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Memory Creation Trend */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6 }}
+                    className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6"
+                >
+                    <div className="flex items-center justify-between mb-6">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                            Memory Creation Trend
+                        </h3>
+                        <BarChart3 className="h-5 w-5 text-gray-400" />
+                    </div>
+
+                    <div className="space-y-4">
+                        {chartData.map((day, index) => (
+                            <div key={day.name} className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <span className="text-sm font-medium text-gray-600 dark:text-gray-400 w-8">
+                                        {day.name}
+                                    </span>
+                                    <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2 max-w-[200px]">
+                                        <div
+                                            className="bg-blue-500 h-2 rounded-full transition-all duration-500"
+                                            style={{ width: `${(day.memories / 25) * 100}%` }}
+                                        />
+                                    </div>
+                                </div>
+                                <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                                    {day.memories}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                </motion.div>
+
+                {/* Top Tags */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.7 }}
+                    className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6"
+                >
+                    <div className="flex items-center justify-between mb-6">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                            Popular Tags
+                        </h3>
+                        <PieChart className="h-5 w-5 text-gray-400" />
+                    </div>
+
+                    <div className="space-y-3">
+                        {Object.entries(analyticsData.topTags)
+                            .sort(([, a], [, b]) => b - a)
+                            .slice(0, 6)
+                            .map(([tag, count], index) => (
+                                <div key={tag} className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div
+                                            className="w-3 h-3 rounded-full"
+                                            style={{
+                                                backgroundColor: [
+                                                    '#3B82F6', '#10B981', '#8B5CF6',
+                                                    '#F59E0B', '#EF4444', '#6B7280'
+                                                ][index]
+                                            }}
+                                        />
+                                        <span className="text-sm text-gray-600 dark:text-gray-400">
+                                            {tag}
+                                        </span>
+                                    </div>
+                                    <span className="text-sm font-semibold text-gray-900 dark:text-white">
+                                        {count}
+                                    </span>
+                                </div>
+                            ))}
+                    </div>
+                </motion.div>
+            </div>
+
+            {/* Activity Timeline */}
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8 }}
+                className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6"
+            >
+                <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                        Recent Activity
+                    </h3>
+                    <Activity className="h-5 w-5 text-gray-400" />
+                </div>
+
+                <div className="space-y-4">
+                    {memories.slice(0, 5).map((memory, index) => (
+                        <div key={memory.id} className="flex items-start gap-4">
+                            <div className="w-2 h-2 bg-blue-500 rounded-full mt-2" />
+                            <div className="flex-1">                <p className="text-sm text-gray-900 dark:text-white font-medium">
+                                Memory created by {memory.metadata.agentId}
+                            </p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                    {new Date(memory.metadata.timestamp).toLocaleString()}
+                                </p>
+                                <p className="text-sm text-gray-600 dark:text-gray-300 mt-1 line-clamp-2">
+                                    {memory.content.substring(0, 100)}...
+                                </p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </motion.div>
+        </div>
+    )
+}

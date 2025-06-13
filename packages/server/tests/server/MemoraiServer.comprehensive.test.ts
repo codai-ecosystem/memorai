@@ -13,7 +13,7 @@ vi.mock('../../src/config/ServerConfig.js', () => ({
   ServerConfig: {
     getInstance: vi.fn(() => ({
       options: {
-        port: 3000,
+        port: 6367,
         host: 'localhost',
         cors: true,
         helmet: true,
@@ -51,11 +51,11 @@ describe('MemoraiServer Comprehensive Coverage Tests', () => {
   let server: MemoraiServer;
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     // Reset the Fastify mock to resolved state
     mockFastifyInstance.listen.mockResolvedValue(undefined);
     mockFastifyInstance.close.mockResolvedValue(undefined);
-    
+
     memoryEngine = {
       initialize: vi.fn().mockResolvedValue(undefined),
       close: vi.fn().mockResolvedValue(undefined),
@@ -152,7 +152,7 @@ describe('MemoraiServer Comprehensive Coverage Tests', () => {
 
       server = new MemoraiServer(memoryEngine);
       await server.start();
-      
+
       await expect(server.stop()).rejects.toThrow(closeError);
     });
   });
@@ -234,7 +234,7 @@ describe('MemoraiServer Comprehensive Coverage Tests', () => {
 
       // Restore original function
       process.memoryUsage = originalMemoryUsage;
-    });    it('should include memory usage check with warn status for high memory', async () => {
+    }); it('should include memory usage check with warn status for high memory', async () => {
       // Mock process.memoryUsage to return high memory usage (over 1GB)
       const originalMemoryUsage = process.memoryUsage;
       process.memoryUsage = vi.fn().mockReturnValue({

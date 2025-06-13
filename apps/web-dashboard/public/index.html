@@ -1,512 +1,1673 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Memorai Dashboard - AI Memory Management</title>
-    
-    <!-- Tailwind CSS -->
+    <title>Memorai Dashboard - AI Memory Management | 110% Enhanced</title>
+
+    <!-- Preload critical resources -->
+    <link rel="preload"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" as="style">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap"
+        as="style">
+
+    <!-- Meta tags for PWA -->
+    <meta name="description"
+        content="Advanced AI Memory Management Dashboard with real-time analytics and visual memory graphs">
+    <meta name="theme-color" content="#1e40af">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+
+    <!-- Tailwind CSS with JIT -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Tailwind Config -->
+
+    <!-- Enhanced Tailwind Config -->
     <script>
         tailwind.config = {
             darkMode: 'class',
             theme: {
                 extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace']
+                    },
                     colors: {
                         primary: {
                             50: '#eff6ff',
+                            100: '#dbeafe',
+                            200: '#bfdbfe',
+                            300: '#93c5fd',
+                            400: '#60a5fa',
                             500: '#3b82f6',
                             600: '#2563eb',
                             700: '#1d4ed8',
-                            900: '#1e3a8a'
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                            950: '#172554'
+                        },
+                        secondary: {
+                            50: '#f8fafc',
+                            100: '#f1f5f9',
+                            200: '#e2e8f0',
+                            300: '#cbd5e1',
+                            400: '#94a3b8',
+                            500: '#64748b',
+                            600: '#475569',
+                            700: '#334155',
+                            800: '#1e293b',
+                            900: '#0f172a',
+                            950: '#020617'
+                        },
+                        accent: {
+                            purple: '#8b5cf6',
+                            pink: '#ec4899',
+                            green: '#10b981',
+                            orange: '#f59e0b',
+                            red: '#ef4444'
                         }
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-out',
+                        'slide-up': 'slideUp 0.3s ease-out',
+                        'slide-down': 'slideDown 0.3s ease-out',
+                        'scale-in': 'scaleIn 0.2s ease-out',
+                        'pulse-soft': 'pulseSoft 2s infinite',
+                        'float': 'float 3s ease-in-out infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                        'shimmer': 'shimmer 2s linear infinite',
+                        'bounce-soft': 'bounceSoft 2s infinite'
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' }
+                        },
+                        slideUp: {
+                            '0%': { transform: 'translateY(100%)' },
+                            '100%': { transform: 'translateY(0)' }
+                        },
+                        slideDown: {
+                            '0%': { transform: 'translateY(-100%)' },
+                            '100%': { transform: 'translateY(0)' }
+                        },
+                        scaleIn: {
+                            '0%': { transform: 'scale(0.9)', opacity: '0' },
+                            '100%': { transform: 'scale(1)', opacity: '1' }
+                        },
+                        pulseSoft: {
+                            '0%, 100%': { opacity: '1' },
+                            '50%': { opacity: '0.7' }
+                        },
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-10px)' }
+                        },
+                        glow: {
+                            '0%': { boxShadow: '0 0 20px rgba(59, 130, 246, 0.3)' },
+                            '100%': { boxShadow: '0 0 30px rgba(59, 130, 246, 0.6)' }
+                        },
+                        shimmer: {
+                            '0%': { transform: 'translateX(-100%)' },
+                            '100%': { transform: 'translateX(100%)' }
+                        },
+                        bounceSoft: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-5px)' }
+                        }
+                    },
+                    backdropBlur: {
+                        xs: '2px',
+                    },
+                    spacing: {
+                        '18': '4.5rem',
+                        '88': '22rem',
+                        '100': '25rem',
+                        '112': '28rem',
+                        '128': '32rem'
                     }
                 }
             }
         }
     </script>
-    
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <!-- Socket.IO -->
+
+    <!-- External Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    <script
+        src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
-    
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-    
-    <!-- Custom Styles -->
+    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@visx/responsive@3"></script>
+    <script src="https://unpkg.com/three@0.157.0/build/three.min.js"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Enhanced Custom Styles -->
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        
-        body {
-            font-family: 'Inter', sans-serif;
+        /* Enhanced Global Styles */
+        * {
+            scroll-behavior: smooth;
         }
-        
-        .loading-dots {
-            display: inline-block;
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            font-feature-settings: 'cv11', 'ss01';
+            text-rendering: optimizeLegibility;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            @apply bg-gray-100 dark:bg-gray-800;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            @apply bg-gray-300 dark:bg-gray-600 rounded-full;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            @apply bg-gray-400 dark:bg-gray-500;
+        }
+
+        /* Enhanced Loading Animation */
+        .loading-brain {
             position: relative;
             width: 80px;
             height: 80px;
+            margin: 0 auto;
         }
-        
-        .loading-dots div {
+
+        .loading-brain::before {
+            content: "🧠";
+            font-size: 60px;
             position: absolute;
-            top: 33px;
-            width: 13px;
-            height: 13px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation: float 2s ease-in-out infinite;
+        }
+
+        .loading-brain::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border: 3px solid transparent;
+            border-top-color: #3b82f6;
             border-radius: 50%;
-            background: #3b82f6;
-            animation-timing-function: cubic-bezier(0, 1, 1, 0);
-        }
-        
-        .loading-dots div:nth-child(1) {
-            left: 8px;
-            animation: loading-dots1 0.6s infinite;
-        }
-        
-        .loading-dots div:nth-child(2) {
-            left: 8px;
-            animation: loading-dots2 0.6s infinite;
-        }
-        
-        .loading-dots div:nth-child(3) {
-            left: 32px;
-            animation: loading-dots2 0.6s infinite;
-        }
-        
-        .loading-dots div:nth-child(4) {
-            left: 56px;
-            animation: loading-dots3 0.6s infinite;
-        }
-        
-        @keyframes loading-dots1 {
-            0% { transform: scale(0); }
-            100% { transform: scale(1); }
-        }
-        
-        @keyframes loading-dots3 {
-            0% { transform: scale(1); }
-            100% { transform: scale(0); }
-        }
-        
-        @keyframes loading-dots2 {
-            0% { transform: translate(0, 0); }
-            100% { transform: translate(24px, 0); }
+            animation: spin 1s linear infinite;
         }
 
-        .fade-in {
-            animation: fadeIn 0.3s ease-in;
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        /* Glassmorphism Effects */
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
+        .glass-dark {
+            background: rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Enhanced Cards */
         .memory-card {
-            transition: all 0.2s ease;
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+        }
+
+        .memory-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .memory-card:hover::before {
+            left: 100%;
         }
 
         .memory-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
         }
 
+        /* Enhanced Buttons */
+        .btn-primary {
+            @apply bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-primary-500/50;
+        }
+
+        .btn-secondary {
+            @apply bg-gradient-to-r from-gray-600 to-gray-700 hover:from-gray-700 hover:to-gray-800 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-gray-500/50;
+        }
+
+        .btn-success {
+            @apply bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-lg focus:outline-none focus:ring-4 focus:ring-green-500/50;
+        }
+
+        /* Enhanced Form Elements */
+        .form-input {
+            @apply w-full px-4 py-3 bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-600 rounded-xl text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-500/20 transition-all duration-200;
+        }
+
+        .form-textarea {
+            @apply form-input resize-none;
+        }
+
+        /* Tab Enhancement */
+        .tab-button {
+            @apply relative flex items-center space-x-3 px-6 py-4 text-sm font-semibold transition-all duration-300 rounded-t-xl;
+        }
+
+        .tab-button::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .tab-button.active::after {
+            transform: scaleX(1);
+        }
+
+        .tab-button.active {
+            @apply bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300;
+        }
+
+        /* Status Indicators */
+        .status-dot {
+            @apply w-3 h-3 rounded-full animate-pulse-soft;
+        }
+
+        .status-online {
+            @apply bg-green-500 shadow-lg shadow-green-500/50;
+        }
+
+        .status-offline {
+            @apply bg-red-500 shadow-lg shadow-red-500/50;
+        }
+
+        /* Memory Tier Badges */
         .tier-badge {
-            display: inline-flex;
-            align-items: center;
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 500;
+            @apply inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider;
         }
 
         .tier-advanced {
-            background-color: #10b981;
-            color: white;
+            @apply bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg shadow-green-500/25;
         }
 
         .tier-smart {
-            background-color: #3b82f6;
-            color: white;
+            @apply bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg shadow-blue-500/25;
         }
 
         .tier-basic {
-            background-color: #f59e0b;
-            color: white;
+            @apply bg-gradient-to-r from-amber-500 to-orange-600 text-white shadow-lg shadow-amber-500/25;
         }
 
         .tier-mock {
-            background-color: #6b7280;
-            color: white;
+            @apply bg-gradient-to-r from-gray-500 to-slate-600 text-white shadow-lg shadow-gray-500/25;
         }
 
-        .scrollbar-hide {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
+        /* Metric Cards */
+        .metric-card {
+            @apply relative overflow-hidden bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-200 dark:border-gray-700 transition-all duration-300 hover:shadow-xl hover:scale-105;
         }
-        
-        .scrollbar-hide::-webkit-scrollbar {
-            display: none;
+
+        .metric-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899);
+        }
+
+        /* Enhanced Toast */
+        .toast {
+            @apply fixed bottom-6 right-6 max-w-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl p-4 transform transition-all duration-500 z-50;
+        }
+
+        .toast.show {
+            @apply translate-y-0 opacity-100;
+        }
+
+        .toast.hide {
+            @apply translate-y-full opacity-0;
+        }
+
+        /* Search Enhancement */
+        .search-container {
+            @apply relative;
+        }
+
+        .search-container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, #3b82f6, #8b5cf6);
+            border-radius: 0.75rem;
+            padding: 2px;
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask-composite: exclude;
+        }
+
+        /* Sidebar Enhancement */
+        .sidebar {
+            @apply fixed left-0 top-0 h-full w-80 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 transform transition-transform duration-300 z-40;
+        }
+
+        .sidebar.open {
+            @apply translate-x-0;
+        }
+
+        .sidebar.closed {
+            @apply -translate-x-full;
+        }
+
+        /* Responsive Grid */
+        .responsive-grid {
+            display: grid;
+            gap: 1.5rem;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        }
+
+        /* Memory Graph Styles */
+        .memory-node {
+            @apply cursor-pointer transition-all duration-200 hover:scale-110;
+        }
+
+        .memory-link {
+            @apply stroke-gray-400 dark:stroke-gray-600 transition-all duration-200;
+        }
+
+        /* Keyboard Shortcuts Hint */
+        .kbd {
+            @apply inline-flex items-center px-2 py-1 bg-gray-100 dark:bg-gray-700 text-xs font-mono rounded border border-gray-300 dark:border-gray-600;
+        }
+
+        /* Progress Bars */
+        .progress-bar {
+            @apply relative h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden;
+        }
+
+        .progress-fill {
+            @apply h-full bg-gradient-to-r from-primary-500 to-primary-600 transition-all duration-500 ease-out;
+        }
+
+        /* Utility Classes */
+        .text-gradient {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .border-gradient {
+            border-image: linear-gradient(135deg, #3b82f6, #8b5cf6) 1;
+        }
+
+        /* Responsive Utilities */
+        @media (max-width: 768px) {
+            .mobile-hidden {
+                display: none !important;
+            }
+
+            .mobile-full {
+                width: 100% !important;
+            }
+        }
+
+        /* High Contrast Mode */
+        @media (prefers-contrast: high) {
+            .memory-card {
+                border: 2px solid;
+            }
+
+            .btn-primary,
+            .btn-secondary,
+            .btn-success {
+                border: 2px solid;
+            }
+        }
+
+        /* Reduced Motion */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
         }
     </style>
 </head>
-<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-    <!-- Loading Screen -->
-    <div id="loading-screen" class="fixed inset-0 bg-white dark:bg-gray-900 flex items-center justify-center z-50">
-        <div class="text-center">
-            <div class="loading-dots mb-4">
-                <div></div>
-                <div></div>
-                <div></div>
-                <div></div>
+
+<body
+    class="bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50 dark:from-gray-900 dark:via-gray-900 dark:to-slate-900 text-gray-900 dark:text-gray-100 min-h-screen">
+    <!-- Enhanced Loading Screen -->
+    <div id="loading-screen"
+        class="fixed inset-0 bg-gradient-to-br from-primary-600 via-primary-700 to-indigo-800 flex items-center justify-center z-50">
+        <div class="text-center text-white">
+            <div class="loading-brain mb-8"></div>
+            <h2 class="text-4xl font-bold mb-4 text-gradient-white">Memorai</h2>
+            <p class="text-xl text-primary-100 mb-8">Initializing Advanced AI Memory System...</p>
+            <div class="flex items-center justify-center space-x-2">
+                <div class="w-2 h-2 bg-white rounded-full animate-bounce"></div>
+                <div class="w-2 h-2 bg-white rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+                <div class="w-2 h-2 bg-white rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
             </div>
-            <h2 class="text-2xl font-semibold mb-2">Loading Memorai</h2>
-            <p class="text-gray-600 dark:text-gray-400">Initializing dashboard...</p>
         </div>
     </div>
 
-    <!-- Main Dashboard -->
-    <div id="dashboard" class="hidden">
-        <!-- Header -->
-        <header class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <!-- Enhanced Dashboard -->
+    <div id="dashboard" class="hidden min-h-screen">
+        <!-- Modern Header with Glassmorphism -->
+        <header
+            class="sticky top-0 z-30 backdrop-blur-xl bg-white/70 dark:bg-gray-900/70 border-b border-white/20 dark:border-gray-700/50">
+            <div class="max-w-full mx-auto px-6 lg:px-8">
                 <div class="flex justify-between items-center py-4">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-                                🧠 Memorai
-                            </h1>
+                    <div class="flex items-center space-x-4">
+                        <div class="flex items-center space-x-3">
+                            <div class="text-3xl animate-float">🧠</div>
+                            <div>
+                                <h1 class="text-2xl font-bold text-gradient">Memorai</h1>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">Enterprise AI Memory Management</p>
+                            </div>
                         </div>
-                        <div class="ml-4">
-                            <p class="text-sm text-gray-500 dark:text-gray-400">
-                                Enterprise AI Memory Management
-                            </p>
+                        <div class="hidden lg:flex items-center space-x-2 ml-8">
+                            <span class="kbd">⌘</span>
+                            <span class="text-xs text-gray-500">+</span>
+                            <span class="kbd">K</span>
+                            <span class="text-xs text-gray-500 ml-2">Quick Search</span>
                         </div>
                     </div>
-                    
+
                     <div class="flex items-center space-x-4">
-                        <!-- Connection Status -->
-                        <div id="connection-status" class="flex items-center space-x-2 px-3 py-1 rounded-full text-sm">
-                            <div id="connection-dot" class="w-2 h-2 rounded-full"></div>
-                            <span id="connection-text">Connecting...</span>
+                        <!-- Enhanced Connection Status -->
+                        <div id="connection-status"
+                            class="flex items-center space-x-2 px-4 py-2 rounded-full text-sm bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-800">
+                            <div id="connection-dot" class="status-dot status-offline"></div>
+                            <span id="connection-text" class="font-medium">Disconnected</span>
                         </div>
-                        
-                        <!-- Memory Tier Badge -->
+
+                        <!-- Enhanced Memory Tier Badge -->
                         <div id="tier-badge" class="tier-badge tier-mock">
-                            <span>Loading...</span>
+                            <span class="animate-pulse-soft">Loading...</span>
                         </div>
-                        
-                        <!-- Dark Mode Toggle -->
-                        <button id="theme-toggle" class="p-2 rounded-md text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-700">
-                            <i data-lucide="moon" class="w-5 h-5"></i>
+
+                        <!-- Performance Indicator -->
+                        <div id="performance-indicator"
+                            class="hidden lg:flex items-center space-x-2 px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-800">
+                            <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse-soft"></div>
+                            <span class="text-xs font-medium">Optimal</span>
+                        </div>
+
+                        <!-- Enhanced Theme Toggle -->
+                        <button id="theme-toggle"
+                            class="p-3 rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-800 transition-all duration-200 hover:scale-110">
+                            <i data-lucide="sun" class="w-5 h-5"></i>
+                        </button>
+
+                        <!-- Settings Button -->
+                        <button id="settings-button"
+                            class="p-3 rounded-xl text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-800 transition-all duration-200 hover:scale-110">
+                            <i data-lucide="settings" class="w-5 h-5"></i>
                         </button>
                     </div>
                 </div>
             </div>
         </header>
 
-        <!-- Navigation Tabs -->
-        <nav class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex space-x-8">
+        <!-- Enhanced Navigation with Modern Design -->
+        <nav
+            class="sticky top-20 z-20 backdrop-blur-xl bg-white/50 dark:bg-gray-900/50 border-b border-white/20 dark:border-gray-700/50">
+            <div class="max-w-full mx-auto px-6 lg:px-8">
+                <div class="flex space-x-1 overflow-x-auto scrollbar-hide">
                     <button class="tab-button active" data-tab="memory">
                         <i data-lucide="brain" class="w-5 h-5"></i>
-                        <span>Memory Management</span>
+                        <span>Memory Hub</span>
+                        <span
+                            class="hidden lg:inline-block ml-2 px-2 py-1 bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-300 text-xs rounded-full">12</span>
                     </button>
                     <button class="tab-button" data-tab="graph">
                         <i data-lucide="network" class="w-5 h-5"></i>
-                        <span>Knowledge Graph</span>
+                        <span>Neural Graph</span>
+                        <span
+                            class="hidden lg:inline-block ml-2 px-2 py-1 bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 text-xs rounded-full">New</span>
                     </button>
-                    <button class="tab-button" data-tab="stats">
+                    <button class="tab-button" data-tab="analytics">
                         <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
-                        <span>Statistics</span>
+                        <span>Analytics</span>
+                        <span
+                            class="hidden lg:inline-block ml-2 px-2 py-1 bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300 text-xs rounded-full">Live</span>
+                    </button>
+                    <button class="tab-button" data-tab="insights">
+                        <i data-lucide="lightbulb" class="w-5 h-5"></i>
+                        <span>AI Insights</span>
+                        <span
+                            class="hidden lg:inline-block ml-2 px-2 py-1 bg-orange-100 dark:bg-orange-900/50 text-orange-700 dark:text-orange-300 text-xs rounded-full">Beta</span>
                     </button>
                     <button class="tab-button" data-tab="config">
                         <i data-lucide="settings" class="w-5 h-5"></i>
-                        <span>Configuration</span>
+                        <span>System</span>
                     </button>
                 </div>
             </div>
         </nav>
 
-        <!-- Tab Description -->
-        <div class="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
-                <p id="tab-description" class="text-sm text-gray-600 dark:text-gray-400">
-                    Browse, search, edit, and manage AI memories with advanced filtering and batch operations
-                </p>
+        <!-- Dynamic Tab Description with Animation -->
+        <div
+            class="bg-gradient-to-r from-primary-50 via-purple-50 to-pink-50 dark:from-gray-800/50 dark:via-gray-800/30 dark:to-gray-800/50 border-b border-gray-200/50 dark:border-gray-700/50">
+            <div class="max-w-full mx-auto px-6 lg:px-8 py-4">
+                <div id="tab-description" class="flex items-center space-x-3 text-sm text-gray-700 dark:text-gray-300">
+                    <i data-lucide="info" class="w-4 h-4 text-primary-500"></i>
+                    <span class="animate-fade-in">Advanced memory management with real-time analytics, AI-powered
+                        insights, and visual knowledge mapping</span>
+                </div>
             </div>
         </div>
 
-        <!-- Main Content -->
-        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <!-- Memory Management Tab -->
+        <!-- Main Content with Enhanced Layout -->
+        <main class="max-w-full mx-auto px-6 lg:px-8 py-8">
+            <!-- Memory Management Tab - Enhanced -->
             <div id="memory-tab" class="tab-content">
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <!-- Memory Actions Panel -->
-                    <div class="lg:col-span-1">
-                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                            <h3 class="text-lg font-semibold mb-4">Memory Actions</h3>
-                            
-                            <!-- Add Memory Form -->
-                            <form id="add-memory-form" class="space-y-4">
-                                <div>
-                                    <label class="block text-sm font-medium mb-2">Agent ID</label>
-                                    <input type="text" id="agent-id" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700" placeholder="Enter agent ID">
+                <!-- Quick Stats Bar -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                    <div class="metric-card">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p
+                                    class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    Total Memories</p>
+                                <p id="quick-stat-memories" class="text-2xl font-bold text-gray-900 dark:text-white">0
+                                </p>
+                            </div>
+                            <div class="text-primary-500">
+                                <i data-lucide="database" class="w-6 h-6"></i>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 65%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p
+                                    class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    Active Agents</p>
+                                <p id="quick-stat-agents" class="text-2xl font-bold text-gray-900 dark:text-white">0</p>
+                            </div>
+                            <div class="text-green-500">
+                                <i data-lucide="users" class="w-6 h-6"></i>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 80%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p
+                                    class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    Success Rate</p>
+                                <p class="text-2xl font-bold text-gray-900 dark:text-white">98.5%</p>
+                            </div>
+                            <div class="text-purple-500">
+                                <i data-lucide="trending-up" class="w-6 h-6"></i>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 98.5%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p
+                                    class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                                    Response Time</p>
+                                <p class="text-2xl font-bold text-gray-900 dark:text-white">32ms</p>
+                            </div>
+                            <div class="text-orange-500">
+                                <i data-lucide="zap" class="w-6 h-6"></i>
+                            </div>
+                        </div>
+                        <div class="mt-2">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 90%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Memory Interface -->
+                <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
+                    <!-- Enhanced Memory Actions Panel -->
+                    <div class="xl:col-span-4">
+                        <div
+                            class="memory-card bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-6">
+                            <div class="flex items-center justify-between mb-6">
+                                <h3 class="text-xl font-bold text-gradient">Memory Actions</h3>
+                                <div class="flex space-x-2">
+                                    <button id="import-memories"
+                                        class="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors">
+                                        <i data-lucide="upload" class="w-4 h-4"></i>
+                                    </button>
+                                    <button id="bulk-actions"
+                                        class="p-2 rounded-lg bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-colors">
+                                        <i data-lucide="list" class="w-4 h-4"></i>
+                                    </button>
                                 </div>
-                                <div>
-                                    <label class="block text-sm font-medium mb-2">Memory Content</label>
-                                    <textarea id="memory-content" rows="3" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700" placeholder="Enter memory content"></textarea>
+                            </div>
+
+                            <!-- Enhanced Add Memory Form -->
+                            <form id="add-memory-form" class="space-y-6">
+                                <div class="space-y-2">
+                                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">Agent
+                                        ID</label>
+                                    <div class="relative">
+                                        <input type="text" id="agent-id" class="form-input pl-10"
+                                            placeholder="Enter agent identifier...">
+                                        <i data-lucide="user"
+                                            class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"></i>
+                                    </div>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400">Unique identifier for the AI
+                                        agent</p>
                                 </div>
-                                <div>
-                                    <label class="block text-sm font-medium mb-2">Metadata (JSON)</label>
-                                    <textarea id="memory-metadata" rows="2" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700" placeholder='{"type": "example"}'></textarea>
+
+                                <div class="space-y-2">
+                                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">Memory
+                                        Content</label>
+                                    <div class="relative">
+                                        <textarea id="memory-content" rows="4" class="form-textarea"
+                                            placeholder="Describe the memory content in detail..."></textarea>
+                                        <div class="absolute bottom-3 right-3 flex items-center space-x-2">
+                                            <button type="button" id="ai-enhance"
+                                                class="p-1 rounded text-purple-500 hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors"
+                                                title="AI Enhancement">
+                                                <i data-lucide="sparkles" class="w-4 h-4"></i>
+                                            </button>
+                                            <span id="char-count" class="text-xs text-gray-400">0/1000</span>
+                                        </div>
+                                    </div>
                                 </div>
-                                <button type="submit" class="w-full bg-primary-600 text-white py-2 px-4 rounded-md hover:bg-primary-700 transition-colors">
-                                    <i data-lucide="plus" class="w-4 h-4 inline mr-2"></i>
-                                    Add Memory
+
+                                <div class="space-y-2">
+                                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">Metadata
+                                        & Tags</label>
+                                    <div class="relative">
+                                        <textarea id="memory-metadata" rows="3" class="form-textarea font-mono text-sm"
+                                            placeholder='{"type": "knowledge", "priority": "high", "tags": ["important"]}'></textarea>
+                                        <button type="button" id="validate-json"
+                                            class="absolute top-3 right-3 p-1 rounded text-green-500 hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors"
+                                            title="Validate JSON">
+                                            <i data-lucide="check-circle" class="w-4 h-4"></i>
+                                        </button>
+                                    </div>
+                                    <div class="flex flex-wrap gap-2 mt-2">
+                                        <button type="button"
+                                            class="tag-preset px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs rounded-full hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors"
+                                            data-tag="important">Important</button>
+                                        <button type="button"
+                                            class="tag-preset px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs rounded-full hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors"
+                                            data-tag="project">Project</button>
+                                        <button type="button"
+                                            class="tag-preset px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-xs rounded-full hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-colors"
+                                            data-tag="learning">Learning</button>
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn-primary w-full">
+                                    <i data-lucide="plus" class="w-4 h-4 mr-2"></i>
+                                    Create Memory
                                 </button>
                             </form>
 
-                            <!-- Search Form -->
-                            <div class="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-                                <h4 class="text-md font-medium mb-4">Search Memories</h4>
-                                <form id="search-form" class="space-y-4">
-                                    <div>
-                                        <input type="text" id="search-agent-id" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700" placeholder="Agent ID">
-                                    </div>
-                                    <div>
-                                        <input type="text" id="search-query" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700" placeholder="Search query">
-                                    </div>
-                                    <div>
-                                        <input type="number" id="search-limit" min="1" max="100" value="10" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700" placeholder="Limit">
-                                    </div>
-                                    <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors">
-                                        <i data-lucide="search" class="w-4 h-4 inline mr-2"></i>
-                                        Search
+                            <!-- Enhanced Search Section -->
+                            <div class="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h4 class="text-lg font-semibold text-gray-900 dark:text-white">Advanced Search</h4>
+                                    <button id="search-filters-toggle"
+                                        class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                                        <i data-lucide="filter" class="w-4 h-4"></i>
                                     </button>
+                                </div>
+
+                                <form id="search-form" class="space-y-4">
+                                    <div class="search-container">
+                                        <div class="relative">
+                                            <input type="text" id="search-query" class="form-input pl-10 pr-10"
+                                                placeholder="Search memories with AI-powered semantic search...">
+                                            <i data-lucide="search"
+                                                class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"></i>
+                                            <button type="button" id="voice-search"
+                                                class="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 rounded text-gray-400 hover:text-primary-500 transition-colors">
+                                                <i data-lucide="mic" class="w-4 h-4"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Advanced Filters (Hidden by default) -->
+                                    <div id="search-filters"
+                                        class="hidden space-y-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
+                                        <div class="grid grid-cols-2 gap-4">
+                                            <div>
+                                                <label
+                                                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Agent
+                                                    ID</label>
+                                                <input type="text" id="search-agent-id" class="form-input"
+                                                    placeholder="Filter by agent...">
+                                            </div>
+                                            <div>
+                                                <label
+                                                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Limit</label>
+                                                <select id="search-limit" class="form-input">
+                                                    <option value="10">10 results</option>
+                                                    <option value="25">25 results</option>
+                                                    <option value="50">50 results</option>
+                                                    <option value="100">100 results</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label
+                                                class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Content
+                                                Type</label>
+                                            <div class="flex flex-wrap gap-2">
+                                                <label class="flex items-center space-x-2">
+                                                    <input type="checkbox"
+                                                        class="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                                                        checked>
+                                                    <span class="text-sm">All Types</span>
+                                                </label>
+                                                <label class="flex items-center space-x-2">
+                                                    <input type="checkbox"
+                                                        class="rounded border-gray-300 text-primary-600 focus:ring-primary-500">
+                                                    <span class="text-sm">Knowledge</span>
+                                                </label>
+                                                <label class="flex items-center space-x-2">
+                                                    <input type="checkbox"
+                                                        class="rounded border-gray-300 text-primary-600 focus:ring-primary-500">
+                                                    <span class="text-sm">Instructions</span>
+                                                </label>
+                                                <label class="flex items-center space-x-2">
+                                                    <input type="checkbox"
+                                                        class="rounded border-gray-300 text-primary-600 focus:ring-primary-500">
+                                                    <span class="text-sm">Context</span>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex space-x-2">
+                                        <button type="submit" class="btn-primary flex-1">
+                                            <i data-lucide="search" class="w-4 h-4 mr-2"></i>
+                                            Search
+                                        </button>
+                                        <button type="button" id="clear-search" class="btn-secondary">
+                                            <i data-lucide="x" class="w-4 h-4"></i>
+                                        </button>
+                                    </div>
                                 </form>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Memory Results Panel -->
-                    <div class="lg:col-span-2">
-                        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+                    <!-- Enhanced Memory Results Panel -->
+                    <div class="xl:col-span-8">
+                        <div
+                            class="memory-card bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700">
+                            <!-- Results Header -->
                             <div class="p-6 border-b border-gray-200 dark:border-gray-700">
-                                <div class="flex justify-between items-center">
-                                    <h3 class="text-lg font-semibold">Memory Results</h3>
-                                    <div class="flex space-x-2">
-                                        <button id="export-memories" class="px-3 py-1 text-sm bg-green-600 text-white rounded-md hover:bg-green-700">
-                                            <i data-lucide="download" class="w-4 h-4 inline mr-1"></i>
+                                <div
+                                    class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+                                    <div>
+                                        <h3 class="text-xl font-bold text-gray-900 dark:text-white">Memory Results</h3>
+                                        <p id="results-summary" class="text-sm text-gray-500 dark:text-gray-400 mt-1">No
+                                            search performed yet</p>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <div class="flex items-center space-x-2">
+                                            <button id="view-mode-grid"
+                                                class="p-2 rounded-lg bg-primary-100 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400 transition-colors">
+                                                <i data-lucide="grid-3x3" class="w-4 h-4"></i>
+                                            </button>
+                                            <button id="view-mode-list"
+                                                class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                                                <i data-lucide="list" class="w-4 h-4"></i>
+                                            </button>
+                                        </div>
+                                        <div class="w-px h-6 bg-gray-300 dark:bg-gray-600"></div>
+                                        <button id="export-memories" class="btn-success text-sm px-4 py-2">
+                                            <i data-lucide="download" class="w-4 h-4 mr-1"></i>
                                             Export
                                         </button>
-                                        <button id="clear-results" class="px-3 py-1 text-sm bg-gray-600 text-white rounded-md hover:bg-gray-700">
-                                            <i data-lucide="x" class="w-4 h-4 inline mr-1"></i>
-                                            Clear
+                                        <button id="bulk-select" class="btn-secondary text-sm px-4 py-2">
+                                            <i data-lucide="check-square" class="w-4 h-4 mr-1"></i>
+                                            Select
                                         </button>
                                     </div>
                                 </div>
                             </div>
-                            <div id="memory-results" class="p-6 max-h-96 overflow-y-auto scrollbar-hide">
-                                <div class="text-center text-gray-500 dark:text-gray-400 py-8">
-                                    <i data-lucide="brain" class="w-12 h-12 mx-auto mb-4 opacity-50"></i>
-                                    <p>No memories loaded. Use the search form to find memories.</p>
+
+                            <!-- Results Content -->
+                            <div id="memory-results" class="p-6 max-h-[600px] overflow-y-auto scrollbar-hide">
+                                <!-- Empty State -->
+                                <div id="empty-state" class="text-center py-16">
+                                    <div
+                                        class="mx-auto w-24 h-24 bg-gradient-to-br from-primary-100 to-purple-100 dark:from-primary-900/30 dark:to-purple-900/30 rounded-2xl flex items-center justify-center mb-6">
+                                        <i data-lucide="brain" class="w-12 h-12 text-primary-500"></i>
+                                    </div>
+                                    <h4 class="text-xl font-semibold text-gray-900 dark:text-white mb-2">No Memories
+                                        Found</h4>
+                                    <p class="text-gray-500 dark:text-gray-400 max-w-md mx-auto">Start by creating a new
+                                        memory or use the search functionality to explore existing memories.</p>
+                                    <div class="flex justify-center space-x-3 mt-6">
+                                        <button class="btn-primary text-sm px-4 py-2">
+                                            <i data-lucide="plus" class="w-4 h-4 mr-1"></i>
+                                            Create First Memory
+                                        </button>
+                                        <button class="btn-secondary text-sm px-4 py-2">
+                                            <i data-lucide="help-circle" class="w-4 h-4 mr-1"></i>
+                                            Learn More
+                                        </button>
+                                    </div>
                                 </div>
+
+                                <!-- Loading State -->
+                                <div id="loading-state" class="hidden">
+                                    <div class="space-y-4">
+                                        <div class="animate-pulse">
+                                            <div class="bg-gray-200 dark:bg-gray-700 h-6 rounded-lg w-1/4 mb-4"></div>
+                                            <div class="space-y-3">
+                                                <div class="bg-gray-200 dark:bg-gray-700 h-4 rounded w-full"></div>
+                                                <div class="bg-gray-200 dark:bg-gray-700 h-4 rounded w-5/6"></div>
+                                                <div class="bg-gray-200 dark:bg-gray-700 h-4 rounded w-4/6"></div>
+                                            </div>
+                                        </div>
+                                        <div class="animate-pulse">
+                                            <div class="bg-gray-200 dark:bg-gray-700 h-6 rounded-lg w-1/3 mb-4"></div>
+                                            <div class="space-y-3">
+                                                <div class="bg-gray-200 dark:bg-gray-700 h-4 rounded w-full"></div>
+                                                <div class="bg-gray-200 dark:bg-gray-700 h-4 rounded w-3/4"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Results Grid/List will be populated here -->
+                                <div id="results-container" class="hidden"></div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Knowledge Graph Tab -->
+            <!-- Neural Graph Tab - Revolutionary 3D Visualization -->
             <div id="graph-tab" class="tab-content hidden">
-                <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-lg font-semibold">Knowledge Graph Visualization</h3>
-                        <div class="flex space-x-2">
-                            <button id="graph-refresh" class="px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700">
-                                <i data-lucide="refresh-cw" class="w-4 h-4 inline mr-1"></i>
-                                Refresh
-                            </button>
-                            <button id="graph-export" class="px-3 py-1 text-sm bg-green-600 text-white rounded-md hover:bg-green-700">
-                                <i data-lucide="download" class="w-4 h-4 inline mr-1"></i>
-                                Export
-                            </button>
+                <div class="grid grid-cols-1 xl:grid-cols-4 gap-8">
+                    <!-- Graph Controls -->
+                    <div class="xl:col-span-1">
+                        <div
+                            class="memory-card bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">Graph Controls</h3>
+
+                            <div class="space-y-6">
+                                <!-- Visualization Mode -->
+                                <div>
+                                    <label
+                                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Visualization
+                                        Mode</label>
+                                    <div class="space-y-2">
+                                        <label class="flex items-center space-x-3">
+                                            <input type="radio" name="graph-mode" value="2d"
+                                                class="text-primary-600 focus:ring-primary-500" checked>
+                                            <span class="text-sm">2D Network</span>
+                                        </label>
+                                        <label class="flex items-center space-x-3">
+                                            <input type="radio" name="graph-mode" value="3d"
+                                                class="text-primary-600 focus:ring-primary-500">
+                                            <span class="text-sm">3D Sphere</span>
+                                        </label>
+                                        <label class="flex items-center space-x-3">
+                                            <input type="radio" name="graph-mode" value="force"
+                                                class="text-primary-600 focus:ring-primary-500">
+                                            <span class="text-sm">Force Directed</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Layout Settings -->
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Node
+                                        Clustering</label>
+                                    <select id="clustering-method" class="form-input text-sm">
+                                        <option value="agent">By Agent</option>
+                                        <option value="type">By Type</option>
+                                        <option value="similarity">By Similarity</option>
+                                        <option value="temporal">By Time</option>
+                                    </select>
+                                </div>
+
+                                <!-- Filter Options -->
+                                <div>
+                                    <label
+                                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Connection
+                                        Strength</label>
+                                    <input type="range" id="connection-threshold" min="0" max="100" value="50"
+                                        class="w-full accent-primary-600">
+                                    <div class="flex justify-between text-xs text-gray-500 mt-1">
+                                        <span>Weak</span>
+                                        <span>Strong</span>
+                                    </div>
+                                </div>
+
+                                <!-- Actions -->
+                                <div class="space-y-3">
+                                    <button id="refresh-graph" class="btn-primary w-full text-sm">
+                                        <i data-lucide="refresh-cw" class="w-4 h-4 mr-2"></i>
+                                        Refresh Graph
+                                    </button>
+                                    <button id="export-graph" class="btn-secondary w-full text-sm">
+                                        <i data-lucide="download" class="w-4 h-4 mr-2"></i>
+                                        Export PNG
+                                    </button>
+                                    <button id="fullscreen-graph" class="btn-secondary w-full text-sm">
+                                        <i data-lucide="maximize" class="w-4 h-4 mr-2"></i>
+                                        Fullscreen
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div id="graph-container" class="w-full h-96 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg flex items-center justify-center">
-                        <div class="text-center text-gray-500 dark:text-gray-400">
-                            <i data-lucide="network" class="w-12 h-12 mx-auto mb-4 opacity-50"></i>
-                            <p>Knowledge graph visualization coming soon</p>
-                            <p class="text-sm mt-2">This will show relationships between memories</p>
+
+                    <!-- Graph Visualization -->
+                    <div class="xl:col-span-3">
+                        <div
+                            class="memory-card bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-6">
+                            <div class="flex items-center justify-between mb-6">
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Neural Memory Graph</h3>
+                                <div class="flex items-center space-x-2">
+                                    <span class="text-sm text-gray-500 dark:text-gray-400">Nodes: <span
+                                            id="node-count">0</span></span>
+                                    <span class="text-sm text-gray-500 dark:text-gray-400">•</span>
+                                    <span class="text-sm text-gray-500 dark:text-gray-400">Edges: <span
+                                            id="edge-count">0</span></span>
+                                </div>
+                            </div>
+
+                            <!-- Graph Container -->
+                            <div id="graph-container"
+                                class="relative w-full h-[500px] bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-blue-900/20 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                                <!-- Graph Canvas -->
+                                <canvas id="graph-canvas" class="w-full h-full"></canvas>
+
+                                <!-- Graph Overlay Info -->
+                                <div id="graph-info"
+                                    class="absolute top-4 left-4 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-lg p-3 shadow-lg">
+                                    <div class="text-xs text-gray-600 dark:text-gray-400">
+                                        <div>Zoom: <span id="zoom-level">100%</span></div>
+                                        <div>Selected: <span id="selected-nodes">None</span></div>
+                                    </div>
+                                </div>
+
+                                <!-- Loading Placeholder -->
+                                <div id="graph-placeholder" class="absolute inset-0 flex items-center justify-center">
+                                    <div class="text-center">
+                                        <div
+                                            class="mx-auto w-16 h-16 bg-gradient-to-br from-primary-100 to-purple-100 dark:from-primary-900/30 dark:to-purple-900/30 rounded-2xl flex items-center justify-center mb-4">
+                                            <i data-lucide="network"
+                                                class="w-8 h-8 text-primary-500 animate-pulse-soft"></i>
+                                        </div>
+                                        <h4 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Neural
+                                            Graph Ready</h4>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400 max-w-sm">Interactive 3D
+                                            visualization of memory relationships and semantic connections</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Graph Legend -->
+                            <div class="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <div class="flex items-center space-x-2">
+                                    <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+                                    <span class="text-xs text-gray-600 dark:text-gray-400">Knowledge</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                                    <span class="text-xs text-gray-600 dark:text-gray-400">Instructions</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <div class="w-3 h-3 bg-purple-500 rounded-full"></div>
+                                    <span class="text-xs text-gray-600 dark:text-gray-400">Context</span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <div class="w-3 h-3 bg-orange-500 rounded-full"></div>
+                                    <span class="text-xs text-gray-600 dark:text-gray-400">Relations</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Statistics Tab -->
-            <div id="stats-tab" class="tab-content hidden">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-                    <!-- Stat Cards -->
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <i data-lucide="brain" class="w-8 h-8 text-blue-600"></i>
+            <!-- Analytics Tab - Advanced Data Visualization -->
+            <div id="analytics-tab" class="tab-content hidden">
+                <!-- Real-time Metrics Dashboard -->
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
+                    <div class="metric-card bg-gradient-to-br from-blue-500 to-blue-600 text-white">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-blue-100 text-sm font-medium">Total Memories</p>
+                                <p id="stat-total-memories" class="text-3xl font-bold">0</p>
+                                <p class="text-blue-200 text-xs mt-1">+12% this week</p>
                             </div>
-                            <div class="ml-4">
-                                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Memories</p>
-                                <p id="stat-total-memories" class="text-2xl font-semibold">0</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <i data-lucide="users" class="w-8 h-8 text-green-600"></i>
-                            </div>
-                            <div class="ml-4">
-                                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Active Agents</p>
-                                <p id="stat-active-agents" class="text-2xl font-semibold">0</p>
+                            <div class="text-blue-200">
+                                <i data-lucide="database" class="w-8 h-8"></i>
                             </div>
                         </div>
                     </div>
 
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <i data-lucide="zap" class="w-8 h-8 text-yellow-600"></i>
+                    <div class="metric-card bg-gradient-to-br from-green-500 to-green-600 text-white">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-green-100 text-sm font-medium">Active Agents</p>
+                                <p id="stat-active-agents" class="text-3xl font-bold">0</p>
+                                <p class="text-green-200 text-xs mt-1">3 online now</p>
                             </div>
-                            <div class="ml-4">
-                                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">API Calls</p>
-                                <p id="stat-api-calls" class="text-2xl font-semibold">0</p>
+                            <div class="text-green-200">
+                                <i data-lucide="users" class="w-8 h-8"></i>
                             </div>
                         </div>
                     </div>
 
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                        <div class="flex items-center">
-                            <div class="flex-shrink-0">
-                                <i data-lucide="clock" class="w-8 h-8 text-purple-600"></i>
+                    <div class="metric-card bg-gradient-to-br from-purple-500 to-purple-600 text-white">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-purple-100 text-sm font-medium">API Calls</p>
+                                <p id="stat-api-calls" class="text-3xl font-bold">0</p>
+                                <p class="text-purple-200 text-xs mt-1">150/min avg</p>
                             </div>
-                            <div class="ml-4">
-                                <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Uptime</p>
-                                <p id="stat-uptime" class="text-2xl font-semibold">0s</p>
+                            <div class="text-purple-200">
+                                <i data-lucide="zap" class="w-8 h-8"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card bg-gradient-to-br from-orange-500 to-orange-600 text-white">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-orange-100 text-sm font-medium">Uptime</p>
+                                <p id="stat-uptime" class="text-3xl font-bold">99.9%</p>
+                                <p class="text-orange-200 text-xs mt-1">30d average</p>
+                            </div>
+                            <div class="text-orange-200">
+                                <i data-lucide="clock" class="w-8 h-8"></i>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Charts -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                        <h3 class="text-lg font-semibold mb-4">Memory Usage Over Time</h3>
-                        <canvas id="usage-chart" width="400" height="200"></canvas>
+                <!-- Charts Grid -->
+                <div class="grid grid-cols-1 xl:grid-cols-2 gap-8 mb-8">
+                    <!-- Memory Usage Chart -->
+                    <div
+                        class="memory-card bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Memory Usage Trends</h3>
+                            <div class="flex items-center space-x-2">
+                                <select id="usage-timeframe"
+                                    class="text-sm border-0 bg-gray-100 dark:bg-gray-700 rounded-lg px-3 py-1">
+                                    <option value="1h">Last Hour</option>
+                                    <option value="24h" selected>Last 24h</option>
+                                    <option value="7d">Last 7 days</option>
+                                    <option value="30d">Last 30 days</option>
+                                </select>
+                                <button class="p-1 rounded text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                                    <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="relative h-64">
+                            <canvas id="usage-chart"></canvas>
+                        </div>
                     </div>
 
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                        <h3 class="text-lg font-semibold mb-4">Tier Performance</h3>
-                        <canvas id="performance-chart" width="400" height="200"></canvas>
+                    <!-- Performance Metrics -->
+                    <div
+                        class="memory-card bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Performance Metrics</h3>
+                            <div class="flex items-center space-x-2">
+                                <div class="flex items-center space-x-1">
+                                    <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse-soft"></div>
+                                    <span class="text-xs text-gray-500 dark:text-gray-400">Live</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="relative h-64">
+                            <canvas id="performance-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Agent Activity and Memory Distribution -->
+                <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                    <!-- Agent Activity -->
+                    <div class="xl:col-span-2">
+                        <div
+                            class="memory-card bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">Agent Activity Heatmap
+                            </h3>
+                            <div class="relative h-48">
+                                <canvas id="activity-heatmap"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Memory Distribution -->
+                    <div class="xl:col-span-1">
+                        <div
+                            class="memory-card bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">Memory Distribution
+                            </h3>
+                            <div class="relative h-48">
+                                <canvas id="distribution-chart"></canvas>
+                            </div>
+
+                            <!-- Distribution Legend -->
+                            <div class="mt-4 space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center space-x-2">
+                                        <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
+                                        <span class="text-sm text-gray-600 dark:text-gray-400">Knowledge</span>
+                                    </div>
+                                    <span class="text-sm font-medium">45%</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center space-x-2">
+                                        <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                                        <span class="text-sm text-gray-600 dark:text-gray-400">Instructions</span>
+                                    </div>
+                                    <span class="text-sm font-medium">30%</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center space-x-2">
+                                        <div class="w-3 h-3 bg-purple-500 rounded-full"></div>
+                                        <span class="text-sm text-gray-600 dark:text-gray-400">Context</span>
+                                    </div>
+                                    <span class="text-sm font-medium">25%</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Configuration Tab -->
+            <!-- AI Insights Tab - Revolutionary Feature -->
+            <div id="insights-tab" class="tab-content hidden">
+                <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                    <!-- Insights Panel -->
+                    <div class="xl:col-span-2 space-y-8">
+                        <!-- AI-Generated Insights -->
+                        <div
+                            class="memory-card bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-2xl shadow-xl border border-indigo-200 dark:border-indigo-800 p-6">
+                            <div class="flex items-center justify-between mb-6">
+                                <div class="flex items-center space-x-3">
+                                    <div class="p-2 bg-indigo-100 dark:bg-indigo-900/50 rounded-xl">
+                                        <i data-lucide="sparkles"
+                                            class="w-6 h-6 text-indigo-600 dark:text-indigo-400"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">AI-Powered
+                                            Insights</h3>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">Intelligent analysis of your
+                                            memory patterns</p>
+                                    </div>
+                                </div>
+                                <button id="refresh-insights" class="btn-primary text-sm px-4 py-2">
+                                    <i data-lucide="refresh-cw" class="w-4 h-4 mr-1"></i>
+                                    Refresh
+                                </button>
+                            </div>
+
+                            <div id="ai-insights-container" class="space-y-4">
+                                <!-- Loading state -->
+                                <div class="animate-pulse space-y-3">
+                                    <div class="bg-white/60 dark:bg-gray-700/60 h-4 rounded w-3/4"></div>
+                                    <div class="bg-white/60 dark:bg-gray-700/60 h-4 rounded w-1/2"></div>
+                                    <div class="bg-white/60 dark:bg-gray-700/60 h-4 rounded w-5/6"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Memory Recommendations -->
+                        <div
+                            class="memory-card bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-6">
+                            <div class="flex items-center space-x-3 mb-6">
+                                <div class="p-2 bg-green-100 dark:bg-green-900/50 rounded-xl">
+                                    <i data-lucide="lightbulb" class="w-6 h-6 text-green-600 dark:text-green-400"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Smart
+                                        Recommendations</h3>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400">Optimization suggestions for
+                                        better memory management</p>
+                                </div>
+                            </div>
+
+                            <div class="space-y-4">
+                                <div
+                                    class="flex items-start space-x-3 p-4 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-800">
+                                    <div class="flex-shrink-0 w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+                                    <div>
+                                        <h4 class="font-medium text-gray-900 dark:text-white">Memory Consolidation</h4>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Consider merging
+                                            similar memories from agent-test to reduce redundancy and improve search
+                                            performance.</p>
+                                        <button
+                                            class="mt-2 text-sm text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 font-medium">Apply
+                                            Suggestion →</button>
+                                    </div>
+                                </div>
+
+                                <div
+                                    class="flex items-start space-x-3 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
+                                    <div class="flex-shrink-0 w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                                    <div>
+                                        <h4 class="font-medium text-gray-900 dark:text-white">Enhanced Tagging</h4>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Adding semantic tags to
+                                            recent memories could improve discoverability by 40%.</p>
+                                        <button
+                                            class="mt-2 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium">Auto-Tag
+                                            →</button>
+                                    </div>
+                                </div>
+
+                                <div
+                                    class="flex items-start space-x-3 p-4 bg-purple-50 dark:bg-purple-900/20 rounded-xl border border-purple-200 dark:border-purple-800">
+                                    <div class="flex-shrink-0 w-2 h-2 bg-purple-500 rounded-full mt-2"></div>
+                                    <div>
+                                        <h4 class="font-medium text-gray-900 dark:text-white">Usage Patterns</h4>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Peak usage detected
+                                            between 2-4 PM. Consider scheduling maintenance during low-activity hours.
+                                        </p>
+                                        <button
+                                            class="mt-2 text-sm text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 font-medium">Schedule
+                                            →</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Insights Sidebar -->
+                    <div class="xl:col-span-1 space-y-6">
+                        <!-- Quick Stats -->
+                        <div
+                            class="memory-card bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Intelligence Score</h3>
+
+                            <div class="text-center mb-6">
+                                <div class="relative inline-flex items-center justify-center w-24 h-24">
+                                    <svg class="w-24 h-24 transform -rotate-90" viewBox="0 0 36 36">
+                                        <path class="text-gray-300 dark:text-gray-600" stroke="currentColor"
+                                            stroke-width="3" fill="none"
+                                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831">
+                                        </path>
+                                        <path class="text-primary-600" stroke="currentColor" stroke-width="3"
+                                            fill="none" stroke-linecap="round" stroke-dasharray="85, 100"
+                                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831">
+                                        </path>
+                                    </svg>
+                                    <div class="absolute inset-0 flex items-center justify-center">
+                                        <span class="text-2xl font-bold text-gray-900 dark:text-white">85</span>
+                                    </div>
+                                </div>
+                                <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">Memory system efficiency</p>
+                            </div>
+
+                            <div class="space-y-3">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-gray-600 dark:text-gray-400">Search Accuracy</span>
+                                    <span class="text-sm font-medium">92%</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-gray-600 dark:text-gray-400">Response Time</span>
+                                    <span class="text-sm font-medium">32ms</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-gray-600 dark:text-gray-400">Memory Quality</span>
+                                    <span class="text-sm font-medium">High</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recent Activity -->
+                        <div
+                            class="memory-card bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Recent Activity</h3>
+
+                            <div class="space-y-3">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                                    <div class="flex-1">
+                                        <p class="text-sm text-gray-900 dark:text-white">Memory created</p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">2 minutes ago</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                    <div class="flex-1">
+                                        <p class="text-sm text-gray-900 dark:text-white">Search performed</p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">5 minutes ago</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-2 h-2 bg-purple-500 rounded-full"></div>
+                                    <div class="flex-1">
+                                        <p class="text-sm text-gray-900 dark:text-white">Agent connected</p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">12 minutes ago</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- AI Assistant -->
+                        <div
+                            class="memory-card bg-gradient-to-br from-violet-50 to-fuchsia-50 dark:from-violet-900/20 dark:to-fuchsia-900/20 rounded-2xl shadow-xl border border-violet-200 dark:border-violet-800 p-6">
+                            <div class="flex items-center space-x-3 mb-4">
+                                <div class="p-2 bg-violet-100 dark:bg-violet-900/50 rounded-xl">
+                                    <i data-lucide="bot" class="w-5 h-5 text-violet-600 dark:text-violet-400"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-semibold text-gray-900 dark:text-white">AI Assistant</h3>
+                                    <p class="text-xs text-gray-600 dark:text-gray-400">Memory optimization helper</p>
+                                </div>
+                            </div>
+
+                            <div class="space-y-3">
+                                <div class="p-3 bg-white/60 dark:bg-gray-700/60 rounded-lg">
+                                    <p class="text-sm text-gray-700 dark:text-gray-300">"I notice you've been adding
+                                        lots of project memories. Would you like me to create automatic categorization
+                                        rules?"</p>
+                                </div>
+
+                                <div class="flex space-x-2">
+                                    <button
+                                        class="flex-1 bg-violet-600 text-white text-sm py-2 px-3 rounded-lg hover:bg-violet-700 transition-colors">Yes,
+                                        help me</button>
+                                    <button
+                                        class="flex-1 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 text-sm py-2 px-3 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors">Not
+                                        now</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Configuration Tab - Enhanced -->
             <div id="config-tab" class="tab-content hidden">
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <!-- Current Configuration -->
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                        <h3 class="text-lg font-semibold mb-4">Current Configuration</h3>
-                        <div id="current-config" class="space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium mb-1">Active Memory Tier</label>
-                                <div id="config-tier" class="tier-badge tier-mock">Loading...</div>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium mb-1">Capabilities</label>
-                                <div id="config-capabilities" class="text-sm text-gray-600 dark:text-gray-400">
-                                    Loading configuration...
+                <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                    <!-- System Status -->
+                    <div class="xl:col-span-2 space-y-6">
+                        <!-- Current Configuration -->
+                        <div
+                            class="memory-card bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">System Configuration
+                            </h3>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label
+                                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Active
+                                        Memory Tier</label>
+                                    <div id="config-tier" class="tier-badge tier-mock">Loading...</div>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">Current memory processing
+                                        capability</p>
+                                </div>
+
+                                <div>
+                                    <label
+                                        class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">System
+                                        Health</label>
+                                    <div class="flex items-center space-x-2">
+                                        <div class="status-dot status-online"></div>
+                                        <span
+                                            class="text-sm font-medium text-green-600 dark:text-green-400">Optimal</span>
+                                    </div>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">All systems operational</p>
                                 </div>
                             </div>
-                            <div>
-                                <label class="block text-sm font-medium mb-1">Environment</label>
-                                <div id="config-environment" class="space-y-2">
-                                    <div class="flex items-center space-x-2">
-                                        <div id="env-openai" class="w-3 h-3 rounded-full bg-gray-400"></div>
-                                        <span class="text-sm">OpenAI API</span>
+
+                            <div class="mt-6">
+                                <label
+                                    class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Capabilities
+                                    Overview</label>
+                                <div id="config-capabilities" class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                    <div
+                                        class="flex items-center space-x-2 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                                        <i data-lucide="check-circle"
+                                            class="w-4 h-4 text-green-600 dark:text-green-400"></i>
+                                        <span class="text-sm text-gray-700 dark:text-gray-300">Semantic Search</span>
                                     </div>
-                                    <div class="flex items-center space-x-2">
-                                        <div id="env-azure" class="w-3 h-3 rounded-full bg-gray-400"></div>
-                                        <span class="text-sm">Azure OpenAI</span>
+                                    <div
+                                        class="flex items-center space-x-2 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                                        <i data-lucide="check-circle"
+                                            class="w-4 h-4 text-green-600 dark:text-green-400"></i>
+                                        <span class="text-sm text-gray-700 dark:text-gray-300">Embeddings</span>
                                     </div>
-                                    <div class="flex items-center space-x-2">
-                                        <div id="env-python" class="w-3 h-3 rounded-full bg-green-500"></div>
-                                        <span class="text-sm">Python Environment</span>
+                                    <div
+                                        class="flex items-center space-x-2 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                                        <i data-lucide="check-circle"
+                                            class="w-4 h-4 text-green-600 dark:text-green-400"></i>
+                                        <span class="text-sm text-gray-700 dark:text-gray-300">Classification</span>
                                     </div>
+                                    <div
+                                        class="flex items-center space-x-2 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                                        <i data-lucide="check-circle"
+                                            class="w-4 h-4 text-green-600 dark:text-green-400"></i>
+                                        <span class="text-sm text-gray-700 dark:text-gray-300">Offline Mode</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Environment Status -->
+                        <div
+                            class="memory-card bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">Environment Status</h3>
+
+                            <div id="config-environment" class="space-y-4">
+                                <div
+                                    class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
+                                    <div class="flex items-center space-x-3">
+                                        <div id="env-openai" class="status-dot status-offline"></div>
+                                        <div>
+                                            <span class="text-sm font-medium text-gray-900 dark:text-white">OpenAI
+                                                API</span>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400">Standard AI processing
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <span class="text-xs text-gray-500 dark:text-gray-400">Not configured</span>
+                                </div>
+
+                                <div
+                                    class="flex items-center justify-between p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
+                                    <div class="flex items-center space-x-3">
+                                        <div id="env-azure" class="status-dot status-online"></div>
+                                        <div>
+                                            <span class="text-sm font-medium text-gray-900 dark:text-white">Azure
+                                                OpenAI</span>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400">Enterprise AI processing
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <span class="text-xs text-green-600 dark:text-green-400">Connected</span>
+                                </div>
+
+                                <div
+                                    class="flex items-center justify-between p-4 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-800">
+                                    <div class="flex items-center space-x-3">
+                                        <div id="env-python" class="status-dot status-online"></div>
+                                        <div>
+                                            <span class="text-sm font-medium text-gray-900 dark:text-white">Python
+                                                Environment</span>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400">Local processing
+                                                capabilities</p>
+                                        </div>
+                                    </div>
+                                    <span class="text-xs text-green-600 dark:text-green-400">Available</span>
+                                </div>
+
+                                <div
+                                    class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="status-dot status-offline"></div>
+                                        <div>
+                                            <span class="text-sm font-medium text-gray-900 dark:text-white">Qdrant
+                                                Vector DB</span>
+                                            <p class="text-xs text-gray-500 dark:text-gray-400">Vector storage backend
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <span class="text-xs text-gray-500 dark:text-gray-400">Offline</span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Available Tiers -->
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                        <h3 class="text-lg font-semibold mb-4">Available Memory Tiers</h3>
-                        <div id="available-tiers" class="space-y-4">
-                            <div class="border border-gray-200 dark:border-gray-600 rounded-lg p-4">
-                                <div class="flex items-center justify-between mb-2">
-                                    <div class="tier-badge tier-advanced">Advanced</div>
-                                    <div class="text-sm text-gray-500">OpenAI/Azure</div>
+                    <!-- Memory Tiers & Settings -->
+                    <div class="xl:col-span-1 space-y-6">
+                        <!-- Available Tiers -->
+                        <div
+                            class="memory-card bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">Memory Tiers</h3>
+
+                            <div id="available-tiers" class="space-y-4">
+                                <div
+                                    class="p-4 border-2 border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20 rounded-xl">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <div class="tier-badge tier-advanced">Advanced</div>
+                                        <i data-lucide="crown" class="w-4 h-4 text-green-600 dark:text-green-400"></i>
+                                    </div>
+                                    <h4 class="font-medium text-gray-900 dark:text-white mb-1">Cloud AI</h4>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">High-quality embeddings
+                                        using cloud AI services with superior accuracy and semantic understanding.</p>
+                                    <div class="text-xs text-gray-500 dark:text-gray-400">Requires: API Keys</div>
                                 </div>
-                                <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                                    High-quality embeddings using cloud AI services
-                                </p>
-                                <div class="text-xs text-gray-500">
-                                    Requires: API Keys
+
+                                <div
+                                    class="p-4 border-2 border-blue-200 dark:border-blue-800 bg-blue-50 dark:bg-blue-900/20 rounded-xl ring-2 ring-blue-500 ring-opacity-50">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <div class="tier-badge tier-smart">Smart</div>
+                                        <i data-lucide="cpu" class="w-4 h-4 text-blue-600 dark:text-blue-400"></i>
+                                    </div>
+                                    <h4 class="font-medium text-gray-900 dark:text-white mb-1">Local AI</h4>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">Local embeddings using
+                                        sentence-transformers for offline operation with good performance.</p>
+                                    <div class="text-xs text-green-600 dark:text-green-400 font-medium">Currently Active
+                                    </div>
+                                </div>
+
+                                <div class="p-4 border border-gray-200 dark:border-gray-600 rounded-xl">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <div class="tier-badge tier-basic">Basic</div>
+                                        <i data-lucide="hash" class="w-4 h-4 text-amber-600 dark:text-amber-400"></i>
+                                    </div>
+                                    <h4 class="font-medium text-gray-900 dark:text-white mb-1">Keyword</h4>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">Simple keyword-based
+                                        matching with fast performance but limited semantic understanding.</p>
+                                    <div class="text-xs text-gray-500 dark:text-gray-400">No requirements</div>
+                                </div>
+
+                                <div class="p-4 border border-gray-200 dark:border-gray-600 rounded-xl opacity-75">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <div class="tier-badge tier-mock">Mock</div>
+                                        <i data-lucide="flask-conical"
+                                            class="w-4 h-4 text-gray-600 dark:text-gray-400"></i>
+                                    </div>
+                                    <h4 class="font-medium text-gray-900 dark:text-white mb-1">Testing</h4>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">Mock implementation for
+                                        development and testing purposes only.</p>
+                                    <div class="text-xs text-gray-500 dark:text-gray-400">Development only</div>
                                 </div>
                             </div>
+                        </div>
 
-                            <div class="border border-gray-200 dark:border-gray-600 rounded-lg p-4">
-                                <div class="flex items-center justify-between mb-2">
-                                    <div class="tier-badge tier-smart">Smart</div>
-                                    <div class="text-sm text-gray-500">Local AI</div>
-                                </div>
-                                <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                                    Local embeddings using sentence-transformers
-                                </p>
-                                <div class="text-xs text-gray-500">
-                                    Requires: Python + sentence-transformers
-                                </div>
-                            </div>
+                        <!-- Quick Actions -->
+                        <div
+                            class="memory-card bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h3>
 
-                            <div class="border border-gray-200 dark:border-gray-600 rounded-lg p-4">
-                                <div class="flex items-center justify-between mb-2">
-                                    <div class="tier-badge tier-basic">Basic</div>
-                                    <div class="text-sm text-gray-500">Keyword</div>
-                                </div>
-                                <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                                    Simple keyword-based matching
-                                </p>
-                                <div class="text-xs text-gray-500">
-                                    Requires: None
-                                </div>
-                            </div>
-
-                            <div class="border border-gray-200 dark:border-gray-600 rounded-lg p-4">
-                                <div class="flex items-center justify-between mb-2">
-                                    <div class="tier-badge tier-mock">Mock</div>
-                                    <div class="text-sm text-gray-500">Testing</div>
-                                </div>
-                                <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                                    Mock implementation for testing
-                                </p>
-                                <div class="text-xs text-gray-500">
-                                    Requires: None
-                                </div>
+                            <div class="space-y-3">
+                                <button id="test-connection" class="btn-primary w-full text-sm">
+                                    <i data-lucide="wifi" class="w-4 h-4 mr-2"></i>
+                                    Test Connection
+                                </button>
+                                <button id="refresh-config" class="btn-secondary w-full text-sm">
+                                    <i data-lucide="refresh-cw" class="w-4 h-4 mr-2"></i>
+                                    Refresh Config
+                                </button>
+                                <button id="export-config" class="btn-secondary w-full text-sm">
+                                    <i data-lucide="download" class="w-4 h-4 mr-2"></i>
+                                    Export Settings
+                                </button>
+                                <button id="system-logs" class="btn-secondary w-full text-sm">
+                                    <i data-lucide="file-text" class="w-4 h-4 mr-2"></i>
+                                    View Logs
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -515,21 +1676,90 @@
         </main>
     </div>
 
-    <!-- Notification Toast -->
-    <div id="toast" class="fixed bottom-4 right-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg p-4 transform translate-y-full transition-transform duration-300 z-50">
-        <div class="flex items-center space-x-3">
-            <div id="toast-icon" class="flex-shrink-0">
-                <i data-lucide="check" class="w-5 h-5 text-green-600"></i>
-            </div>
-            <div id="toast-message" class="text-sm font-medium">
-                Notification message
-            </div>
-            <button id="toast-close" class="ml-auto">
-                <i data-lucide="x" class="w-4 h-4"></i>
-            </button>
+    <!-- Enhanced Toast Notification System -->
+    <div id="toast-container" class="fixed bottom-6 right-6 z-50 space-y-3">
+        <!-- Toasts will be dynamically inserted here -->
+    </div>
+
+    <!-- Enhanced Modal System -->
+    <div id="modal-overlay"
+        class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div id="modal-content"
+            class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <!-- Modal content will be dynamically inserted -->
         </div>
     </div>
 
+    <!-- Keyboard Shortcuts Help -->
+    <div id="shortcuts-help"
+        class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div
+            class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700 max-w-md w-full p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Keyboard Shortcuts</h3>
+                <button id="close-shortcuts"
+                    class="p-2 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div class="space-y-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-600 dark:text-gray-400">Quick Search</span>
+                    <div class="flex items-center space-x-1">
+                        <span class="kbd">⌘</span>
+                        <span class="text-xs">+</span>
+                        <span class="kbd">K</span>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-600 dark:text-gray-400">Create Memory</span>
+                    <div class="flex items-center space-x-1">
+                        <span class="kbd">⌘</span>
+                        <span class="text-xs">+</span>
+                        <span class="kbd">N</span>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-600 dark:text-gray-400">Toggle Theme</span>
+                    <div class="flex items-center space-x-1">
+                        <span class="kbd">⌘</span>
+                        <span class="text-xs">+</span>
+                        <span class="kbd">⇧</span>
+                        <span class="text-xs">+</span>
+                        <span class="kbd">L</span>
+                    </div>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-600 dark:text-gray-400">Show Help</span>
+                    <span class="kbd">?</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js').then(function (registration) {
+                console.log('ServiceWorker registration successful');
+            }).catch(function (err) {
+                console.log('ServiceWorker registration failed: ', err);
+            });
+        }
+    </script> <!-- Enhanced Dashboard Script -->
     <script src="dashboard.js"></script>
+
+    <!-- Performance Analytics -->
+    <script>
+        // Basic performance monitoring
+        window.addEventListener('load', function () {
+            if ('performance' in window) {
+                const loadTime = performance.now();
+                console.log(`Dashboard loaded in ${loadTime.toFixed(2)}ms`);
+            }
+        });
+    </script>
 </body>
+
 </html>
