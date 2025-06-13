@@ -298,7 +298,7 @@ export class MemoryClassifier {  private patterns: Record<MemoryType, Array<{
     const regex = new RegExp(`\\b${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
     return regex.test(content);
   }  private applySpecificHeuristics(content: string, scores: Record<MemoryType, number>, reasoning?: string[]): void {
-    const lowerContent = content.toLowerCase();    // Check for strong preference indicators first
+    // Check for strong preference indicators first
     const preferenceIndicators = /\b(prefer|like|dislike|enjoy|avoid|better|worse|best|worst|favorite|rather|instead)\b/i.test(content);
     const evaluativeWords = /\b(best|better|worst|worse|preferred|favorite|good|great|excellent|terrible|awful)\s+(approach|style|way|method|solution|choice|option)\b/i.test(content);
     

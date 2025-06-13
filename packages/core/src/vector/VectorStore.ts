@@ -35,7 +35,7 @@ export class QdrantVectorStore implements VectorStore {
     dimension: number,
     apiKey?: string
   ) {
-    const clientConfig: any = { url };
+    const clientConfig: { url: string; apiKey?: string } = { url };
     if (apiKey) {
       clientConfig.apiKey = apiKey;
     }
@@ -49,7 +49,7 @@ export class QdrantVectorStore implements VectorStore {
     try {
       // Check if collection exists
       const collections = await this.client.getCollections();
-      const exists = collections.collections.some((c: any) => c.name === this.collection);
+      const exists = collections.collections.some((c: { name: string }) => c.name === this.collection);
 
       if (!exists) {
         await this.client.createCollection(this.collection, {
@@ -153,8 +153,7 @@ export class QdrantVectorStore implements VectorStore {
         limit: query.limit,
         score_threshold: query.threshold,
         with_payload: true,
-      });
-
+      });      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return searchResult.map((point: any) => ({
         id: point.id as string,
         score: point.score,
@@ -218,6 +217,7 @@ export class QdrantVectorStore implements VectorStore {
   public async healthCheck(): Promise<boolean> {
     try {
       const collections = await this.client.getCollections();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return collections.collections.some((c: any) => c.name === this.collection);
     } catch {
       return false;

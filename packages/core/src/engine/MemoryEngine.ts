@@ -312,17 +312,16 @@ export class MemoryEngine {
     }
   }  /**
    * Get system health status
-   */
-  public async getHealth(): Promise<{
+   */  public async getHealth(): Promise<{
     status: 'healthy' | 'degraded' | 'unhealthy';
     initialized: boolean;
     checks?: Record<string, boolean>;
-    components?: Record<string, any>;
+    components?: Record<string, { status: string; error?: string } | string>;
     timestamp?: Date;
   }> {
     try {
       const checks: Record<string, boolean> = {};
-      const components: Record<string, any> = {};
+      const components: Record<string, { status: string; error?: string } | string> = {};
       
       // Check embedding service
       let embeddingHealthy = true;
@@ -391,10 +390,9 @@ export class MemoryEngine {
         status: anyHealthy ? 'degraded' : 'unhealthy',
         initialized: this.isInitialized,
         components,
-        checks,
-        timestamp: new Date()
+        checks,        timestamp: new Date()
       };
-    } catch (error) {
+    } catch {
       return {
         status: 'unhealthy',
         initialized: false,

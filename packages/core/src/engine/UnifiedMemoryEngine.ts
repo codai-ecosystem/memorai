@@ -4,6 +4,7 @@
  */
 
 import { nanoid } from 'nanoid';
+import { logger } from '../utils/logger.js';
 import type {
     MemoryMetadata,
     MemoryQuery,
@@ -88,10 +89,9 @@ export class UnifiedMemoryEngine {
     private smartEngine?: MemoryEngine;
     private basicEngine?: BasicMemoryEngine;
     private mockEngine?: MockMemoryEngine;
-    private localEmbedding?: LocalEmbeddingService;
-
-    // Current active engine
-    private activeEngine: any;
+    private localEmbedding?: LocalEmbeddingService;    // Current active engine
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    private activeEngine: any; // Multiple engine types with different APIs
 
     constructor(config: UnifiedMemoryConfig = {}) {
         this.config = {
@@ -123,10 +123,10 @@ export class UnifiedMemoryEngine {
 
             this.isInitialized = true;
 
-            console.log(`🧠 Memory Engine initialized with ${this.getTierInfo().message}`);
+            logger.info(`🧠 Memory Engine initialized with ${this.getTierInfo().message}`);
         } catch (error: unknown) {
             if (this.config.enableFallback) {
-                console.warn(`Failed to initialize ${this.currentTier} tier, attempting fallback...`);
+                logger.warn(`Failed to initialize ${this.currentTier} tier, attempting fallback...`);
                 await this.fallbackToNextTier();
             } else {
                 if (error instanceof Error) {
@@ -175,10 +175,9 @@ export class UnifiedMemoryEngine {
             };
 
             await this.activeEngine.remember(memory);
-            return memoryId;
-        } catch (error) {
+            return memoryId;        } catch (error) {
             if (this.config.enableFallback) {
-                console.warn(`Memory operation failed on ${this.currentTier} tier, attempting fallback...`);
+                logger.warn(`Memory operation failed on ${this.currentTier} tier, attempting fallback...`);
                 await this.fallbackToNextTier();
                 return this.remember(content, tenantId, agentId, options);
             }
@@ -223,10 +222,9 @@ export class UnifiedMemoryEngine {
                 result.memory.accessCount++;
             }
 
-            return results;
-        } catch (error) {
+            return results;        } catch (error) {
             if (this.config.enableFallback) {
-                console.warn(`Memory operation failed on ${this.currentTier} tier, attempting fallback...`);
+                logger.warn(`Memory operation failed on ${this.currentTier} tier, attempting fallback...`);
                 await this.fallbackToNextTier();
                 return this.recall(query, tenantId, agentId, options);
             }
@@ -257,10 +255,9 @@ export class UnifiedMemoryEngine {
                 generated_at: new Date(),
                 total_count: memories.length,
                 context_summary: this.generateContextSummary(memories)
-            };
-        } catch (error) {
+            };        } catch (error) {
             if (this.config.enableFallback) {
-                console.warn(`Memory operation failed on ${this.currentTier} tier, attempting fallback...`);
+                logger.warn(`Memory operation failed on ${this.currentTier} tier, attempting fallback...`);
                 await this.fallbackToNextTier();
                 return this.getContext(request);
             }
@@ -278,9 +275,8 @@ export class UnifiedMemoryEngine {
 
         try {
             return await this.activeEngine.forget(memoryId);
-        } catch (error) {
-            if (this.config.enableFallback) {
-                console.warn(`Memory operation failed on ${this.currentTier} tier, attempting fallback...`);
+        } catch (error) {            if (this.config.enableFallback) {
+                logger.warn(`Memory operation failed on ${this.currentTier} tier, attempting fallback...`);
                 await this.fallbackToNextTier();
                 return this.forget(memoryId);
             }
@@ -309,7 +305,7 @@ export class UnifiedMemoryEngine {
 
         try {
             await this.initializeTier(tier);
-            console.log(`🔄 Switched to ${this.getTierInfo().message}`);
+            logger.info(`🔄 Switched to ${this.getTierInfo().message}`);
         } catch (error) {
             throw new MemoryError(`Failed to switch to ${tier} tier: ${error instanceof Error ? error.message : 'Unknown error'}`, 'TIER_SWITCH_ERROR');
         }
@@ -402,7 +398,7 @@ export class UnifiedMemoryEngine {
         if (currentIndex >= 0 && currentIndex < fallbackChain.length - 1) {
             const nextTier = fallbackChain[currentIndex + 1];
             if (nextTier) {
-                console.log(`🔄 Falling back from ${this.currentTier} to ${nextTier}`);
+                logger.info(`🔄 Falling back from ${this.currentTier} to ${nextTier}`);
                 await this.initializeTier(nextTier);
                 this.isInitialized = true;
             } else {
@@ -500,9 +496,8 @@ export class UnifiedMemoryEngine {
      * Get engine statistics
      */
     public async getStats(): Promise<{
-        currentTier: MemoryTierLevel;
-        capabilities: MemoryTierCapabilities;
-        engineStats: any;
+        currentTier: MemoryTierLevel;        capabilities: MemoryTierCapabilities;
+        engineStats: Record<string, unknown>;
     }> {
         const tierInfo = this.getTierInfo();
         let engineStats = {};

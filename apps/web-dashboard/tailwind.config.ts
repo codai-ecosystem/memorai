@@ -5,7 +5,10 @@ const config: Config = {
         './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
         './src/components/**/*.{js,ts,jsx,tsx,mdx}',
         './src/app/**/*.{js,ts,jsx,tsx,mdx}',
-        './public/**/*.html',
+        './src/lib/**/*.{js,ts,jsx,tsx}',
+        './src/stores/**/*.{js,ts,jsx,tsx}',
+        './public/**/*.{html,js}',
+        './backup/**/*.{html,js}',
     ],
     darkMode: ['class'],
     theme: {

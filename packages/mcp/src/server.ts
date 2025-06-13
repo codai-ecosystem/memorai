@@ -12,6 +12,7 @@ import {
   ListToolsRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
 import { MemoryEngine } from '@codai/memorai-core';
+import { InputValidator, SecurityManager } from '@codai/memorai-core';
 import { config } from 'dotenv';
 import { spawn, ChildProcess } from 'child_process';
 import { createConnection } from 'net';
@@ -25,7 +26,27 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Load environment variables
-config();
+// First try to load from workspace-ai directory, then fallback to local
+const envPaths = [
+  path.resolve(__dirname, '../../../../../workspace-ai/.env'),
+  path.resolve(__dirname, '../../../.env'),
+  path.resolve(process.cwd(), '.env')
+];
+
+let envLoaded = false;
+for (const envPath of envPaths) {
+  if (fs.existsSync(envPath)) {
+    config({ path: envPath });
+    console.error(`📁 Loaded environment variables from: ${envPath}`);
+    envLoaded = true;
+    break;
+  }
+}
+
+if (!envLoaded) {
+  config(); // Fallback to default behavior
+  console.error('⚠️  No .env file found, using system environment variables');
+}
 
 /**
  * CLI Configuration
@@ -295,41 +316,53 @@ async function createServer(options: CLIOptions = {}) {
     console.error('⚠️  Failed to initialize full memory engine:', error);
     console.error('🔄 Falling back to basic in-memory storage...');
 
-    try {
-      // Create a basic in-memory implementation
+    try {      // Create a basic in-memory implementation with correct signatures
       memoryEngine = {
-        memories: new Map(),
-        async remember(content: string, tenantId: string, agentId?: string) {
+        memories: new Map(),        async remember(content: string, tenantId: string, agentId?: string, options: any = {}) {
           const id = `mem_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-          this.memories.set(id, {
+          const memory = {
             id,
             content,
             tenantId,
             agentId,
-            timestamp: new Date().toISOString()
-          });
+            timestamp: new Date().toISOString(),
+            options
+          };
+          this.memories.set(id, memory);
           return id;
-        },
-        async recall(query: string, tenantId: string, agentId?: string) {
+        },        async recall(query: string, tenantId: string, agentId?: string, options: any = {}) {
           const results = [];
           for (const [id, memory] of this.memories.entries()) {
             if (memory.tenantId === tenantId &&
+              (!agentId || memory.agentId === agentId) &&
               (memory.content.toLowerCase().includes(query.toLowerCase()) ||
                 query.toLowerCase().includes(memory.content.toLowerCase()))) {
               results.push({
-                id,
-                content: memory.content,
-                relevance: 0.8,
-                metadata: { agentId: memory.agentId, timestamp: memory.timestamp }
+                memory: {
+                  id,
+                  content: memory.content,
+                  type: 'general',
+                  confidence: 0.8,
+                  createdAt: new Date(memory.timestamp),
+                  updatedAt: new Date(memory.timestamp),
+                  lastAccessedAt: new Date(),
+                  accessCount: 1,
+                  importance: 0.5,
+                  tags: [],
+                  tenant_id: memory.tenantId,
+                  agent_id: memory.agentId
+                },
+                score: 0.8,
+                relevance_reason: 'Content match in basic memory engine'
               });
             }
           }
-          return results.slice(0, 10);
+          return results.slice(0, options.limit || 10);
         },
         async forget(memoryId: string, tenantId: string) {
           const deleted = this.memories.delete(memoryId);
-          return { success: deleted };
-        }, async getContext(tenantId: string, contextSize: number = 15) {
+          return deleted ? 1 : 0;
+        },async getContext(tenantId: string, contextSize: number = 15) {
           const memories = Array.from(this.memories.values())
             .filter((m: any) => m.tenantId === tenantId)
             .slice(-contextSize);
@@ -441,10 +474,24 @@ async function createServer(options: CLIOptions = {}) {
       ]
     };
   });
-
   // Handle tool calls
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
-    const { name, arguments: args } = request.params; if (!memoryEngine) {
+    const { name, arguments: args } = request.params;
+
+    // Validate that args is an object
+    if (!args || typeof args !== 'object') {
+      return {
+        content: [
+          {
+            type: 'text',
+            text: JSON.stringify({
+              error: 'Invalid arguments: must be an object',
+              success: false
+            })
+          }
+        ]
+      };
+    }if (!memoryEngine) {
       return {
         content: [
           {
@@ -460,10 +507,45 @@ async function createServer(options: CLIOptions = {}) {
     }
 
     try {
-      switch (name) {
-        case 'remember': {
-          const { agentId, content, metadata } = args as any;
-          const memoryId = await memoryEngine.remember(content, agentId, agentId, metadata);
+      switch (name) {        case 'remember': {
+          // Validate input
+          const validation = InputValidator.validate(args, [
+            { field: 'agentId', type: 'string', required: true, minLength: 1, maxLength: 255 },
+            { field: 'content', type: 'string', required: true, minLength: 1, maxLength: 10000 },
+            { field: 'metadata', type: 'object', required: false }
+          ]);
+
+          if (!validation.isValid) {
+            return {
+              content: [
+                {
+                  type: 'text',
+                  text: JSON.stringify({
+                    error: 'Validation failed: ' + validation.errors.join(', '),
+                    success: false
+                  })
+                }
+              ]
+            };
+          }          // Sanitize content
+          const contentValidation = InputValidator.validateMemoryContent(args.content as string);
+          if (!contentValidation.isValid) {
+            return {
+              content: [
+                {
+                  type: 'text',
+                  text: JSON.stringify({
+                    error: 'Content validation failed: ' + contentValidation.errors.join(', '),
+                    success: false
+                  })
+                }
+              ]
+            };
+          }
+
+          const { agentId, metadata } = args as any;
+          const sanitizedContent = contentValidation.sanitizedContent;
+          const memoryId = await memoryEngine.remember(sanitizedContent, agentId, agentId, metadata);
           return {
             content: [
               {
@@ -476,9 +558,46 @@ async function createServer(options: CLIOptions = {}) {
               }
             ]
           };
-        } case 'recall': {
-          const { agentId, query, limit = 10 } = args as any;
-          const results = await memoryEngine.recall(query, agentId, agentId, { limit });
+        }        case 'recall': {
+          // Validate input
+          const validation = InputValidator.validate(args, [
+            { field: 'agentId', type: 'string', required: true, minLength: 1, maxLength: 255 },
+            { field: 'query', type: 'string', required: true, minLength: 1, maxLength: 1000 },
+            { field: 'limit', type: 'number', required: false, customValidator: (val) => !val || (typeof val === 'number' && val >= 1 && val <= 100) }
+          ]);
+
+          if (!validation.isValid) {
+            return {
+              content: [
+                {
+                  type: 'text',
+                  text: JSON.stringify({
+                    error: 'Validation failed: ' + validation.errors.join(', '),
+                    success: false
+                  })
+                }
+              ]
+            };
+          }
+
+          // Sanitize query
+          const sanitizedQuery = InputValidator.sanitizeString(args.query as string);
+          if (!sanitizedQuery) {
+            return {
+              content: [
+                {
+                  type: 'text',
+                  text: JSON.stringify({
+                    error: 'Invalid query: query cannot be empty after sanitization',
+                    success: false
+                  })
+                }
+              ]
+            };
+          }
+
+          const { agentId, limit = 10 } = args as any;
+          const results = await memoryEngine.recall(sanitizedQuery, agentId, agentId, { limit });
           return {
             content: [
               {
@@ -491,7 +610,27 @@ async function createServer(options: CLIOptions = {}) {
               }
             ]
           };
-        } case 'forget': {
+        }        case 'forget': {
+          // Validate input
+          const validation = InputValidator.validate(args, [
+            { field: 'agentId', type: 'string', required: true, minLength: 1, maxLength: 255 },
+            { field: 'memoryId', type: 'string', required: true, minLength: 1, maxLength: 255 }
+          ]);
+
+          if (!validation.isValid) {
+            return {
+              content: [
+                {
+                  type: 'text',
+                  text: JSON.stringify({
+                    error: 'Validation failed: ' + validation.errors.join(', '),
+                    success: false
+                  })
+                }
+              ]
+            };
+          }
+
           const { agentId, memoryId } = args as any;
           const count = await memoryEngine.forget('user', memoryId);
           return {
@@ -505,8 +644,27 @@ async function createServer(options: CLIOptions = {}) {
               }
             ]
           };
-        }
-        case 'context': {
+        }        case 'context': {
+          // Validate input
+          const validation = InputValidator.validate(args, [
+            { field: 'agentId', type: 'string', required: true, minLength: 1, maxLength: 255 },
+            { field: 'contextSize', type: 'number', required: false, customValidator: (val) => !val || (typeof val === 'number' && val >= 1 && val <= 50) }
+          ]);
+
+          if (!validation.isValid) {
+            return {
+              content: [
+                {
+                  type: 'text',
+                  text: JSON.stringify({
+                    error: 'Validation failed: ' + validation.errors.join(', '),
+                    success: false
+                  })
+                }
+              ]
+            };
+          }
+
           const { agentId, contextSize = 5 } = args as any;
           let contextResponse;
 

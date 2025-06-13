@@ -4,6 +4,7 @@
  */
 
 import crypto from 'crypto';
+import { logger } from '../utils/logger.js';
 
 export interface ValidationRule {
   field: string;
@@ -285,11 +286,9 @@ export class SecurityAuditor {
     // Rotate log if it gets too large
     if (this.auditLog.length > this.maxLogSize) {
       this.auditLog = this.auditLog.slice(-Math.floor(this.maxLogSize * 0.8));
-    }
-
-    // Log critical events immediately
+    }    // Log critical events immediately
     if (event.severity === 'critical') {
-      console.error('CRITICAL SECURITY EVENT:', auditEvent);
+      logger.error('CRITICAL SECURITY EVENT:', auditEvent);
     }
   }
 
@@ -344,7 +343,7 @@ export class SecurityAuditor {
     failureRate: number;
     recentCriticalEvents: number;
   } {
-    let events = tenantId 
+    const events = tenantId 
       ? this.auditLog.filter(event => event.tenantId === tenantId)
       : this.auditLog;
 

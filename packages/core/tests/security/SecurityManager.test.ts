@@ -572,9 +572,11 @@ describe('SecurityAuditor', () => {
       expect(logs).toHaveLength(1);
       expect(logs[0]).toMatchObject(event);
       expect(logs[0].timestamp).toBeInstanceOf(Date);
-    });
-
-    it('should log critical events to console', () => {
+    });    it('should log critical events to console', () => {
+      // Temporarily set NODE_ENV to allow console logging
+      const originalNodeEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = 'development';
+      
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
       
       const event = {
@@ -587,8 +589,14 @@ describe('SecurityAuditor', () => {
 
       auditor.logEvent(event);
       
-      expect(consoleSpy).toHaveBeenCalledWith('CRITICAL SECURITY EVENT:', expect.objectContaining(event));
+      expect(consoleSpy).toHaveBeenCalledWith(
+        expect.stringContaining('CRITICAL SECURITY EVENT:'),
+        expect.objectContaining(event)
+      );
+      
+      // Restore environment and spy
       consoleSpy.mockRestore();
+      process.env.NODE_ENV = originalNodeEnv;
     });
 
     it('should rotate log when exceeding max size', () => {

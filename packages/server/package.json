@@ -10,7 +10,8 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     }
-  },  "bin": {
+  },
+  "bin": {
     "memorai-server": "./dist/cli.js"
   },
   "files": [
@@ -35,22 +36,26 @@
     "protocol"
   ],
   "author": "CodeAI",
-  "license": "MIT",  "dependencies": {
+  "license": "MIT",
+  "dependencies": {
     "@codai/memorai-core": "^1.0.0",
-    "@modelcontextprotocol/sdk": "^0.5.0",
-    "fastify": "^4.26.2",
     "@fastify/cors": "^9.0.1",
     "@fastify/helmet": "^11.1.1",
-    "@fastify/rate-limit": "^9.1.0",
     "@fastify/jwt": "^8.0.0",
-    "zod": "^3.22.4",
-    "winston": "^3.11.0",
+    "@fastify/rate-limit": "^9.1.0",
+    "@modelcontextprotocol/sdk": "^0.5.0",
     "dotenv": "^16.4.5",
-    "node-cron": "^3.0.3"
+    "fastify": "^4.26.2",
+    "node-cron": "^3.0.3",
+    "winston": "^3.11.0",
+    "zod": "^3.22.4"
   },
   "devDependencies": {
     "@types/node": "^20.11.24",
     "@types/node-cron": "^3.0.11",
+    "@typescript-eslint/eslint-plugin": "^8.18.1",
+    "@typescript-eslint/parser": "^8.18.1",
+    "eslint": "^8.57.1",
     "tsx": "^4.7.1",
     "typescript": "^5.4.2",
     "vitest": "^1.3.1"

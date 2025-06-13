@@ -9,7 +9,7 @@ export interface GraphEntity {
   id: string;
   name: string;
   type: string;
-  properties: Record<string, any>;
+  properties: Record<string, unknown>;
   createdAt: Date;
   updatedAt: Date;
   tenant_id: string;
@@ -21,7 +21,7 @@ export interface GraphRelation {
   fromId: string;
   toId: string;
   type: string;
-  properties: Record<string, any>;
+  properties: Record<string, unknown>;
   weight: number;
   confidence: number;
   createdAt: Date;
@@ -33,7 +33,7 @@ export interface GraphRelation {
 export interface GraphQuery {
   entityTypes?: string[];
   relationTypes?: string[];
-  properties?: Record<string, any>;
+  properties?: Record<string, unknown>;
   maxDepth?: number;
   limit?: number;
   tenant_id: string;
@@ -69,11 +69,10 @@ export class KnowledgeGraph {
 
   /**
    * Add or update an entity in the knowledge graph
-   */
-  async addEntity(
+   */  async addEntity(
     name: string,
     type: string,
-    properties: Record<string, any>,
+    properties: Record<string, unknown>,
     tenant_id: string,
     agent_id?: string
   ): Promise<string> {
@@ -113,12 +112,11 @@ export class KnowledgeGraph {
 
   /**
    * Add a relation between two entities
-   */
-  async addRelation(
+   */  async addRelation(
     fromId: string,
     toId: string,
     relationType: string,
-    properties: Record<string, any> = {},
+    properties: Record<string, unknown> = {},
     weight: number = 1.0,
     confidence: number = 1.0,
     tenant_id: string,
@@ -588,7 +586,7 @@ export class KnowledgeGraph {
     return undefined;
   }
 
-  private detectClusters(entities: GraphEntity[], relations: GraphRelation[]): number {
+  private detectClusters(entities: GraphEntity[], _relations: GraphRelation[]): number {
     // Simplified clustering - count connected components
     const visited = new Set<string>();
     let clusters = 0;

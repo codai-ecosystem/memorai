@@ -176,14 +176,13 @@ export class MemoryTierDetector {
             // Quick test call to validate API key
             const response = await fetch('https://api.openai.com/v1/models', {
                 method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${apiKey}`,
+                headers: {                    'Authorization': `Bearer ${apiKey}`,
                     'Content-Type': 'application/json'
                 }
             });
 
             return response.ok;
-        } catch (error) {
+        } catch {
             return false;
         }
     }
@@ -207,10 +206,9 @@ export class MemoryTierDetector {
                     resolve(false);
                 });
 
-                // Timeout after 5 seconds
-                setTimeout(() => resolve(false), 5000);
+                // Timeout after 5 seconds                setTimeout(() => resolve(false), 5000);
             });
-        } catch (error) {
+        } catch {
             return false;
         }
     }

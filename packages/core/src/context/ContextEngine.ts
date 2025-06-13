@@ -1,5 +1,4 @@
-import type { MemoryResult, ContextRequest, ContextResponse } from '../types/index.js';
-import { ContextError } from '../types/index.js';
+import type { MemoryResult, ContextResponse } from '../types/index.js';
 
 export interface ContextSummaryOptions {
   maxLength?: number;

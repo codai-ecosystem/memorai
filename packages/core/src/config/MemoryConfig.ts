@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { logger } from '../utils/logger.js';
 
 import type { MemoryConfig as IMemoryConfig } from '../types/index.js';
 
@@ -171,15 +172,13 @@ export class MemoryConfigManager {
       // Import the schema from types and validate asynchronously for warnings only
       import('../types/index.js').then(({ MemoryConfigSchema }) => {
         MemoryConfigSchema.parse(this.config);
-      }).catch((error: unknown) => {
-        if (error instanceof z.ZodError) {
+      }).catch((error: unknown) => {        if (error instanceof z.ZodError) {
           // Don't throw here as this is async - just log warnings for additional validation
-          console.error(`Memory configuration validation warning: ${JSON.stringify(error.errors, null, 2)}`);
+          logger.warn(`Memory configuration validation warning: ${JSON.stringify(error.errors, null, 2)}`);
         }
-      });
-    } catch (error: unknown) {
+      });    } catch (error: unknown) {
       if (error instanceof z.ZodError) {
-        console.error(`Memory configuration validation warning: ${JSON.stringify(error.errors, null, 2)}`);
+        logger.warn(`Memory configuration validation warning: ${JSON.stringify(error.errors, null, 2)}`);
       }
     }
   }

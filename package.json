@@ -21,9 +21,13 @@
     "start:mcp": "node packages/mcp/dist/server.js"
   },
   "devDependencies": {
+    "@eslint/js": "^9.28.0",
     "@turbo/gen": "^1.13.4",
-    "turbo": "^2.5.4",
+    "@typescript-eslint/eslint-plugin": "^8.18.1",
+    "@typescript-eslint/parser": "^8.18.1",
+    "eslint": "^8.57.1",
     "prettier": "^3.3.3",
+    "turbo": "^2.5.4",
     "typescript": "^5.5.4"
   },
   "packageManager": "pnpm@8.15.6",
@@ -44,5 +48,12 @@
     "vector-database"
   ],
   "license": "MIT",
+  "pnpm": {
+    "overrides": {
+      "esbuild": ">=0.25.0",
+      "fast-jwt": ">=5.0.6",
+      "brace-expansion": ">=2.0.2"
+    }
+  },
   "author": "Dragos CV"
 }

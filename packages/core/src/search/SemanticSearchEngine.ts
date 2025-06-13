@@ -3,7 +3,7 @@
  * Provides fuzzy matching, semantic similarity, and intelligent query understanding
  */
 
-import type { MemoryMetadata, MemoryResult, MemoryQuery } from '../types/index.js';
+import type { MemoryMetadata, MemoryResult } from '../types/index.js';
 import { EmbeddingService } from '../embedding/EmbeddingService.js';
 
 export interface SemanticSearchOptions {
@@ -25,7 +25,7 @@ export interface SemanticSearchOptions {
 
 export interface SearchContext {
   recentQueries: string[];
-  userPreferences: Record<string, any>;
+  userPreferences: Record<string, unknown>;
   sessionContext: string[];
   timeContext: {
     timeOfDay: 'morning' | 'afternoon' | 'evening' | 'night';
@@ -501,7 +501,7 @@ export class SemanticSearchEngine {
     return jaro + (0.1 * prefix * (1 - jaro));
   }
 
-  private async correctTypos(text: string, context?: SearchContext): Promise<string> {
+  private async correctTypos(text: string, _context?: SearchContext): Promise<string> {
     // Simplified typo correction - in production, use a proper spell checker
     const corrections: Record<string, string> = {
       'remmber': 'remember',
@@ -520,7 +520,7 @@ export class SemanticSearchEngine {
     return corrected;
   }
 
-  private async generateRelatedConcepts(query: string, context?: SearchContext): Promise<string[]> {
+  private async generateRelatedConcepts(query: string, _context?: SearchContext): Promise<string[]> {
     // Simplified concept expansion - in production, use a knowledge base or LLM
     const conceptMap: Record<string, string[]> = {
       'code': ['programming', 'development', 'software', 'function', 'method'],
@@ -587,16 +587,16 @@ export class SemanticSearchEngine {
       .map(([word]) => word);
   }
 
-  private checkPreferenceMatch(memory: MemoryMetadata, preferences: Record<string, any>): number {
+  private checkPreferenceMatch(memory: MemoryMetadata, preferences: Record<string, unknown>): number {
     let matchScore = 0;
     let totalPreferences = 0;
-    
-    for (const [key, value] of Object.entries(preferences)) {
+      for (const [key, value] of Object.entries(preferences)) {
       totalPreferences++;
       
-      if (memory.tags.includes(key) || memory.tags.includes(value)) {
+      const valueStr = typeof value === 'string' ? value : String(value);
+      if (memory.tags.includes(key) || memory.tags.includes(valueStr)) {
         matchScore++;
-      } else if (memory.content.toLowerCase().includes(String(value).toLowerCase())) {
+      } else if (memory.content.toLowerCase().includes(valueStr.toLowerCase())) {
         matchScore += 0.5;
       }
     }

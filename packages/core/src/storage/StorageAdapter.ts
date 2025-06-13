@@ -130,28 +130,27 @@ export class InMemoryStorageAdapter implements StorageAdapter {
  */
 export class PostgreSQLStorageAdapter implements StorageAdapter {
   constructor(private connectionString: string) {}
-  
-  async store(memory: MemoryMetadata): Promise<void> {
+    async store(_memory: MemoryMetadata): Promise<void> {
     throw new Error('PostgreSQL adapter not implemented yet');
   }
   
-  async retrieve(id: string): Promise<MemoryMetadata | null> {
+  async retrieve(_id: string): Promise<MemoryMetadata | null> {
     throw new Error('PostgreSQL adapter not implemented yet');
   }
   
-  async update(id: string, updates: Partial<MemoryMetadata>): Promise<void> {
+  async update(_id: string, _updates: Partial<MemoryMetadata>): Promise<void> {
     throw new Error('PostgreSQL adapter not implemented yet');
   }
   
-  async delete(id: string): Promise<void> {
+  async delete(_id: string): Promise<void> {
     throw new Error('PostgreSQL adapter not implemented yet');
   }
   
-  async list(filters?: MemoryFilters): Promise<MemoryMetadata[]> {
+  async list(_filters?: MemoryFilters): Promise<MemoryMetadata[]> {
     throw new Error('PostgreSQL adapter not implemented yet');
   }
   
-  async clear(tenantId?: string): Promise<void> {
+  async clear(_tenantId?: string): Promise<void> {
     throw new Error('PostgreSQL adapter not implemented yet');
   }
 }
@@ -161,28 +160,27 @@ export class PostgreSQLStorageAdapter implements StorageAdapter {
  */
 export class RedisStorageAdapter implements StorageAdapter {
   constructor(private redisUrl: string) {}
-  
-  async store(memory: MemoryMetadata): Promise<void> {
+    async store(_memory: MemoryMetadata): Promise<void> {
     throw new Error('Redis adapter not implemented yet');
   }
   
-  async retrieve(id: string): Promise<MemoryMetadata | null> {
+  async retrieve(_id: string): Promise<MemoryMetadata | null> {
     throw new Error('Redis adapter not implemented yet');
   }
   
-  async update(id: string, updates: Partial<MemoryMetadata>): Promise<void> {
+  async update(_id: string, _updates: Partial<MemoryMetadata>): Promise<void> {
     throw new Error('Redis adapter not implemented yet');
   }
   
-  async delete(id: string): Promise<void> {
+  async delete(_id: string): Promise<void> {
     throw new Error('Redis adapter not implemented yet');
   }
   
-  async list(filters?: MemoryFilters): Promise<MemoryMetadata[]> {
+  async list(_filters?: MemoryFilters): Promise<MemoryMetadata[]> {
     throw new Error('Redis adapter not implemented yet');
   }
   
-  async clear(tenantId?: string): Promise<void> {
+  async clear(_tenantId?: string): Promise<void> {
     throw new Error('Redis adapter not implemented yet');
   }
 }

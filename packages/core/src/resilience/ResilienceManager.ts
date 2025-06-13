@@ -3,6 +3,8 @@
  * Includes retry mechanisms, circuit breakers, and graceful degradation
  */
 
+import { logger } from '../utils/logger.js';
+
 export interface RetryOptions {
   maxAttempts: number;
   baseDelayMs: number;
@@ -63,9 +65,8 @@ export class RetryManager {
 
         // Calculate delay
         const delay = this.calculateDelay(attempt, opts);
-        
-        // Log retry attempt
-        console.warn(`Attempt ${attempt} failed, retrying in ${delay}ms:`, error);
+          // Log retry attempt
+        logger.warn(`Attempt ${attempt} failed, retrying in ${delay}ms:`, error);
         
         await this.sleep(delay);
       }
@@ -295,9 +296,8 @@ export class ResilienceManager {
         return await this.executeResilient(operationName, operation, options);
       } else {
         return await operation();
-      }
-    } catch (error) {
-      console.warn(`Primary operation failed, falling back:`, error);
+      }    } catch (error) {
+      logger.warn(`Primary operation failed, falling back:`, error);
       return fallback();
     }
   }
@@ -317,12 +317,10 @@ export class ResilienceManager {
 
   /**
    * Reset a specific circuit breaker
-   */
-  public resetCircuitBreaker(name: string): boolean {
+   */  public resetCircuitBreaker(name: string): boolean {
     const circuitBreaker = this.circuitBreakers.get(name);
     if (circuitBreaker) {
       // Create a new circuit breaker to reset state
-      const status = circuitBreaker.getStatus();
       this.circuitBreakers.delete(name);
       return true;
     }
