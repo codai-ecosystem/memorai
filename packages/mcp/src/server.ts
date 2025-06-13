@@ -42,7 +42,7 @@ interface CLIOptions {
  */
 function parseCliArguments(): CLIOptions {
   const program = new Command();
-  
+
   program
     .name('memorai-mcp')
     .description('Enterprise-grade memory management MCP server for AI agents')
@@ -60,7 +60,7 @@ function parseCliArguments(): CLIOptions {
 
   program.parse(process.argv);
   const options = program.opts();
-  
+
   return {
     dashboard: options.dashboard !== false, // Default to true unless --no-dashboard
     port: parseInt(options.port) || 6366,
@@ -137,7 +137,7 @@ function createDashboardLock(dashboardProcess: ChildProcess): void {
  */
 async function startDashboard(port?: number): Promise<ChildProcess | null> {
   const dashboardPort = port || DASHBOARD_PORT;
-  
+
   // Check if dashboard is already running
   const existing = isDashboardRunning();
   if (existing) {
@@ -276,7 +276,8 @@ async function createServer(options: CLIOptions = {}) {
   if (options.dashboard !== false) {
     try {
       dashboardProcess = await startDashboard(options.port);
-      setupCleanup(dashboardProcess);    } catch (error) {
+      setupCleanup(dashboardProcess);
+    } catch (error) {
       console.error('⚠️  Failed to start dashboard:', error);
       console.error('🔄 MCP server will continue without dashboard');
     }
@@ -528,7 +529,7 @@ async function main() {
   try {
     // Parse CLI arguments first
     const cliOptions = parseCliArguments();
-    
+
     console.error('🚀 Starting Memorai MCP Server...');
     const server = await createServer(cliOptions);
     console.error('📡 Server created, connecting to stdio transport...');
