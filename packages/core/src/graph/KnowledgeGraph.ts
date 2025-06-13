@@ -78,7 +78,7 @@ export class KnowledgeGraph {
   ): Promise<string> {
     // Check for existing entity by name and type
     const existingEntity = this.findEntityByNameAndType(name, type, tenant_id);
-    
+
     if (existingEntity) {
       // Update existing entity
       existingEntity.properties = { ...existingEntity.properties, ...properties };
@@ -99,7 +99,7 @@ export class KnowledgeGraph {
 
     this.entities.set(id, entity);
     this.entityRelations.set(id, new Set());
-    
+
     // Index by type
     const typeKey = `type:${type}`;
     if (!this.relationIndex.has(typeKey)) {
@@ -125,7 +125,7 @@ export class KnowledgeGraph {
     // Validate entities exist
     const fromEntity = this.entities.get(fromId);
     const toEntity = this.entities.get(toId);
-    
+
     if (!fromEntity || !toEntity) {
       throw new Error('Cannot create relation: one or both entities do not exist');
     }
@@ -235,7 +235,7 @@ export class KnowledgeGraph {
     // Filter by properties
     if (query.properties) {
       results = results.filter(r => {
-        return Object.entries(query.properties!).every(([key, value]) => 
+        return Object.entries(query.properties!).every(([key, value]) =>
           r.properties[key] === value
         );
       });
@@ -259,7 +259,7 @@ export class KnowledgeGraph {
 
     const paths: GraphPath[] = [];
     const visited = new Set<string>();
-    
+
     const dfs = (currentId: string, targetId: string, currentPath: string[], currentRelations: string[], currentWeight: number, depth: number) => {
       if (depth > maxDepth) {
         return;
@@ -269,7 +269,7 @@ export class KnowledgeGraph {
         // Found a path
         const entities = currentPath.map(id => this.entities.get(id)!);
         const relations = currentRelations.map(id => this.relations.get(id)!);
-        const confidence = relations.length > 0 ? 
+        const confidence = relations.length > 0 ?
           relations.reduce((sum, r) => sum + r.confidence, 0) / relations.length : 1.0;
 
         paths.push({
@@ -287,7 +287,7 @@ export class KnowledgeGraph {
       for (const relationId of relationIds) {
         const relation = this.relations.get(relationId)!;
         const neighborId = relation.fromId === currentId ? relation.toId : relation.fromId;
-        
+
         if (!visited.has(neighborId)) {
           dfs(
             neighborId,
@@ -304,7 +304,7 @@ export class KnowledgeGraph {
     };
 
     dfs(fromId, toId, [fromId], [], 0, 0);
-    
+
     // Sort paths by weight (shortest first)
     return paths.sort((a, b) => a.totalWeight - b.totalWeight);
   }
@@ -319,18 +319,18 @@ export class KnowledgeGraph {
 
     const visited = new Set<string>();
     const queue: Array<{ entityId: string; path: string[]; relations: string[]; totalWeight: number }> = [];
-    
+
     queue.push({ entityId: fromId, path: [fromId], relations: [], totalWeight: 0 });
     visited.add(fromId);
 
     while (queue.length > 0) {
       const current = queue.shift()!;
-      
+
       if (current.entityId === toId) {
         // Found target, construct path
         const entities = current.path.map(id => this.entities.get(id)!);
         const relations = current.relations.map(id => this.relations.get(id)!);
-        const confidence = relations.length > 0 ? 
+        const confidence = relations.length > 0 ?
           relations.reduce((sum, r) => sum + r.confidence, 0) / relations.length : 1.0;
 
         return {
@@ -350,7 +350,7 @@ export class KnowledgeGraph {
       for (const relationId of relationIds) {
         const relation = this.relations.get(relationId)!;
         const neighborId = relation.fromId === current.entityId ? relation.toId : relation.fromId;
-        
+
         if (!visited.has(neighborId)) {
           visited.add(neighborId);
           queue.push({
@@ -372,13 +372,13 @@ export class KnowledgeGraph {
     const visited = new Set<string>();
     const queue: Array<{ entityId: string; depth: number }> = [];
     const result: GraphEntity[] = [];
-    
+
     queue.push({ entityId, depth: 0 });
     visited.add(entityId);
 
     while (queue.length > 0) {
       const current = queue.shift()!;
-      
+
       // Only add to result if it's not the starting entity (depth > 0)
       if (current.depth > 0) {
         const entity = this.entities.get(current.entityId);
@@ -392,7 +392,7 @@ export class KnowledgeGraph {
         for (const relationId of relationIds) {
           const relation = this.relations.get(relationId)!;
           const neighborId = relation.fromId === current.entityId ? relation.toId : relation.fromId;
-          
+
           if (!visited.has(neighborId)) {
             visited.add(neighborId);
             queue.push({ entityId: neighborId, depth: current.depth + 1 });
@@ -411,7 +411,7 @@ export class KnowledgeGraph {
     // Filter entities and relations by tenant/agent
     const entities = Array.from(this.entities.values())
       .filter(e => e.tenant_id === tenant_id && (!agent_id || e.agent_id === agent_id));
-    
+
     const relations = Array.from(this.relations.values())
       .filter(r => r.tenant_id === tenant_id && (!agent_id || r.agent_id === agent_id));    // Calculate metrics
     const entityCount = entities.length;
@@ -523,7 +523,7 @@ export class KnowledgeGraph {
   exportGraph(tenant_id: string, agent_id?: string): { entities: GraphEntity[]; relations: GraphRelation[] } {
     const entities = Array.from(this.entities.values())
       .filter(e => e.tenant_id === tenant_id && (!agent_id || e.agent_id === agent_id));
-    
+
     const relations = Array.from(this.relations.values())
       .filter(r => r.tenant_id === tenant_id && (!agent_id || r.agent_id === agent_id));
 
@@ -538,7 +538,7 @@ export class KnowledgeGraph {
     for (const entity of data.entities) {
       this.entities.set(entity.id, entity);
       this.entityRelations.set(entity.id, new Set());
-      
+
       // Update type index
       const typeKey = `type:${entity.type}`;
       if (!this.relationIndex.has(typeKey)) {
@@ -552,7 +552,7 @@ export class KnowledgeGraph {
       this.relations.set(relation.id, relation);
       this.entityRelations.get(relation.fromId)?.add(relation.id);
       this.entityRelations.get(relation.toId)?.add(relation.id);
-      
+
       // Update relation type index
       const typeKey = `reltype:${relation.type}`;
       if (!this.relationIndex.has(typeKey)) {
@@ -578,7 +578,7 @@ export class KnowledgeGraph {
         relation.type === type &&
         relation.tenant_id === tenant_id &&
         ((relation.fromId === fromId && relation.toId === toId) ||
-         (relation.fromId === toId && relation.toId === fromId))
+          (relation.fromId === toId && relation.toId === fromId))
       ) {
         return relationId;
       }
@@ -604,11 +604,11 @@ export class KnowledgeGraph {
   private dfsCluster(entityId: string, visited: Set<string>): void {
     visited.add(entityId);
     const relationIds = this.entityRelations.get(entityId) || new Set();
-    
+
     for (const relationId of relationIds) {
       const relation = this.relations.get(relationId)!;
       const neighborId = relation.fromId === entityId ? relation.toId : relation.fromId;
-      
+
       if (!visited.has(neighborId)) {
         this.dfsCluster(neighborId, visited);
       }

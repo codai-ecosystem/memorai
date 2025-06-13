@@ -172,11 +172,13 @@ export class MemoryConfigManager {
       // Import the schema from types and validate asynchronously for warnings only
       import('../types/index.js').then(({ MemoryConfigSchema }) => {
         MemoryConfigSchema.parse(this.config);
-      }).catch((error: unknown) => {        if (error instanceof z.ZodError) {
+      }).catch((error: unknown) => {
+        if (error instanceof z.ZodError) {
           // Don't throw here as this is async - just log warnings for additional validation
           logger.warn(`Memory configuration validation warning: ${JSON.stringify(error.errors, null, 2)}`);
         }
-      });    } catch (error: unknown) {
+      });
+    } catch (error: unknown) {
       if (error instanceof z.ZodError) {
         logger.warn(`Memory configuration validation warning: ${JSON.stringify(error.errors, null, 2)}`);
       }

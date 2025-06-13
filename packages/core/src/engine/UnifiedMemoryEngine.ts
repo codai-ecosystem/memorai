@@ -175,7 +175,8 @@ export class UnifiedMemoryEngine {
             };
 
             await this.activeEngine.remember(memory);
-            return memoryId;        } catch (error) {
+            return memoryId;
+        } catch (error) {
             if (this.config.enableFallback) {
                 logger.warn(`Memory operation failed on ${this.currentTier} tier, attempting fallback...`);
                 await this.fallbackToNextTier();
@@ -222,7 +223,8 @@ export class UnifiedMemoryEngine {
                 result.memory.accessCount++;
             }
 
-            return results;        } catch (error) {
+            return results;
+        } catch (error) {
             if (this.config.enableFallback) {
                 logger.warn(`Memory operation failed on ${this.currentTier} tier, attempting fallback...`);
                 await this.fallbackToNextTier();
@@ -255,7 +257,8 @@ export class UnifiedMemoryEngine {
                 generated_at: new Date(),
                 total_count: memories.length,
                 context_summary: this.generateContextSummary(memories)
-            };        } catch (error) {
+            };
+        } catch (error) {
             if (this.config.enableFallback) {
                 logger.warn(`Memory operation failed on ${this.currentTier} tier, attempting fallback...`);
                 await this.fallbackToNextTier();
@@ -275,7 +278,8 @@ export class UnifiedMemoryEngine {
 
         try {
             return await this.activeEngine.forget(memoryId);
-        } catch (error) {            if (this.config.enableFallback) {
+        } catch (error) {
+            if (this.config.enableFallback) {
                 logger.warn(`Memory operation failed on ${this.currentTier} tier, attempting fallback...`);
                 await this.fallbackToNextTier();
                 return this.forget(memoryId);
@@ -496,7 +500,7 @@ export class UnifiedMemoryEngine {
      * Get engine statistics
      */
     public async getStats(): Promise<{
-        currentTier: MemoryTierLevel;        capabilities: MemoryTierCapabilities;
+        currentTier: MemoryTierLevel; capabilities: MemoryTierCapabilities;
         engineStats: Record<string, unknown>;
     }> {
         const tierInfo = this.getTierInfo();

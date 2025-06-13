@@ -39,7 +39,7 @@ export class QdrantVectorStore implements VectorStore {
     if (apiKey) {
       clientConfig.apiKey = apiKey;
     }
-    
+
     this.client = new QdrantClient(clientConfig);
     this.collection = collection;
     this.dimension = dimension;
@@ -261,7 +261,7 @@ export class MemoryVectorStore {
   }
 
   public async storeMemories(
-    memories: MemoryMetadata[], 
+    memories: MemoryMetadata[],
     embeddings: number[][]
   ): Promise<void> {
     await this.ensureInitialized();
@@ -286,16 +286,16 @@ export class MemoryVectorStore {
   }
 
   public async searchMemories(
-    queryEmbedding: number[], 
+    queryEmbedding: number[],
     query: MemoryQuery
   ): Promise<MemoryResult[]> {
     await this.ensureInitialized();
 
     const results = await this.store.search(queryEmbedding, query);
-    
+
     return results.map(result => {
       const payload = result.payload;
-      
+
       return {
         memory: {
           id: payload.id as string,

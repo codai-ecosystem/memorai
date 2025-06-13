@@ -12,27 +12,27 @@ export interface StorageAdapter {
    * Store a memory entry
    */
   store(memory: MemoryMetadata): Promise<void>;
-  
+
   /**
    * Retrieve a memory by ID
    */
   retrieve(id: string): Promise<MemoryMetadata | null>;
-  
+
   /**
    * Update a memory entry
    */
   update(id: string, updates: Partial<MemoryMetadata>): Promise<void>;
-  
+
   /**
    * Delete a memory entry
    */
   delete(id: string): Promise<void>;
-  
+
   /**
    * List memories with optional filtering
    */
   list(filters?: MemoryFilters): Promise<MemoryMetadata[]>;
-  
+
   /**
    * Clear all memories (with optional tenant filter)
    */
@@ -58,28 +58,28 @@ export interface MemoryFilters {
  */
 export class InMemoryStorageAdapter implements StorageAdapter {
   private memories = new Map<string, MemoryMetadata>();
-  
+
   async store(memory: MemoryMetadata): Promise<void> {
     this.memories.set(memory.id, { ...memory });
   }
-  
+
   async retrieve(id: string): Promise<MemoryMetadata | null> {
     return this.memories.get(id) || null;
   }
-  
+
   async update(id: string, updates: Partial<MemoryMetadata>): Promise<void> {
     const existing = this.memories.get(id);
     if (existing) {
       this.memories.set(id, { ...existing, ...updates });
     }
   }
-  
+
   async delete(id: string): Promise<void> {
     this.memories.delete(id);
   }
-    async list(filters: MemoryFilters = {}): Promise<MemoryMetadata[]> {
+  async list(filters: MemoryFilters = {}): Promise<MemoryMetadata[]> {
     let memories = Array.from(this.memories.values());
-    
+
     // Apply filters
     if (filters.tenantId) {
       memories = memories.filter(m => m.tenant_id === filters.tenantId);
@@ -99,17 +99,17 @@ export class InMemoryStorageAdapter implements StorageAdapter {
     if (filters.until) {
       memories = memories.filter(m => m.createdAt <= filters.until!);
     }
-    
+
     // Sort by createdAt (newest first)
     memories.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-    
+
     // Apply pagination
     const offset = filters.offset || 0;
     const limit = filters.limit || memories.length;
-    
+
     return memories.slice(offset, offset + limit);
   }
-  
+
   async clear(tenantId?: string): Promise<void> {
     if (tenantId) {
       // Clear only memories for specific tenant
@@ -129,27 +129,27 @@ export class InMemoryStorageAdapter implements StorageAdapter {
  * PostgreSQL storage adapter (stub for future implementation)
  */
 export class PostgreSQLStorageAdapter implements StorageAdapter {
-  constructor(private connectionString: string) {}
-    async store(_memory: MemoryMetadata): Promise<void> {
+  constructor(private connectionString: string) { }
+  async store(_memory: MemoryMetadata): Promise<void> {
     throw new Error('PostgreSQL adapter not implemented yet');
   }
-  
+
   async retrieve(_id: string): Promise<MemoryMetadata | null> {
     throw new Error('PostgreSQL adapter not implemented yet');
   }
-  
+
   async update(_id: string, _updates: Partial<MemoryMetadata>): Promise<void> {
     throw new Error('PostgreSQL adapter not implemented yet');
   }
-  
+
   async delete(_id: string): Promise<void> {
     throw new Error('PostgreSQL adapter not implemented yet');
   }
-  
+
   async list(_filters?: MemoryFilters): Promise<MemoryMetadata[]> {
     throw new Error('PostgreSQL adapter not implemented yet');
   }
-  
+
   async clear(_tenantId?: string): Promise<void> {
     throw new Error('PostgreSQL adapter not implemented yet');
   }
@@ -159,27 +159,27 @@ export class PostgreSQLStorageAdapter implements StorageAdapter {
  * Redis storage adapter (stub for future implementation)
  */
 export class RedisStorageAdapter implements StorageAdapter {
-  constructor(private redisUrl: string) {}
-    async store(_memory: MemoryMetadata): Promise<void> {
+  constructor(private redisUrl: string) { }
+  async store(_memory: MemoryMetadata): Promise<void> {
     throw new Error('Redis adapter not implemented yet');
   }
-  
+
   async retrieve(_id: string): Promise<MemoryMetadata | null> {
     throw new Error('Redis adapter not implemented yet');
   }
-  
+
   async update(_id: string, _updates: Partial<MemoryMetadata>): Promise<void> {
     throw new Error('Redis adapter not implemented yet');
   }
-  
+
   async delete(_id: string): Promise<void> {
     throw new Error('Redis adapter not implemented yet');
   }
-  
+
   async list(_filters?: MemoryFilters): Promise<MemoryMetadata[]> {
     throw new Error('Redis adapter not implemented yet');
   }
-  
+
   async clear(_tenantId?: string): Promise<void> {
     throw new Error('Redis adapter not implemented yet');
   }

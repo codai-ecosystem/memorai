@@ -176,7 +176,8 @@ export class MemoryTierDetector {
             // Quick test call to validate API key
             const response = await fetch('https://api.openai.com/v1/models', {
                 method: 'GET',
-                headers: {                    'Authorization': `Bearer ${apiKey}`,
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`,
                     'Content-Type': 'application/json'
                 }
             });

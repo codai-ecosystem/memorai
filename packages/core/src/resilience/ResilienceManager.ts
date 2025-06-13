@@ -52,7 +52,7 @@ export class RetryManager {
         return await operation();
       } catch (error) {
         lastError = error as Error;
-        
+
         // Don't retry on the last attempt
         if (attempt === opts.maxAttempts) {
           break;
@@ -65,9 +65,9 @@ export class RetryManager {
 
         // Calculate delay
         const delay = this.calculateDelay(attempt, opts);
-          // Log retry attempt
+        // Log retry attempt
         logger.warn(`Attempt ${attempt} failed, retrying in ${delay}ms:`, error);
-        
+
         await this.sleep(delay);
       }
     }
@@ -80,8 +80,8 @@ export class RetryManager {
       return true;
     }
 
-    return retryableErrors.some(retryableError => 
-      error.message.includes(retryableError) || 
+    return retryableErrors.some(retryableError =>
+      error.message.includes(retryableError) ||
       error.name.includes(retryableError)
     );
   }
@@ -116,7 +116,7 @@ export class CircuitBreaker {
   constructor(
     private name: string,
     private options: CircuitBreakerOptions
-  ) {}
+  ) { }
 
   /**
    * Execute a function with circuit breaker protection
@@ -145,7 +145,7 @@ export class CircuitBreaker {
     nextAttemptTime?: Date;
   } {
     const successRate = this.calculateSuccessRate();
-    
+
     const result: {
       state: CircuitBreakerState;
       failures: number;
@@ -156,11 +156,11 @@ export class CircuitBreaker {
       failures: this.failures,
       successRate,
     };
-    
+
     if (this.nextAttemptTime > 0) {
       result.nextAttemptTime = new Date(this.nextAttemptTime);
     }
-    
+
     return result;
   }
 
@@ -189,7 +189,7 @@ export class CircuitBreaker {
   private onSuccess(): void {
     this.recordCall(true);
     this.failures = 0;
-    
+
     if (this.state === CircuitBreakerState.HALF_OPEN) {
       this.state = CircuitBreakerState.CLOSED;
     }
@@ -212,21 +212,21 @@ export class CircuitBreaker {
     }
 
     const recentCallsCount = this.getRecentCallsCount();
-    
+
     if (recentCallsCount < this.options.minimumCalls) {
       return false;
     }
 
     const successRate = this.calculateSuccessRate();
     const failureRate = 1 - successRate;
-    
+
     return failureRate >= (this.options.failureThreshold / 100);
   }
 
   private recordCall(success: boolean): void {
     const now = Date.now();
     this.recentCalls.push({ timestamp: now, success });
-    
+
     // Clean up old calls outside the monitoring window
     const cutoff = now - this.options.monitoringWindowMs;
     this.recentCalls = this.recentCalls.filter(call => call.timestamp >= cutoff);
@@ -272,7 +272,7 @@ export class ResilienceManager {
   ): Promise<T> {
     // Get or create circuit breaker
     const circuitBreaker = this.getOrCreateCircuitBreaker(operationName, options.circuitBreaker);
-    
+
     // Execute with circuit breaker protection and retry logic
     return circuitBreaker.execute(async () => {
       return this.retryManager.executeWithRetry(operation, options.retry);
@@ -296,7 +296,8 @@ export class ResilienceManager {
         return await this.executeResilient(operationName, operation, options);
       } else {
         return await operation();
-      }    } catch (error) {
+      }
+    } catch (error) {
       logger.warn(`Primary operation failed, falling back:`, error);
       return fallback();
     }
@@ -307,11 +308,11 @@ export class ResilienceManager {
    */
   public getAllCircuitBreakerStatus(): Record<string, ReturnType<CircuitBreaker['getStatus']>> {
     const status: Record<string, ReturnType<CircuitBreaker['getStatus']>> = {};
-    
+
     for (const [name, circuitBreaker] of this.circuitBreakers) {
       status[name] = circuitBreaker.getStatus();
     }
-    
+
     return status;
   }
 
@@ -329,7 +330,7 @@ export class ResilienceManager {
 
   private getOrCreateCircuitBreaker(name: string, options?: CircuitBreakerOptions): CircuitBreaker {
     let circuitBreaker = this.circuitBreakers.get(name);
-    
+
     if (!circuitBreaker) {
       const defaultOptions: CircuitBreakerOptions = {
         failureThreshold: 50, // 50% failure rate
@@ -337,11 +338,11 @@ export class ResilienceManager {
         monitoringWindowMs: 60000, // 1 minute window
         minimumCalls: 10, // Minimum calls before circuit can open
       };
-      
+
       circuitBreaker = new CircuitBreaker(name, { ...defaultOptions, ...options });
       this.circuitBreakers.set(name, circuitBreaker);
     }
-    
+
     return circuitBreaker;
   }
 }

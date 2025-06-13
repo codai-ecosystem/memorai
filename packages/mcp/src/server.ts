@@ -318,7 +318,7 @@ async function createServer(options: CLIOptions = {}) {
 
     try {      // Create a basic in-memory implementation with correct signatures
       memoryEngine = {
-        memories: new Map(),        async remember(content: string, tenantId: string, agentId?: string, options: any = {}) {
+        memories: new Map(), async remember(content: string, tenantId: string, agentId?: string, options: any = {}) {
           const id = `mem_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
           const memory = {
             id,
@@ -330,7 +330,7 @@ async function createServer(options: CLIOptions = {}) {
           };
           this.memories.set(id, memory);
           return id;
-        },        async recall(query: string, tenantId: string, agentId?: string, options: any = {}) {
+        }, async recall(query: string, tenantId: string, agentId?: string, options: any = {}) {
           const results = [];
           for (const [id, memory] of this.memories.entries()) {
             if (memory.tenantId === tenantId &&
@@ -362,7 +362,7 @@ async function createServer(options: CLIOptions = {}) {
         async forget(memoryId: string, tenantId: string) {
           const deleted = this.memories.delete(memoryId);
           return deleted ? 1 : 0;
-        },async getContext(tenantId: string, contextSize: number = 15) {
+        }, async getContext(tenantId: string, contextSize: number = 15) {
           const memories = Array.from(this.memories.values())
             .filter((m: any) => m.tenantId === tenantId)
             .slice(-contextSize);
@@ -491,7 +491,7 @@ async function createServer(options: CLIOptions = {}) {
           }
         ]
       };
-    }if (!memoryEngine) {
+    } if (!memoryEngine) {
       return {
         content: [
           {
@@ -507,7 +507,8 @@ async function createServer(options: CLIOptions = {}) {
     }
 
     try {
-      switch (name) {        case 'remember': {
+      switch (name) {
+        case 'remember': {
           // Validate input
           const validation = InputValidator.validate(args, [
             { field: 'agentId', type: 'string', required: true, minLength: 1, maxLength: 255 },
@@ -558,7 +559,7 @@ async function createServer(options: CLIOptions = {}) {
               }
             ]
           };
-        }        case 'recall': {
+        } case 'recall': {
           // Validate input
           const validation = InputValidator.validate(args, [
             { field: 'agentId', type: 'string', required: true, minLength: 1, maxLength: 255 },
@@ -610,7 +611,7 @@ async function createServer(options: CLIOptions = {}) {
               }
             ]
           };
-        }        case 'forget': {
+        } case 'forget': {
           // Validate input
           const validation = InputValidator.validate(args, [
             { field: 'agentId', type: 'string', required: true, minLength: 1, maxLength: 255 },
@@ -644,7 +645,7 @@ async function createServer(options: CLIOptions = {}) {
               }
             ]
           };
-        }        case 'context': {
+        } case 'context': {
           // Validate input
           const validation = InputValidator.validate(args, [
             { field: 'agentId', type: 'string', required: true, minLength: 1, maxLength: 255 },

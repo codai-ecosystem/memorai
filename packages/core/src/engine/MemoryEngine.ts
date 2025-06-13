@@ -1,13 +1,13 @@
 import { nanoid } from 'nanoid';
 
-import type { 
-  MemoryMetadata, 
-  MemoryQuery, 
-  MemoryResult, 
-  ContextRequest, 
+import type {
+  MemoryMetadata,
+  MemoryQuery,
+  MemoryResult,
+  ContextRequest,
   ContextResponse,
   MemoryType,
-  MemoryConfig 
+  MemoryConfig
 } from '../types/index.js';
 import { MemoryError } from '../types/index.js';
 import { EmbeddingService } from '../embedding/EmbeddingService.js';
@@ -40,7 +40,7 @@ export class MemoryEngine {
   constructor(config?: Partial<MemoryConfig>) {
     this.config = new MemoryConfigManager(config);
     this.embedding = new EmbeddingService(this.config.getEmbedding());
-    
+
     const vectorConfig = this.config.getVectorDB();
     const qdrantStore = new QdrantVectorStore(
       vectorConfig.url,
@@ -86,7 +86,7 @@ export class MemoryEngine {
     try {
       // Generate embedding
       const embeddingResult = await this.embedding.embed(content);
-      
+
       // Create memory metadata
       const memory: MemoryMetadata = {
         id: nanoid(),
@@ -138,7 +138,7 @@ export class MemoryEngine {
     try {
       // Generate query embedding
       const embeddingResult = await this.embedding.embed(query);
-      
+
       // Build memory query
       const memoryQuery: MemoryQuery = {
         query: query.trim(),
@@ -192,7 +192,7 @@ export class MemoryEngine {
 
       // Filter memories that meet the confirm threshold
       const memoriesToDelete = memories.filter(m => m.score >= confirmThreshold);
-      
+
       if (memoriesToDelete.length === 0) {
         return 0;
       }
@@ -217,7 +217,7 @@ export class MemoryEngine {
   ): Promise<ContextResponse> {
     if (!this.isInitialized) {
       throw new MemoryError('Memory engine not initialized. Call initialize() first.', 'NOT_INITIALIZED');
-    }    try {
+    } try {
       let memories: MemoryResult[] = [];
 
       if (request.topic) {
@@ -237,13 +237,13 @@ export class MemoryEngine {
           include_context: true,
           time_decay: true,
         };
-        
+
         memories = await this.vectorStore.searchMemories(embeddingResult.embedding, memoryQuery);
       }
 
       // Filter by memory types if specified
       if (request.memory_types && request.memory_types.length > 0) {
-        memories = memories.filter(m => 
+        memories = memories.filter(m =>
           request.memory_types!.includes(m.memory.type)
         );
       }      // Generate context summary
@@ -259,7 +259,8 @@ export class MemoryEngine {
         summary: context_summary,
         confidence: this.calculateContextConfidence(memories),
         generated_at: new Date(),
-      };    } catch (error: unknown) {
+      };
+    } catch (error: unknown) {
       if (error instanceof Error) {
         throw new MemoryError(`Failed to get context: ${error.message}`, 'CONTEXT_ERROR');
       }
@@ -293,7 +294,7 @@ export class MemoryEngine {
       }
 
       const allHealthy = Object.values(components).every(Boolean);
-        const result = {
+      const result = {
         status: allHealthy ? 'healthy' as const : 'unhealthy' as const,
         components,
       };
@@ -322,7 +323,7 @@ export class MemoryEngine {
     try {
       const checks: Record<string, boolean> = {};
       const components: Record<string, { status: string; error?: string } | string> = {};
-      
+
       // Check embedding service
       let embeddingHealthy = true;
       try {
@@ -334,7 +335,7 @@ export class MemoryEngine {
         embeddingHealthy = false;
         components.embedding = 'unhealthy';
       }
-      
+
       // Check vector store
       let vectorStoreHealthy = true;
       try {
@@ -342,8 +343,8 @@ export class MemoryEngine {
           const vectorHealth = await this.vectorStore.getHealth();
           vectorStoreHealthy = vectorHealth.status === 'healthy';
           checks.vectorStore = vectorStoreHealthy;
-          components.vectorStore = vectorStoreHealthy ? 
-            { status: 'healthy' } : 
+          components.vectorStore = vectorStoreHealthy ?
+            { status: 'healthy' } :
             { status: 'unhealthy', error: vectorHealth.error };
         } else {
           checks.vectorStore = false;
@@ -353,14 +354,14 @@ export class MemoryEngine {
       } catch (error) {
         checks.vectorStore = false;
         vectorStoreHealthy = false;
-        components.vectorStore = { 
-          status: 'unhealthy', 
-          error: error instanceof Error ? error.message : 'Unknown error' 
+        components.vectorStore = {
+          status: 'unhealthy',
+          error: error instanceof Error ? error.message : 'Unknown error'
         };
       }
-        const allHealthy = embeddingHealthy && vectorStoreHealthy;
+      const allHealthy = embeddingHealthy && vectorStoreHealthy;
       const anyHealthy = embeddingHealthy || vectorStoreHealthy;
-        // When not initialized, always return unhealthy
+      // When not initialized, always return unhealthy
       if (!this.isInitialized) {
         return {
           status: 'unhealthy',
@@ -372,7 +373,7 @@ export class MemoryEngine {
           }
         };
       }
-      
+
       // For initialized and healthy state, match test expectation exactly
       if (allHealthy) {
         return {
@@ -384,13 +385,13 @@ export class MemoryEngine {
           }
         };
       }
-      
+
       // For other states
       return {
         status: anyHealthy ? 'degraded' : 'unhealthy',
         initialized: this.isInitialized,
         components,
-        checks,        timestamp: new Date()
+        checks, timestamp: new Date()
       };
     } catch {
       return {
@@ -423,64 +424,64 @@ export class MemoryEngine {
     if (!this.isInitialized) {
       await this.initialize();
     }
-  }  private classifyMemoryType(content: string): MemoryType {
+  } private classifyMemoryType(content: string): MemoryType {
     const lowerContent = content.toLowerCase();
-    
+
     // Emotion detection (check this first to avoid conflicts with time keywords)
     if (lowerContent.includes('happy') || lowerContent.includes('sad') || lowerContent.includes('angry') ||
-        lowerContent.includes('excited') || lowerContent.includes('frustrated') || lowerContent.includes('feel') ||
-        lowerContent.includes('felt') || lowerContent.includes('emotion')) {
+      lowerContent.includes('excited') || lowerContent.includes('frustrated') || lowerContent.includes('feel') ||
+      lowerContent.includes('felt') || lowerContent.includes('emotion')) {
       return 'emotion';
     }
-    
+
     // Task/Event detection (meetings, appointments, deadlines)
-    if (lowerContent.includes('meeting') || lowerContent.includes('appointment') || 
-        lowerContent.includes('deadline') || lowerContent.includes('task') ||
-        lowerContent.includes('schedule') || lowerContent.includes('reminder') ||
-        /\d{1,2}(:\d{2})?\s*(am|pm)/i.test(content)) { // Time patterns like "3pm", "10:30am"
+    if (lowerContent.includes('meeting') || lowerContent.includes('appointment') ||
+      lowerContent.includes('deadline') || lowerContent.includes('task') ||
+      lowerContent.includes('schedule') || lowerContent.includes('reminder') ||
+      /\d{1,2}(:\d{2})?\s*(am|pm)/i.test(content)) { // Time patterns like "3pm", "10:30am"
       return 'task';
     }
-    
+
     // Check for time-based tasks (but not emotions)
-    if ((lowerContent.includes('tomorrow') || lowerContent.includes('today')) && 
-        !lowerContent.includes('feel') && !lowerContent.includes('felt')) {
+    if ((lowerContent.includes('tomorrow') || lowerContent.includes('today')) &&
+      !lowerContent.includes('feel') && !lowerContent.includes('felt')) {
       return 'task';
     }
-    
+
     // Personality detection (check early to avoid conflicts)
     if (lowerContent.includes('personality') || lowerContent.includes('behavior') || lowerContent.includes('style') ||
-        lowerContent.includes('character') || lowerContent.includes('trait') || lowerContent.includes('manner') ||
-        /\b(calm|friendly|reliable|thoughtful|direct|professional)\s+(personality|behavior|style|character)\b/i.test(content) ||
-        /\buser\s+(has|is)\s+(a\s+)?(calm|friendly|reliable|thoughtful|direct|professional)\b/i.test(content)) {
+      lowerContent.includes('character') || lowerContent.includes('trait') || lowerContent.includes('manner') ||
+      /\b(calm|friendly|reliable|thoughtful|direct|professional)\s+(personality|behavior|style|character)\b/i.test(content) ||
+      /\buser\s+(has|is)\s+(a\s+)?(calm|friendly|reliable|thoughtful|direct|professional)\b/i.test(content)) {
       return 'personality';
     }
-    
+
     // Thread/conversation detection (check before general patterns)
-    if (lowerContent.includes('let me know') || lowerContent.includes('what you think') || 
-        lowerContent.includes('your thoughts') || lowerContent.includes('user said') ||
-        lowerContent.includes('user mentioned') || lowerContent.includes('discussed') ||
-        lowerContent.includes('conversation') || lowerContent.includes('talked about') ||
-        /\b(let\s+me\s+know|what\s+you\s+think|your\s+thoughts?|user\s+(said|mentioned))\b/i.test(content)) {
+    if (lowerContent.includes('let me know') || lowerContent.includes('what you think') ||
+      lowerContent.includes('your thoughts') || lowerContent.includes('user said') ||
+      lowerContent.includes('user mentioned') || lowerContent.includes('discussed') ||
+      lowerContent.includes('conversation') || lowerContent.includes('talked about') ||
+      /\b(let\s+me\s+know|what\s+you\s+think|your\s+thoughts?|user\s+(said|mentioned))\b/i.test(content)) {
       return 'thread';
     }
-    
+
     // Preference detection
     if (lowerContent.includes('prefer') || lowerContent.includes('like') || lowerContent.includes('dislike')) {
       return 'preference';
     }
-    
+
     // Procedure detection
     if (lowerContent.includes('how to') || lowerContent.includes('step') || lowerContent.includes('process')) {
       return 'procedure';
     }
-    
+
     // Fact detection (more specific patterns to avoid false positives)
     if (/\b(is\s+a|are\s+a|means?|defined?\s+as|explanation\s+of)\b/i.test(content) ||
-        lowerContent.includes('definition') || lowerContent.includes('information') ||
-        lowerContent.includes('describes') || lowerContent.includes('fact')) {
+      lowerContent.includes('definition') || lowerContent.includes('information') ||
+      lowerContent.includes('describes') || lowerContent.includes('fact')) {
       return 'fact';
     }
-    
+
     // Default to thread for conversational content
     return 'thread';
   }
@@ -488,9 +489,9 @@ export class MemoryEngine {
   private calculateImportance(content: string): number {
     // Simple importance calculation
     let importance = 0.4; // Reduced base importance to allow for simpler content to be less important
-    
+
     const lowerContent = content.toLowerCase();
-    
+
     // High importance keywords
     const highImportanceKeywords = ['password', 'secret', 'key', 'token', 'critical', 'urgent', 'important', 'deadline'];
     for (const keyword of highImportanceKeywords) {
@@ -498,7 +499,7 @@ export class MemoryEngine {
         importance += 0.3; // Increased boost for high importance
       }
     }
-    
+
     // Medium importance keywords
     const mediumImportanceKeywords = ['remember', 'always', 'never', 'error', 'bug', 'issue', 'tomorrow'];
     for (const keyword of mediumImportanceKeywords) {
@@ -506,12 +507,12 @@ export class MemoryEngine {
         importance += 0.2; // Increased boost for medium importance
       }
     }
-    
+
     // Length affects importance (longer content might be more detailed)
     if (content.length > 200) {
       importance += 0.1;
     }
-    
+
     // Casual content gets reduced importance
     const casualKeywords = ['weather', 'nice', 'okay', 'fine', 'good'];
     for (const keyword of casualKeywords) {
@@ -519,34 +520,34 @@ export class MemoryEngine {
         importance -= 0.05;
       }
     }
-    
+
     return Math.max(0.1, Math.min(importance, 1.0));
-  }  private applyTimeDecay(results: MemoryResult[]): MemoryResult[] {
+  } private applyTimeDecay(results: MemoryResult[]): MemoryResult[] {
     const now = new Date();
-    
+
     return results.map(result => {
       // Use lastAccessedAt if available, otherwise fall back to createdAt
       // If neither is available, treat as very recent (no decay)
       let accessTime: Date;
       if (result.memory.lastAccessedAt) {
-        accessTime = result.memory.lastAccessedAt instanceof Date 
-          ? result.memory.lastAccessedAt 
+        accessTime = result.memory.lastAccessedAt instanceof Date
+          ? result.memory.lastAccessedAt
           : new Date(result.memory.lastAccessedAt);
       } else if (result.memory.createdAt) {
-        accessTime = result.memory.createdAt instanceof Date 
-          ? result.memory.createdAt 
+        accessTime = result.memory.createdAt instanceof Date
+          ? result.memory.createdAt
           : new Date(result.memory.createdAt);
       } else {
         // If no time information available, assume current time (no decay)
         accessTime = now;
       }
-      
+
       const ageInDays = (now.getTime() - accessTime.getTime()) / (1000 * 60 * 60 * 24);
-      
+
       // Apply exponential decay (memories lose relevance over time)
       const decayFactor = Math.exp(-ageInDays / 30); // 30-day half-life
       const adjustedScore = result.score * decayFactor;
-      
+
       return {
         ...result,
         score: Math.max(adjustedScore, 0.1), // Minimum score to avoid complete elimination
@@ -588,7 +589,7 @@ export class MemoryEngine {
 
     const avgScore = memories.reduce((sum, m) => sum + m.score, 0) / memories.length;
     const avgConfidence = memories.reduce((sum, m) => sum + m.memory.confidence, 0) / memories.length;
-    
+
     return (avgScore + avgConfidence) / 2;
   }
 }

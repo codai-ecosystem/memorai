@@ -11,7 +11,7 @@ export class ContextEngine {
    * Generate a comprehensive context summary from memories
    */
   public generateContextSummary(
-    memories: MemoryResult[], 
+    memories: MemoryResult[],
     options: ContextSummaryOptions = {}
   ): string {
     if (memories.length === 0) {
@@ -21,21 +21,21 @@ export class ContextEngine {
     const { maxLength = 2000, includeScore = false, includeTimestamp = false } = options;
 
     let summary = '';
-    
+
     // Group memories by type
     const groupedMemories = this.groupMemoriesByType(memories);
-    
+
     for (const [type, typeMemories] of Object.entries(groupedMemories)) {
       summary += `\n## ${this.formatMemoryType(type)}\n`;
-      
+
       for (const memory of typeMemories.slice(0, 5)) { // Limit per type
         const prefix = includeScore ? `[${memory.score.toFixed(2)}] ` : '';
-        const timestamp = includeTimestamp 
-          ? ` (${memory.memory.createdAt.toLocaleDateString()})` 
+        const timestamp = includeTimestamp
+          ? ` (${memory.memory.createdAt.toLocaleDateString()})`
           : '';
-        
+
         summary += `- ${prefix}${memory.memory.content}${timestamp}\n`;
-        
+
         if (summary.length > maxLength) {
           summary = summary.substring(0, maxLength) + '...\n[Context truncated]';
           break;
@@ -76,7 +76,7 @@ export class ContextEngine {
 
     for (const memory of memories) {
       const keywords = this.extractKeywords(memory.memory.content);
-      
+
       for (const keyword of keywords) {
         const existing = themes.get(keyword) || { frequency: 0, importance: 0 };
         themes.set(keyword, {
@@ -117,7 +117,7 @@ export class ContextEngine {
     }
 
     const avgWeight = emotionalWeights.reduce((sum, w) => sum + w, 0) / emotionalWeights.length;
-    
+
     let sentiment: 'positive' | 'neutral' | 'negative';
     if (avgWeight > 0.2) {
       sentiment = 'positive';
@@ -158,7 +158,7 @@ export class ContextEngine {
     for (const memory of memories) {
       const age = now.getTime() - memory.memory.createdAt.getTime();
       const period = this.categorizeTimePeriod(age);
-      
+
       const existing = timeline.get(period) || { count: 0, importance: 0 };
       timeline.set(period, {
         count: existing.count + 1,
@@ -193,7 +193,7 @@ export class ContextEngine {
   ): MemoryResult[] {
     // Filter by importance threshold
     let filtered = memories.filter(m => m.memory.importance >= importanceThreshold);
-    
+
     // Sort by composite score (similarity + importance + recency)
     filtered = filtered.sort((a, b) => {
       const scoreA = this.calculateCompositeScore(a);
@@ -208,7 +208,7 @@ export class ContextEngine {
 
     for (const memory of filtered) {
       const currentCount = typeCount.get(memory.memory.type) || 0;
-      
+
       if (currentCount < maxPerType && diverseMemories.length < maxMemories) {
         diverseMemories.push(memory);
         typeCount.set(memory.memory.type, currentCount + 1);
@@ -248,7 +248,7 @@ export class ContextEngine {
     }
 
     const filtered = this.filterContextualMemories(memories, 15);
-    
+
     return filtered
       .map(m => {
         const typeLabel = m.memory.type.toUpperCase();
@@ -270,7 +270,7 @@ export class ContextEngine {
     }, 0);
 
     const totalWeight = memories.reduce((sum, m) => sum + m.memory.importance, 0);
-    
+
     return totalWeight > 0 ? weightedSum / totalWeight : 0;
   }
 
@@ -312,10 +312,10 @@ export class ContextEngine {
   private calculateCompositeScore(memory: MemoryResult): number {
     const now = new Date();
     const ageInDays = (now.getTime() - memory.memory.lastAccessedAt.getTime()) / (1000 * 60 * 60 * 24);
-    
+
     // Recency factor (more recent = higher score)
     const recencyFactor = Math.exp(-ageInDays / 30); // 30-day decay
-    
+
     // Composite score combining similarity, importance, and recency
     return (
       memory.score * 0.5 +           // Semantic similarity

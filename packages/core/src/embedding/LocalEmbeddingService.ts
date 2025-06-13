@@ -129,7 +129,8 @@ export class LocalEmbeddingService {
 
     /**
      * Ensure the Python script exists
-     */    private async ensurePythonScript(): Promise<void> {        try {
+     */    private async ensurePythonScript(): Promise<void> {
+        try {
             await fs.access(this.pythonScriptPath);
         } catch {
             await this.createPythonScript();
@@ -197,12 +198,14 @@ if __name__ == '__main__':
     /**
      * Load embedding cache from disk
      */
-    private async loadCache(): Promise<void> {        try {
+    private async loadCache(): Promise<void> {
+        try {
             if (this.config.cachePath) {
                 const cacheData = await fs.readFile(this.config.cachePath, 'utf-8');
                 const cacheObject = JSON.parse(cacheData);
                 this.cache = new Map(Object.entries(cacheObject));
-            }        } catch {
+            }
+        } catch {
             // Cache doesn't exist or is invalid, start fresh
             this.cache = new Map();
         }
@@ -217,7 +220,8 @@ if __name__ == '__main__':
                 await fs.mkdir(dirname(this.config.cachePath), { recursive: true });
                 const cacheObject = Object.fromEntries(this.cache);
                 await fs.writeFile(this.config.cachePath, JSON.stringify(cacheObject, null, 2));
-            }        } catch (error) {
+            }
+        } catch (error) {
             // Non-critical error, continue without caching
             logger.warn('Failed to save embedding cache:', error);
         }

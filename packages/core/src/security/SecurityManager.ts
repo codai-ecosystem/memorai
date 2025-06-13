@@ -75,11 +75,11 @@ export class InputValidator {
         if (rule.minLength && value.length < rule.minLength) {
           errors.push(`Field '${rule.field}' must be at least ${rule.minLength} characters`);
         }
-        
+
         if (rule.maxLength && value.length > rule.maxLength) {
           errors.push(`Field '${rule.field}' must be no more than ${rule.maxLength} characters`);
         }
-        
+
         if (rule.pattern && !rule.pattern.test(value)) {
           errors.push(`Field '${rule.field}' format is invalid`);
         }
@@ -90,7 +90,7 @@ export class InputValidator {
         if (rule.minLength && value.length < rule.minLength) {
           errors.push(`Field '${rule.field}' must have at least ${rule.minLength} items`);
         }
-        
+
         if (rule.maxLength && value.length > rule.maxLength) {
           errors.push(`Field '${rule.field}' must have no more than ${rule.maxLength} items`);
         }
@@ -141,7 +141,7 @@ export class InputValidator {
     errors: string[];
   } {
     const errors: string[] = [];
-    
+
     if (!content || typeof content !== 'string') {
       errors.push('Content must be a non-empty string');
       return { isValid: false, sanitizedContent: '', errors };
@@ -199,8 +199,8 @@ export class InputValidator {
 
 export class RateLimiter {
   private requests = new Map<string, { count: number; windowStart: number }>();
-  
-  constructor(private config: RateLimitConfig) {}
+
+  constructor(private config: RateLimitConfig) { }
 
   /**
    * Check if a request should be allowed
@@ -210,15 +210,15 @@ export class RateLimiter {
     remainingRequests: number;
     resetTime: Date;
   } {
-    const key = this.config.keyGenerator 
+    const key = this.config.keyGenerator
       ? this.config.keyGenerator(tenantId, agentId)
       : `${tenantId}:${agentId || 'default'}`;
 
     const now = Date.now();
     const windowStart = Math.floor(now / this.config.windowMs) * this.config.windowMs;
-    
+
     let requestData = this.requests.get(key);
-    
+
     // Initialize or reset window
     if (!requestData || requestData.windowStart < windowStart) {
       requestData = { count: 0, windowStart };
@@ -226,7 +226,7 @@ export class RateLimiter {
     }
 
     const allowed = requestData.count < this.config.maxRequests;
-    
+
     if (allowed) {
       requestData.count++;
     }
@@ -247,12 +247,12 @@ export class RateLimiter {
     resetTime: Date;
   } {
     const result = this.isAllowed(tenantId, agentId);
-    const key = this.config.keyGenerator 
+    const key = this.config.keyGenerator
       ? this.config.keyGenerator(tenantId, agentId)
       : `${tenantId}:${agentId || 'default'}`;
-    
+
     const requestData = this.requests.get(key);
-    
+
     return {
       requestCount: requestData?.count || 0,
       remainingRequests: result.remainingRequests,
@@ -296,7 +296,7 @@ export class SecurityAuditor {
    * Get audit events for a specific tenant
    */
   public getTenantAuditLog(
-    tenantId: string, 
+    tenantId: string,
     options: {
       startDate?: Date;
       endDate?: Date;
@@ -343,13 +343,13 @@ export class SecurityAuditor {
     failureRate: number;
     recentCriticalEvents: number;
   } {
-    const events = tenantId 
+    const events = tenantId
       ? this.auditLog.filter(event => event.tenantId === tenantId)
       : this.auditLog;
 
     const now = new Date();
     const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-    
+
     const recentEvents = events.filter(event => event.timestamp >= oneDayAgo);
     const recentCriticalEvents = recentEvents.filter(event => event.severity === 'critical').length;
 
@@ -382,7 +382,7 @@ export class SecurityAuditor {
     if (format === 'csv') {
       const headers = [
         'timestamp',
-        'eventType', 
+        'eventType',
         'severity',
         'tenantId',
         'agentId',
@@ -391,7 +391,7 @@ export class SecurityAuditor {
         'success',
         'errorMessage'
       ];
-      
+
       const rows = this.auditLog.map(event => [
         event.timestamp.toISOString(),
         event.eventType,
@@ -414,7 +414,7 @@ export class SecurityAuditor {
 export class EncryptionManager {
   private algorithm = 'aes-256-cbc';
   private key: Buffer;
-  
+
   constructor(private encryptionKey: string) {
     if (!encryptionKey || encryptionKey.length < 32) {
       throw new Error('Encryption key must be at least 32 characters long');
@@ -427,10 +427,10 @@ export class EncryptionManager {
   public encrypt(text: string): string {
     const iv = crypto.randomBytes(16);
     const cipher = crypto.createCipheriv(this.algorithm, this.key, iv);
-    
+
     let encrypted = cipher.update(text, 'utf8', 'hex');
     encrypted += cipher.final('hex');
-    
+
     return iv.toString('hex') + ':' + encrypted;
   }
   /**
@@ -444,16 +444,16 @@ export class EncryptionManager {
 
     const ivPart = parts[0];
     const encryptedPart = parts[1];
-    
+
     if (!ivPart || !encryptedPart) {
       throw new Error('Invalid encrypted text format - missing parts');
-    }    const iv = Buffer.from(ivPart, 'hex');
-    
+    } const iv = Buffer.from(ivPart, 'hex');
+
     const decipher = crypto.createDecipheriv(this.algorithm, this.key, iv);
-    
+
     let decrypted: string = decipher.update(encryptedPart, 'hex', 'utf8');
     decrypted += decipher.final('utf8');
-    
+
     return decrypted;
   }
 
@@ -464,7 +464,7 @@ export class EncryptionManager {
     const actualSalt = salt || crypto.randomBytes(16).toString('hex');
     const hash = crypto.createHash('sha256');
     hash.update(data + actualSalt);
-    
+
     return actualSalt + ':' + hash.digest('hex');
   }
   /**
@@ -478,24 +478,24 @@ export class EncryptionManager {
 
     const salt = parts[0];
     const expectedHash = parts[1];
-    
+
     if (!salt || !expectedHash) {
       return false;
     }
-    
+
     const actualHashWithSalt = this.hash(data, salt);
     const actualHashParts = actualHashWithSalt.split(':');
-    
+
     if (actualHashParts.length !== 2) {
       return false;
     }
-    
+
     const actualHash = actualHashParts[1];
-    
+
     if (!actualHash) {
       return false;
     }
-    
+
     return crypto.timingSafeEqual(
       Buffer.from(expectedHash, 'hex'),
       Buffer.from(actualHash, 'hex')
@@ -527,7 +527,7 @@ export class SecurityManager {
     this.config = config;
     this.encryptionManager = new EncryptionManager(config.encryptionKey);
     this.auditor = new SecurityAuditor();
-    
+
     const rateLimitConfig = config.rateLimiting || {
       windowMs: 60000, // 1 minute
       maxRequests: 100, // 100 requests per minute
@@ -601,14 +601,14 @@ export class SecurityManager {
     if (!filter?.tenantId) {
       return [];
     }
-    
+
     const auditOptions: {
       startDate?: Date;
       endDate?: Date;
       eventType?: SecurityAuditEvent['eventType'];
       severity?: SecurityAuditEvent['severity'];
     } = {};
-    
+
     if (filter.startDate) {
       auditOptions.startDate = filter.startDate;
     }
@@ -621,7 +621,7 @@ export class SecurityManager {
     if (filter.severity) {
       auditOptions.severity = filter.severity as SecurityAuditEvent['severity'];
     }
-    
+
     return this.auditor.getTenantAuditLog(filter.tenantId, auditOptions);
   }
 
@@ -635,7 +635,7 @@ export class SecurityManager {
     rateLimitStatus: Record<string, unknown>;
   } {
     const securityStats = this.auditor.getSecurityStats();
-    
+
     return {
       totalEvents: securityStats.totalEvents,
       eventsByType: securityStats.eventsByType,

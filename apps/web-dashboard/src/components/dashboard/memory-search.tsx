@@ -238,15 +238,25 @@ export function MemorySearch({ className }: MemorySearchProps) {
                                 <option value="month">This Month</option>
                                 <option value="quarter">This Quarter</option>
                             </select>
-                        </div>
-                    </div>
-                </div>
-            )}            {/* Search Results Count */}
-            {searchResults && searchResults.length > 0 && (
-                <div className="text-sm text-gray-600 dark:text-gray-400">
-                    Found {searchResults.length} memories for "{query}"
+                        </div>                    </div>
                 </div>
             )}
+
+            {/* Search Results */}
+            <div className="mt-6">
+                {searchResults && searchResults.length > 0 ? (
+                    <div>
+                        <div className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                            {searchResults.length} Memories
+                        </div>
+                        {/* Results would be displayed here */}
+                    </div>
+                ) : query && !isLoading ? (
+                    <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                        No memories yet
+                    </div>
+                ) : null}
+            </div>
         </div>
     )
 }

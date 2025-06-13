@@ -1,59 +1,59 @@
 {
-  "name": "memorai-mcp",
-  "version": "2.0.0",
-  "description": "Production-Ready Agent-Native Memory Control Protocol",
-  "private": true,
-  "workspaces": [
-    "packages/*",
-    "apps/*"
-  ],
-  "scripts": {
-    "build": "turbo build",
-    "build:all": "turbo build",
-    "dev": "turbo dev",
-    "test": "turbo test",
-    "test:watch": "turbo test:watch",
-    "lint": "turbo lint",
-    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
-    "clean": "turbo clean && rm -rf node_modules",
-    "start:dashboard": "cd apps/web-dashboard && npm run dev",
-    "start:api": "cd apps/api && npm run dev",
-    "start:mcp": "node packages/mcp/dist/server.js"
-  },
-  "devDependencies": {
-    "@eslint/js": "^9.28.0",
-    "@turbo/gen": "^1.13.4",
-    "@typescript-eslint/eslint-plugin": "^8.18.1",
-    "@typescript-eslint/parser": "^8.18.1",
-    "eslint": "^8.57.1",
-    "prettier": "^3.3.3",
-    "turbo": "^2.5.4",
-    "typescript": "^5.5.4"
-  },
-  "packageManager": "pnpm@8.15.6",
-  "engines": {
-    "node": ">=18.0.0",
-    "pnpm": ">=8.0.0"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/dragoscv/memorai-mcp.git"
-  },
-  "keywords": [
-    "memory",
-    "ai",
-    "mcp",
-    "agents",
-    "semantic-search",
-    "vector-database"
-  ],
-  "license": "MIT",
-  "pnpm": {
-    "overrides": {
-      "esbuild": ">=0.25.0",
-      "fast-jwt": ">=5.0.6",
-      "brace-expansion": ">=2.0.2"
-    }
-  },
-  "author": "Dragos CV"
+    "name": "memorai-mcp",
+    "version": "2.0.0",
+    "description": "Production-Ready Agent-Native Memory Control Protocol",
+    "private": true,
+    "workspaces": [
+        "packages/*",
+        "apps/*"
+    ],
+    "scripts": {
+        "build": "turbo build",
+        "build:all": "turbo build",
+        "dev": "turbo dev",
+        "test": "turbo test",
+        "test:watch": "turbo test:watch",
+        "lint": "turbo lint",
+        "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+        "clean": "turbo clean && rm -rf node_modules",
+        "start:dashboard": "cd apps/web-dashboard && npm run dev",
+        "start:api": "cd apps/api && npm run dev",
+        "start:mcp": "node packages/mcp/dist/server.js"
+    },
+    "devDependencies": {
+        "@eslint/js": "^9.28.0",
+        "@turbo/gen": "^1.13.4",
+        "@typescript-eslint/eslint-plugin": "^8.18.1",
+        "@typescript-eslint/parser": "^8.18.1",
+        "eslint": "^8.57.1",
+        "prettier": "^3.3.3",
+        "turbo": "^2.5.4",
+        "typescript": "^5.5.4"
+    },
+    "packageManager": "pnpm@8.15.6",
+    "engines": {
+        "node": ">=18.0.0",
+        "pnpm": ">=8.0.0"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/dragoscv/memorai-mcp.git"
+    },
+    "keywords": [
+        "memory",
+        "ai",
+        "mcp",
+        "agents",
+        "semantic-search",
+        "vector-database"
+    ],
+    "license": "MIT",
+    "pnpm": {
+        "overrides": {
+            "esbuild": ">=0.25.0",
+            "fast-jwt": ">=5.0.6",
+            "brace-expansion": ">=2.0.2"
+        }
+    },
+    "author": "Dragos CV"
 }
