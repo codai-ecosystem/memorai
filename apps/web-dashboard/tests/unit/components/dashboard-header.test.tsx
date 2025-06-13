@@ -315,10 +315,10 @@ describe('DashboardHeader - Comprehensive Testing', () => {
 
             // Use shorter but still long query for testing
             const longQuery = 'a'.repeat(100)
-            
+
             // Use fireEvent for faster input simulation
             fireEvent.change(searchInput, { target: { value: longQuery } })
-            
+
             // Find and submit the form instead of using keyDown
             const form = searchInput.closest('form')
             if (form) {
@@ -390,7 +390,8 @@ describe('DashboardHeader - Comprehensive Testing', () => {
         })
     })
 
-    describe('Performance and Optimization', () => {        it('should handle frequent search updates efficiently', async () => {
+    describe('Performance and Optimization', () => {
+        it('should handle frequent search updates efficiently', async () => {
             render(<DashboardHeader onSearch={mockOnSearch} />)
 
             const searchInput = screen.getByPlaceholderText('Search memories, agents, or tags...')

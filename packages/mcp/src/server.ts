@@ -42,11 +42,10 @@ interface CLIOptions {
  */
 function parseCliArguments(): CLIOptions {
   const program = new Command();
-
   program
     .name('memorai-mcp')
     .description('Enterprise-grade memory management MCP server for AI agents')
-    .version('2.0.0-beta.1')
+    .version('2.0.0')
     .option('--no-dashboard', 'Disable automatic dashboard startup')
     .option('-p, --port <port>', 'Dashboard port (default: 6366)', '6366')
     .option('-h, --help', 'Display help information')
@@ -281,22 +280,78 @@ async function createServer(options: CLIOptions = {}) {
       console.error('⚠️  Failed to start dashboard:', error);
       console.error('🔄 MCP server will continue without dashboard');
     }
-  }
-  // Initialize memory engine
-  let memoryEngine: MemoryEngine | null = null;
+  }  // Initialize memory engine with fallback
+  let memoryEngine: MemoryEngine | any = null;
   try {
-    // Initialize with default configuration
+    // First try to initialize with default configuration
     memoryEngine = new MemoryEngine();
     await memoryEngine.initialize();
-    
-    console.error('🧠 Memorai MCP Server started successfully');
+
+    console.error('✅ Memorai MCP Server initialized with full functionality');
     console.error('📋 Available tools: remember, recall, forget, context');
     console.error('⚡ Ready to handle MCP requests via stdio');
 
   } catch (error) {
-    console.error('❌ Failed to initialize memory engine:', error);
-    console.error('🔄 Server will start with limited functionality');
-    memoryEngine = null;
+    console.error('⚠️  Failed to initialize full memory engine:', error);
+    console.error('🔄 Falling back to basic in-memory storage...');
+
+    try {
+      // Create a basic in-memory implementation
+      memoryEngine = {
+        memories: new Map(),
+        async remember(content: string, tenantId: string, agentId?: string) {
+          const id = `mem_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+          this.memories.set(id, {
+            id,
+            content,
+            tenantId,
+            agentId,
+            timestamp: new Date().toISOString()
+          });
+          return id;
+        },
+        async recall(query: string, tenantId: string, agentId?: string) {
+          const results = [];
+          for (const [id, memory] of this.memories.entries()) {
+            if (memory.tenantId === tenantId &&
+              (memory.content.toLowerCase().includes(query.toLowerCase()) ||
+                query.toLowerCase().includes(memory.content.toLowerCase()))) {
+              results.push({
+                id,
+                content: memory.content,
+                relevance: 0.8,
+                metadata: { agentId: memory.agentId, timestamp: memory.timestamp }
+              });
+            }
+          }
+          return results.slice(0, 10);
+        },
+        async forget(memoryId: string, tenantId: string) {
+          const deleted = this.memories.delete(memoryId);
+          return { success: deleted };
+        }, async getContext(tenantId: string, contextSize: number = 15) {
+          const memories = Array.from(this.memories.values())
+            .filter((m: any) => m.tenantId === tenantId)
+            .slice(-contextSize);
+          return {
+            memories: memories.map((m: any) => ({
+              content: m.content,
+              timestamp: m.timestamp,
+              agentId: m.agentId
+            })),
+            totalCount: this.memories.size
+          };
+        }
+      };
+
+      console.error('✅ Basic memory engine initialized successfully');
+      console.error('📋 Available tools: remember, recall, forget, context (basic mode)');
+      console.error('⚡ Ready to handle MCP requests via stdio');
+    } catch (mockError) {
+      console.error('❌ Failed to initialize basic memory engine:', mockError);
+      console.error('🔄 Server will start with very limited functionality');
+      memoryEngine = null;
+    }
   }
 
   // List available tools
@@ -453,11 +508,22 @@ async function createServer(options: CLIOptions = {}) {
         }
         case 'context': {
           const { agentId, contextSize = 5 } = args as any;
-          const contextResponse = await memoryEngine.context({
-            tenant_id: agentId,
-            agent_id: agentId,
-            max_memories: contextSize
-          });
+          let contextResponse;
+
+          if (typeof memoryEngine.context === 'function') {
+            // Full MemoryEngine
+            contextResponse = await memoryEngine.context({
+              tenant_id: agentId,
+              agent_id: agentId,
+              max_memories: contextSize
+            });
+          } else if (typeof memoryEngine.getContext === 'function') {
+            // Basic memory engine
+            contextResponse = await memoryEngine.getContext(agentId, contextSize);
+          } else {
+            throw new Error('Context function not available');
+          }
+
           return {
             content: [
               {

@@ -163,7 +163,7 @@ export const useMemoryStore = create<MemoryState>()(
                             isLoading: false
                         });
                     }
-                },                fetchStats: async () => {
+                }, fetchStats: async () => {
                     set({ isLoading: true, error: null });
                     try {
                         console.log('Memory store: Fetching stats...');

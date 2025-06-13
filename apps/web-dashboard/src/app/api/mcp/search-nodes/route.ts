@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(request: NextRequest) {
     try {
         const { query } = await request.json();
-        
+
         if (!query) {
             return NextResponse.json(
                 { error: 'Query parameter is required' },
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
         ];
 
         const searchResults = allEntities.filter(entity =>
-            entity.observations.some(obs => 
+            entity.observations.some(obs =>
                 obs.toLowerCase().includes(query.toLowerCase())
             ) || entity.name.toLowerCase().includes(query.toLowerCase()) ||
             entity.entityType.toLowerCase().includes(query.toLowerCase())

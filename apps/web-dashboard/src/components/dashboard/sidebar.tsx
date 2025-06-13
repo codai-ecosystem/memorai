@@ -75,33 +75,33 @@ export function DashboardSidebar({ activeTab, onTabChange, className }: Dashboar
                             const isActive = activeTab === item.id
 
                             return (<li key={item.id}>                                <button
-                                    onClick={() => {
-                                        console.log('Sidebar nav clicked:', item.id, 'current activeTab:', activeTab)
-                                        onTabChange?.(item.id)
-                                    }}
-                                    data-testid={`nav-${item.id}`}
-                                    className={cn(
-                                        "w-full flex items-center space-x-3 px-3 py-2 rounded-lg",
-                                        "text-left transition-all duration-200",
-                                        isActive
-                                            ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800"
-                                            : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800",
-                                        isCollapsed && "justify-center"
-                                    )}
-                                    title={isCollapsed ? item.label : undefined}
-                                >
-                                    <Icon className={cn(
-                                        "h-5 w-5 flex-shrink-0",
-                                        isActive
-                                            ? "text-blue-700 dark:text-blue-300"
-                                            : "text-gray-500 dark:text-gray-400"
-                                    )} />
-                                    {!isCollapsed && (
-                                        <span className="font-medium truncate">
-                                            {item.label}
-                                        </span>
-                                    )}
-                                </button>
+                                onClick={() => {
+                                    console.log('Sidebar nav clicked:', item.id, 'current activeTab:', activeTab)
+                                    onTabChange?.(item.id)
+                                }}
+                                data-testid={`nav-${item.id}`}
+                                className={cn(
+                                    "w-full flex items-center space-x-3 px-3 py-2 rounded-lg",
+                                    "text-left transition-all duration-200",
+                                    isActive
+                                        ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-800"
+                                        : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800",
+                                    isCollapsed && "justify-center"
+                                )}
+                                title={isCollapsed ? item.label : undefined}
+                            >
+                                <Icon className={cn(
+                                    "h-5 w-5 flex-shrink-0",
+                                    isActive
+                                        ? "text-blue-700 dark:text-blue-300"
+                                        : "text-gray-500 dark:text-gray-400"
+                                )} />
+                                {!isCollapsed && (
+                                    <span className="font-medium truncate">
+                                        {item.label}
+                                    </span>
+                                )}
+                            </button>
                             </li>
                             )
                         })}

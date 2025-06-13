@@ -81,7 +81,8 @@ export default function DashboardPage() {
     }
 
     const renderTabContent = () => {
-        switch (activeTab) {            case 'overview':
+        switch (activeTab) {
+            case 'overview':
                 return (
                     <div className="space-y-6">
                         <div className="relative z-0">

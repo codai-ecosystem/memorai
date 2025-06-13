@@ -42,7 +42,7 @@ export function AnalyticsDashboard({ className }: AnalyticsDashboardProps) {
     // Add safety checks for memories
     const safeMemories = memories || []
     console.log('AnalyticsDashboard: memories count:', safeMemories.length)
-    
+
     // Calculate analytics data from memories with safety checks
     const analyticsData = {
         totalMemories: safeMemories.length,
@@ -67,7 +67,7 @@ export function AnalyticsDashboard({ className }: AnalyticsDashboardProps) {
                 console.warn('Error processing memory date:', error)
                 return false
             }
-        }).length,        avgSimilarity: safeMemories.length > 0
+        }).length, avgSimilarity: safeMemories.length > 0
             ? safeMemories.reduce((sum, m) => sum + (m.metadata?.similarity || 0), 0) / safeMemories.length
             : 0,
         uniqueAgents: [...new Set(safeMemories.map(m => m.metadata?.agentId).filter(Boolean))].length,
@@ -129,7 +129,7 @@ export function AnalyticsDashboard({ className }: AnalyticsDashboardProps) {
                     <div className={cn('p-3 rounded-lg', colorClasses[color])}>
                         <Icon className="h-6 w-6" />
                     </div>
-                </div>            </motion.div>        )
+                </div>            </motion.div>)
     }
 
     if (renderError) {
@@ -137,7 +137,7 @@ export function AnalyticsDashboard({ className }: AnalyticsDashboardProps) {
             <div data-testid="analytics-dashboard" className={cn('space-y-6', className)}>
                 <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
                     <p className="text-red-800 dark:text-red-200">Error: {renderError}</p>
-                    <button 
+                    <button
                         onClick={() => setRenderError(null)}
                         className="mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
                     >

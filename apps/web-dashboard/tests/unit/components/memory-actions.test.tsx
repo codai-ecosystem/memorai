@@ -360,14 +360,15 @@ describe('MemoryActions - Comprehensive Testing', () => {
                     importance: 0.5,
                     source: 'dashboard',
                 })
-            })        })
+            })
+        })
     })
 
     describe('Loading States', () => {
         it('should show loading state during submission', async () => {
             // Set loading state before rendering
             mockMemoryStore.isLoading = true
-            
+
             render(<MemoryActions />)
             const addMemoryButton = screen.getByTestId('quick-action-add-memory')
             await user.click(addMemoryButton)

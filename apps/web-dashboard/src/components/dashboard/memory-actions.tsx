@@ -40,7 +40,8 @@ export function MemoryActions({ className }: MemoryActionsProps) {
             setImportance(0.5)
             setIsAddingMemory(false)
 
-            toast.success('Memory added successfully!')        } catch (error) {
+            toast.success('Memory added successfully!')
+        } catch (error) {
             toast.error('Failed to add memory')
         }
     }
@@ -50,7 +51,7 @@ export function MemoryActions({ className }: MemoryActionsProps) {
             id: 'add-memory',
             label: 'Add Memory',
             icon: Plus,
-            description: 'Create a new memory entry',            onClick: () => setIsAddingMemory(true)
+            description: 'Create a new memory entry', onClick: () => setIsAddingMemory(true)
         },
         {
             id: 'bulk-import',
@@ -108,7 +109,7 @@ export function MemoryActions({ className }: MemoryActionsProps) {
                 })}
             </div>            {/* Add Memory Form */}
             {isAddingMemory && (
-                <div 
+                <div
                     className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 relative z-20"
                     data-testid="memory-form-container"
                 >
@@ -125,9 +126,9 @@ export function MemoryActions({ className }: MemoryActionsProps) {
                         </button>
                     </div>
 
-                    <form 
-                        onSubmit={handleSubmit} 
-                        className="space-y-4" 
+                    <form
+                        onSubmit={handleSubmit}
+                        className="space-y-4"
                         role="form"
                         data-testid="memory-form"
                     >{/* Content */}

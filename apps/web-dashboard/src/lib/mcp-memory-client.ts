@@ -67,7 +67,7 @@ class MCPMemoryClient {
         try {
             // Use mcp_standardmemor_read_graph to get all entities
             const graphResponse = await this.readGraph();
-            
+
             if (!graphResponse.entities) {
                 return [];
             }            // Transform entities to Memory format
@@ -86,9 +86,9 @@ class MCPMemoryClient {
                 }
             }));// Apply query filter if provided
             if (params?.query) {
-                return memories.filter(memory => 
+                return memories.filter(memory =>
                     memory.content.toLowerCase().includes(params.query!.toLowerCase()) ||
-                    (memory.metadata.tags && memory.metadata.tags.some(tag => 
+                    (memory.metadata.tags && memory.metadata.tags.some(tag =>
                         tag.toLowerCase().includes(params.query!.toLowerCase())
                     ))
                 );
@@ -113,7 +113,7 @@ class MCPMemoryClient {
         try {
             // Use mcp_standardmemor_search_nodes for semantic search
             const searchResponse = await this.searchNodes(query);
-            
+
             if (!searchResponse || !Array.isArray(searchResponse)) {
                 return [];
             }            // Transform search results to Memory format
@@ -148,7 +148,7 @@ class MCPMemoryClient {
             // Create a new entity in the MCP memory system
             const entityName = `memory-${Date.now()}`;
             const entityType = metadata.source || 'user_input';
-            
+
             const entity: MCPEntity = {
                 name: entityName,
                 entityType,
@@ -176,12 +176,12 @@ class MCPMemoryClient {
             console.error('Failed to add memory to MCP:', error);
             throw new Error('Failed to create memory');
         }
-    }    async getStats(): Promise<MemoryStats> {
+    } async getStats(): Promise<MemoryStats> {
         try {
             console.log('MCPMemoryClient: Getting stats...');
             const graphResponse = await this.readGraph();
             console.log('MCPMemoryClient: Graph response:', graphResponse);
-            
+
             if (!graphResponse.entities || graphResponse.entities.length === 0) {
                 console.warn('MCPMemoryClient: No entities found, returning empty stats');
                 return this.getEmptyStats();
@@ -227,11 +227,11 @@ class MCPMemoryClient {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' },
             });
-            
+
             if (response.ok) {
                 const data = await response.json();
                 console.log('MCP read-graph response:', data);
-                
+
                 // Convert MCP response format to our expected format
                 if (data.entities && Array.isArray(data.entities)) {
                     return {
@@ -244,7 +244,7 @@ class MCPMemoryClient {
                     };
                 }
             }
-            
+
             // Fallback with minimal sample data if API fails
             console.warn('MCP API call failed, using fallback data');
             return {
@@ -259,18 +259,18 @@ class MCPMemoryClient {
             };
         } catch (error) {
             console.error('Error reading MCP graph:', error);
-            return { 
+            return {
                 entities: [
                     {
                         name: "error-fallback",
                         entityType: "system_error",
                         observations: ["Failed to connect to MCP server", "Using fallback data"]
                     }
-                ], 
-                relations: [] 
+                ],
+                relations: []
             };
         }
-    }private async searchNodes(query: string): Promise<MCPEntity[]> {
+    } private async searchNodes(query: string): Promise<MCPEntity[]> {
         try {
             // Use the actual mcp_standardmemor_search_nodes call
             const response = await fetch('/api/mcp/search-nodes', {
@@ -278,16 +278,16 @@ class MCPMemoryClient {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ query })
             });
-            
+
             if (response.ok) {
                 const data = await response.json();
                 return data;
             }
-            
+
             // Fallback to basic search
             const graphResponse = await this.readGraph();
             return graphResponse.entities.filter((entity: MCPEntity) =>
-                entity.observations.some(obs => 
+                entity.observations.some(obs =>
                     obs.toLowerCase().includes(query.toLowerCase())
                 ) || entity.name.toLowerCase().includes(query.toLowerCase())
             );
@@ -295,7 +295,7 @@ class MCPMemoryClient {
             console.error('Error searching MCP nodes:', error);
             return [];
         }
-    }    private async createEntities(entities: MCPEntity[]): Promise<void> {
+    } private async createEntities(entities: MCPEntity[]): Promise<void> {
         try {
             // Use the actual mcp_standardmemor_create_entities call
             const response = await fetch('/api/mcp/create-entities', {
@@ -303,7 +303,7 @@ class MCPMemoryClient {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ entities })
             });
-            
+
             if (response.ok) {
                 console.log('Entities created successfully in MCP:', entities);
             } else {
@@ -345,11 +345,11 @@ class MCPMemoryClient {
             'technical_issue': 0.85,
             'conversation': 0.5
         };
-        
+
         const baseImportance = typeImportance[entity.entityType] || 0.5;
         const contentLength = entity.observations.join(' ').length;
         const lengthBonus = Math.min(contentLength / 1000, 0.2); // Max 0.2 bonus
-        
+
         return Math.min(baseImportance + lengthBonus, 1.0);
     }
 
