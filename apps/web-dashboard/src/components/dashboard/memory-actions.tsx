@@ -64,14 +64,13 @@ export function MemoryActions({ className }: MemoryActionsProps) {
         {
             id: 'ai-assist',
             label: 'AI Assist',
-            icon: Brain,
-            description: 'Get AI suggestions for memory organization',
+            icon: Brain, description: 'Get AI suggestions for memory organization',
             onClick: () => toast('AI assist feature coming soon!')
         }
     ]
 
     return (
-        <div className={cn("p-6 space-y-6", className)}>
+        <div data-testid="memory-actions" className={cn("p-6 space-y-6", className)}>
             {/* Header */}
             <div>
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white">

@@ -48,10 +48,12 @@ export function DashboardHeader({ onSearch, className }: DashboardHeaderProps) {
     }
 
     return (
-        <header className={cn(
-            "bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-6 py-4",
-            className
-        )}>
+        <header
+            data-testid="dashboard-header"
+            className={cn(
+                "bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 px-6 py-4",
+                className
+            )}>
             <div className="flex items-center justify-between">
                 {/* Logo and Title */}
                 <div className="flex items-center space-x-4">

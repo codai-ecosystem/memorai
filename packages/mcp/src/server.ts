@@ -11,7 +11,7 @@ import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
-import { UnifiedMemoryEngine } from '@codai/memorai-core';
+import { MemoryEngine } from '@codai/memorai-core';
 import { config } from 'dotenv';
 import { spawn, ChildProcess } from 'child_process';
 import { createConnection } from 'net';
@@ -282,34 +282,16 @@ async function createServer(options: CLIOptions = {}) {
       console.error('🔄 MCP server will continue without dashboard');
     }
   }
-
-  // Initialize memory engine with unified architecture
-  let memoryEngine: UnifiedMemoryEngine | null = null;
+  // Initialize memory engine
+  let memoryEngine: MemoryEngine | null = null;
   try {
-    // Initialize with auto-detection and fallback enabled
-    memoryEngine = new UnifiedMemoryEngine({
-      autoDetect: true,
-      enableFallback: true,
-
-      // Local AI configuration
-      localEmbedding: {
-        model: 'all-MiniLM-L6-v2',
-        pythonPath: process.env.PYTHON_PATH || 'python',
-        ...(process.env.MEMORAI_CACHE_PATH ? { cachePath: process.env.MEMORAI_CACHE_PATH } : {})
-      },
-
-      // Mock configuration for testing
-      mock: {
-        simulateDelay: false,
-        delayMs: 0,
-        failureRate: 0
-      }
-    });
-
-    await memoryEngine.initialize();    // Log the active tier
-    const tierInfo = memoryEngine.getTierInfo();
-    console.error(`🧠 ${tierInfo.message}`);
-    console.error(`🔧 Capabilities: ${JSON.stringify(tierInfo.capabilities, null, 2)}`);
+    // Initialize with default configuration
+    memoryEngine = new MemoryEngine();
+    await memoryEngine.initialize();
+    
+    console.error('🧠 Memorai MCP Server started successfully');
+    console.error('📋 Available tools: remember, recall, forget, context');
+    console.error('⚡ Ready to handle MCP requests via stdio');
 
   } catch (error) {
     console.error('❌ Failed to initialize memory engine:', error);
@@ -456,7 +438,7 @@ async function createServer(options: CLIOptions = {}) {
           };
         } case 'forget': {
           const { agentId, memoryId } = args as any;
-          const count = await memoryEngine.forget(memoryId);
+          const count = await memoryEngine.forget('user', memoryId);
           return {
             content: [
               {
@@ -471,7 +453,7 @@ async function createServer(options: CLIOptions = {}) {
         }
         case 'context': {
           const { agentId, contextSize = 5 } = args as any;
-          const contextResponse = await memoryEngine.getContext({
+          const contextResponse = await memoryEngine.context({
             tenant_id: agentId,
             agent_id: agentId,
             max_memories: contextSize

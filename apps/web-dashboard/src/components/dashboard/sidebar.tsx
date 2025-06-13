@@ -40,12 +40,14 @@ export function DashboardSidebar({ activeTab, onTabChange, className }: Dashboar
     const [isCollapsed, setIsCollapsed] = useState(false)
 
     return (
-        <aside className={cn(
-            "bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700",
-            "transition-all duration-300 ease-in-out",
-            isCollapsed ? "w-16" : "w-64",
-            className
-        )}>
+        <aside
+            data-testid="dashboard-sidebar"
+            className={cn(
+                "bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700",
+                "transition-all duration-300 ease-in-out",
+                isCollapsed ? "w-16" : "w-64",
+                className
+            )}>
             <div className="flex flex-col h-full">
                 {/* Collapse Toggle */}
                 <div className="p-4 border-b border-gray-200 dark:border-gray-700">

@@ -66,18 +66,14 @@ export default function DashboardPage() {
                 </div>
             </div>
         )
-    }
-    const renderTabContent = () => {
+    } const renderTabContent = () => {
         switch (activeTab) {
             case 'overview':
                 return (
                     <div className="space-y-6">
-                        <div data-testid="memory-overview">
-                            <MemoryOverview />
-                        </div>                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <div data-testid="memory-actions">
-                                <MemoryActions />
-                            </div>
+                        <MemoryOverview />
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <MemoryActions />
                             <div className="space-y-6">
                                 <MemorySearch />
                                 <div data-testid="memory-results-container">
@@ -107,18 +103,14 @@ export default function DashboardPage() {
 
     return (<div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
         {/* Dashboard Header */}
-        <div data-testid="dashboard-header">
-            <DashboardHeader />
-        </div>
+        <DashboardHeader />
 
         <div className="flex">
             {/* Sidebar */}
-            <div data-testid="dashboard-sidebar">
-                <DashboardSidebar
-                    activeTab={activeTab}
-                    onTabChange={setActiveTab}
-                />
-            </div>
+            <DashboardSidebar
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
+            />
 
             {/* Main Content */}
             <main className="flex-1 p-6 lg:p-8 ml-0 lg:ml-64">
