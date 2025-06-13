@@ -1,8 +1,0 @@
-{
-    "agentId": "test-agent",
-    "content": "This is a test memory for comprehensive verification",
-    "metadata": {
-        "test": true,
-        "priority": "high"
-    }
-}
