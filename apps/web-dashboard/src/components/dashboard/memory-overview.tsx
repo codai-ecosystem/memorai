@@ -26,7 +26,9 @@ export function MemoryOverview({ className }: MemoryOverviewProps) {
                 </div>
             </div>
         )
-    } return (
+    }
+
+    return (
         <div data-testid="memory-overview" className={cn("p-6 space-y-6", className)}>
             {/* Header */}
             <div>

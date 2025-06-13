@@ -74,9 +74,12 @@ export function DashboardSidebar({ activeTab, onTabChange, className }: Dashboar
                             const Icon = item.icon
                             const isActive = activeTab === item.id
 
-                            return (<li key={item.id}>
-                                <button
-                                    onClick={() => onTabChange?.(item.id)}
+                            return (<li key={item.id}>                                <button
+                                    onClick={() => {
+                                        console.log('Sidebar nav clicked:', item.id, 'current activeTab:', activeTab)
+                                        onTabChange?.(item.id)
+                                    }}
+                                    data-testid={`nav-${item.id}`}
                                     className={cn(
                                         "w-full flex items-center space-x-3 px-3 py-2 rounded-lg",
                                         "text-left transition-all duration-200",

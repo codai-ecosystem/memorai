@@ -18,6 +18,10 @@ export function DashboardHeader({ onSearch, className }: DashboardHeaderProps) {
         onSearch?.(searchQuery)
     }
 
+    const handleReset = () => {
+        setSearchQuery('')
+    }
+
     const toggleTheme = () => {
         const themes: Array<'light' | 'dark' | 'system'> = ['light', 'dark', 'system']
         const currentIndex = themes.indexOf(theme)
@@ -72,9 +76,8 @@ export function DashboardHeader({ onSearch, className }: DashboardHeaderProps) {
                     </div>
                 </div>
 
-                {/* Search Bar */}
-                <div className="flex-1 max-w-2xl mx-8">
-                    <form onSubmit={handleSearch} className="relative">
+                {/* Search Bar */}                <div className="flex-1 max-w-2xl mx-8">
+                    <form onSubmit={handleSearch} onReset={handleReset} className="relative">
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />                        <input
                             type="text"
                             placeholder="Search memories, agents, or tags..."

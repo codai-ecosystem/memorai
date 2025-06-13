@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
-import { memoryApi } from '../lib/api-client'
+import { mcpMemoryClient } from '../lib/mcp-memory-client'
 
 export interface Memory {
     id: string
@@ -66,260 +66,81 @@ interface MemoryState {
     clearError: () => void
 }
 
-// API functions with fallback to mock for development
+// API functions using MCP Memory Client
 const api = {
     async getMemories(params?: any): Promise<Memory[]> {
         try {
-            // Try real API first
-            const response = await memoryApi.context(params?.agentId || 'copilot-1', params?.limit || 100);
-            if (response.success && response.data) {
-                // Transform API response to match our Memory interface
-                return response.data.map(mem => ({
-                    id: mem.id,
-                    content: mem.content,
-                    type: (mem.metadata.type as Memory['type']) || 'note',
-                    metadata: {
-                        agentId: mem.agentId,
-                        timestamp: mem.timestamp,
-                        tags: mem.metadata.tags || [],
-                        similarity: mem.metadata.similarity,
-                        importance: mem.metadata.importance || 0.5,
-                        source: mem.metadata.source,
-                        entities: mem.metadata.entities,
-                        confidence: mem.metadata.confidence || 0.8
-                    }
-                }));
-            }
+            return await mcpMemoryClient.getMemories({
+                limit: params?.limit,
+                query: params?.query,
+                agentId: params?.agentId
+            });
         } catch (error) {
-            console.warn('API call failed, falling back to mock data:', error);
+            console.error('Failed to fetch memories from MCP:', error);
+            return [];
         }
-
-        // Fallback to mock data
-        return [
-            {
-                id: '1',
-                content: 'User prefers dark mode interfaces and minimal design patterns. Mentioned liking VS Code Dark+ theme.',
-                type: 'personality',
-                metadata: {
-                    agentId: 'copilot-1',
-                    timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-                    tags: ['ui-preference', 'design', 'accessibility'],
-                    importance: 0.8,
-                    confidence: 0.95
-                }
-            },
-            {
-                id: '2',
-                content: 'Working on Next.js 15 dashboard transformation project with TypeScript and Tailwind CSS.',
-                type: 'task',
-                metadata: {
-                    agentId: 'copilot-1',
-                    timestamp: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
-                    tags: ['project', 'nextjs', 'typescript', 'tailwind'],
-                    importance: 0.9,
-                    confidence: 0.98
-                }
-            },
-            {
-                id: '3',
-                content: 'Asked for 110% effort and perfection. Values quality and attention to detail.',
-                type: 'personality',
-                metadata: {
-                    agentId: 'copilot-1',
-                    timestamp: new Date(Date.now() - 1000 * 60 * 5).toISOString(),
-                    tags: ['standards', 'quality', 'expectations'],
-                    importance: 0.85,
-                    confidence: 0.92
-                }
-            },
-            {
-                id: '4',
-                content: 'Mentioned encountering Memory MCP tool recall failures. Need to investigate and fix.',
-                type: 'task',
-                metadata: {
-                    agentId: 'copilot-1',
-                    timestamp: new Date().toISOString(),
-                    tags: ['bug', 'mcp', 'memory-tools', 'urgent'],
-                    importance: 0.95,
-                    confidence: 0.99
-                }
-            }
-        ];
     },
 
     async getStats(): Promise<MemoryStats> {
         try {
-            // Try to get real stats from API
-            const response = await memoryApi.context('copilot-1', 100);
-            if (response.success && response.data) {
-                const memories = response.data;
-                const agentCounts: Record<string, number> = {};
-                const typeCounts: Record<string, number> = {};
-                let totalImportance = 0;
-                let importanceCount = 0;
-
-                memories.forEach(mem => {
-                    agentCounts[mem.agentId] = (agentCounts[mem.agentId] || 0) + 1;
-                    const type = (mem.metadata.type as string) || 'note';
-                    typeCounts[type] = (typeCounts[type] || 0) + 1;
-
-                    if (mem.metadata.importance) {
-                        totalImportance += mem.metadata.importance;
-                        importanceCount++;
-                    }
-                });
-
-                return {
-                    totalMemories: memories.length,
-                    totalAgents: Object.keys(agentCounts).length,
-                    averageImportance: importanceCount > 0 ? totalImportance / importanceCount : 0.5,
-                    memoryTypes: typeCounts,
-                    recentActivity: [
-                        { date: new Date().toISOString().split('T')[0], count: memories.length },
-                    ],
-                    topAgents: Object.entries(agentCounts).map(([agentId, count]) => ({
-                        agentId,
-                        memoryCount: count
-                    }))
-                };
-            }
+            return await mcpMemoryClient.getStats();
         } catch (error) {
-            console.warn('API stats call failed, falling back to mock data:', error);
+            console.error('Failed to get stats from MCP:', error);
+            return {
+                totalMemories: 0,
+                totalAgents: 0,
+                averageImportance: 0,
+                memoryTypes: {},
+                recentActivity: [],
+                topAgents: []
+            };
         }
-
-        // Fallback to mock stats
-        return {
-            totalMemories: 4,
-            totalAgents: 1,
-            averageImportance: 0.875,
-            memoryTypes: {
-                personality: 2,
-                task: 2,
-                conversation: 0,
-                document: 0,
-                note: 0,
-                thread: 0,
-                emotion: 0
-            },
-            recentActivity: [
-                { date: new Date().toISOString().split('T')[0], count: 4 },
-                { date: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString().split('T')[0], count: 2 },
-                { date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], count: 1 }
-            ],
-            topAgents: [
-                { agentId: 'copilot-1', memoryCount: 4 }
-            ]
-        };
     },
 
     async searchMemories(query: string, options?: any): Promise<Memory[]> {
         try {
-            // Try real API search first
-            const response = await memoryApi.search(options?.agentId || 'copilot-1', query, options?.limit || 10);
-            if (response.success && response.data) {
-                return response.data.map(mem => ({
-                    id: mem.id,
-                    content: mem.content,
-                    type: (mem.metadata.type as Memory['type']) || 'note',
-                    metadata: {
-                        agentId: mem.agentId,
-                        timestamp: mem.timestamp,
-                        tags: mem.metadata.tags || [],
-                        similarity: mem.metadata.similarity,
-                        importance: mem.metadata.importance || 0.5,
-                        source: mem.metadata.source,
-                        entities: mem.metadata.entities,
-                        confidence: mem.metadata.confidence || 0.8
-                    }
-                }));
-            }
+            return await mcpMemoryClient.searchMemories(query, {
+                limit: options?.limit,
+                agentId: options?.agentId
+            });
         } catch (error) {
-            console.warn('API search failed, falling back to mock search:', error);
+            console.error('Failed to search memories in MCP:', error);
+            return [];
         }
-
-        // Fallback to mock search
-        const allMemories = await this.getMemories();
-        return allMemories.filter(memory =>
-            memory.content.toLowerCase().includes(query.toLowerCase()) ||
-            memory.metadata.tags.some(tag => tag.toLowerCase().includes(query.toLowerCase()))
-        );
     },
 
     async addMemory(content: string, metadata: Partial<Memory['metadata']>): Promise<Memory> {
         try {
-            // Try real API add first
-            const fullMetadata = {
-                agentId: 'copilot-1',
-                timestamp: new Date().toISOString(),
-                tags: [],
-                importance: 0.5,
-                confidence: 0.8,
-                ...metadata
-            };
-
-            const response = await memoryApi.create(fullMetadata.agentId, content, fullMetadata);
-            if (response.success && response.data) {
-                return {
-                    id: response.data.id,
-                    content: response.data.content,
-                    type: (response.data.metadata.type as Memory['type']) || 'note',
-                    metadata: {
-                        agentId: response.data.agentId,
-                        timestamp: response.data.timestamp,
-                        tags: response.data.metadata.tags || [],
-                        similarity: response.data.metadata.similarity,
-                        importance: response.data.metadata.importance || 0.5,
-                        source: response.data.metadata.source,
-                        entities: response.data.metadata.entities,
-                        confidence: response.data.metadata.confidence || 0.8
-                    }
-                };
-            }
+            return await mcpMemoryClient.addMemory(content, metadata);
         } catch (error) {
-            console.warn('API add memory failed, falling back to mock:', error);
+            console.error('Failed to add memory to MCP:', error);
+            throw error;
         }
-
-        // Fallback to mock add
-        return {
-            id: Date.now().toString(),
-            content,
-            type: metadata.tags?.includes('task') ? 'task' : 'note',
-            metadata: {
-                agentId: 'copilot-1',
-                timestamp: new Date().toISOString(),
-                tags: [],
-                importance: 0.5,
-                confidence: 0.8,
-                ...metadata
-            }
-        };
     },
 
     async deleteMemory(id: string): Promise<void> {
         try {
-            // Try real API delete first
-            const response = await memoryApi.delete('copilot-1', id);
-            if (response.success) {
-                return;
-            }
+            // For now, we'll just log this since MCP doesn't have direct delete by memory ID
+            console.log('Delete memory request for ID:', id);
+            // In a real implementation, we'd need to track entity names associated with memory IDs
         } catch (error) {
-            console.warn('API delete failed, continuing with mock behavior:', error);
+            console.error('Failed to delete memory from MCP:', error);
+            throw error;
         }
-
-        // Mock always succeeds
-        await new Promise(resolve => setTimeout(resolve, 200));
     },
 
     async updateMemory(id: string, updates: Partial<Memory>): Promise<Memory> {
-        // For now, just return the updated memory since the API doesn't have an update endpoint
-        // This would need to be implemented as delete + create in the real API
-        const memories = await this.getMemories();
-        const memory = memories.find(m => m.id === id);
-        if (!memory) throw new Error('Memory not found');
-
-        return { ...memory, ...updates };
+        try {
+            // For now, we'll recreate the memory since MCP doesn't have direct update
+            console.log('Update memory request for ID:', id, 'with updates:', updates);
+            // In a real implementation, we'd delete the old entity and create a new one
+            throw new Error('Memory updates not yet implemented with MCP backend');
+        } catch (error) {
+            console.error('Failed to update memory in MCP:', error);
+            throw error;
+        }
     }
-}
+};
 
 export const useMemoryStore = create<MemoryState>()(
     devtools(
@@ -332,97 +153,108 @@ export const useMemoryStore = create<MemoryState>()(
                 error: null,
 
                 fetchMemories: async (params) => {
+                    set({ isLoading: true, error: null });
                     try {
-                        set({ isLoading: true, error: null })
-                        const memories = await api.getMemories(params)
-                        set({ memories, isLoading: false })
+                        const memories = await api.getMemories(params);
+                        set({ memories, isLoading: false });
                     } catch (error) {
                         set({
                             error: error instanceof Error ? error.message : 'Failed to fetch memories',
                             isLoading: false
-                        })
+                        });
                     }
-                },
-
-                fetchStats: async () => {
+                },                fetchStats: async () => {
+                    set({ isLoading: true, error: null });
                     try {
-                        set({ isLoading: true, error: null })
-                        const stats = await api.getStats()
-                        set({ stats, isLoading: false })
+                        console.log('Memory store: Fetching stats...');
+                        const stats = await api.getStats();
+                        console.log('Memory store: Stats received:', stats);
+                        set({ stats, isLoading: false });
                     } catch (error) {
+                        console.error('Memory store: Failed to fetch stats:', error);
                         set({
                             error: error instanceof Error ? error.message : 'Failed to fetch stats',
                             isLoading: false
-                        })
+                        });
                     }
                 },
 
                 searchMemories: async (query, options) => {
+                    set({ isLoading: true, error: null });
                     try {
-                        set({ isLoading: true, error: null })
-                        const searchResults = await api.searchMemories(query, options)
-                        set({ searchResults, isLoading: false })
+                        const searchResults = await api.searchMemories(query, options);
+                        set({ searchResults, isLoading: false });
                     } catch (error) {
                         set({
-                            error: error instanceof Error ? error.message : 'Search failed',
+                            error: error instanceof Error ? error.message : 'Failed to search memories',
                             isLoading: false
-                        })
+                        });
                     }
                 },
 
                 addMemory: async (content, metadata) => {
+                    set({ isLoading: true, error: null });
                     try {
-                        set({ isLoading: true, error: null })
-                        const newMemory = await api.addMemory(content, metadata)
-                        const { memories } = get()
+                        const newMemory = await api.addMemory(content, metadata);
+                        const currentMemories = get().memories;
                         set({
-                            memories: [newMemory, ...memories],
+                            memories: [newMemory, ...currentMemories],
                             isLoading: false
-                        })
+                        });
                     } catch (error) {
                         set({
                             error: error instanceof Error ? error.message : 'Failed to add memory',
                             isLoading: false
-                        })
+                        });
+                        throw error;
                     }
                 },
 
                 deleteMemory: async (id) => {
+                    set({ isLoading: true, error: null });
                     try {
-                        set({ isLoading: true, error: null })
-                        await api.deleteMemory(id)
-                        const { memories } = get()
+                        await api.deleteMemory(id);
+                        const currentMemories = get().memories;
                         set({
-                            memories: memories.filter(m => m.id !== id),
+                            memories: currentMemories.filter(memory => memory.id !== id),
                             isLoading: false
-                        })
+                        });
                     } catch (error) {
                         set({
                             error: error instanceof Error ? error.message : 'Failed to delete memory',
                             isLoading: false
-                        })
+                        });
+                        throw error;
                     }
                 },
 
                 updateMemory: async (id, updates) => {
+                    set({ isLoading: true, error: null });
                     try {
-                        set({ isLoading: true, error: null })
-                        const updatedMemory = await api.updateMemory(id, updates)
-                        const { memories } = get()
+                        const updatedMemory = await api.updateMemory(id, updates);
+                        const currentMemories = get().memories;
                         set({
-                            memories: memories.map(m => m.id === id ? updatedMemory : m),
+                            memories: currentMemories.map(memory =>
+                                memory.id === id ? updatedMemory : memory
+                            ),
                             isLoading: false
-                        })
+                        });
                     } catch (error) {
                         set({
                             error: error instanceof Error ? error.message : 'Failed to update memory',
                             isLoading: false
-                        })
+                        });
+                        throw error;
                     }
                 },
 
-                clearSearch: () => set({ searchResults: [] }),
-                clearError: () => set({ error: null })
+                clearSearch: () => {
+                    set({ searchResults: [] });
+                },
+
+                clearError: () => {
+                    set({ error: null });
+                }
             }),
             {
                 name: 'memory-store',
@@ -432,6 +264,8 @@ export const useMemoryStore = create<MemoryState>()(
                 })
             }
         ),
-        { name: 'memory-store' }
+        {
+            name: 'memory-store'
+        }
     )
-)
+);

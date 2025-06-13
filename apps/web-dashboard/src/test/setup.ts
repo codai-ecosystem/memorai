@@ -1,5 +1,6 @@
 import '@testing-library/jest-dom'
 import { vi } from 'vitest'
+import React from 'react'
 
 // Mock Next.js router
 vi.mock('next/navigation', () => ({
@@ -159,7 +160,7 @@ global.IntersectionObserver = vi.fn().mockImplementation(() => ({
 
 // Mock lucide-react icons
 vi.mock('lucide-react', () => {
-    const MockIcon = (props: any) => 'svg'
+    const MockIcon = (props: any) => React.createElement('svg', { 'data-testid': 'mock-icon', ...props })
 
     return {
         Plus: MockIcon,
@@ -212,9 +213,8 @@ vi.mock('lucide-react', () => {
         X: MockIcon,
         Check: MockIcon,
         Loader: MockIcon,
-        MenuIcon: MockIcon,
-        Home: MockIcon,
-        Folder: MockIcon,
+        MenuIcon: MockIcon,        Home: MockIcon,
+        Folder: MockIcon, 
         File: MockIcon,
         Star: MockIcon,
         Heart: MockIcon,

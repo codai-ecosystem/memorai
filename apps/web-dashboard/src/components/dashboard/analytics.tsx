@@ -24,34 +24,55 @@ interface AnalyticsDashboardProps {
 export function AnalyticsDashboard({ className }: AnalyticsDashboardProps) {
     const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d' | '1y'>('30d')
     const [selectedMetrics, setSelectedMetrics] = useState<string[]>(['memories', 'interactions', 'agents'])
+    const [renderError, setRenderError] = useState<string | null>(null)
 
     const { memories, stats, fetchStats, fetchMemories } = useMemoryStore()
 
     useEffect(() => {
-        fetchStats()
-        fetchMemories()
+        console.log('AnalyticsDashboard: Component mounted, fetching data...')
+        try {
+            fetchStats()
+            fetchMemories()
+        } catch (error) {
+            console.error('Error fetching analytics data:', error)
+            setRenderError('Failed to load analytics data')
+        }
     }, [fetchStats, fetchMemories])
-    // Calculate analytics data from memories
+
+    // Add safety checks for memories
+    const safeMemories = memories || []
+    console.log('AnalyticsDashboard: memories count:', safeMemories.length)
+    
+    // Calculate analytics data from memories with safety checks
     const analyticsData = {
-        totalMemories: memories.length,
-        memoriesThisWeek: memories.filter(m => {
-            const date = new Date(m.metadata.timestamp)
-            const weekAgo = new Date()
-            weekAgo.setDate(weekAgo.getDate() - 7)
-            return date > weekAgo
+        totalMemories: safeMemories.length,
+        memoriesThisWeek: safeMemories.filter(m => {
+            try {
+                const date = new Date(m.metadata?.timestamp || Date.now())
+                const weekAgo = new Date()
+                weekAgo.setDate(weekAgo.getDate() - 7)
+                return date > weekAgo
+            } catch (error) {
+                console.warn('Error processing memory date:', error)
+                return false
+            }
         }).length,
-        memoriesThisMonth: memories.filter(m => {
-            const date = new Date(m.metadata.timestamp)
-            const monthAgo = new Date()
-            monthAgo.setMonth(monthAgo.getMonth() - 1)
-            return date > monthAgo
-        }).length,
-        avgSimilarity: memories.length > 0
-            ? memories.reduce((sum, m) => sum + (m.metadata.similarity || 0), 0) / memories.length
+        memoriesThisMonth: safeMemories.filter(m => {
+            try {
+                const date = new Date(m.metadata?.timestamp || Date.now())
+                const monthAgo = new Date()
+                monthAgo.setMonth(monthAgo.getMonth() - 1)
+                return date > monthAgo
+            } catch (error) {
+                console.warn('Error processing memory date:', error)
+                return false
+            }
+        }).length,        avgSimilarity: safeMemories.length > 0
+            ? safeMemories.reduce((sum, m) => sum + (m.metadata?.similarity || 0), 0) / safeMemories.length
             : 0,
-        uniqueAgents: [...new Set(memories.map(m => m.metadata.agentId))].length,
-        topTags: memories.reduce((tags, memory) => {
-            memory.metadata.tags?.forEach((tag: string) => {
+        uniqueAgents: [...new Set(safeMemories.map(m => m.metadata?.agentId).filter(Boolean))].length,
+        topTags: safeMemories.reduce((tags, memory) => {
+            memory.metadata?.tags?.forEach((tag: string) => {
                 tags[tag] = (tags[tag] || 0) + 1
             })
             return tags
@@ -108,13 +129,27 @@ export function AnalyticsDashboard({ className }: AnalyticsDashboardProps) {
                     <div className={cn('p-3 rounded-lg', colorClasses[color])}>
                         <Icon className="h-6 w-6" />
                     </div>
+                </div>            </motion.div>        )
+    }
+
+    if (renderError) {
+        return (
+            <div data-testid="analytics-dashboard" className={cn('space-y-6', className)}>
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                    <p className="text-red-800 dark:text-red-200">Error: {renderError}</p>
+                    <button 
+                        onClick={() => setRenderError(null)}
+                        className="mt-2 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                    >
+                        Retry
+                    </button>
                 </div>
-            </motion.div>
+            </div>
         )
     }
 
     return (
-        <div className={cn('space-y-6', className)}>
+        <div data-testid="analytics-dashboard" className={cn('space-y-6', className)}>
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
@@ -268,17 +303,15 @@ export function AnalyticsDashboard({ className }: AnalyticsDashboardProps) {
                         Recent Activity
                     </h3>
                     <Activity className="h-5 w-5 text-gray-400" />
-                </div>
-
-                <div className="space-y-4">
-                    {memories.slice(0, 5).map((memory, index) => (
+                </div>                <div className="space-y-4">
+                    {safeMemories.slice(0, 5).map((memory, index) => (
                         <div key={memory.id} className="flex items-start gap-4">
                             <div className="w-2 h-2 bg-blue-500 rounded-full mt-2" />
                             <div className="flex-1">                <p className="text-sm text-gray-900 dark:text-white font-medium">
-                                Memory created by {memory.metadata.agentId}
+                                Memory created by {memory.metadata?.agentId || 'Unknown'}
                             </p>
                                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                    {new Date(memory.metadata.timestamp).toLocaleString()}
+                                    {new Date(memory.metadata?.timestamp || Date.now()).toLocaleString()}
                                 </p>
                                 <p className="text-sm text-gray-600 dark:text-gray-300 mt-1 line-clamp-2">
                                     {memory.content.substring(0, 100)}...

@@ -14,7 +14,11 @@ import { useConfigStore } from '../stores/config-store'
 
 export default function DashboardPage() {
     const [activeTab, setActiveTab] = useState('overview')
-    const [isLoading, setIsLoading] = useState(true)
+    const [isLoading, setIsLoading] = useState(false)
+
+    const handleTabChange = (newTab: string) => {
+        setActiveTab(newTab)
+    }
 
     const {
         memories,
@@ -35,12 +39,20 @@ export default function DashboardPage() {
             try {
                 setIsLoading(true)
 
+                // Set a maximum loading timeout to ensure UI shows
+                const loadingTimeout = setTimeout(() => {
+                    console.warn('Dashboard loading timeout, showing UI anyway')
+                    setIsLoading(false)
+                }, 2000) // 2 second max loading time
+
                 // Load all initial data in parallel
                 await Promise.allSettled([
                     fetchMemories(),
                     fetchStats(),
                     fetchConfig()
                 ])
+
+                clearTimeout(loadingTimeout)
 
             } catch (error) {
                 console.error('Failed to initialize dashboard:', error)
@@ -66,15 +78,20 @@ export default function DashboardPage() {
                 </div>
             </div>
         )
-    } const renderTabContent = () => {
-        switch (activeTab) {
-            case 'overview':
+    }
+
+    const renderTabContent = () => {
+        switch (activeTab) {            case 'overview':
                 return (
                     <div className="space-y-6">
-                        <MemoryOverview />
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <MemoryActions />
-                            <div className="space-y-6">
+                        <div className="relative z-0">
+                            <MemoryOverview />
+                        </div>
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 relative">
+                            <div className="relative z-10">
+                                <MemoryActions />
+                            </div>
+                            <div className="space-y-6 relative z-5">
                                 <MemorySearch />
                                 <div data-testid="memory-results-container">
                                     <MemoryResults />
@@ -101,24 +118,25 @@ export default function DashboardPage() {
         }
     }
 
-    return (<div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
-        {/* Dashboard Header */}
-        <DashboardHeader />
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
+            {/* Dashboard Header */}
+            <DashboardHeader />
 
-        <div className="flex">
-            {/* Sidebar */}
-            <DashboardSidebar
-                activeTab={activeTab}
-                onTabChange={setActiveTab}
-            />
+            <div className="flex">
+                {/* Sidebar */}
+                <DashboardSidebar
+                    activeTab={activeTab}
+                    onTabChange={handleTabChange}
+                />
 
-            {/* Main Content */}
-            <main className="flex-1 p-6 lg:p-8 ml-0 lg:ml-64">
-                <div className="max-w-7xl mx-auto">
-                    {renderTabContent()}
-                </div>
-            </main>
+                {/* Main Content */}
+                <main className="flex-1 p-6 lg:p-8 ml-0 lg:ml-64">
+                    <div className="max-w-7xl mx-auto">
+                        {renderTabContent()}
+                    </div>
+                </main>
+            </div>
         </div>
-    </div>
     )
 }

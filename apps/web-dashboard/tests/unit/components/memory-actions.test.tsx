@@ -40,6 +40,7 @@ describe('MemoryActions - Comprehensive Testing', () => {
 
     beforeEach(() => {
         vi.clearAllMocks()
+        mockMemoryStore.isLoading = false
         user = userEvent.setup()
     })
 
@@ -359,32 +360,17 @@ describe('MemoryActions - Comprehensive Testing', () => {
                     importance: 0.5,
                     source: 'dashboard',
                 })
-            })
-        })
+            })        })
     })
 
     describe('Loading States', () => {
-        beforeEach(async () => {
+        it('should show loading state during submission', async () => {
+            // Set loading state before rendering
+            mockMemoryStore.isLoading = true
+            
             render(<MemoryActions />)
             const addMemoryButton = screen.getByTestId('quick-action-add-memory')
             await user.click(addMemoryButton)
-        })
-
-        it('should show loading state during submission', async () => {
-            render(<MemoryActions />)
-            const addMemoryButton = screen.getAllByTestId('quick-action-add-memory')[0]
-            await user.click(addMemoryButton)
-
-            // Fill out the form
-            const contentTextarea = screen.getByLabelText(/content/i)
-            await user.type(contentTextarea, 'Test memory content')
-
-            // Mock the store to be in loading state
-            mockMemoryStore.isLoading = true
-
-            // Re-render to reflect the loading state
-            const { rerender } = render(<MemoryActions />)
-            await user.click(screen.getAllByTestId('quick-action-add-memory')[0])
 
             // Check if the button shows loading text
             expect(screen.getByText('Adding...')).toBeInTheDocument()

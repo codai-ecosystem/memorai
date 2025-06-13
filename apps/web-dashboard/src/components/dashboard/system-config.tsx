@@ -37,9 +37,12 @@ export function SystemConfiguration({ className }: SystemConfigurationProps) {
     const [hasChanges, setHasChanges] = useState(false)
 
     useEffect(() => {
+        console.log('SystemConfiguration: Component mounted, fetching config...')
         fetchConfig()
     }, [fetchConfig])
+    
     useEffect(() => {
+        console.log('SystemConfiguration: Config updated:', config)
         setLocalConfig(config)
         setHasChanges(false)
     }, [config])
@@ -158,10 +161,8 @@ export function SystemConfiguration({ className }: SystemConfigurationProps) {
                 </div>
             </div>
         )
-    }
-
-    return (
-        <div className={cn('space-y-6', className)}>
+    }    return (
+        <div data-testid="system-config" className={cn('space-y-6', className)}>
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>

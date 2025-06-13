@@ -40,8 +40,7 @@ export function MemoryActions({ className }: MemoryActionsProps) {
             setImportance(0.5)
             setIsAddingMemory(false)
 
-            toast.success('Memory added successfully!')
-        } catch (error) {
+            toast.success('Memory added successfully!')        } catch (error) {
             toast.error('Failed to add memory')
         }
     }
@@ -51,8 +50,7 @@ export function MemoryActions({ className }: MemoryActionsProps) {
             id: 'add-memory',
             label: 'Add Memory',
             icon: Plus,
-            description: 'Create a new memory entry',
-            onClick: () => setIsAddingMemory(true)
+            description: 'Create a new memory entry',            onClick: () => setIsAddingMemory(true)
         },
         {
             id: 'bulk-import',
@@ -64,7 +62,8 @@ export function MemoryActions({ className }: MemoryActionsProps) {
         {
             id: 'ai-assist',
             label: 'AI Assist',
-            icon: Brain, description: 'Get AI suggestions for memory organization',
+            icon: Brain,
+            description: 'Get AI suggestions for memory organization',
             onClick: () => toast('AI assist feature coming soon!')
         }
     ]
@@ -79,10 +78,8 @@ export function MemoryActions({ className }: MemoryActionsProps) {
                 <p className="text-gray-600 dark:text-gray-400">
                     Create, manage, and organize your memories
                 </p>
-            </div>
-
-            {/* Quick Actions */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            </div>            {/* Quick Actions */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 relative z-10">
                 {quickActions.map((action) => {
                     const Icon = action.icon
                     return (<button
@@ -92,7 +89,7 @@ export function MemoryActions({ className }: MemoryActionsProps) {
                         className={cn(
                             "p-6 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700",
                             "hover:border-blue-300 dark:hover:border-blue-600 transition-colors",
-                            "text-left group"
+                            "text-left group relative z-10 pointer-events-auto"
                         )}
                     >
                         <div className="flex items-center space-x-3 mb-3">
@@ -109,11 +106,12 @@ export function MemoryActions({ className }: MemoryActionsProps) {
                     </button>
                     )
                 })}
-            </div>
-
-            {/* Add Memory Form */}
+            </div>            {/* Add Memory Form */}
             {isAddingMemory && (
-                <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6">
+                <div 
+                    className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 p-6 relative z-20"
+                    data-testid="memory-form-container"
+                >
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                             Add New Memory
@@ -127,7 +125,12 @@ export function MemoryActions({ className }: MemoryActionsProps) {
                         </button>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-4" role="form">                        {/* Content */}
+                    <form 
+                        onSubmit={handleSubmit} 
+                        className="space-y-4" 
+                        role="form"
+                        data-testid="memory-form"
+                    >{/* Content */}
                         <div>
                             <label htmlFor="memory-content" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                 Content *
