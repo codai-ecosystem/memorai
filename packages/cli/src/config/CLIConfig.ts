@@ -37,8 +37,7 @@ export class CLIConfig {
     
     try {
       const content = await readFile(filePath, 'utf-8');
-      this.config = JSON.parse(content);
-    } catch (_error) {
+      this.config = JSON.parse(content);    } catch {
       // File doesn't exist or is invalid, use defaults
       this.config = {};
     }

@@ -136,6 +136,13 @@ validation-report.json
 comprehensive-assessment-report.json
 performance-test-*.mjs
 *-assessment-report.json
+test-results/
+playwright-report/
+backup/
+
+# Data directories
+data/memory/
+logs/
 
 # Lock files that shouldn't be tracked
 .memorai-dashboard.lock
