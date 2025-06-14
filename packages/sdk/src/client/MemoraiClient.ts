@@ -6,12 +6,10 @@ import type {
   ClientOptions,
   MemoryOperation,
   RememberOptions,
-  RecallOptions,
-  ForgetOptions,
+  RecallOptions,  ForgetOptions,
   ContextOptions,
   AgentMemory,
-  MemorySession,
-  MemoryResponse
+  MemorySession
 } from '../types/index.js';
 import { MCPConnection } from '../connection/MCPConnection.js';
 import { SDKConfig } from '../config/SDKConfig.js';

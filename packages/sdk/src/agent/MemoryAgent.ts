@@ -25,11 +25,10 @@ export class MemoryAgent {
     this.agentId = agentId;
     this.client = new MemoraiClient({ ...options, agentId });
   }
-
   /**
    * Initialize agent memory
    */
-  public async initialize(sessionId?: string): Promise<void> {
+  public async initialize(_sessionId?: string): Promise<void> {
     await this.client.connect();
     this.currentSession = await this.client.getSession();
   }

@@ -286,12 +286,10 @@ export class MemoryCache {
     // Simple scoring: exact matches worth more than word matches
     return exactMatches * 10 + wordMatches;
   }
-
   /**
    * Cleanup expired entries
    */
   private cleanup(): void {
-    const now = Date.now();
     const expiredKeys: string[] = [];
 
     for (const [key, entry] of this.cache) {

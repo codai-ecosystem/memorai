@@ -71,11 +71,10 @@ export class MCPConnection {
   /**
    * Disconnect from the server
    */
-  public async disconnect(): Promise<void> {
-    this.connected = false;
+  public async disconnect(): Promise<void> {    this.connected = false;
     
     // Reject all pending requests
-    for (const [id, request] of this.pendingRequests) {
+    for (const [, request] of this.pendingRequests) {
       clearTimeout(request.timeout);
       request.reject(new Error('Connection closed'));
     }

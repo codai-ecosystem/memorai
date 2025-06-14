@@ -32,14 +32,13 @@ export class CLIConfig {
 
   /**
    * Load configuration from file
-   */
-  public async loadFromFile(path?: string): Promise<void> {
+   */  public async loadFromFile(path?: string): Promise<void> {
     const filePath = path || this.configPath;
     
     try {
       const content = await readFile(filePath, 'utf-8');
       this.config = JSON.parse(content);
-    } catch (error) {
+    } catch (_error) {
       // File doesn't exist or is invalid, use defaults
       this.config = {};
     }

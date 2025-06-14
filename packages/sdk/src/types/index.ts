@@ -2,7 +2,7 @@
  * @fileoverview Type definitions for Memorai SDK
  */
 
-import type { MemoryMetadata, MemoryQuery, ContextResponse, MemoryContext } from '@codai/memorai-core';
+import type { MemoryContext } from '@codai/memorai-core';
 
 // Client Configuration
 export interface ClientOptions {
