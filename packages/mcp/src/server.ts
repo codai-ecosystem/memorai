@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 /**
- * ULTRA-FAST MCP Server - Sub-50ms Response Times
- * Hyper-optimized for maximum performance
+ * ENTERPRISE-GRADE MCP SERVER - Advanced Multi-Tier Implementation
+ * Uses UnifiedMemoryEngine and PerformanceMonitor for production-ready performance
  */
 
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
@@ -12,194 +12,260 @@ import {
   ListToolsRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
 
-// Hyper-optimized cache entry
-interface HyperCacheEntry {
-  data: any;
-  timestamp: number;
-  hits: number;
-  expiry: number;
-}
+import { UnifiedMemoryEngine, type UnifiedMemoryConfig } from '@codai/memorai-core';
+import { PerformanceMonitor } from '@codai/memorai-core';
 
-// Performance metrics
-interface HyperMetrics {
-  queries: number;
-  avgResponseTime: number;
-  cacheHitRate: number;
-  opsPerSecond: number;
-}
+// Enterprise-grade configuration
+const memoryConfig: UnifiedMemoryConfig = {
+  enableFallback: true,
+  autoDetect: true,
+  preferredTier: undefined, // Auto-detect best tier
+  
+  // Azure OpenAI configuration (if available)
+  azureOpenAI: {
+    endpoint: process.env.AZURE_OPENAI_ENDPOINT,
+    apiKey: process.env.AZURE_OPENAI_API_KEY,
+    deploymentName: process.env.AZURE_OPENAI_DEPLOYMENT_NAME || 'text-embedding-ada-002',
+    apiVersion: process.env.AZURE_OPENAI_API_VERSION || '2023-05-15'
+  },
+  
+  // OpenAI configuration (if available) 
+  apiKey: process.env.OPENAI_API_KEY,
+  model: process.env.OPENAI_MODEL || 'text-embedding-ada-002',
+  
+  // Local embedding fallback
+  localEmbedding: {
+    model: 'all-MiniLM-L6-v2',
+    cachePath: './embeddings-cache'
+  },
+  
+  // Mock configuration for testing
+  mock: {
+    simulateDelay: false,
+    delayMs: 0,
+    failureRate: 0
+  }
+};
 
-class HyperOptimizedMemoryEngine {
-  private cache = new Map<string, HyperCacheEntry>();
-  private metrics: HyperMetrics = { queries: 0, avgResponseTime: 0, cacheHitRate: 0, opsPerSecond: 0 };
-  
-  // Hyper-aggressive constants for ultra-fast performance
-  private readonly ULTRA_FAST_TTL = 30000; // 30s
-  private readonly FAST_TTL = 120000; // 2min  
-  private readonly MAX_CACHE = 1000;
-  private readonly TIMEOUT = 25; // 25ms ultra-fast timeout
-  
-  private opsCounter = 0;
-  private opsTimer = Date.now();
+class EnterpriseMemoryEngine {
+  private unifiedEngine: UnifiedMemoryEngine;
+  private performanceMonitor: PerformanceMonitor;
+  private initialized = false;
 
   constructor() {
-    // Ultra-frequent cleanup for max performance
-    setInterval(() => this.ultraGC(), 30000); // 30s GC
-    setInterval(() => this.updateOPS(), 1000); // OPS tracking
-    this.preloadCache();
+    this.unifiedEngine = new UnifiedMemoryEngine(memoryConfig);
+    this.performanceMonitor = new PerformanceMonitor(60000, 1000); // 1 minute window, 1000 queries max
   }
 
-  private key(agent: string, op: string, params: any): string {
-    return `${agent}:${op}:${typeof params === 'string' ? params : JSON.stringify(params)}`;
-  }
-
-  private ultraGC(): void {
-    const now = Date.now();
-    for (const [k, v] of this.cache.entries()) {
-      if (now > v.expiry) this.cache.delete(k);
-    }
+  async initialize(): Promise<void> {
+    if (this.initialized) return;
     
-    // LFU cleanup if oversized
-    if (this.cache.size > this.MAX_CACHE) {
-      const sorted = Array.from(this.cache.entries()).sort((a, b) => a[1].hits - b[1].hits);
-      const toDelete = this.cache.size - this.MAX_CACHE;
-      for (let i = 0; i < toDelete; i++) {
-        this.cache.delete(sorted[i][0]);
-      }
-    }
-  }
-
-  private updateOPS(): void {
-    const elapsed = Date.now() - this.opsTimer;
-    this.metrics.opsPerSecond = Math.round((this.opsCounter * 1000) / elapsed);
-    this.opsCounter = 0;
-    this.opsTimer = Date.now();
-  }
-
-  private preloadCache(): void {
-    // Preload common queries for instant response
-    const common = ['status', 'context', 'recent', 'plan', 'task'];
-    const now = Date.now();
+    await this.unifiedEngine.initialize();
+    this.initialized = true;
     
-    common.forEach(q => {
-      this.cache.set(this.key('system', 'recall', q), {
-        data: [{ id: `pre_${q}`, content: `Preloaded ${q}`, relevance: 0.9 }],
-        timestamp: now,
-        hits: 1,
-        expiry: now + this.ULTRA_FAST_TTL
+    console.error('🚀 Enterprise Memory Engine initialized successfully');
+    console.error('📊 Performance monitoring enabled');
+  }
+
+  async remember(agentId: string, content: string, metadata: any = {}): Promise<{ id: string }> {
+    const start = performance.now();
+    
+    try {
+      const memoryId = await this.unifiedEngine.remember(
+        content,
+        'default-tenant', // Use default tenant for MCP
+        agentId,
+        {
+          type: metadata.type || 'general',
+          importance: metadata.importance || 0.5,
+          tags: metadata.tags || [],
+          context: metadata
+        }
+      );
+      
+      const end = performance.now();
+      this.performanceMonitor.recordQuery({
+        operation: 'remember',
+        startTime: start,
+        endTime: end,
+        duration: end - start,
+        success: true,
+        tenantId: 'default-tenant',
+        agentId,
+        resultCount: 1,
+        cacheHit: false
       });
-    });
-  }
-
-  private updateMetrics(responseTime: number, hit: boolean): void {
-    this.opsCounter++;
-    this.metrics.queries++;
-    this.metrics.avgResponseTime = 
-      (this.metrics.avgResponseTime * (this.metrics.queries - 1) + responseTime) / this.metrics.queries;
-    this.metrics.cacheHitRate = 
-      (this.metrics.cacheHitRate * (this.metrics.queries - 1) + (hit ? 100 : 0)) / this.metrics.queries;
-  }
-
-  async remember(agent: string, content: string, metadata: any = {}): Promise<{ id: string }> {
-    const start = Date.now();
-    const id = `mem_${Date.now()}_${Math.random().toString(36).substring(2)}`;
-    
-    // Invalidate related cache
-    for (const key of this.cache.keys()) {
-      if (key.startsWith(`${agent}:`)) {
-        this.cache.delete(key);
-      }
+      
+      return { id: memoryId };
+    } catch (error) {
+      const end = performance.now();
+      this.performanceMonitor.recordQuery({
+        operation: 'remember',
+        startTime: start,
+        endTime: end,
+        duration: end - start,
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        tenantId: 'default-tenant',
+        agentId
+      });
+      throw error;
     }
-    
-    this.updateMetrics(Date.now() - start, false);
-    return { id };
   }
 
-  async recall(agent: string, query: string, limit = 10): Promise<any[]> {
-    const start = Date.now();
-    const cacheKey = this.key(agent, 'recall', { query, limit });
+  async recall(agentId: string, query: string, limit = 10): Promise<any[]> {
+    const start = performance.now();
     
-    // Ultra-fast cache check
-    const cached = this.cache.get(cacheKey);
-    if (cached && Date.now() < cached.expiry) {
-      cached.hits++;
-      this.updateMetrics(Date.now() - start, true);
-      return cached.data;
+    try {
+      const results = await this.unifiedEngine.recall(
+        query,
+        'default-tenant',
+        agentId,
+        {
+          limit,
+          threshold: 0.1,
+          include_context: true,
+          time_decay: true
+        }
+      );
+      
+      const end = performance.now();
+      this.performanceMonitor.recordQuery({
+        operation: 'recall',
+        startTime: start,
+        endTime: end,
+        duration: end - start,
+        success: true,
+        tenantId: 'default-tenant',
+        agentId,
+        resultCount: results.length,
+        cacheHit: false // UnifiedEngine handles its own caching
+      });
+        return results.map(result => ({
+        id: result.memory.id,
+        content: result.memory.content,
+        relevance: result.score,
+        metadata: {
+          type: result.memory.type,
+          importance: result.memory.importance,
+          tags: result.memory.tags,
+          context: result.memory.context,
+          emotional_weight: result.memory.emotional_weight
+        },
+        timestamp: result.memory.createdAt
+      }));
+    } catch (error) {
+      const end = performance.now();
+      this.performanceMonitor.recordQuery({
+        operation: 'recall',
+        startTime: start,
+        endTime: end,
+        duration: end - start,
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        tenantId: 'default-tenant',
+        agentId
+      });
+      throw error;
     }
-    
-    // Simulate ultra-fast recall
-    const results = [
-      { id: 'fast_1', content: `Hyper-fast recall for: ${query}`, relevance: 0.95 },
-      { id: 'fast_2', content: `Ultra-optimized result for agent ${agent}`, relevance: 0.88 }
-    ].slice(0, limit);
-    
-    // Cache with appropriate TTL
-    const ttl = query.length < 10 ? this.ULTRA_FAST_TTL : this.FAST_TTL;
-    this.cache.set(cacheKey, {
-      data: results,
-      timestamp: start,
-      hits: 0,
-      expiry: start + ttl
-    });
-    
-    this.updateMetrics(Date.now() - start, false);
-    return results;
   }
 
-  async context(agent: string, size = 5): Promise<any> {
-    const start = Date.now();
-    const cacheKey = this.key(agent, 'context', size);
+  async context(agentId: string, size = 5): Promise<any> {
+    const start = performance.now();
     
-    // Ultra-fast cache check
-    const cached = this.cache.get(cacheKey);
-    if (cached && Date.now() < cached.expiry) {
-      cached.hits++;
-      this.updateMetrics(Date.now() - start, true);
-      return cached.data;
+    try {      const contextData = await this.unifiedEngine.getContext({
+        tenant_id: 'default-tenant',
+        agent_id: agentId,
+        max_memories: size
+      });
+      
+      const end = performance.now();
+      this.performanceMonitor.recordQuery({
+        operation: 'context',
+        startTime: start,
+        endTime: end,
+        duration: end - start,
+        success: true,
+        tenantId: 'default-tenant',
+        agentId,
+        resultCount: contextData.memories?.length || 0,
+        cacheHit: false
+      });
+      
+      return {
+        context: contextData.summary || `Context for ${agentId}`,
+        memories: contextData.memories || [],
+        summary: contextData.summary || 'No context available',
+        windowSize: size,
+        totalMemories: contextData.total_count || 0
+      };
+    } catch (error) {
+      const end = performance.now();
+      this.performanceMonitor.recordQuery({
+        operation: 'context',
+        startTime: start,
+        endTime: end,
+        duration: end - start,
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        tenantId: 'default-tenant',
+        agentId
+      });
+      throw error;
     }
-    
-    const result = {
-      context: `Hyper-fast context for ${agent}`,
-      memories: [],
-      summary: 'Ultra-optimized context'
-    };
-    
-    // Short TTL for context (5s)
-    this.cache.set(cacheKey, {
-      data: result,
-      timestamp: start,
-      hits: 0,
-      expiry: start + 5000
-    });
-    
-    this.updateMetrics(Date.now() - start, false);
-    return result;
   }
 
-  async forget(agent: string, memoryId: string): Promise<boolean> {
-    const start = Date.now();
+  async forget(agentId: string, memoryId: string): Promise<boolean> {
+    const start = performance.now();
     
-    // Ultra-fast cache invalidation
-    for (const key of this.cache.keys()) {
-      if (key.startsWith(`${agent}:`)) {
-        this.cache.delete(key);
-      }
+    try {
+      await this.unifiedEngine.forget(memoryId);
+      
+      const end = performance.now();
+      this.performanceMonitor.recordQuery({
+        operation: 'forget',
+        startTime: start,
+        endTime: end,
+        duration: end - start,
+        success: true,
+        tenantId: 'default-tenant',
+        agentId,
+        resultCount: 1,
+        cacheHit: false
+      });
+      
+      return true;
+    } catch (error) {
+      const end = performance.now();
+      this.performanceMonitor.recordQuery({
+        operation: 'forget',
+        startTime: start,
+        endTime: end,
+        duration: end - start,
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        tenantId: 'default-tenant',
+        agentId
+      });
+      return false;
     }
-    
-    this.updateMetrics(Date.now() - start, false);
-    return true;
   }
 
-  getMetrics(): HyperMetrics {
-    return { ...this.metrics };
+  getMetrics(): any {
+    return this.performanceMonitor.getMetrics();
+  }
+
+  getTierInfo(): any {
+    return this.unifiedEngine.getTierInfo();
   }
 }
 
-const hyperEngine = new HyperOptimizedMemoryEngine();
+const enterpriseEngine = new EnterpriseMemoryEngine();
 
 const server = new Server(
   {
-    name: "memorai-ultra-fast",
-    version: "2.0.1",
+    name: "memorai-enterprise",
+    version: "2.0.3",
   },
   {
     capabilities: {
@@ -208,26 +274,26 @@ const server = new Server(
   }
 );
 
-// Ultra-optimized tool handlers
+// Advanced tool handlers with real performance tracking
 server.setRequestHandler(ListToolsRequestSchema, async () => {
   return {
     tools: [
       {
         name: "remember",
-        description: "Store information in memory with ultra-fast performance",
+        description: "Store information in memory with enterprise-grade performance tracking",
         inputSchema: {
           type: "object",
           properties: {
             agentId: { type: "string", description: "Unique agent identifier" },
             content: { type: "string", description: "Information to remember" },
-            metadata: { type: "object", description: "Optional metadata" }
+            metadata: { type: "object", description: "Optional metadata with type, importance, tags" }
           },
           required: ["agentId", "content"]
         }
       },
       {
         name: "recall",
-        description: "Search memories with hyper-optimized caching",
+        description: "Search memories with unified multi-tier engine and performance optimization",
         inputSchema: {
           type: "object",
           properties: {
@@ -240,7 +306,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: "context",
-        description: "Get contextual memory summary",
+        description: "Get contextual memory summary with enterprise analytics",
         inputSchema: {
           type: "object",
           properties: {
@@ -252,7 +318,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
       {
         name: "forget",
-        description: "Remove specific memory",
+        description: "Remove specific memory with performance tracking",
         inputSchema: {
           type: "object",
           properties: {
@@ -267,7 +333,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
 });
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
-  const startTime = Date.now();
+  const startTime = performance.now();
   
   try {
     const { name, arguments: args } = request.params;
@@ -284,63 +350,95 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     
     switch (name) {
       case "remember":
-        const result = await hyperEngine.remember(agentId, args.content as string, args.metadata);
+        const result = await enterpriseEngine.remember(agentId, args.content as string, args.metadata);
+        const metrics = enterpriseEngine.getMetrics();
         return {
           content: [{
             type: 'text',
             text: JSON.stringify({
               success: true,
               memoryId: result.id,
+              tierInfo: enterpriseEngine.getTierInfo(),
               performance: {
-                responseTime: `${Date.now() - startTime}ms`,
-                metrics: hyperEngine.getMetrics()
+                responseTime: `${(performance.now() - startTime).toFixed(2)}ms`,
+                metrics: {
+                  avgQueryTime: `${metrics.avgQueryTime.toFixed(2)}ms`,
+                  queryCount: metrics.queryCount,
+                  successRate: `${(metrics.querySuccessRate * 100).toFixed(1)}%`,
+                  cacheHitRate: `${(metrics.cacheHitRate * 100).toFixed(1)}%`,
+                  memoryUsage: `${metrics.memoryUsage.toFixed(1)}MB`
+                }
               }
             })
           }]
         };
         
       case "recall":
-        const memories = await hyperEngine.recall(agentId, args.query as string, args.limit as number);
+        const memories = await enterpriseEngine.recall(agentId, args.query as string, args.limit as number);
+        const recallMetrics = enterpriseEngine.getMetrics();
         return {
           content: [{
             type: 'text',
             text: JSON.stringify({
               success: true,
               memories,
+              tierInfo: enterpriseEngine.getTierInfo(),
               performance: {
-                responseTime: `${Date.now() - startTime}ms`,
-                metrics: hyperEngine.getMetrics()
+                responseTime: `${(performance.now() - startTime).toFixed(2)}ms`,
+                metrics: {
+                  avgQueryTime: `${recallMetrics.avgQueryTime.toFixed(2)}ms`,
+                  queryCount: recallMetrics.queryCount,
+                  successRate: `${(recallMetrics.querySuccessRate * 100).toFixed(1)}%`,
+                  cacheHitRate: `${(recallMetrics.cacheHitRate * 100).toFixed(1)}%`,
+                  memoryUsage: `${recallMetrics.memoryUsage.toFixed(1)}MB`
+                }
               }
             })
           }]
         };
         
       case "context":
-        const context = await hyperEngine.context(agentId, args.contextSize as number);
+        const context = await enterpriseEngine.context(agentId, args.contextSize as number);
+        const contextMetrics = enterpriseEngine.getMetrics();
         return {
           content: [{
             type: 'text',
             text: JSON.stringify({
               success: true,
               ...context,
+              tierInfo: enterpriseEngine.getTierInfo(),
               performance: {
-                responseTime: `${Date.now() - startTime}ms`,
-                metrics: hyperEngine.getMetrics()
+                responseTime: `${(performance.now() - startTime).toFixed(2)}ms`,
+                metrics: {
+                  avgQueryTime: `${contextMetrics.avgQueryTime.toFixed(2)}ms`,
+                  queryCount: contextMetrics.queryCount,
+                  successRate: `${(contextMetrics.querySuccessRate * 100).toFixed(1)}%`,
+                  cacheHitRate: `${(contextMetrics.cacheHitRate * 100).toFixed(1)}%`,
+                  memoryUsage: `${contextMetrics.memoryUsage.toFixed(1)}MB`
+                }
               }
             })
           }]
         };
         
       case "forget":
-        const forgotten = await hyperEngine.forget(agentId, args.memoryId as string);
+        const forgotten = await enterpriseEngine.forget(agentId, args.memoryId as string);
+        const forgetMetrics = enterpriseEngine.getMetrics();
         return {
           content: [{
             type: 'text',
             text: JSON.stringify({
               success: forgotten,
+              tierInfo: enterpriseEngine.getTierInfo(),
               performance: {
-                responseTime: `${Date.now() - startTime}ms`,
-                metrics: hyperEngine.getMetrics()
+                responseTime: `${(performance.now() - startTime).toFixed(2)}ms`,
+                metrics: {
+                  avgQueryTime: `${forgetMetrics.avgQueryTime.toFixed(2)}ms`,
+                  queryCount: forgetMetrics.queryCount,
+                  successRate: `${(forgetMetrics.querySuccessRate * 100).toFixed(1)}%`,
+                  cacheHitRate: `${(forgetMetrics.cacheHitRate * 100).toFixed(1)}%`,
+                  memoryUsage: `${forgetMetrics.memoryUsage.toFixed(1)}MB`
+                }
               }
             })
           }]
@@ -357,8 +455,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           success: false,
           error: error instanceof Error ? error.message : 'Unknown error',
           performance: {
-            responseTime: `${Date.now() - startTime}ms`,
-            metrics: hyperEngine.getMetrics()
+            responseTime: `${(performance.now() - startTime).toFixed(2)}ms`,
+            tierInfo: enterpriseEngine.getTierInfo()
           }
         })
       }]
@@ -366,12 +464,21 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   }
 });
 
-// Start hyper-fast server
+// Start enterprise server
 async function main() {
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
-  console.error('🚀 HYPER-FAST MCP Server - Sub-25ms Response Times');
-  console.error('📊 Performance:', hyperEngine.getMetrics());
+  try {
+    await enterpriseEngine.initialize();
+    
+    const transport = new StdioServerTransport();
+    await server.connect(transport);
+    
+    console.error('🚀 ENTERPRISE MCP SERVER - Multi-Tier Architecture');
+    console.error('📊 Tier Info:', enterpriseEngine.getTierInfo());
+    console.error('⚡ Performance monitoring enabled');
+  } catch (error) {
+    console.error('❌ Enterprise server failed to start:', error);
+    process.exit(1);
+  }
 }
 
 // Auto-start server
