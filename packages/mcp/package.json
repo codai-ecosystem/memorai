@@ -29,7 +29,7 @@
     "dev": "tsx src/server.ts",
     "start": "node dist/server.js",
     "test": "vitest run",
-    "lint": "eslint src --ext .ts",
+    "lint": "eslint src/**/*.ts",
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "pnpm run build"
   },

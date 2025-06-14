@@ -16,7 +16,7 @@
     "build": "tsc",
     "dev": "tsx src/cli.ts",
     "test": "vitest run",
-    "lint": "eslint src --ext .ts",
+    "lint": "eslint src/**/*.ts",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [

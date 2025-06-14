@@ -2,6 +2,7 @@
     "name": "memorai-mcp",
     "version": "2.0.0",
     "description": "Production-Ready Agent-Native Memory Control Protocol",
+    "type": "module",
     "private": true,
     "workspaces": [
         "packages/*",

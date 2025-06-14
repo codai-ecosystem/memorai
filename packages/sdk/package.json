@@ -20,7 +20,7 @@
     "dev": "tsc --watch",
     "test": "vitest run",
     "test:coverage": "vitest --coverage",
-    "lint": "eslint src --ext .ts",
+    "lint": "eslint src/**/*.ts",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [
