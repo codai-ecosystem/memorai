@@ -7,14 +7,14 @@ export interface Memory {
     content: string
     type: 'conversation' | 'document' | 'note' | 'thread' | 'task' | 'personality' | 'emotion'
     metadata: {
-        agentId: string
-        timestamp: string
         tags: string[]
         similarity?: number
         importance?: number
         source?: string
         entities?: string[]
         confidence?: number
+        agentId?: string
+        timestamp?: string
     }
 }
 

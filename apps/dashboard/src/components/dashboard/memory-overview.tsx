@@ -168,7 +168,7 @@ export function MemoryOverview({ className }: MemoryOverviewProps) {
                                             {memory.type}
                                         </span>
                                         <span className="text-xs text-gray-500 dark:text-gray-400">
-                                            {formatRelativeTime(memory.metadata.timestamp)}
+                                            {formatRelativeTime(memory.metadata.timestamp || new Date().toISOString())}
                                         </span>
                                     </div>
                                 </div>

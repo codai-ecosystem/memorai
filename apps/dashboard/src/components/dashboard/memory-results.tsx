@@ -61,7 +61,7 @@ export function MemoryResults({ searchQuery = '', className }: MemoryResultsProp
 
             switch (sortBy) {
                 case 'timestamp':
-                    comparison = new Date(a.metadata.timestamp).getTime() - new Date(b.metadata.timestamp).getTime()
+                    comparison = new Date(a.metadata.timestamp || 0).getTime() - new Date(b.metadata.timestamp || 0).getTime()
                     break
                 case 'relevance':
                     comparison = (a.metadata?.similarity || 0) - (b.metadata?.similarity || 0)
@@ -313,7 +313,7 @@ export function MemoryResults({ searchQuery = '', className }: MemoryResultsProp
                                     {/* Metadata */}                                    <div className="flex items-center gap-4 text-sm text-gray-500 mb-3">
                                         <div className="flex items-center gap-1">
                                             <Clock className="h-3 w-3" />
-                                            {formatDistanceToNow(new Date(memory.metadata.timestamp), { addSuffix: true })}
+                                            {formatDistanceToNow(new Date(memory.metadata.timestamp || 0), { addSuffix: true })}
                                         </div>
 
                                         {memory.metadata?.agentId && (
