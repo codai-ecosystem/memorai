@@ -3,7 +3,7 @@
  */
 
 import type { FastifyRequest, FastifyReply } from 'fastify';
-import type { AuthContext, MCPErrorCode } from '../types/index.js';
+import type { AuthContext } from '../types/index.js';
 import { ServerConfig } from '../config/ServerConfig.js';
 import { Logger } from '../utils/Logger.js';
 
@@ -109,7 +109,7 @@ export class AuthMiddleware {
             token,
             expiresAt: payload.exp ? payload.exp * 1000 : Date.now() + 3600000
           };
-        } catch (parseError) {
+        } catch {
           throw new Error('Invalid token payload');
         }
       }

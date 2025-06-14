@@ -10,7 +10,7 @@ export function errorHandler(
     error: ApiError,
     req: Request,
     res: Response,
-    next: NextFunction
+    _next: NextFunction
 ) {
     logger.error('API Error:', {
         error: error.message,

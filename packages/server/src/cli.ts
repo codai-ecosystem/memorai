@@ -3,7 +3,7 @@
  * @fileoverview CLI entry point for Memorai MCP Server
  */
 
-import { MemoryEngine, MemoryConfigManager } from '@codai/memorai-core';
+import { MemoryEngine } from '@codai/memorai-core';
 import { MemoraiServer } from './server/MemoraiServer.js';
 import { Logger } from './utils/Logger.js';
 

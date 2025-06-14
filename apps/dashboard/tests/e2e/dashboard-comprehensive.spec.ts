@@ -66,18 +66,19 @@ test.describe('Dashboard E2E Tests', () => {
         await expect(page.locator('html')).toHaveAttribute('class', /light|dark/)
     })
 
-    test('should show system status', async ({ page }) => {
-        // Check system status indicator
+    test('should show system status', async ({ page }) => {        // Check system status indicator
         await expect(page.getByText('System Online')).toBeVisible()
         await expect(page.getByText('All services operational')).toBeVisible()
     })
-
+    
     test('should handle search functionality', async ({ page }) => {
         // Use header search
         const headerSearch = page.getByTestId('header-search-input')
         await headerSearch.fill('search query')
         await expect(headerSearch).toHaveValue('search query')
-    })    test('should display memory overview cards', async ({ page }) => {
+    })
+    
+    test('should display memory overview cards', async ({ page }) => {
         // Check memory overview cards
         await expect(page.getByText('Total Memories')).toBeVisible()
         await expect(page.getByText('Active Agents')).toBeVisible()

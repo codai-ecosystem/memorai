@@ -196,11 +196,12 @@ test.describe('Individual Component Testing - Every Component', () => {
 
             for (const buttonText of actionButtons) {
                 const button = page.locator(`button:has-text("${buttonText}")`)
-                if (await button.count() > 0) {
-                    await expect(button.first()).toBeVisible()
+                if (await button.count() > 0) {                    await expect(button.first()).toBeVisible()
                 }
             }
-        })        test('should open and close memory creation form', async ({ page }) => {
+        })
+        
+        test('should open and close memory creation form', async ({ page }) => {
             const addBtn = page.locator('[data-testid="quick-action-add-memory"], button:has-text("Add Memory")').first()
 
             if (await addBtn.isVisible() && await addBtn.isEnabled()) {

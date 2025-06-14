@@ -87,11 +87,10 @@ export class TenantMiddleware {
   
   /**
    * Check if tenant has exceeded limits
-   */
-  public static checkLimits(
-    tenant: TenantContext,
-    operation: string,
-    currentUsage?: any
+   */  public static checkLimits(
+    _tenant: TenantContext,
+    _operation: string,
+    _currentUsage?: any
   ): boolean {
     // TODO: Implement proper limit checking
     // For now, always allow in development

@@ -2,14 +2,12 @@
  * @fileoverview MCP Protocol handler for Memorai operations
  */
 
-import type { FastifyRequest, FastifyReply } from 'fastify';
+import type { FastifyReply } from 'fastify';
 import type {
   MCPRequest,
   MCPResponse,
-  MemoryRequest,
   MemoryResponse,
-  AuthenticatedRequest,
-  MCPErrorCode
+  AuthenticatedRequest
 } from '../types/index.js';
 import { MemoryEngine } from '@codai/memorai-core';
 import { Logger } from '../utils/Logger.js';
@@ -97,7 +95,7 @@ export class MCPHandler {
     params: any,
     request: AuthenticatedRequest
   ): Promise<MemoryResponse> {
-    const { content, context, metadata } = params;
+    const { content, context } = params;
 
     if (!content) {
       throw new Error('Content is required for remember operation');

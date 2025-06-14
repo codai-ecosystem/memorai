@@ -11,7 +11,7 @@ import { AuthMiddleware } from '../middleware/AuthMiddleware.js';
 import { RateLimitMiddleware } from '../middleware/RateLimitMiddleware.js';
 import { TenantMiddleware } from '../middleware/TenantMiddleware.js';
 import { MCPHandler } from '../handlers/MCPHandler.js';
-import type { ServerOptions, HealthStatus } from '../types/index.js';
+import type { HealthStatus } from '../types/index.js';
 
 /**
  * Main Memorai MCP Server class
