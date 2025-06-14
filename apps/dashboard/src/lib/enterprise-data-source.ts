@@ -401,10 +401,9 @@ class EnterpriseDataSourceManager {
         return Math.min((cpuUsage.user + cpuUsage.system) / 1000000, 100);
     }
 
-    private async getDiskUsage(): Promise<number> {
-        // Simplified disk usage calculation
+    private async getDiskUsage(): Promise<number> {        // Simplified disk usage calculation
         try {
-            const stats = await import('fs').then(fs => fs.promises.stat('.'));
+            await import('fs').then(fs => fs.promises.stat('.'));
             return 50; // Placeholder - implement actual disk usage calculation
         } catch {
             return 0;

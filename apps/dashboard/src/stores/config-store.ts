@@ -1,7 +1,6 @@
 import { create } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
 import { configApi } from '../lib/api-client'
-import type { Config } from './types'
 
 export interface SystemConfig {
     memory: {
@@ -179,7 +178,7 @@ const api = {
 export const useConfigStore = create<ConfigState>()(
     devtools(
         persist(
-            (set, get) => ({
+            (set, _get) => ({
                 config: null,
                 isLoading: false,
                 error: null,

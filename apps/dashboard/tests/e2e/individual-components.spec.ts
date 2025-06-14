@@ -225,14 +225,9 @@ test.describe('Individual Component Testing - Every Component', () => {
                 } catch (error) {
                     console.log('Form did not appear as expected:', error.message)
                     // Test passes anyway since this is checking optional functionality
-                }
-            } else {
+                }            } else {
                 console.log('Add Memory button not available for interaction')
-                // Test passes since button visibility is the main requirement
-                expect(true).toBe(true)
-            }
-                    await closeBtn.first().click({ force: true })
-                }
+                // Test passes since button visibility is the main requirement                expect(true).toBe(true)
             }
         })
 
