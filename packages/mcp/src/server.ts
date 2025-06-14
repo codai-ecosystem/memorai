@@ -374,11 +374,10 @@ async function main() {
   console.error('📊 Performance:', hyperEngine.getMetrics());
 }
 
-if (require.main === module) {
-  main().catch((error) => {
-    console.error('❌ Server failed:', error);
-    process.exit(1);
-  });
-}
+// Auto-start server
+main().catch((error) => {
+  console.error('❌ Server failed:', error);
+  process.exit(1);
+});
 
 export default server;
