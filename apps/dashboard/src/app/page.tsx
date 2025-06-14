@@ -11,6 +11,7 @@ import { AnalyticsDashboard } from '../components/dashboard/analytics'
 import { SystemConfiguration } from '../components/dashboard/system-config'
 import { useMemoryStore } from '../stores/memory-store'
 import { useConfigStore } from '../stores/config-store'
+import { TailwindTest } from '../components/tailwind-test'
 
 export default function DashboardPage() {
     const [activeTab, setActiveTab] = useState('overview')
@@ -114,8 +115,15 @@ export default function DashboardPage() {
                 return <MemoryActions />
             case 'settings':
                 return <SystemConfiguration />
+            case 'tailwind-test':
+                return <TailwindTest />
             default:
-                return <MemoryOverview />
+                return (
+                    <div>
+                        <TailwindTest />
+                        <MemoryOverview />
+                    </div>
+                )
         }
     }
 

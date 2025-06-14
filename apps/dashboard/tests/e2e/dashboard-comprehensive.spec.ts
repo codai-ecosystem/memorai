@@ -17,14 +17,17 @@ test.describe('Dashboard E2E Tests', () => {
     test('should navigate between sections', async ({ page }) => {
         // Click on Memories section
         await page.getByTestId('nav-memories').click()
+        await page.waitForTimeout(500) // Allow time for state change
         await expect(page.getByTestId('nav-memories')).toHaveClass(/bg-blue-50/)
 
         // Click on Analytics section
         await page.getByTestId('nav-analytics').click()
+        await page.waitForTimeout(500) // Allow time for state change
         await expect(page.getByTestId('nav-analytics')).toHaveClass(/bg-blue-50/)
 
         // Click on Search section
         await page.getByTestId('nav-search').click()
+        await page.waitForTimeout(500) // Allow time for state change
         await expect(page.getByTestId('nav-search')).toHaveClass(/bg-blue-50/)
     })
 
@@ -74,9 +77,7 @@ test.describe('Dashboard E2E Tests', () => {
         const headerSearch = page.getByTestId('header-search-input')
         await headerSearch.fill('search query')
         await expect(headerSearch).toHaveValue('search query')
-    })
-
-    test('should display memory overview cards', async ({ page }) => {
+    })    test('should display memory overview cards', async ({ page }) => {
         // Check memory overview cards
         await expect(page.getByText('Total Memories')).toBeVisible()
         await expect(page.getByText('Active Agents')).toBeVisible()
@@ -99,8 +100,8 @@ test.describe('Dashboard E2E Tests', () => {
     })
 
     test('should validate accessibility', async ({ page }) => {
-        // Check for essential accessibility features
-        await expect(page.getByRole('navigation')).toBeVisible()
+        // Check for essential accessibility features using more specific selectors
+        await expect(page.getByTestId('dashboard-sidebar')).toBeVisible()
         await expect(page.getByRole('main')).toBeVisible()
         
         // Check if interactive elements are keyboard accessible

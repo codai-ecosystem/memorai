@@ -68,25 +68,36 @@
   - heading "Memory Overview" [level=2]
   - paragraph: Comprehensive view of your AI memory system
   - paragraph: Total Memories
-  - paragraph: "0"
+  - paragraph: "5"
   - img
   - img
   - text: +12% from last month
   - paragraph: Active Agents
-  - paragraph: "0"
+  - paragraph: "1"
   - img
   - img
   - text: All agents healthy
   - paragraph: Avg Importance
-  - paragraph: 0%
+  - paragraph: 68%
   - img
   - text: Quality score
   - paragraph: Recent Activity
-  - paragraph: "0"
+  - paragraph: "5"
   - img
   - text: Today
+  - heading "Memory Types Distribution" [level=3]
+  - text: 5 note
   - heading "Recent Memories" [level=3]
-  - paragraph: No memories found
+  - paragraph: "Successfully published @codai/memorai-mcp@2.0.1 with recall fix | Memory recall functionality now working correctly with published package | Dashboard successfully started on port 6366 | Project status: MCP server fixes complete, dashboard integration in progress"
+  - text: note just now
+  - paragraph: Memorai Dashboard System initialized successfully | Next.js 15 application running on port 6366 | Connected to VS Code environment | API endpoints configured for MCP integration
+  - text: note just now
+  - paragraph: Fixed function signature mismatch in fallback implementation | Corrected remember() and recall() parameter handling | Updated return format to match MemoryEngine output structure | Memory operations now working correctly
+  - text: note just now
+  - paragraph: Testing published package v2.0.1 with recall fix - memory storage test | Memory storage and retrieval confirmed working with published package | Tested with various query terms successfully
+  - text: note just now
+  - paragraph: "MCP memory recall functionality: WORKING ✅ | Published package integration: COMPLETE ✅ | Dashboard startup: SUCCESSFUL ✅ | Next: Complete dashboard MCP integration"
+  - text: note just now
   - heading "Memory Actions" [level=2]
   - paragraph: Create, manage, and organize your memories
   - button "Add Memory Create a new memory entry":
@@ -114,7 +125,7 @@
     - option "Sort by Relevance"
   - button "Sort ascending":
     - img
-  - heading "0 Memories" [level=3]
+  - heading "5 Memories" [level=3]
   - button "Filters":
     - img
     - text: Filters
@@ -125,7 +136,67 @@
     - option "Type"
   - button:
     - img
+  - checkbox
+  - text: Select all
+  - checkbox
+  - paragraph: "Successfully published @codai/memorai-mcp@2.0.1 with recall fix | Memory recall functionality now working correctly with published package | Dashboard successfully started on port 6366 | Project status: MCP server fixes complete, dashboard integration in progress"
   - img
-  - heading "No memories yet" [level=3]
-  - paragraph: Start adding memories to see them here. They will be organized and searchable.
+  - text: over 55 years ago
+  - img
+  - text: note
+  - img
+  - text: agent memorai-completion-agent
+  - button "Copy content":
+    - img
+  - button "Delete memory":
+    - img
+  - checkbox
+  - paragraph: Memorai Dashboard System initialized successfully | Next.js 15 application running on port 6366 | Connected to VS Code environment | API endpoints configured for MCP integration
+  - img
+  - text: over 55 years ago
+  - img
+  - text: note
+  - img
+  - text: system dashboard-system
+  - button "Copy content":
+    - img
+  - button "Delete memory":
+    - img
+  - checkbox
+  - paragraph: Fixed function signature mismatch in fallback implementation | Corrected remember() and recall() parameter handling | Updated return format to match MemoryEngine output structure | Memory operations now working correctly
+  - img
+  - text: over 55 years ago
+  - img
+  - text: note
+  - img
+  - text: milestone memory-recall-fix
+  - button "Copy content":
+    - img
+  - button "Delete memory":
+    - img
+  - checkbox
+  - paragraph: Testing published package v2.0.1 with recall fix - memory storage test | Memory storage and retrieval confirmed working with published package | Tested with various query terms successfully
+  - img
+  - text: over 55 years ago
+  - img
+  - text: note
+  - img
+  - text: test_data test-published-package
+  - button "Copy content":
+    - img
+  - button "Delete memory":
+    - img
+  - checkbox
+  - paragraph: "MCP memory recall functionality: WORKING ✅ | Published package integration: COMPLETE ✅ | Dashboard startup: SUCCESSFUL ✅ | Next: Complete dashboard MCP integration"
+  - img
+  - text: over 55 years ago
+  - img
+  - text: note
+  - img
+  - text: status project-status
+  - button "Copy content":
+    - img
+  - button "Delete memory":
+    - img
+- alert
 ```
