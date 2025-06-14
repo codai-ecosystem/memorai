@@ -141,12 +141,18 @@ class SimpleMCPServer {
     });
 
     this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
-      const { name, arguments: args } = request.params;
+      const { name, arguments: args } = request.params;      try {
+        // Ensure args is defined and has the expected structure
+        if (!args || typeof args !== 'object') {
+          throw new Error('Invalid arguments provided');
+        }
 
-      try {
         switch (name) {
           case "remember":
-            const id = memoryStore.remember(args.content, args.metadata);
+            const id = memoryStore.remember(
+              (args as any).content as string, 
+              (args as any).metadata as Record<string, any> | undefined
+            );
             return {
               content: [
                 {
@@ -157,13 +163,13 @@ class SimpleMCPServer {
             };
 
           case "recall":
-            const memories = memoryStore.recall(args.query);
+            const memories = memoryStore.recall((args as any).query as string);
             return {
               content: [
                 {
                   type: "text",
                   text: JSON.stringify({
-                    query: args.query,
+                    query: (args as any).query,
                     results: memories,
                     count: memories.length
                   }, null, 2)
@@ -172,12 +178,12 @@ class SimpleMCPServer {
             };
 
           case "forget":
-            const success = memoryStore.forget(args.id);
+            const success = memoryStore.forget((args as any).id as string);
             return {
               content: [
                 {
                   type: "text",
-                  text: success ? `Memory ${args.id} forgotten` : `Memory ${args.id} not found`
+                  text: success ? `Memory ${(args as any).id} forgotten` : `Memory ${(args as any).id} not found`
                 }
               ]
             };

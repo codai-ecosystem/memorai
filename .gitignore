@@ -130,6 +130,17 @@ lerna-debug.log*
 .turbo/
 *.tsbuildinfo
 
+# Test and assessment artifacts
+test-results-detailed.log
+validation-report.json
+comprehensive-assessment-report.json
+performance-test-*.mjs
+*-assessment-report.json
+
+# Lock files that shouldn't be tracked
+.memorai-dashboard.lock
+*.lock
+
 # IDE files
 .vscode/settings.json
 .idea/
