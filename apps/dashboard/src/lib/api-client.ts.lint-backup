@@ -1,9 +1,10 @@
+import { Memory, Config } from '../stores/types';
+
 /**
  * API Client for Memorai Dashboard
  * Handles HTTP requests to the Memorai MCP server and backend APIs
  */
 
-import { Memory, Config } from '../stores/types';
 
 export class APIError extends Error {
     constructor(
@@ -79,7 +80,7 @@ class ApiClient {
 
             // Otherwise, wrap the data
             return { data: responseData, success: true };
-        } catch (_error) {
+        } catch (error) {
             console.error(`API request failed for ${endpoint}:`, error);
             return {
                 error: error instanceof Error ? error.message : 'Unknown error',

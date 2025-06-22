@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-
 import { enterpriseDataSource } from '../../../lib/enterprise-data-source';
 
 export async function GET() {
@@ -10,7 +9,7 @@ export async function GET() {
         // Transform to API response format
         const configResponse = {
             version: "2.0.0",
-            environment: process.env.NODE_ENV ?? "development",
+            environment: process.env.NODE_ENV || "development",
             features: {
                 memoryStorage: true,
                 vectorSearch: realConfig.memory.enableEmbeddings,
@@ -34,12 +33,12 @@ export async function GET() {
                 sessionTimeout: realConfig.security.sessionTimeout
             }, providers: {
                 embedding: realConfig.memory.provider,
-                storage: realConfig.database?.type ?? 'qdrant'
+                storage: realConfig.database?.type || 'qdrant'
             },
             performance: {
-                queryTimeout: realConfig.performance?.queryTimeout ?? 30,
-                cacheSize: realConfig.performance?.cacheSize ?? 100,
-                batchSize: realConfig.performance?.batchSize ?? 50,
+                queryTimeout: realConfig.performance?.queryTimeout || 30,
+                cacheSize: realConfig.performance?.cacheSize || 100,
+                batchSize: realConfig.performance?.batchSize || 50,
                 enablePreloading: realConfig.performance?.enablePreloading || false
             }
         };
@@ -49,10 +48,13 @@ export async function GET() {
             success: true,
             cached: false,
             timestamp: new Date().toISOString()
-        });    } catch (_error) {
+        });
+    } catch (error) {
         // Log error for debugging in development only
         if (process.env.NODE_ENV === 'development') {
-            console.error('Config API error:', _error);
+            if (process.env.NODE_ENV === 'development') {
+                if (process.env.NODE_ENV === "development") console.error('Config API error:', error);
+            }
         }
         return NextResponse.json(
             { error: 'Failed to fetch configuration', success: false },

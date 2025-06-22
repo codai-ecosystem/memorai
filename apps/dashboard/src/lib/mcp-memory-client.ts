@@ -1,4 +1,3 @@
-
 /**
  * MCP Memory Client for Memorai Dashboard
  * Direct integration with Memory MCP Server tools
@@ -37,7 +36,7 @@ export interface MemoryStats {
 
 export interface MCPMemoryResponse {
     success: boolean;
-    data?: unknown;
+    data?: any;
     error?: string;
 }
 
@@ -148,7 +147,7 @@ class MCPMemoryClient {
         try {
             // Create a new entity in the MCP memory system
             const entityName = `memory-${Date.now()}`;
-            const entityType = metadata.source ?? 'user_input';
+            const entityType = metadata.source || 'user_input';
 
             const entity: MCPEntity = {
                 name: entityName,
@@ -166,7 +165,7 @@ class MCPMemoryClient {
                 metadata: {
                     tags: metadata.tags || [entityType],
                     importance: metadata.importance || 0.5,
-                    source: metadata.source ?? 'dashboard',
+                    source: metadata.source || 'dashboard',
                     entities: [entityName],
                     confidence: metadata.confidence || 0.90
                 }
@@ -178,8 +177,11 @@ class MCPMemoryClient {
             throw new Error('Failed to create memory');
         }
     } async getStats(): Promise<MemoryStats> {
-        try {// Removed console.log for production
-            const graphResponse = await this.readGraph();// Removed console.log for production
+        try {
+            console.log('MCPMemoryClient: Getting stats...');
+            const graphResponse = await this.readGraph();
+            console.log('MCPMemoryClient: Graph response:', graphResponse);
+
             if (!graphResponse.entities || graphResponse.entities.length === 0) {
                 console.warn('MCPMemoryClient: No entities found, returning empty stats');
                 return this.getEmptyStats();
@@ -209,7 +211,9 @@ class MCPMemoryClient {
                     agentId,
                     memoryCount: count
                 }))
-            };// Removed console.log for production
+            };
+
+            console.log('MCPMemoryClient: Calculated stats:', stats);
             return stats;
         } catch (error) {
             console.error('MCPMemoryClient: Failed to get stats:', error);
@@ -225,11 +229,13 @@ class MCPMemoryClient {
             });
 
             if (response.ok) {
-                const data = await response.json();// Removed console.log for production
+                const data = await response.json();
+                console.log('MCP read-graph response:', data);
+
                 // Convert MCP response format to our expected format
                 if (data.entities && Array.isArray(data.entities)) {
                     return {
-                        entities: data.entities.map((entity: unknown) => ({
+                        entities: data.entities.map((entity: any) => ({
                             name: entity.name,
                             entityType: entity.entityType,
                             observations: entity.observations || []
@@ -298,7 +304,8 @@ class MCPMemoryClient {
                 body: JSON.stringify({ entities })
             });
 
-            if (response.ok) {// Removed console.log for production
+            if (response.ok) {
+                console.log('Entities created successfully in MCP:', entities);
             } else {
                 console.error('Failed to create entities in MCP');
             }

@@ -1,6 +1,6 @@
+
 import { create } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
-
 import { configApi } from '../lib/api-client'
 
 export interface SystemConfig {
@@ -151,7 +151,7 @@ const api = {
                     }
                 };
             }
-        } catch (_error) {
+        } catch (error) {
             console.warn('API config call failed, falling back to mock data:', error);
         }
 
@@ -165,7 +165,7 @@ const api = {
             // For now, just return the merged config
             const currentConfig = await this.getConfig();
             return { ...currentConfig, ...updates };
-        } catch (_error) {
+        } catch (error) {
             console.warn('API config update failed, falling back to mock:', error);
             return { ...defaultConfig, ...updates };
         }
@@ -179,7 +179,7 @@ const api = {
 export const useConfigStore = create<ConfigState>()(
     devtools(
         persist(
-            (set, _get) => ({
+            (_set, _get) => ({
                 config: null,
                 isLoading: false,
                 error: null,
@@ -189,7 +189,7 @@ export const useConfigStore = create<ConfigState>()(
                         set({ isLoading: true, error: null })
                         const config = await api.getConfig()
                         set({ config, isLoading: false })
-                    } catch (_error) {
+                    } catch (error) {
                         set({
                             error: error instanceof Error ? error.message : 'Failed to fetch configuration',
                             isLoading: false
@@ -202,7 +202,7 @@ export const useConfigStore = create<ConfigState>()(
                         set({ isLoading: true, error: null })
                         const config = await api.updateConfig(updates)
                         set({ config, isLoading: false })
-                    } catch (_error) {
+                    } catch (error) {
                         set({
                             error: error instanceof Error ? error.message : 'Failed to update configuration',
                             isLoading: false
@@ -213,7 +213,7 @@ export const useConfigStore = create<ConfigState>()(
                         set({ isLoading: true, error: null })
                         const config = await api.resetConfig()
                         set({ config, isLoading: false })
-                    } catch (_error) {
+                    } catch (error) {
                         set({
                             error: error instanceof Error ? error.message : 'Failed to reset configuration',
                             isLoading: false
@@ -234,7 +234,7 @@ export const useConfigStore = create<ConfigState>()(
                         } else {
                             return { success: false, error: 'Connection timeout' }
                         }
-                    } catch (_error) {
+                    } catch (error) {
                         set({ isLoading: false })
                         return {
                             success: false,

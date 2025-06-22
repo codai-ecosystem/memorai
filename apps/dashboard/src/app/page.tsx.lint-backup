@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { DashboardHeader } from '../components/dashboard/header'
 import { DashboardSidebar } from '../components/dashboard/sidebar'
 import { MemoryOverview } from '../components/dashboard/memory-overview'
@@ -53,8 +53,10 @@ export default function DashboardPage() {
                     fetchConfig()
                 ])
 
-                clearTimeout(loadingTimeout)            } catch (_error) {
-                console.error('Failed to initialize dashboard:', _error)
+                clearTimeout(loadingTimeout)
+
+            } catch (error) {
+                console.error('Failed to initialize dashboard:', error)
             } finally {
                 setIsLoading(false)
             }

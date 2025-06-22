@@ -1,7 +1,5 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
-import React from 'react'
-
 import './globals.css'
 import { ThemeProvider } from '../components/providers/theme-provider'
 import { Toaster } from 'react-hot-toast'
@@ -37,23 +35,22 @@ export const viewport: Viewport = {
 }
 
 export default function RootLayout({
-  children,
+    children,
 }: {
-  children: React.ReactNode
+    children: React.ReactNode
 }) {
     return (
         <html lang="en" suppressHydrationWarning>
-            <body className={inter.className}>
-                <ThemeProvider>
-                    {children}
-                    <Toaster
-                        position="top-right"
-                        toastOptions={{
-                            duration: 4000,
-                            style: {
-                                background: 'hsl(var(--card))',
-                                color: 'hsl(var(--card-foreground))',
-                                border: '1px solid hsl(var(--border))',
+            <body className={inter.className}>                <ThemeProvider>
+                {children}
+                <Toaster
+                    position="top-right"
+                    toastOptions={{
+                        duration: 4000,
+                        style: {
+                            background: 'hsl(var(--card))',
+                            color: 'hsl(var(--card-foreground))',
+                            border: '1px solid hsl(var(--border))',
                         },
                     }}
                 />

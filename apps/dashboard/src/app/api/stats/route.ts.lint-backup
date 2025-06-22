@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-
 import { enterpriseDataSource } from '../../../lib/enterprise-data-source';
 
 export async function GET() {
@@ -37,10 +36,9 @@ export async function GET() {
             success: true,
             cached: false,
             timestamp: new Date().toISOString()
-        });    } catch (_error) {
-        if (process.env.NODE_ENV === "development") {
-            console.error('Stats API error:', _error);
-        }
+        });
+    } catch (error) {
+        if (process.env.NODE_ENV === "development") if (process.env.NODE_ENV === "development") console.error('Stats API error:', error);
         return NextResponse.json(
             { error: 'Failed to fetch statistics', success: false },
             { status: 500 }

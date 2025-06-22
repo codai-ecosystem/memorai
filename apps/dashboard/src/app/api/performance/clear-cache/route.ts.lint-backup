@@ -14,7 +14,7 @@ export async function POST() {
 
         return NextResponse.json(result);
     } catch (error) {
-        if (process.env.NODE_ENV === "development") console.error('Failed to clear cache:', error);
+        if (process.env.NODE_ENV === "development") if (process.env.NODE_ENV === "development") console.error('Failed to clear cache:', error);
         return NextResponse.json(
             { error: 'Failed to clear cache' },
             { status: 500 }

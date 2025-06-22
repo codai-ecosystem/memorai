@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json(searchResults);
     } catch (error) {
-        if (process.env.NODE_ENV === "development") console.error('Error in search-nodes API:', error);
+        if (process.env.NODE_ENV === "development") if (process.env.NODE_ENV === "development") console.error('Error in search-nodes API:', error);
         return NextResponse.json(
             { error: 'Failed to search nodes' },
             { status: 500 }

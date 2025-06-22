@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
             );
         }        // Log the entities being created
         if (process.env.NODE_ENV === 'development') {
-            console.log('Creating entities:', entities);
+            if (process.env.NODE_ENV === "development") console.log('Creating entities:', entities);
         }
 
         // In a real implementation, this would call the MCP server
@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
         });
     } catch (error) {
         if (process.env.NODE_ENV === 'development') {
-            console.error('Error in create-entities API:', error);
+            if (process.env.NODE_ENV === "development") console.error('Error in create-entities API:', error);
         }
         return NextResponse.json(
             { error: 'Failed to create entities' },
