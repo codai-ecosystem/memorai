@@ -34,11 +34,11 @@ test.describe('Dashboard E2E Tests', () => {
     test('should search for memories', async ({ page }) => {
         // Navigate to search section
         await page.getByTestId('nav-search').click()
-        
+
         // Use the search input
         const searchInput = page.getByTestId('memory-search-input')
         await searchInput.fill('test query')
-        
+
         // Check if search is triggered
         await expect(searchInput).toHaveValue('test query')
     })
@@ -61,7 +61,7 @@ test.describe('Dashboard E2E Tests', () => {
         // Find and click theme toggle button
         const themeButton = page.locator('button[title*="theme"], button[aria-label*="theme"]').first()
         await themeButton.click()
-        
+
         // Check if theme changed (this might require checking class changes)
         await expect(page.locator('html')).toHaveAttribute('class', /light|dark/)
     })
@@ -70,14 +70,14 @@ test.describe('Dashboard E2E Tests', () => {
         await expect(page.getByText('System Online')).toBeVisible()
         await expect(page.getByText('All services operational')).toBeVisible()
     })
-    
+
     test('should handle search functionality', async ({ page }) => {
         // Use header search
         const headerSearch = page.getByTestId('header-search-input')
         await headerSearch.fill('search query')
         await expect(headerSearch).toHaveValue('search query')
     })
-    
+
     test('should display memory overview cards', async ({ page }) => {
         // Check memory overview cards
         await expect(page.getByText('Total Memories')).toBeVisible()
@@ -90,11 +90,11 @@ test.describe('Dashboard E2E Tests', () => {
         // Test mobile view
         await page.setViewportSize({ width: 375, height: 667 })
         await expect(page.getByTestId('dashboard-header')).toBeVisible()
-        
+
         // Test tablet view
         await page.setViewportSize({ width: 768, height: 1024 })
         await expect(page.getByTestId('dashboard-sidebar')).toBeVisible()
-        
+
         // Test desktop view
         await page.setViewportSize({ width: 1280, height: 720 })
         await expect(page.getByTestId('dashboard-sidebar')).toBeVisible()
@@ -104,7 +104,7 @@ test.describe('Dashboard E2E Tests', () => {
         // Check for essential accessibility features using more specific selectors
         await expect(page.getByTestId('dashboard-sidebar')).toBeVisible()
         await expect(page.getByRole('main')).toBeVisible()
-        
+
         // Check if interactive elements are keyboard accessible
         await page.keyboard.press('Tab')
         await expect(page.locator(':focus')).toBeVisible()
@@ -113,7 +113,7 @@ test.describe('Dashboard E2E Tests', () => {
     test('should handle errors gracefully', async ({ page }) => {
         // Test error handling by checking if page doesn't crash
         await expect(page.getByTestId('dashboard-header')).toBeVisible()
-        
+
         // Navigate to different sections to ensure stability
         const navItems = ['nav-memories', 'nav-analytics', 'nav-search', 'nav-agents']
         for (const navItem of navItems) {
@@ -126,11 +126,11 @@ test.describe('Dashboard E2E Tests', () => {
         // Set a search query
         const searchInput = page.getByTestId('header-search-input')
         await searchInput.fill('persistent query')
-        
+
         // Navigate to different sections
         await page.getByTestId('nav-memories').click()
         await page.getByTestId('nav-analytics').click()
-        
+
         // Check if search query persists
         await expect(searchInput).toHaveValue('persistent query')
     })
@@ -138,7 +138,7 @@ test.describe('Dashboard E2E Tests', () => {
     test('should load and display data correctly', async ({ page }) => {
         // Wait for any async data loading
         await page.waitForTimeout(1000)
-        
+
         // Check if numbers are displayed (they might be 0 but should be present)
         const memoryCount = page.locator('text=/Total Memories/').locator('..').locator('text=/\\d+/')
         await expect(memoryCount).toBeVisible()
@@ -150,7 +150,7 @@ test.describe('Dashboard E2E Tests', () => {
             await page.getByTestId('nav-memories').click()
             await page.getByTestId('nav-analytics').click()
         }
-        
+
         // Should still be responsive
         await expect(page.getByTestId('dashboard-header')).toBeVisible()
     })

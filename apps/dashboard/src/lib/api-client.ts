@@ -1,9 +1,10 @@
+import { Memory, Config } from '../stores/types';
+
 /**
  * API Client for Memorai Dashboard
  * Handles HTTP requests to the Memorai MCP server and backend APIs
  */
 
-import { Memory, Config } from '../stores/types';
 
 export class APIError extends Error {
     constructor(

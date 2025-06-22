@@ -9,28 +9,28 @@ export interface PerformanceMetrics {
   avgQueryTime: number;
   queryErrors: number;
   querySuccessRate: number;
-  
+
   // Memory operations
   rememberCount: number;
   recallCount: number;
   forgetCount: number;
   contextCount: number;
-  
+
   // Timing metrics
   avgRememberTime: number;
   avgRecallTime: number;
   avgForgetTime: number;
   avgContextTime: number;
-  
+
   // Cache performance
   cacheHits: number;
   cacheMisses: number;
   cacheHitRate: number;
-  
+
   // System resources
   memoryUsage: number;
   activeConnections: number;
-  
+
   // Time window
   windowStart: Date;
   windowEnd: Date;
@@ -53,6 +53,9 @@ export class PerformanceMonitor {
   private metrics: QueryMetrics[] = [];
   private windowSizeMs: number;
   private maxHistorySize: number;
+  private activeConnections: number = 0;
+  private totalConnections: number = 0;
+  private maxConcurrentConnections: number = 0;
 
   constructor(windowSizeMs: number = 60000, maxHistorySize: number = 10000) {
     this.windowSizeMs = windowSizeMs;
@@ -64,7 +67,7 @@ export class PerformanceMonitor {
    */
   public recordQuery(metrics: QueryMetrics): void {
     this.metrics.push(metrics);
-    
+
     // Cleanup old metrics to prevent memory leaks
     if (this.metrics.length > this.maxHistorySize) {
       this.metrics = this.metrics.slice(-this.maxHistorySize);
@@ -78,8 +81,9 @@ export class PerformanceMonitor {
     agentId?: string
   ): { finish: (success: boolean, error?: string, resultCount?: number, cacheHit?: boolean) => void } {
     const startTime = Date.now();
-    
-    return {      finish: (success: boolean, error?: string, resultCount?: number, cacheHit?: boolean) => {
+
+    return {
+      finish: (success: boolean, error?: string, resultCount?: number, cacheHit?: boolean) => {
         const endTime = Date.now();
         const queryMetrics: QueryMetrics = {
           operation,
@@ -89,7 +93,7 @@ export class PerformanceMonitor {
           success,
           tenantId,
         };
-        
+
         if (agentId !== undefined) {
           queryMetrics.agentId = agentId;
         }
@@ -102,7 +106,7 @@ export class PerformanceMonitor {
         if (cacheHit !== undefined) {
           queryMetrics.cacheHit = cacheHit;
         }
-        
+
         this.recordQuery(queryMetrics);
       }
     };
@@ -115,7 +119,7 @@ export class PerformanceMonitor {
     const now = Date.now();
     const windowStart = new Date(now - this.windowSizeMs);
     const windowEnd = new Date(now);
-    
+
     // Filter metrics to current window
     const windowMetrics = this.metrics.filter(
       m => m.endTime >= (now - this.windowSizeMs)
@@ -124,10 +128,10 @@ export class PerformanceMonitor {
     const totalQueries = windowMetrics.length;
     const successfulQueries = windowMetrics.filter(m => m.success).length;
     const queryErrors = totalQueries - successfulQueries;
-    
+
     // Calculate averages
-    const avgQueryTime = totalQueries > 0 
-      ? windowMetrics.reduce((sum, m) => sum + m.duration, 0) / totalQueries 
+    const avgQueryTime = totalQueries > 0
+      ? windowMetrics.reduce((sum, m) => sum + m.duration, 0) / totalQueries
       : 0;
 
     // Operation-specific metrics
@@ -136,7 +140,7 @@ export class PerformanceMonitor {
     const forgetOps = windowMetrics.filter(m => m.operation === 'forget');
     const contextOps = windowMetrics.filter(m => m.operation === 'context');
 
-    const avgTime = (ops: QueryMetrics[]) => 
+    const avgTime = (ops: QueryMetrics[]) =>
       ops.length > 0 ? ops.reduce((sum, m) => sum + m.duration, 0) / ops.length : 0;
 
     // Cache metrics
@@ -150,24 +154,23 @@ export class PerformanceMonitor {
       avgQueryTime,
       queryErrors,
       querySuccessRate: totalQueries > 0 ? successfulQueries / totalQueries : 0,
-      
+
       rememberCount: rememberOps.length,
       recallCount: recallOps.length,
       forgetCount: forgetOps.length,
       contextCount: contextOps.length,
-      
+
       avgRememberTime: avgTime(rememberOps),
       avgRecallTime: avgTime(recallOps),
       avgForgetTime: avgTime(forgetOps),
       avgContextTime: avgTime(contextOps),
-      
+
       cacheHits,
       cacheMisses,
       cacheHitRate,
-      
       memoryUsage: process.memoryUsage().heapUsed / 1024 / 1024, // MB
-      activeConnections: 0, // TODO: Implement connection tracking
-      
+      activeConnections: this.activeConnections,
+
       windowStart,
       windowEnd,
     };
@@ -185,11 +188,11 @@ export class PerformanceMonitor {
    */
   public getTenantMetrics(tenantId: string): PerformanceMetrics {
     const tenantMetrics = this.metrics.filter(m => m.tenantId === tenantId);
-    
+
     // Create a temporary monitor with only tenant metrics
     const tempMonitor = new PerformanceMonitor(this.windowSizeMs, this.maxHistorySize);
     tempMonitor.metrics = tenantMetrics;
-    
+
     return tempMonitor.getMetrics();
   }
 
@@ -208,7 +211,7 @@ export class PerformanceMonitor {
    */
   public getErrorAnalysis(): { error: string; count: number; lastOccurrence: Date }[] {
     const errorCounts = new Map<string, { count: number; lastOccurrence: number }>();
-    
+
     this.metrics
       .filter(m => !m.success && m.error)
       .forEach(m => {
@@ -227,12 +230,51 @@ export class PerformanceMonitor {
       }))
       .sort((a, b) => b.count - a.count);
   }
-
   /**
    * Clear metrics history (useful for testing)
    */
   public clearMetrics(): void {
     this.metrics = [];
+  }
+
+  /**
+   * Track a new connection
+   */
+  public recordConnection(type: 'open' | 'close'): void {
+    if (type === 'open') {
+      this.activeConnections++;
+      this.totalConnections++;
+      this.maxConcurrentConnections = Math.max(
+        this.maxConcurrentConnections,
+        this.activeConnections
+      );
+    } else if (type === 'close') {
+      this.activeConnections = Math.max(0, this.activeConnections - 1);
+    }
+  }
+
+  /**
+   * Get connection statistics
+   */
+  public getConnectionStats(): {
+    active: number;
+    total: number;
+    maxConcurrent: number;
+  } {
+    return {
+      active: this.activeConnections,
+      total: this.totalConnections,
+      maxConcurrent: this.maxConcurrentConnections
+    };
+  }
+
+  /**
+   * Reset connection counters (useful for testing)
+   */
+  public resetConnections(): void {
+    this.activeConnections = 0;
+    this.totalConnections = 0;
+    this.maxConcurrentConnections = 0;
   }
 
   /**
@@ -244,7 +286,7 @@ export class PerformanceMonitor {
     csv: string;
   } {
     const metrics = this.getMetrics();
-    
+
     // Prometheus format
     const prometheus = [
       `# HELP memorai_query_total Total number of queries`,

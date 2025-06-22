@@ -20,7 +20,7 @@ const memoryConfig: UnifiedMemoryConfig = {
   enableFallback: true,
   autoDetect: true,
   preferredTier: undefined, // Auto-detect best tier
-  
+
   // Azure OpenAI configuration (if available)
   azureOpenAI: {
     endpoint: process.env.AZURE_OPENAI_ENDPOINT,
@@ -28,17 +28,17 @@ const memoryConfig: UnifiedMemoryConfig = {
     deploymentName: process.env.AZURE_OPENAI_DEPLOYMENT_NAME || 'text-embedding-ada-002',
     apiVersion: process.env.AZURE_OPENAI_API_VERSION || '2023-05-15'
   },
-  
+
   // OpenAI configuration (if available) 
   apiKey: process.env.OPENAI_API_KEY,
   model: process.env.OPENAI_MODEL || 'text-embedding-ada-002',
-  
+
   // Local embedding fallback
   localEmbedding: {
     model: 'all-MiniLM-L6-v2',
     cachePath: './embeddings-cache'
   },
-  
+
   // Mock configuration for testing
   mock: {
     simulateDelay: false,
@@ -59,17 +59,17 @@ class EnterpriseMemoryEngine {
 
   async initialize(): Promise<void> {
     if (this.initialized) return;
-    
+
     await this.unifiedEngine.initialize();
     this.initialized = true;
-    
+
     console.error('🚀 Enterprise Memory Engine initialized successfully');
     console.error('📊 Performance monitoring enabled');
   }
 
   async remember(agentId: string, content: string, metadata: any = {}): Promise<{ id: string }> {
     const start = performance.now();
-    
+
     try {
       const memoryId = await this.unifiedEngine.remember(
         content,
@@ -82,7 +82,7 @@ class EnterpriseMemoryEngine {
           context: metadata
         }
       );
-      
+
       const end = performance.now();
       this.performanceMonitor.recordQuery({
         operation: 'remember',
@@ -95,7 +95,7 @@ class EnterpriseMemoryEngine {
         resultCount: 1,
         cacheHit: false
       });
-      
+
       return { id: memoryId };
     } catch (error) {
       const end = performance.now();
@@ -115,7 +115,7 @@ class EnterpriseMemoryEngine {
 
   async recall(agentId: string, query: string, limit = 10): Promise<any[]> {
     const start = performance.now();
-    
+
     try {
       const results = await this.unifiedEngine.recall(
         query,
@@ -128,7 +128,7 @@ class EnterpriseMemoryEngine {
           time_decay: true
         }
       );
-      
+
       const end = performance.now();
       this.performanceMonitor.recordQuery({
         operation: 'recall',
@@ -141,7 +141,7 @@ class EnterpriseMemoryEngine {
         resultCount: results.length,
         cacheHit: false // UnifiedEngine handles its own caching
       });
-        return results.map(result => ({
+      return results.map(result => ({
         id: result.memory.id,
         content: result.memory.content,
         relevance: result.score,
@@ -172,13 +172,14 @@ class EnterpriseMemoryEngine {
 
   async context(agentId: string, size = 5): Promise<any> {
     const start = performance.now();
-    
-    try {      const contextData = await this.unifiedEngine.getContext({
+
+    try {
+      const contextData = await this.unifiedEngine.getContext({
         tenant_id: 'default-tenant',
         agent_id: agentId,
         max_memories: size
       });
-      
+
       const end = performance.now();
       this.performanceMonitor.recordQuery({
         operation: 'context',
@@ -191,7 +192,7 @@ class EnterpriseMemoryEngine {
         resultCount: contextData.memories?.length || 0,
         cacheHit: false
       });
-      
+
       return {
         context: contextData.summary || `Context for ${agentId}`,
         memories: contextData.memories || [],
@@ -217,10 +218,10 @@ class EnterpriseMemoryEngine {
 
   async forget(agentId: string, memoryId: string): Promise<boolean> {
     const start = performance.now();
-    
+
     try {
       await this.unifiedEngine.forget(memoryId);
-      
+
       const end = performance.now();
       this.performanceMonitor.recordQuery({
         operation: 'forget',
@@ -233,7 +234,7 @@ class EnterpriseMemoryEngine {
         resultCount: 1,
         cacheHit: false
       });
-      
+
       return true;
     } catch (error) {
       const end = performance.now();
@@ -334,20 +335,20 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const startTime = performance.now();
-  
+
   try {
     const { name, arguments: args } = request.params;
-    
+
     if (!args) {
       throw new Error('Missing arguments');
     }
-    
+
     const agentId = args.agentId as string;
-    
+
     if (!agentId) {
       throw new Error('Missing agentId');
     }
-    
+
     switch (name) {
       case "remember":
         const result = await enterpriseEngine.remember(agentId, args.content as string, args.metadata);
@@ -372,7 +373,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             })
           }]
         };
-        
+
       case "recall":
         const memories = await enterpriseEngine.recall(agentId, args.query as string, args.limit as number);
         const recallMetrics = enterpriseEngine.getMetrics();
@@ -396,7 +397,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             })
           }]
         };
-        
+
       case "context":
         const context = await enterpriseEngine.context(agentId, args.contextSize as number);
         const contextMetrics = enterpriseEngine.getMetrics();
@@ -420,7 +421,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             })
           }]
         };
-        
+
       case "forget":
         const forgotten = await enterpriseEngine.forget(agentId, args.memoryId as string);
         const forgetMetrics = enterpriseEngine.getMetrics();
@@ -443,14 +444,14 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             })
           }]
         };
-        
+
       default:
         throw new Error(`Unknown tool: ${name}`);
     }
   } catch (error) {
     return {
       content: [{
-        type: 'text', 
+        type: 'text',
         text: JSON.stringify({
           success: false,
           error: error instanceof Error ? error.message : 'Unknown error',
@@ -468,10 +469,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 async function main() {
   try {
     await enterpriseEngine.initialize();
-    
+
     const transport = new StdioServerTransport();
     await server.connect(transport);
-    
+
     console.error('🚀 ENTERPRISE MCP SERVER - Multi-Tier Architecture');
     console.error('📊 Tier Info:', enterpriseEngine.getTierInfo());
     console.error('⚡ Performance monitoring enabled');

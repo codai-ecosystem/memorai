@@ -81,12 +81,12 @@ export function AnalyticsDashboard({ className }: AnalyticsDashboardProps) {
     const chartData = useMemo(() => {
         const now = new Date();
         const weekData = [];
-        
+
         for (let i = 6; i >= 0; i--) {
             const date = new Date(now);
             date.setDate(date.getDate() - i);
             const dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getDay()];
-            
+
             const dayMemories = safeMemories.filter(m => {
                 try {
                     const memoryDate = new Date(m.metadata?.timestamp || Date.now());
@@ -95,14 +95,14 @@ export function AnalyticsDashboard({ className }: AnalyticsDashboardProps) {
                     return false;
                 }
             });
-            
+
             weekData.push({
                 name: dayName,
                 memories: dayMemories.length,
                 interactions: dayMemories.length * 2 + Math.floor(Math.random() * 10) // Estimated interactions
             });
         }
-        
+
         return weekData;
     }, [safeMemories]);
 
@@ -206,7 +206,7 @@ export function AnalyticsDashboard({ className }: AnalyticsDashboardProps) {
                 />                <MetricCard
                     title="Active Agents"
                     value={analyticsData.uniqueAgents}
-                    change={`+${Math.max(0, analyticsData.uniqueAgents - 1)} new this month`}
+                    change={`+${analyticsData.uniqueAgents} new this month`}
                     icon={Users}
                     color="green"
                 />

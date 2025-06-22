@@ -196,11 +196,12 @@ test.describe('Individual Component Testing - Every Component', () => {
 
             for (const buttonText of actionButtons) {
                 const button = page.locator(`button:has-text("${buttonText}")`)
-                if (await button.count() > 0) {                    await expect(button.first()).toBeVisible()
+                if (await button.count() > 0) {
+                    await expect(button.first()).toBeVisible()
                 }
             }
         })
-        
+
         test('should open and close memory creation form', async ({ page }) => {
             const addBtn = page.locator('[data-testid="quick-action-add-memory"], button:has-text("Add Memory")').first()
 
@@ -216,16 +217,17 @@ test.describe('Individual Component Testing - Every Component', () => {
                     await expect(form).toBeVisible({ timeout: 10000 })
                     await expect(page.locator('label:has-text("Content *")')).toBeVisible({ timeout: 5000 })
                     await expect(page.locator('textarea')).toBeVisible({ timeout: 5000 })
-                    
+
                     // Close form
                     const closeBtn = page.locator('[data-testid="close-form-button"], button:has-text("Cancel"), button[aria-label*="close"]')
                     if (await closeBtn.count() > 0) {
                         await closeBtn.first().click()
                     }
                 } catch (error) {
-                    console.log('Form did not appear as expected:', error.message)
+                    console.log('Form did not appear as expected:', error instanceof Error ? error.message : String(error))
                     // Test passes anyway since this is checking optional functionality
-                }            } else {
+                }
+            } else {
                 console.log('Add Memory button not available for interaction')
                 // Test passes since button visibility is the main requirement                expect(true).toBe(true)
             }

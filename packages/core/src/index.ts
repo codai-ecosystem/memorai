@@ -18,3 +18,7 @@ export { MemoryConfigManager, MemoryConfigFactory } from './config/MemoryConfig.
 export * from './security/SecurityManager.js';
 export * from './resilience/ResilienceManager.js';
 export * from './monitoring/PerformanceMonitor.js';
+
+// High Performance Components
+export { HighPerformanceMemoryEngine } from './engine/HighPerformanceMemoryEngine.js';
+export { PerformanceOptimizer, performanceOptimizer } from './performance/PerformanceOptimizer.js';

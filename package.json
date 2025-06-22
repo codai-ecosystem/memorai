@@ -22,8 +22,6 @@
         "start:mcp": "node packages/mcp/dist/server.js"
     },
     "devDependencies": {
-        "@eslint/js": "^9.28.0",
-        "@turbo/gen": "^1.13.4",
         "@typescript-eslint/eslint-plugin": "^8.18.1",
         "@typescript-eslint/parser": "^8.18.1",
         "eslint": "^8.57.1",

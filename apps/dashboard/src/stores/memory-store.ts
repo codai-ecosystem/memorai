@@ -1,3 +1,4 @@
+
 import { create } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
 import { mcpMemoryClient } from '../lib/mcp-memory-client'
@@ -68,7 +69,7 @@ interface MemoryState {
 
 // API functions using MCP Memory Client
 const api = {
-    async getMemories(params?: any): Promise<Memory[]> {
+    async getMemories(params?: unknown): Promise<Memory[]> {
         try {
             return await mcpMemoryClient.getMemories({
                 limit: params?.limit,
@@ -97,7 +98,7 @@ const api = {
         }
     },
 
-    async searchMemories(query: string, options?: any): Promise<Memory[]> {
+    async searchMemories(query: string, options?: unknown): Promise<Memory[]> {
         try {
             return await mcpMemoryClient.searchMemories(query, {
                 limit: options?.limit,
@@ -120,8 +121,7 @@ const api = {
 
     async deleteMemory(id: string): Promise<void> {
         try {
-            // For now, we'll just log this since MCP doesn't have direct delete by memory ID
-            console.log('Delete memory request for ID:', id);
+            // For now, we'll just log this since MCP doesn't have direct delete by memory ID// Removed console.log for production
             // In a real implementation, we'd need to track entity names associated with memory IDs
         } catch (error) {
             console.error('Failed to delete memory from MCP:', error);
@@ -131,8 +131,7 @@ const api = {
 
     async updateMemory(id: string, updates: Partial<Memory>): Promise<Memory> {
         try {
-            // For now, we'll recreate the memory since MCP doesn't have direct update
-            console.log('Update memory request for ID:', id, 'with updates:', updates);
+            // For now, we'll recreate the memory since MCP doesn't have direct update// Removed console.log for production
             // In a real implementation, we'd delete the old entity and create a new one
             throw new Error('Memory updates not yet implemented with MCP backend');
         } catch (error) {
@@ -145,7 +144,7 @@ const api = {
 export const useMemoryStore = create<MemoryState>()(
     devtools(
         persist(
-            (set, get) => ({
+            (_set, get) => ({
                 memories: [],
                 stats: null,
                 searchResults: [],
@@ -165,10 +164,8 @@ export const useMemoryStore = create<MemoryState>()(
                     }
                 }, fetchStats: async () => {
                     set({ isLoading: true, error: null });
-                    try {
-                        console.log('Memory store: Fetching stats...');
-                        const stats = await api.getStats();
-                        console.log('Memory store: Stats received:', stats);
+                    try {// Removed console.log for production
+                        const stats = await api.getStats();// Removed console.log for production
                         set({ stats, isLoading: false });
                     } catch (error) {
                         console.error('Memory store: Failed to fetch stats:', error);
@@ -179,7 +176,7 @@ export const useMemoryStore = create<MemoryState>()(
                     }
                 },
 
-                searchMemories: async (query, options) => {
+                searchMemories: async (_query, options) => {
                     set({ isLoading: true, error: null });
                     try {
                         const searchResults = await api.searchMemories(query, options);
@@ -192,7 +189,7 @@ export const useMemoryStore = create<MemoryState>()(
                     }
                 },
 
-                addMemory: async (content, metadata) => {
+                addMemory: async (_content, metadata) => {
                     set({ isLoading: true, error: null });
                     try {
                         const newMemory = await api.addMemory(content, metadata);
@@ -228,7 +225,7 @@ export const useMemoryStore = create<MemoryState>()(
                     }
                 },
 
-                updateMemory: async (id, updates) => {
+                updateMemory: async (_id, updates) => {
                     set({ isLoading: true, error: null });
                     try {
                         const updatedMemory = await api.updateMemory(id, updates);

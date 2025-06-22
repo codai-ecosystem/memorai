@@ -64,7 +64,7 @@ class EnterpriseDataSourceManager {
     private realtimeStats: RealTimeStats | null = null;
     private systemConfig: SystemConfig | null = null;
     private performanceBuffer: Array<{ timestamp: number; responseTime: number; success: boolean }> = [];
-    
+
     // Performance optimizations
     private readonly CACHE_TTL = {
         stats: 5000,      // 5 seconds for stats
@@ -79,7 +79,7 @@ class EnterpriseDataSourceManager {
             console.log('Initializing enterprise data source...');
             await this.loadSystemConfiguration();
             this.startMetricsCollection();
-            
+
             console.log('✅ Enterprise Data Source Manager initialized successfully');
         } catch (error) {
             console.error('❌ Failed to initialize Enterprise Data Source Manager:', error);
@@ -111,7 +111,7 @@ class EnterpriseDataSourceManager {
         const cached = this.getCachedData<RealTimeStats>(cacheKey);
         if (cached) {
             return cached;
-        }        try {
+        } try {
             if (!this.memoryEngine) {
                 // Use API calls for real data instead of mock
                 const [memories, systemHealth, activities] = await Promise.all([
@@ -122,10 +122,10 @@ class EnterpriseDataSourceManager {
 
                 // Calculate real performance metrics
                 const performanceMetrics = this.calculatePerformanceMetrics();
-                
+
                 // Get memory distribution from actual data
                 const memoryDistribution = this.calculateMemoryDistribution(memories);
-                
+
                 // Get agent metrics
                 const agentMetrics = this.calculateAgentMetrics(memories, activities);
 
@@ -172,9 +172,8 @@ class EnterpriseDataSourceManager {
                     model: process.env.MEMORAI_EMBEDDING_MODEL || 'text-embedding-3-small',
                     openaiApiKey: process.env.MEMORAI_OPENAI_API_KEY,
                     enableCache: process.env.ENABLE_CACHE !== 'false'
-                },
-                api: {
-                    baseUrl: process.env.API_BASE_URL || '/api',
+                }, api: {
+                    baseUrl: process.env.API_BASE_URL || (typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.host}/api` : 'http://localhost:3000/api'),
                     timeout: parseInt(process.env.API_TIMEOUT || '30000'),
                     retryAttempts: parseInt(process.env.API_RETRY_ATTEMPTS || '3'),
                     rateLimit: parseInt(process.env.API_RATE_LIMIT || '100')
@@ -225,7 +224,7 @@ class EnterpriseDataSourceManager {
         try {
             const memUsage = process.memoryUsage();
             const cpuUsage = process.cpuUsage();
-            
+
             const metrics: SystemMetrics = {
                 cpu: this.calculateCpuPercentage(cpuUsage),
                 memory: (memUsage.heapUsed / memUsage.heapTotal) * 100,
@@ -290,10 +289,10 @@ class EnterpriseDataSourceManager {
     private async getSystemHealth() {
         const memUsage = process.memoryUsage();
         const uptime = process.uptime();
-        
+
         const memoryPercentage = (memUsage.heapUsed / memUsage.heapTotal) * 100;
         let status: 'healthy' | 'warning' | 'critical' = 'healthy';
-        
+
         if (memoryPercentage > 90 || uptime < 60) {
             status = 'critical';
         } else if (memoryPercentage > 75) {
@@ -308,14 +307,38 @@ class EnterpriseDataSourceManager {
                 percentage: memoryPercentage
             }
         };
-    }
+    } private async getRecentActivities() {
+        if (!this.memoryEngine) {
+            // Return mock activities for testing when no engine is available
+            const now = new Date();
+            return [
+                {
+                    id: `activity_${now.getTime()}_1`,
+                    type: 'memory_created',
+                    timestamp: new Date(now.getTime() - 300000).toISOString(), // 5 minutes ago
+                    agent: 'test_agent_1',
+                    content: 'Created memory about system configuration'
+                },
+                {
+                    id: `activity_${now.getTime()}_2`,
+                    type: 'query_executed',
+                    timestamp: new Date(now.getTime() - 180000).toISOString(), // 3 minutes ago
+                    agent: 'test_agent_2',
+                    content: 'Executed semantic search query'
+                },
+                {
+                    id: `activity_${now.getTime()}_3`,
+                    type: 'memory_updated',
+                    timestamp: new Date(now.getTime() - 60000).toISOString(), // 1 minute ago
+                    agent: 'test_agent_1',
+                    content: 'Updated memory importance score'
+                }
+            ];
+        }
 
-    private async getRecentActivities() {
-        if (!this.memoryEngine) return [];
-        
         try {
             // Get actual recent activities from memory engine
-            const activities = await this.memoryEngine.getRecentActivities(10);            return activities.map((activity: any) => ({
+            const activities = await this.memoryEngine.getRecentActivities(10); return activities.map((activity: any) => ({
                 id: activity.id || Date.now().toString(),
                 type: activity.type || 'memory_operation',
                 timestamp: activity.timestamp || new Date().toISOString(),
@@ -327,7 +350,7 @@ class EnterpriseDataSourceManager {
             console.error('Error getting recent activities:', error);
             return [];
         }
-    }    private calculateMemoryDistribution(memories: any[]): Array<{type: string; count: number; percentage: number}> {
+    } private calculateMemoryDistribution(memories: any[]): Array<{ type: string; count: number; percentage: number }> {
         const distribution = memories.reduce((acc, memory) => {
             const type = memory.metadata?.type || 'general';
             acc[type] = (acc[type] || 0) + 1;
@@ -344,7 +367,7 @@ class EnterpriseDataSourceManager {
 
     private calculateAgentMetrics(memories: any[], activities: any[]) {
         const agentStats = new Map<string, any>();
-        
+
         memories.forEach(memory => {
             const agentId = memory.metadata?.agentId || 'unknown';
             if (!agentStats.has(agentId)) {
@@ -447,7 +470,7 @@ class EnterpriseDataSourceManager {
                 const data = await response.json();
                 return data.memories || [];
             }
-            
+
             // Fallback to basic system data
             return this.getSystemBasedMemories();
         } catch (error) {
@@ -460,7 +483,7 @@ class EnterpriseDataSourceManager {
         // Return system-based memory data when API is unavailable
         const now = new Date();
         const systemMemories = [];
-        
+
         // Add real system metrics as memories
         const memUsage = process.memoryUsage();
         systemMemories.push({

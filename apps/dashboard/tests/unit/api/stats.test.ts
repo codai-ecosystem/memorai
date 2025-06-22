@@ -72,7 +72,7 @@ describe('Stats API Route', () => {
             const response = await GET()
             const data = await response.json()
 
-            const validTypes = ['memory_created', 'memory_searched', 'agent_registered']
+            const validTypes = ['memory_created', 'memory_searched', 'agent_registered', 'query_executed', 'memory_updated']
             data.data.recentActivity.forEach((activity: any) => {
                 expect(validTypes).toContain(activity.type)
             })

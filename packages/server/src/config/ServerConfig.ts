@@ -41,10 +41,9 @@ export class ServerConfig {
       secret: process.env.JWT_SECRET || this.generateSecret(),
       expiresIn: process.env.JWT_EXPIRES_IN || '24h',
       issuer: process.env.JWT_ISSUER || 'memorai-mcp'
-    };
-    const logging: LoggingOptions = {
-      level: (process.env.LOG_LEVEL as any) || 'info',
-      format: (process.env.LOG_FORMAT as any) || 'json',
+    }; const logging: LoggingOptions = {
+      level: (process.env.LOG_LEVEL as 'debug' | 'info' | 'warn' | 'error') || 'info',
+      format: (process.env.LOG_FORMAT as 'json' | 'simple') || 'json',
       ...(process.env.LOG_FILE && { file: process.env.LOG_FILE })
     };
 

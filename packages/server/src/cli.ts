@@ -11,8 +11,9 @@ import { Logger } from './utils/Logger.js';
  * Start the Memorai MCP Server
  */
 async function startServer(): Promise<void> {
-  try {    Logger.info('Starting Memorai MCP Server...');
-    
+  try {
+    Logger.info('Starting Memorai MCP Server...');
+
     // Initialize memory configuration
     const memoryConfig = {
       // Default configuration - can be overridden by environment variables
@@ -43,27 +44,27 @@ async function startServer(): Promise<void> {
         audit_logs: true
       }
     };
-    
+
     // Initialize memory engine
     const memoryEngine = new MemoryEngine(memoryConfig);
-    
+
     // Create and start server
     const server = new MemoraiServer(memoryEngine);
     await server.start();
-    
+
     // Graceful shutdown handling
     process.on('SIGINT', async () => {
       Logger.info('Received SIGINT, shutting down gracefully...');
       await server.stop();
       process.exit(0);
     });
-    
+
     process.on('SIGTERM', async () => {
       Logger.info('Received SIGTERM, shutting down gracefully...');
       await server.stop();
       process.exit(0);
     });
-    
+
   } catch (error) {
     Logger.error('Failed to start server', error);
     process.exit(1);

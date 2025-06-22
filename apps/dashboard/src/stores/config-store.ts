@@ -1,3 +1,4 @@
+
 import { create } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
 import { configApi } from '../lib/api-client'
@@ -178,7 +179,7 @@ const api = {
 export const useConfigStore = create<ConfigState>()(
     devtools(
         persist(
-            (set, _get) => ({
+            (_set, _get) => ({
                 config: null,
                 isLoading: false,
                 error: null,
