@@ -2,7 +2,7 @@
  * @fileoverview Memory cache implementation for SDK
  */
 
-import type { CacheOptions, AgentMemory } from '../types/index.js';
+import type { CacheOptions, AgentMemory } from "../types/index.js";
 
 /**
  * Cache entry with metadata
@@ -25,9 +25,9 @@ export class MemoryCache {
   constructor(options: CacheOptions) {
     this.options = {
       enabled: options.enabled || false,
-      ttl: 'ttl' in options ? options.ttl : 300, // Use provided TTL (including undefined) or default to 300
+      ttl: "ttl" in options ? options.ttl : 300, // Use provided TTL (including undefined) or default to 300
       maxSize: options.maxSize ?? 1000,
-      strategy: options.strategy || 'lru'
+      strategy: options.strategy || "lru",
     };
 
     // Start cleanup interval if caching is enabled
@@ -66,13 +66,17 @@ export class MemoryCache {
   /**
    * Set item in cache
    */
-  public async set(key: string, value: AgentMemory, ttl?: number): Promise<void> {
+  public async set(
+    key: string,
+    value: AgentMemory,
+    ttl?: number,
+  ): Promise<void> {
     if (!this.options.enabled) {
       return;
     }
 
     const maxSize = this.options.maxSize ?? 1000;
-    
+
     // Handle edge case where maxSize is 0
     if (maxSize === 0) {
       return; // Don't add anything to cache
@@ -89,7 +93,7 @@ export class MemoryCache {
       timestamp: now,
       ttl: ttl ?? this.options.ttl,
       hits: 0,
-      lastAccessed: now
+      lastAccessed: now,
     };
 
     this.cache.set(key, entry);
@@ -138,11 +142,11 @@ export class MemoryCache {
       }
 
       // Simple text matching for cache search
-      const content = entry.value.content?.toLowerCase() || '';
+      const content = entry.value.content?.toLowerCase() || "";
       if (content.includes(queryLower)) {
         const score = this.calculateRelevanceScore(content, queryLower);
         results.push({ memory: entry.value, score });
-        
+
         // Update access metadata
         entry.hits++;
         entry.lastAccessed = Date.now();
@@ -152,7 +156,7 @@ export class MemoryCache {
 
     // Sort by relevance score and limit results
     results.sort((a, b) => b.score - a.score);
-    return results.slice(0, limit || 10).map(r => r.memory);
+    return results.slice(0, limit || 10).map((r) => r.memory);
   }
 
   /**
@@ -171,7 +175,7 @@ export class MemoryCache {
         hitRate: 0,
         totalHits: 0,
         oldestEntry: null,
-        newestEntry: null
+        newestEntry: null,
       };
     }
 
@@ -191,8 +195,9 @@ export class MemoryCache {
       size: this.cache.size,
       hitRate,
       totalHits,
-      oldestEntry: oldestTimestamp === Infinity ? null : new Date(oldestTimestamp),
-      newestEntry: newestTimestamp === 0 ? null : new Date(newestTimestamp)
+      oldestEntry:
+        oldestTimestamp === Infinity ? null : new Date(oldestTimestamp),
+      newestEntry: newestTimestamp === 0 ? null : new Date(newestTimestamp),
     };
   }
 
@@ -215,10 +220,10 @@ export class MemoryCache {
     }
 
     switch (this.options.strategy) {
-      case 'lru':
+      case "lru":
         this.evictLRU();
         break;
-      case 'fifo':
+      case "fifo":
         this.evictFIFO();
         break;
       default:
@@ -228,7 +233,7 @@ export class MemoryCache {
 
   /**
    * Evict least recently used item
-   */  private evictLRU(): void {
+   */ private evictLRU(): void {
     if (this.accessOrder.length > 0) {
       const oldestKey = this.accessOrder[0];
       if (oldestKey) {
@@ -250,7 +255,8 @@ export class MemoryCache {
         oldestTimestamp = entry.timestamp;
         oldestKey = key;
       }
-    }    if (oldestKey !== undefined) {
+    }
+    if (oldestKey !== undefined) {
       this.cache.delete(oldestKey);
       this.removeFromAccessOrder(oldestKey);
     }
@@ -278,11 +284,11 @@ export class MemoryCache {
    * Calculate simple relevance score for search
    */
   private calculateRelevanceScore(content: string, query: string): number {
-    const exactMatches = (content.match(new RegExp(query, 'gi')) || []).length;
-    const wordMatches = query.split(' ').filter(word => 
-      content.includes(word.toLowerCase())
-    ).length;
-    
+    const exactMatches = (content.match(new RegExp(query, "gi")) || []).length;
+    const wordMatches = query
+      .split(" ")
+      .filter((word) => content.includes(word.toLowerCase())).length;
+
     // Simple scoring: exact matches worth more than word matches
     return exactMatches * 10 + wordMatches;
   }

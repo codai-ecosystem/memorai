@@ -1,30 +1,26 @@
 {
-    "name": "Memorai Dashboard",
-    "short_name": "Memorai",
-    "description": "Advanced AI Memory Management Dashboard with real-time analytics and visual memory graphs",
-    "start_url": "/",
-    "display": "standalone",
-    "background_color": "#1e40af",
-    "theme_color": "#1e40af",
-    "orientation": "portrait-primary",
-    "icons": [
-        {
-            "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>",
-            "sizes": "any",
-            "type": "image/svg+xml"
-        }
-    ],
-    "categories": [
-        "productivity",
-        "utilities",
-        "business"
-    ],
-    "screenshots": [
-        {
-            "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 600'><rect width='800' height='600' fill='%231e40af'/><text x='400' y='300' text-anchor='middle' fill='white' font-size='24'>Memorai Dashboard</text></svg>",
-            "sizes": "800x600",
-            "type": "image/svg+xml",
-            "form_factor": "wide"
-        }
-    ]
+  "name": "Memorai Dashboard",
+  "short_name": "Memorai",
+  "description": "Advanced AI Memory Management Dashboard with real-time analytics and visual memory graphs",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1e40af",
+  "theme_color": "#1e40af",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "categories": ["productivity", "utilities", "business"],
+  "screenshots": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 600'><rect width='800' height='600' fill='%231e40af'/><text x='400' y='300' text-anchor='middle' fill='white' font-size='24'>Memorai Dashboard</text></svg>",
+      "sizes": "800x600",
+      "type": "image/svg+xml",
+      "form_factor": "wide"
+    }
+  ]
 }

@@ -7,6 +7,7 @@ This document outlines the complete testing strategy for every possible flow, pa
 ## Test Categories
 
 ### 1. Unit Tests (Vitest + Testing Library)
+
 - [ ] All React components (8 dashboard components)
 - [ ] All stores (memory-store, config-store)
 - [ ] All utilities (api-client, utils)
@@ -14,12 +15,14 @@ This document outlines the complete testing strategy for every possible flow, pa
 - [ ] All hooks and custom logic
 
 ### 2. Integration Tests
+
 - [ ] Store + Component interactions
 - [ ] API + Store integrations
 - [ ] Cross-component data flow
 - [ ] Theme provider integration
 
 ### 3. E2E Tests (Playwright)
+
 - [ ] Complete user journeys
 - [ ] All navigation flows
 - [ ] Form submissions and interactions
@@ -29,10 +32,12 @@ This document outlines the complete testing strategy for every possible flow, pa
 ## Components to Test
 
 ### Core Pages
+
 - [x] `page.tsx` (DashboardPage) - PARTIALLY TESTED
 - [ ] `layout.tsx` (RootLayout)
 
 ### Dashboard Components
+
 - [ ] `header.tsx` (DashboardHeader)
 - [ ] `sidebar.tsx` (DashboardSidebar)
 - [ ] `memory-overview.tsx` (MemoryOverview)
@@ -43,17 +48,21 @@ This document outlines the complete testing strategy for every possible flow, pa
 - [ ] `system-config.tsx` (SystemConfiguration)
 
 ### Providers
+
 - [ ] `theme-provider.tsx` (ThemeProvider)
 
 ### Stores
+
 - [ ] `memory-store.ts` (useMemoryStore)
 - [ ] `config-store.ts` (useConfigStore)
 
 ### Utilities
+
 - [ ] `api-client.ts`
 - [ ] `utils.ts`
 
 ### API Routes
+
 - [ ] `/api/memory/context/route.ts`
 - [ ] `/api/memory/remember/route.ts`
 - [ ] `/api/config/route.ts`
@@ -62,6 +71,7 @@ This document outlines the complete testing strategy for every possible flow, pa
 ## Test Scenarios for Each Component
 
 ### Testing Dimensions
+
 1. **Rendering** - Does it render without errors?
 2. **Props** - Does it handle all prop variations?
 3. **State** - Does internal state work correctly?
@@ -74,6 +84,7 @@ This document outlines the complete testing strategy for every possible flow, pa
 10. **Performance** - Large datasets, many items
 
 ## Coverage Goals
+
 - **Unit Tests**: 100% line coverage
 - **Integration Tests**: All component interactions
 - **E2E Tests**: All user flows
@@ -81,6 +92,7 @@ This document outlines the complete testing strategy for every possible flow, pa
 - **Performance**: Lighthouse scores > 90
 
 ## Tools and Setup
+
 - Vitest for unit/integration tests
 - @testing-library/react for component testing
 - @testing-library/jest-dom for DOM assertions
@@ -89,6 +101,7 @@ This document outlines the complete testing strategy for every possible flow, pa
 - Lighthouse CI for performance testing
 
 ## Execution Plan
+
 1. Complete unit test suite for all components
 2. Integration tests for store/component interactions
 3. Comprehensive E2E test suite with Playwright

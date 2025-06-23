@@ -1,9 +1,10 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from "vitest";
 
-describe('Memorai MCP', () => {
-  it('should export server functionality', async () => {    // Test the built version to avoid ES module issues
+describe("Memorai MCP", () => {
+  it("should export server functionality", async () => {
+    // Test the built version to avoid ES module issues
     try {
-      const mcpModule = await import('../../dist/index.js');
+      const mcpModule = await import("../../dist/index.js");
       expect(mcpModule).toBeDefined();
       expect(mcpModule.default).toBeDefined();
     } catch {
@@ -12,9 +13,9 @@ describe('Memorai MCP', () => {
     }
   });
 
-  it('should export memory engine types', async () => {
+  it("should export memory engine types", async () => {
     try {
-      const mcpModule = await import('../../dist/index.js');
+      const mcpModule = await import("../../dist/index.js");
       expect(mcpModule.MemoryEngine).toBeDefined();
     } catch {
       // If built version not available, skip test
@@ -22,11 +23,11 @@ describe('Memorai MCP', () => {
     }
   });
 
-  it('should have correct package structure', async () => {
+  it("should have correct package structure", async () => {
     try {
-      const mcpModule = await import('../../dist/index.js');
+      const mcpModule = await import("../../dist/index.js");
       expect(mcpModule.default).toBeTruthy();
-      expect(typeof mcpModule.default).toBe('function');
+      expect(typeof mcpModule.default).toBe("function");
     } catch {
       // If built version not available, skip test
       expect(true).toBe(true);

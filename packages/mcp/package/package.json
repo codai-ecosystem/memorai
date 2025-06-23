@@ -17,7 +17,8 @@
       "types": "./dist/server.d.ts",
       "import": "./dist/server.js"
     }
-  },  "files": [
+  },
+  "files": [
     "dist",
     "README.md",
     "mcp.config.json",

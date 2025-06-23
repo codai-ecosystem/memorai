@@ -4,7 +4,8 @@
   "description": "Demo applications showcasing Memorai MCP capabilities",
   "type": "module",
   "private": true,
-  "main": "./dist/index.js",  "scripts": {
+  "main": "./dist/index.js",
+  "scripts": {
     "build": "tsc",
     "dev": "tsx src/index.ts",
     "start": "node dist/index.js",

@@ -16,14 +16,14 @@ Enterprise-grade memory system built specifically for AI agents. Provides natura
 ✅ **Port standardization** complete (6366+)  
 ✅ **All API endpoints** working and validated  
 ✅ **Memory persistence** verified  
-✅ **Performance tested** under concurrent load  
+✅ **Performance tested** under concurrent load
 
 [📊 View Full Status Report](FINAL_STATUS_REPORT.md)
 
 ## ✨ Features
 
 - **🧠 Agent-Native**: Designed for AI agents, not humans
-- **🔍 Semantic Search**: Vector-based memory with temporal awareness  
+- **🔍 Semantic Search**: Vector-based memory with temporal awareness
 - **⚡ Lightning Fast**: Sub-100ms queries, optimized for real-time use
 - **🏢 Enterprise-Ready**: Multi-tenant, encrypted, audit-ready
 - **🌐 Standard Protocol**: Implements Model Context Protocol (MCP)
@@ -56,33 +56,33 @@ pnpm test
 ### Basic Usage
 
 ```typescript
-import { MemoraiClient } from '@codai/memorai-sdk';
+import { MemoraiClient } from "@codai/memorai-sdk";
 
 const client = new MemoraiClient({
-  serverUrl: 'http://localhost:6367',
-  apiKey: 'your-api-key'
+  serverUrl: "http://localhost:6367",
+  apiKey: "your-api-key",
 });
 
 // Remember something
-await client.remember('User prefers dark mode and minimal designs');
+await client.remember("User prefers dark mode and minimal designs");
 
 // Recall relevant memories
-const memories = await client.recall('what does the user prefer?');
+const memories = await client.recall("what does the user prefer?");
 
 // Generate contextual summary
-const context = await client.context({ topic: 'user preferences' });
+const context = await client.context({ topic: "user preferences" });
 ```
 
 ## 📦 Packages
 
 This monorepo contains the following packages:
 
-| Package | Description | Version |
-|---------|-------------|---------|
-| [`@codai/memorai-core`](./packages/core) | Core memory engine and vector operations | ![npm](https://img.shields.io/npm/v/@codai/memorai-core) |
-| [`@codai/memorai-server`](./packages/server) | MCP server implementation | ![npm](https://img.shields.io/npm/v/@codai/memorai-server) |
-| [`@codai/memorai-sdk`](./packages/sdk) | TypeScript client SDK | ![npm](https://img.shields.io/npm/v/@codai/memorai-sdk) |
-| [`@codai/memorai-cli`](./packages/cli) | Command-line interface | ![npm](https://img.shields.io/npm/v/@codai/memorai-cli) |
+| Package                                      | Description                              | Version                                                    |
+| -------------------------------------------- | ---------------------------------------- | ---------------------------------------------------------- |
+| [`@codai/memorai-core`](./packages/core)     | Core memory engine and vector operations | ![npm](https://img.shields.io/npm/v/@codai/memorai-core)   |
+| [`@codai/memorai-server`](./packages/server) | MCP server implementation                | ![npm](https://img.shields.io/npm/v/@codai/memorai-server) |
+| [`@codai/memorai-sdk`](./packages/sdk)       | TypeScript client SDK                    | ![npm](https://img.shields.io/npm/v/@codai/memorai-sdk)    |
+| [`@codai/memorai-cli`](./packages/cli)       | Command-line interface                   | ![npm](https://img.shields.io/npm/v/@codai/memorai-cli)    |
 
 ## 🏗️ Architecture
 
@@ -94,7 +94,7 @@ graph TB
     D --> E[Vector Store<br/>Qdrant]
     D --> F[Cache<br/>Redis]
     D --> G[Metadata<br/>PostgreSQL]
-    
+
     H[Embedding Service] --> D
     I[Context Engine] --> D
     J[Classification] --> D
@@ -183,7 +183,7 @@ kubectl apply -f k8s/
 ### Cloud Providers
 
 - **AWS**: Deploy using ECS/EKS
-- **Google Cloud**: Deploy using Cloud Run/GKE  
+- **Google Cloud**: Deploy using Cloud Run/GKE
 - **Azure**: Deploy using Container Instances/AKS
 
 ## 📊 Performance

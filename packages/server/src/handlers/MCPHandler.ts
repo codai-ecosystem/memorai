@@ -2,15 +2,15 @@
  * @fileoverview MCP Protocol handler for Memorai operations
  */
 
-import type { FastifyReply } from 'fastify';
+import type { FastifyReply } from "fastify";
 import type {
   MCPRequest,
   MCPResponse,
   MemoryResponse,
-  AuthenticatedRequest
-} from '../types/index.js';
-import { MemoryEngine } from '@codai/memorai-core';
-import { Logger } from '../utils/Logger.js';
+  AuthenticatedRequest,
+} from "../types/index.js";
+import { MemoryEngine } from "@codai/memorai-core";
+import { Logger } from "../utils/Logger.js";
 
 /**
  * Handles Model Context Protocol requests for memory operations
@@ -27,7 +27,7 @@ export class MCPHandler {
    */
   public async handleRequest(
     request: AuthenticatedRequest,
-    reply: FastifyReply
+    reply: FastifyReply,
   ): Promise<void> {
     try {
       const mcpRequest = request.body as MCPRequest;
@@ -35,7 +35,12 @@ export class MCPHandler {
 
       // Validate MCP request format
       if (!this.isValidMCPRequest(mcpRequest)) {
-        await this.sendError(reply, -32600, 'Invalid Request', requestId ?? undefined);
+        await this.sendError(
+          reply,
+          -32600,
+          "Invalid Request",
+          requestId ?? undefined,
+        );
         return;
       }
 
@@ -44,14 +49,20 @@ export class MCPHandler {
 
       // Send successful response
       await reply.send({
-        jsonrpc: '2.0',
+        jsonrpc: "2.0",
         result: response,
-        id: mcpRequest.id
+        id: mcpRequest.id,
       } as MCPResponse);
-
     } catch (error: unknown) {
-      Logger.error("MCP request failed", { error: error instanceof Error ? error.message : String(error) });
-      await this.sendError(reply, -32603, 'Internal error', (request.body as any)?.id);
+      Logger.error("MCP request failed", {
+        error: error instanceof Error ? error.message : String(error),
+      });
+      await this.sendError(
+        reply,
+        -32603,
+        "Internal error",
+        (request.body as any)?.id,
+      );
     }
   }
 
@@ -60,27 +71,27 @@ export class MCPHandler {
    */
   private async routeRequest(
     mcpRequest: MCPRequest,
-    request: AuthenticatedRequest
+    request: AuthenticatedRequest,
   ): Promise<unknown> {
     const { method, params } = mcpRequest;
 
     switch (method) {
-      case 'memory/remember':
+      case "memory/remember":
         return this.handleRemember(params, request);
 
-      case 'memory/recall':
+      case "memory/recall":
         return this.handleRecall(params, request);
 
-      case 'memory/forget':
+      case "memory/forget":
         return this.handleForget(params, request);
 
-      case 'memory/context':
+      case "memory/context":
         return this.handleContext(params, request);
 
-      case 'server/health':
+      case "server/health":
         return this.handleHealth();
 
-      case 'server/capabilities':
+      case "server/capabilities":
         return this.handleCapabilities();
 
       default:
@@ -93,20 +104,20 @@ export class MCPHandler {
    */
   private async handleRemember(
     params: unknown,
-    request: AuthenticatedRequest
+    request: AuthenticatedRequest,
   ): Promise<MemoryResponse> {
     const { content, context } = params as any;
 
     if (!content) {
-      throw new Error('Content is required for remember operation');
+      throw new Error("Content is required for remember operation");
     }
 
     const { result: memory, processingTime } = await this.withTiming(() =>
       this.memoryEngine.remember(content, {
         userId: request.auth.userId,
         tenantId: request.auth.tenantId,
-        ...context
-      })
+        ...context,
+      }),
     );
 
     return {
@@ -115,8 +126,8 @@ export class MCPHandler {
       metadata: {
         requestId: this.generateRequestId(),
         timestamp: new Date().toISOString(),
-        processingTime
-      }
+        processingTime,
+      },
     };
   }
 
@@ -125,12 +136,12 @@ export class MCPHandler {
    */
   private async handleRecall(
     params: unknown,
-    request: AuthenticatedRequest
+    request: AuthenticatedRequest,
   ): Promise<MemoryResponse> {
     const { query, limit = 10, threshold = 0.7 } = params as any;
 
     if (!query) {
-      throw new Error('Query is required for recall operation');
+      throw new Error("Query is required for recall operation");
     }
 
     const { result: memories, processingTime } = await this.withTiming(() =>
@@ -140,16 +151,20 @@ export class MCPHandler {
         request.auth.userId,
         {
           limit,
-          threshold
-        }
-      ));    return {
+          threshold,
+        },
+      ),
+    );
+    return {
       success: true,
-      memories: memories.map(result => result.memory).filter(memory => memory !== undefined),
+      memories: memories
+        .map((result) => result.memory)
+        .filter((memory) => memory !== undefined),
       metadata: {
         requestId: this.generateRequestId(),
         timestamp: new Date().toISOString(),
-        processingTime
-      }
+        processingTime,
+      },
     };
   }
 
@@ -158,20 +173,23 @@ export class MCPHandler {
    */
   private async handleForget(
     params: unknown,
-    request: AuthenticatedRequest
+    request: AuthenticatedRequest,
   ): Promise<MemoryResponse> {
     const { memoryId, query } = params as any;
 
     if (!memoryId && !query) {
-      throw new Error('Either memoryId or query is required for forget operation');
+      throw new Error(
+        "Either memoryId or query is required for forget operation",
+      );
     }
 
     const { result, processingTime } = await this.withTiming(() =>
       this.memoryEngine.forget(
         query || `id:${memoryId}`,
         request.auth.tenantId,
-        request.auth.userId
-      ));
+        request.auth.userId,
+      ),
+    );
 
     return {
       success: true,
@@ -179,8 +197,8 @@ export class MCPHandler {
       metadata: {
         requestId: this.generateRequestId(),
         timestamp: new Date().toISOString(),
-        processingTime
-      }
+        processingTime,
+      },
     };
   }
 
@@ -189,7 +207,7 @@ export class MCPHandler {
    */
   private async handleContext(
     params: unknown,
-    request: AuthenticatedRequest
+    request: AuthenticatedRequest,
   ): Promise<MemoryResponse> {
     const { topic, timeframe, limit = 50 } = params as any;
 
@@ -199,8 +217,9 @@ export class MCPHandler {
         time_range: timeframe,
         max_memories: limit,
         tenant_id: request.auth.tenantId,
-        agent_id: request.auth.userId
-      }));
+        agent_id: request.auth.userId,
+      }),
+    );
 
     return {
       success: true,
@@ -208,8 +227,8 @@ export class MCPHandler {
       metadata: {
         requestId: this.generateRequestId(),
         timestamp: new Date().toISOString(),
-        processingTime
-      }
+        processingTime,
+      },
     };
   }
 
@@ -227,22 +246,22 @@ export class MCPHandler {
   private async handleCapabilities(): Promise<unknown> {
     return {
       methods: [
-        'memory/remember',
-        'memory/recall',
-        'memory/forget',
-        'memory/context',
-        'server/health',
-        'server/capabilities'
+        "memory/remember",
+        "memory/recall",
+        "memory/forget",
+        "memory/context",
+        "server/health",
+        "server/capabilities",
       ],
       features: [
-        'semantic_search',
-        'temporal_awareness',
-        'context_generation',
-        'multi_tenant',
-        'encryption',
-        'rate_limiting'
+        "semantic_search",
+        "temporal_awareness",
+        "context_generation",
+        "multi_tenant",
+        "encryption",
+        "rate_limiting",
       ],
-      version: '0.1.0'
+      version: "0.1.0",
     };
   }
 
@@ -251,7 +270,9 @@ export class MCPHandler {
    */
   private isValidMCPRequest(request: unknown): request is MCPRequest {
     return (
-      (request as any) && (request as any).jsonrpc === "2.0" && typeof (request as any).method === "string"
+      (request as any) &&
+      (request as any).jsonrpc === "2.0" &&
+      typeof (request as any).method === "string"
     );
   }
 
@@ -262,12 +283,12 @@ export class MCPHandler {
     reply: FastifyReply,
     code: number,
     message: string,
-    id?: string | number
+    id?: string | number,
   ): Promise<void> {
     await reply.send({
-      jsonrpc: '2.0',
+      jsonrpc: "2.0",
       error: { code, message },
-      id: id || null
+      id: id || null,
     } as MCPResponse);
   }
 
@@ -281,7 +302,9 @@ export class MCPHandler {
   /**
    * Utility to measure execution time of async operations
    */
-  private async withTiming<T>(operation: () => Promise<T>): Promise<{ result: T; processingTime: number }> {
+  private async withTiming<T>(
+    operation: () => Promise<T>,
+  ): Promise<{ result: T; processingTime: number }> {
     const startTime = Date.now();
     const result = await operation();
     const processingTime = Date.now() - startTime;

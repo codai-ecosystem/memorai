@@ -2,17 +2,17 @@
  * @fileoverview Main Memorai MCP Server implementation
  */
 
-import Fastify from 'fastify';
-import type { FastifyInstance } from 'fastify';
-import { MemoryEngine } from '@codai/memorai-core';
-import { ServerConfig } from '../config/ServerConfig.js';
-import { Logger } from '../utils/Logger.js';
-import { AuthMiddleware } from '../middleware/AuthMiddleware.js';
-import { RateLimitMiddleware } from '../middleware/RateLimitMiddleware.js';
-import { TenantMiddleware } from '../middleware/TenantMiddleware.js';
-import { MCPHandler } from '../handlers/MCPHandler.js';
-import { MetricsCollector } from '../monitoring/MetricsCollector.js';
-import type { HealthStatus } from '../types/index.js';
+import Fastify from "fastify";
+import type { FastifyInstance } from "fastify";
+import { MemoryEngine } from "@codai/memorai-core";
+import { ServerConfig } from "../config/ServerConfig.js";
+import { Logger } from "../utils/Logger.js";
+import { AuthMiddleware } from "../middleware/AuthMiddleware.js";
+import { RateLimitMiddleware } from "../middleware/RateLimitMiddleware.js";
+import { TenantMiddleware } from "../middleware/TenantMiddleware.js";
+import { MCPHandler } from "../handlers/MCPHandler.js";
+import { MetricsCollector } from "../monitoring/MetricsCollector.js";
+import type { HealthStatus } from "../types/index.js";
 
 /**
  * Main Memorai MCP Server class
@@ -30,7 +30,7 @@ export class MemoraiServer {
 
   constructor(memoryEngine: MemoryEngine) {
     if (!memoryEngine || memoryEngine === null || memoryEngine === undefined) {
-      throw new Error('Memory engine cannot be null or undefined');
+      throw new Error("Memory engine cannot be null or undefined");
     }
 
     this.memoryEngine = memoryEngine;
@@ -56,7 +56,7 @@ export class MemoraiServer {
     const server = Fastify({
       logger: false, // We use Winston instead
       bodyLimit: 1048576, // 1MB
-      keepAliveTimeout: 30000 // 30 seconds
+      keepAliveTimeout: 30000, // 30 seconds
     });
 
     return server;
@@ -70,30 +70,30 @@ export class MemoraiServer {
 
     // CORS
     if (options.cors) {
-      this.server.register(import('@fastify/cors'), {
+      this.server.register(import("@fastify/cors"), {
         origin: true,
-        credentials: true
+        credentials: true,
       });
     }
 
     // Security headers
     if (options.helmet) {
-      this.server.register(import('@fastify/helmet'), {
-        contentSecurityPolicy: false
+      this.server.register(import("@fastify/helmet"), {
+        contentSecurityPolicy: false,
       });
     }
 
     // Rate limiting
-    this.server.register(import('@fastify/rate-limit'), {
+    this.server.register(import("@fastify/rate-limit"), {
       max: options.rateLimit.max,
-      timeWindow: options.rateLimit.timeWindow
-    });    // JWT support
-    this.server.register(import('@fastify/jwt'), {
-      secret: options.jwt.secret
+      timeWindow: options.rateLimit.timeWindow,
+    }); // JWT support
+    this.server.register(import("@fastify/jwt"), {
+      secret: options.jwt.secret,
     });
 
     // Global hooks
-    this.server.addHook('preHandler', async (request, reply) => {
+    this.server.addHook("preHandler", async (request, reply) => {
       // Apply authentication
       await this.authMiddleware.authenticate(request, reply);
 
@@ -102,25 +102,26 @@ export class MemoraiServer {
 
       // Apply rate limiting
       await this.rateLimitMiddleware.checkRateLimit(request, reply);
-    });    // Track response completion
-    this.server.addHook('onResponse', async (_request, _reply) => {
+    }); // Track response completion
+    this.server.addHook("onResponse", async (_request, _reply) => {
       // Track connection close
-      this.metricsCollector.recordConnection('close');
+      this.metricsCollector.recordConnection("close");
     });
 
     // Error handler
     this.server.setErrorHandler(async (error, request, reply) => {
-      Logger.error('Server error', error);
+      Logger.error("Server error", error);
 
       await reply.code(500).send({
-        jsonrpc: '2.0',
+        jsonrpc: "2.0",
         error: {
           code: -32603,
-          message: 'Internal server error',
+          message: "Internal server error",
           data: {
-            type: 'server_error',
-            timestamp: new Date().toISOString()          }
-        }
+            type: "server_error",
+            timestamp: new Date().toISOString(),
+          },
+        },
       });
     });
   }
@@ -130,66 +131,72 @@ export class MemoraiServer {
    */
   private setupRoutes(): void {
     // Main MCP endpoint
-    this.server.post('/mcp', async (request, reply) => {
+    this.server.post("/mcp", async (request, reply) => {
       await this.mcpHandler.handleRequest(request as any, reply);
     });
 
     // Health check
-    this.server.get('/health', async (request, reply) => {
+    this.server.get("/health", async (request, reply) => {
       const health = await this.getHealth();
 
-      const statusCode = health.status === 'healthy' ? 200 :
-        health.status === 'degraded' ? 200 : 503;
+      const statusCode =
+        health.status === "healthy"
+          ? 200
+          : health.status === "degraded"
+            ? 200
+            : 503;
 
       await reply.code(statusCode).send(health);
     });
 
     // Server capabilities
-    this.server.get('/capabilities', async (request, reply) => {
+    this.server.get("/capabilities", async (request, reply) => {
       await reply.send({
         methods: [
-          'memory/remember',
-          'memory/recall',
-          'memory/forget',
-          'memory/context'
+          "memory/remember",
+          "memory/recall",
+          "memory/forget",
+          "memory/context",
         ],
         features: [
-          'semantic_search',
-          'temporal_awareness',
-          'context_generation',
-          'multi_tenant',
-          'encryption'
+          "semantic_search",
+          "temporal_awareness",
+          "context_generation",
+          "multi_tenant",
+          "encryption",
         ],
-        version: '0.1.0'
+        version: "0.1.0",
       });
     });
 
     // Metrics endpoint (for monitoring)
-    this.server.get('/metrics', async (request, reply) => {
+    this.server.get("/metrics", async (request, reply) => {
       try {
-        const format = (request.query as { format?: string })?.format || 'prometheus';
-        
-        if (format === 'prometheus') {
+        const format =
+          (request.query as { format?: string })?.format || "prometheus";
+
+        if (format === "prometheus") {
           // Return Prometheus format metrics
-          const prometheusMetrics = this.metricsCollector.exportPrometheusMetrics();
+          const prometheusMetrics =
+            this.metricsCollector.exportPrometheusMetrics();
           await reply
-            .header('Content-Type', 'text/plain; version=0.0.4; charset=utf-8')
+            .header("Content-Type", "text/plain; version=0.0.4; charset=utf-8")
             .send(prometheusMetrics);
-        } else if (format === 'json') {
+        } else if (format === "json") {
           // Return JSON format metrics
           const jsonMetrics = this.metricsCollector.getDetailedMetrics();
           await reply
-            .header('Content-Type', 'application/json')
+            .header("Content-Type", "application/json")
             .send(jsonMetrics);
         } else {
           await reply.code(400).send({
-            error: 'Invalid format. Supported: prometheus, json'
+            error: "Invalid format. Supported: prometheus, json",
           });
         }
       } catch (error) {
-        Logger.error('Error generating metrics', error);
+        Logger.error("Error generating metrics", error);
         await reply.code(500).send({
-          error: 'Failed to generate metrics'
+          error: "Failed to generate metrics",
         });
       }
     });
@@ -200,7 +207,7 @@ export class MemoraiServer {
    */
   public async start(): Promise<void> {
     if (this.isStarted) {
-      throw new Error('Server is already started');
+      throw new Error("Server is already started");
     }
 
     try {
@@ -209,8 +216,12 @@ export class MemoraiServer {
       const { host, port } = this.config.options;
       await this.server.listen({ host, port });
 
-      this.isStarted = true;      Logger.info(`Memorai MCP Server started on ${host}:${port} (${this.config.isProduction() ? 'production' : 'development'})`);} catch (error) {
-      Logger.error('Failed to start server', error);
+      this.isStarted = true;
+      Logger.info(
+        `Memorai MCP Server started on ${host}:${port} (${this.config.isProduction() ? "production" : "development"})`,
+      );
+    } catch (error) {
+      Logger.error("Failed to start server", error);
       throw error;
     }
   }
@@ -229,8 +240,9 @@ export class MemoraiServer {
 
       this.isStarted = false;
 
-      Logger.info('Memorai MCP Server stopped');    } catch (error) {
-      Logger.error('Error stopping server', error);
+      Logger.info("Memorai MCP Server stopped");
+    } catch (error) {
+      Logger.error("Error stopping server", error);
       throw error;
     }
   }
@@ -246,20 +258,22 @@ export class MemoraiServer {
     const engineHealth = await this.memoryEngine.getHealth();
 
     return {
-      status: engineHealth.status === 'healthy' ? 'healthy' : 'degraded',
-      version: '0.1.0',
+      status: engineHealth.status === "healthy" ? "healthy" : "degraded",
+      version: "0.1.0",
       uptime,
-      checks: [{
-        name: 'memory_engine',
-        status: engineHealth.status === 'healthy' ? 'pass' : 'fail',
-        message: `Engine status: ${engineHealth.status}`
-      },
-      {
-        name: 'memory_usage',
-        status: memoryUsage.heapUsed < 1000000000 ? 'pass' : 'warn', // 1GB
-        message: `${Math.round(memoryUsage.heapUsed / 1024 / 1024)}MB used`
-      }
-      ], metrics: this.metricsCollector.getServerMetrics()
+      checks: [
+        {
+          name: "memory_engine",
+          status: engineHealth.status === "healthy" ? "pass" : "fail",
+          message: `Engine status: ${engineHealth.status}`,
+        },
+        {
+          name: "memory_usage",
+          status: memoryUsage.heapUsed < 1000000000 ? "pass" : "warn", // 1GB
+          message: `${Math.round(memoryUsage.heapUsed / 1024 / 1024)}MB used`,
+        },
+      ],
+      metrics: this.metricsCollector.getServerMetrics(),
     };
   }
 

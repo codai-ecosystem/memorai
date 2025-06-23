@@ -37,7 +37,7 @@ export interface PerformanceMetrics {
 }
 
 export interface QueryMetrics {
-  operation: 'remember' | 'recall' | 'forget' | 'context';
+  operation: "remember" | "recall" | "forget" | "context";
   startTime: number;
   endTime: number;
   duration: number;
@@ -72,18 +72,30 @@ export class PerformanceMonitor {
     if (this.metrics.length > this.maxHistorySize) {
       this.metrics = this.metrics.slice(-this.maxHistorySize);
     }
-  }  /**
+  } /**
    * Start timing a query operation
    */
   public startQuery(
-    operation: QueryMetrics['operation'],
+    operation: QueryMetrics["operation"],
     tenantId: string,
-    agentId?: string
-  ): { finish: (success: boolean, error?: string, resultCount?: number, cacheHit?: boolean) => void } {
+    agentId?: string,
+  ): {
+    finish: (
+      success: boolean,
+      error?: string,
+      resultCount?: number,
+      cacheHit?: boolean,
+    ) => void;
+  } {
     const startTime = Date.now();
 
     return {
-      finish: (success: boolean, error?: string, resultCount?: number, cacheHit?: boolean) => {
+      finish: (
+        success: boolean,
+        error?: string,
+        resultCount?: number,
+        cacheHit?: boolean,
+      ) => {
         const endTime = Date.now();
         const queryMetrics: QueryMetrics = {
           operation,
@@ -108,7 +120,7 @@ export class PerformanceMonitor {
         }
 
         this.recordQuery(queryMetrics);
-      }
+      },
     };
   }
 
@@ -122,32 +134,36 @@ export class PerformanceMonitor {
 
     // Filter metrics to current window
     const windowMetrics = this.metrics.filter(
-      m => m.endTime >= (now - this.windowSizeMs)
+      (m) => m.endTime >= now - this.windowSizeMs,
     );
 
     const totalQueries = windowMetrics.length;
-    const successfulQueries = windowMetrics.filter(m => m.success).length;
+    const successfulQueries = windowMetrics.filter((m) => m.success).length;
     const queryErrors = totalQueries - successfulQueries;
 
     // Calculate averages
-    const avgQueryTime = totalQueries > 0
-      ? windowMetrics.reduce((sum, m) => sum + m.duration, 0) / totalQueries
-      : 0;
+    const avgQueryTime =
+      totalQueries > 0
+        ? windowMetrics.reduce((sum, m) => sum + m.duration, 0) / totalQueries
+        : 0;
 
     // Operation-specific metrics
-    const rememberOps = windowMetrics.filter(m => m.operation === 'remember');
-    const recallOps = windowMetrics.filter(m => m.operation === 'recall');
-    const forgetOps = windowMetrics.filter(m => m.operation === 'forget');
-    const contextOps = windowMetrics.filter(m => m.operation === 'context');
+    const rememberOps = windowMetrics.filter((m) => m.operation === "remember");
+    const recallOps = windowMetrics.filter((m) => m.operation === "recall");
+    const forgetOps = windowMetrics.filter((m) => m.operation === "forget");
+    const contextOps = windowMetrics.filter((m) => m.operation === "context");
 
     const avgTime = (ops: QueryMetrics[]) =>
-      ops.length > 0 ? ops.reduce((sum, m) => sum + m.duration, 0) / ops.length : 0;
+      ops.length > 0
+        ? ops.reduce((sum, m) => sum + m.duration, 0) / ops.length
+        : 0;
 
     // Cache metrics
-    const cacheableOps = windowMetrics.filter(m => m.cacheHit !== undefined);
-    const cacheHits = cacheableOps.filter(m => m.cacheHit === true).length;
-    const cacheMisses = cacheableOps.filter(m => m.cacheHit === false).length;
-    const cacheHitRate = cacheableOps.length > 0 ? cacheHits / cacheableOps.length : 0;
+    const cacheableOps = windowMetrics.filter((m) => m.cacheHit !== undefined);
+    const cacheHits = cacheableOps.filter((m) => m.cacheHit === true).length;
+    const cacheMisses = cacheableOps.filter((m) => m.cacheHit === false).length;
+    const cacheHitRate =
+      cacheableOps.length > 0 ? cacheHits / cacheableOps.length : 0;
 
     return {
       queryCount: totalQueries,
@@ -187,10 +203,13 @@ export class PerformanceMonitor {
    * Get metrics for a specific tenant
    */
   public getTenantMetrics(tenantId: string): PerformanceMetrics {
-    const tenantMetrics = this.metrics.filter(m => m.tenantId === tenantId);
+    const tenantMetrics = this.metrics.filter((m) => m.tenantId === tenantId);
 
     // Create a temporary monitor with only tenant metrics
-    const tempMonitor = new PerformanceMonitor(this.windowSizeMs, this.maxHistorySize);
+    const tempMonitor = new PerformanceMonitor(
+      this.windowSizeMs,
+      this.maxHistorySize,
+    );
     tempMonitor.metrics = tenantMetrics;
 
     return tempMonitor.getMetrics();
@@ -199,9 +218,12 @@ export class PerformanceMonitor {
   /**
    * Get slow query analysis
    */
-  public getSlowQueries(thresholdMs: number = 1000, count: number = 10): QueryMetrics[] {
+  public getSlowQueries(
+    thresholdMs: number = 1000,
+    count: number = 10,
+  ): QueryMetrics[] {
     return this.metrics
-      .filter(m => m.duration > thresholdMs)
+      .filter((m) => m.duration > thresholdMs)
       .sort((a, b) => b.duration - a.duration)
       .slice(0, count);
   }
@@ -209,13 +231,23 @@ export class PerformanceMonitor {
   /**
    * Get error analysis
    */
-  public getErrorAnalysis(): { error: string; count: number; lastOccurrence: Date }[] {
-    const errorCounts = new Map<string, { count: number; lastOccurrence: number }>();
+  public getErrorAnalysis(): {
+    error: string;
+    count: number;
+    lastOccurrence: Date;
+  }[] {
+    const errorCounts = new Map<
+      string,
+      { count: number; lastOccurrence: number }
+    >();
 
     this.metrics
-      .filter(m => !m.success && m.error)
-      .forEach(m => {
-        const existing = errorCounts.get(m.error!) || { count: 0, lastOccurrence: 0 };
+      .filter((m) => !m.success && m.error)
+      .forEach((m) => {
+        const existing = errorCounts.get(m.error!) || {
+          count: 0,
+          lastOccurrence: 0,
+        };
         errorCounts.set(m.error!, {
           count: existing.count + 1,
           lastOccurrence: Math.max(existing.lastOccurrence, m.endTime),
@@ -240,15 +272,15 @@ export class PerformanceMonitor {
   /**
    * Track a new connection
    */
-  public recordConnection(type: 'open' | 'close'): void {
-    if (type === 'open') {
+  public recordConnection(type: "open" | "close"): void {
+    if (type === "open") {
       this.activeConnections++;
       this.totalConnections++;
       this.maxConcurrentConnections = Math.max(
         this.maxConcurrentConnections,
-        this.activeConnections
+        this.activeConnections,
       );
-    } else if (type === 'close') {
+    } else if (type === "close") {
       this.activeConnections = Math.max(0, this.activeConnections - 1);
     }
   }
@@ -264,7 +296,7 @@ export class PerformanceMonitor {
     return {
       active: this.activeConnections,
       total: this.totalConnections,
-      maxConcurrent: this.maxConcurrentConnections
+      maxConcurrent: this.maxConcurrentConnections,
     };
   }
 
@@ -308,18 +340,18 @@ export class PerformanceMonitor {
       `# HELP memorai_memory_usage_mb Memory usage in megabytes`,
       `# TYPE memorai_memory_usage_mb gauge`,
       `memorai_memory_usage_mb ${metrics.memoryUsage}`,
-    ].join('\n');
+    ].join("\n");
 
     // CSV format
     const csv = [
-      'metric,value,timestamp',
+      "metric,value,timestamp",
       `query_count,${metrics.queryCount},${metrics.windowEnd.toISOString()}`,
       `avg_query_time,${metrics.avgQueryTime},${metrics.windowEnd.toISOString()}`,
       `query_errors,${metrics.queryErrors},${metrics.windowEnd.toISOString()}`,
       `success_rate,${metrics.querySuccessRate},${metrics.windowEnd.toISOString()}`,
       `cache_hit_rate,${metrics.cacheHitRate},${metrics.windowEnd.toISOString()}`,
       `memory_usage_mb,${metrics.memoryUsage},${metrics.windowEnd.toISOString()}`,
-    ].join('\n');
+    ].join("\n");
 
     return {
       prometheus,

@@ -1,4 +1,4 @@
-import type { MemoryType } from '../types/index.js';
+import type { MemoryType } from "../types/index.js";
 
 export interface ClassificationResult {
   type: MemoryType;
@@ -7,105 +7,261 @@ export interface ClassificationResult {
 }
 
 export class MemoryClassifier {
-  private patterns: Record<MemoryType, Array<{
-    keywords: string[];
-    patterns: RegExp[];
-    weight: number;
-  }>> = {
+  private patterns: Record<
+    MemoryType,
+    Array<{
+      keywords: string[];
+      patterns: RegExp[];
+      weight: number;
+    }>
+  > = {
     personality: [
       {
-        keywords: ['personality', 'behavior', 'style', 'approach', 'manner', 'character', 'trait'],
-        patterns: [/\b(personality|character|behavior|style|manner|approach|trait)\b/i, /\b(is|are|seems?|acts?)\s+(very\s+)?(\w+ly|\w+)\b/i, /\b(always|usually|tends?\s+to)\b/i],
+        keywords: [
+          "personality",
+          "behavior",
+          "style",
+          "approach",
+          "manner",
+          "character",
+          "trait",
+        ],
+        patterns: [
+          /\b(personality|character|behavior|style|manner|approach|trait)\b/i,
+          /\b(is|are|seems?|acts?)\s+(very\s+)?(\w+ly|\w+)\b/i,
+          /\b(always|usually|tends?\s+to)\b/i,
+        ],
         weight: 0.9,
       },
       {
-        keywords: ['cheerful', 'reliable', 'thoughtful', 'direct', 'friendly', 'professional'],
-        patterns: [/\b(cheerful|reliable|thoughtful|direct|friendly|professional|consistent)\b/i],
+        keywords: [
+          "cheerful",
+          "reliable",
+          "thoughtful",
+          "direct",
+          "friendly",
+          "professional",
+        ],
+        patterns: [
+          /\b(cheerful|reliable|thoughtful|direct|friendly|professional|consistent)\b/i,
+        ],
         weight: 0.8,
       },
     ],
-      procedure: [
-        {
-          keywords: ['how', 'step', 'process', 'procedure', 'method', 'workflow', 'instructions', 'algorithm'],
-          patterns: [/\bhow\s+to\b/i, /\bsteps?\b/i, /\bfirst|next|then|finally\b/i, /\bprocess\s+involves\b/i],
-          weight: 0.9,
-        },
-        {
-          keywords: ['deploy', 'build', 'install', 'setup', 'configure', 'run', 'execute', 'follow'],
-          patterns: [/\b(deploy|build|install|setup|configure|run|execute|follow)\s+\w+/i, /\binstructions\s+to\b/i],
-          weight: 0.8,
-        },
-      ], preference: [
-        {
-          keywords: ['prefer', 'like', 'dislike', 'enjoy', 'avoid', 'favorite'],
-          patterns: [/\b(prefer|like|dislike|enjoy|avoid)s?\b/i, /\bfavorite\s+\w+\b/i],
-          weight: 0.9,
-        },
-        {
-          keywords: ['better', 'worse', 'best', 'worst', 'choice', 'instead'],
-          patterns: [/\b(better|worse|best|worst)\s+(than|to|for)\b/i, /\binstead\s+of\b/i, /\brather\s+have\b/i],
-          weight: 0.8,
-        },
-      ],
-      fact: [
-        {
-          keywords: ['definition', 'means', 'defined', 'explanation', 'describes', 'information'],
-          patterns: [/\b(means?|defined?|explanation|describes?|information)\b/i, /\bis\s+a\s+\w+/i],
-          weight: 0.9,
-        }, {
-          keywords: ['language', 'library', 'framework', 'server', 'database', 'api', 'endpoint', 'function', 'returns', 'boolean', 'value', 'application', 'built', 'file', 'contains', 'configuration', 'settings', 'static', 'type', 'checking'],
-          patterns: [
-            /\b(language|library|framework|server|database|api|endpoint)\b/i,
-            /\bruns\s+on\b/i,
-            /\b(function|method)\s+(returns?|takes?|accepts?)\b/i,
-            /\b(returns?|contains?|has)\s+(a\s+)?(boolean|string|number|array|object|value)\b/i,
-            /\b(application|file)\s+(was\s+built|contains)\b/i,
-            /\b(static|type|checking|configuration|settings)\b/i
-          ],
-          weight: 0.8,
-        },
-      ],
-      thread: [
-        {
-          keywords: ['said', 'mentioned', 'discussed', 'talked', 'conversation', 'chat', 'meeting'],
-          patterns: [/\b(said|mentioned|discussed|talked|conversation|chat|meeting)\b/i, /\bin\s+yesterday['']?s\b/i],
-          weight: 0.9,
-        },
-        {
-          keywords: ['question', 'answer', 'asked', 'replied', 'response', 'user'],
-          patterns: [/\b(question|answer|asked|replied|response)\b/i, /\buser\s+(said|mentioned|wants?)\b/i],
-          weight: 0.8,
-        },
-      ],
-      task: [
-        {
-          keywords: ['task', 'todo', 'need', 'should', 'must', 'action', 'complete', 'finish'],
-          patterns: [/\b(need\s+to|should|must|have\s+to|task|todo)\b/i, /\b(complete|finish|done)\b/i],
-          weight: 0.9,
-        },
-        {
-          keywords: ['deadline', 'due', 'schedule', 'appointment', 'meeting', 'urgent'],
-          patterns: [/\b(deadline|due|schedule|appointment|meeting|urgent)\b/i, /\bby\s+(tomorrow|friday|next\s+week)\b/i],
-          weight: 0.8,
-        },
-      ], emotion: [
-        {
-          keywords: ['feel', 'emotion', 'happy', 'sad', 'angry', 'excited', 'worried', 'anxious', 'love', 'hate', 'enjoyed'],
-          patterns: [
-            /\b(feel|feeling|felt|emotions?)\b/i,
-            /\b(happy|sad|angry|excited|worried|anxious|frustrated|pleased|enjoyed)\b/i,
-            /\b(love|hate)\s+(the|this|that)\b/i,
-            /\busers?\s+(love|hate)\b/i
-          ],
-          weight: 0.9,
-        },
-        {
-          keywords: ['mood', 'emotional', 'stressed', 'relaxed', 'nervous', 'confident'],
-          patterns: [/\b(mood|emotional|stressed|relaxed|nervous|confident)\b/i, /\bmakes?\s+me\s+(feel|happy|sad)\b/i],
-          weight: 0.8,
-        },
-      ],
-    };
+    procedure: [
+      {
+        keywords: [
+          "how",
+          "step",
+          "process",
+          "procedure",
+          "method",
+          "workflow",
+          "instructions",
+          "algorithm",
+        ],
+        patterns: [
+          /\bhow\s+to\b/i,
+          /\bsteps?\b/i,
+          /\bfirst|next|then|finally\b/i,
+          /\bprocess\s+involves\b/i,
+        ],
+        weight: 0.9,
+      },
+      {
+        keywords: [
+          "deploy",
+          "build",
+          "install",
+          "setup",
+          "configure",
+          "run",
+          "execute",
+          "follow",
+        ],
+        patterns: [
+          /\b(deploy|build|install|setup|configure|run|execute|follow)\s+\w+/i,
+          /\binstructions\s+to\b/i,
+        ],
+        weight: 0.8,
+      },
+    ],
+    preference: [
+      {
+        keywords: ["prefer", "like", "dislike", "enjoy", "avoid", "favorite"],
+        patterns: [
+          /\b(prefer|like|dislike|enjoy|avoid)s?\b/i,
+          /\bfavorite\s+\w+\b/i,
+        ],
+        weight: 0.9,
+      },
+      {
+        keywords: ["better", "worse", "best", "worst", "choice", "instead"],
+        patterns: [
+          /\b(better|worse|best|worst)\s+(than|to|for)\b/i,
+          /\binstead\s+of\b/i,
+          /\brather\s+have\b/i,
+        ],
+        weight: 0.8,
+      },
+    ],
+    fact: [
+      {
+        keywords: [
+          "definition",
+          "means",
+          "defined",
+          "explanation",
+          "describes",
+          "information",
+        ],
+        patterns: [
+          /\b(means?|defined?|explanation|describes?|information)\b/i,
+          /\bis\s+a\s+\w+/i,
+        ],
+        weight: 0.9,
+      },
+      {
+        keywords: [
+          "language",
+          "library",
+          "framework",
+          "server",
+          "database",
+          "api",
+          "endpoint",
+          "function",
+          "returns",
+          "boolean",
+          "value",
+          "application",
+          "built",
+          "file",
+          "contains",
+          "configuration",
+          "settings",
+          "static",
+          "type",
+          "checking",
+        ],
+        patterns: [
+          /\b(language|library|framework|server|database|api|endpoint)\b/i,
+          /\bruns\s+on\b/i,
+          /\b(function|method)\s+(returns?|takes?|accepts?)\b/i,
+          /\b(returns?|contains?|has)\s+(a\s+)?(boolean|string|number|array|object|value)\b/i,
+          /\b(application|file)\s+(was\s+built|contains)\b/i,
+          /\b(static|type|checking|configuration|settings)\b/i,
+        ],
+        weight: 0.8,
+      },
+    ],
+    thread: [
+      {
+        keywords: [
+          "said",
+          "mentioned",
+          "discussed",
+          "talked",
+          "conversation",
+          "chat",
+          "meeting",
+        ],
+        patterns: [
+          /\b(said|mentioned|discussed|talked|conversation|chat|meeting)\b/i,
+          /\bin\s+yesterday['']?s\b/i,
+        ],
+        weight: 0.9,
+      },
+      {
+        keywords: [
+          "question",
+          "answer",
+          "asked",
+          "replied",
+          "response",
+          "user",
+        ],
+        patterns: [
+          /\b(question|answer|asked|replied|response)\b/i,
+          /\buser\s+(said|mentioned|wants?)\b/i,
+        ],
+        weight: 0.8,
+      },
+    ],
+    task: [
+      {
+        keywords: [
+          "task",
+          "todo",
+          "need",
+          "should",
+          "must",
+          "action",
+          "complete",
+          "finish",
+        ],
+        patterns: [
+          /\b(need\s+to|should|must|have\s+to|task|todo)\b/i,
+          /\b(complete|finish|done)\b/i,
+        ],
+        weight: 0.9,
+      },
+      {
+        keywords: [
+          "deadline",
+          "due",
+          "schedule",
+          "appointment",
+          "meeting",
+          "urgent",
+        ],
+        patterns: [
+          /\b(deadline|due|schedule|appointment|meeting|urgent)\b/i,
+          /\bby\s+(tomorrow|friday|next\s+week)\b/i,
+        ],
+        weight: 0.8,
+      },
+    ],
+    emotion: [
+      {
+        keywords: [
+          "feel",
+          "emotion",
+          "happy",
+          "sad",
+          "angry",
+          "excited",
+          "worried",
+          "anxious",
+          "love",
+          "hate",
+          "enjoyed",
+        ],
+        patterns: [
+          /\b(feel|feeling|felt|emotions?)\b/i,
+          /\b(happy|sad|angry|excited|worried|anxious|frustrated|pleased|enjoyed)\b/i,
+          /\b(love|hate)\s+(the|this|that)\b/i,
+          /\busers?\s+(love|hate)\b/i,
+        ],
+        weight: 0.9,
+      },
+      {
+        keywords: [
+          "mood",
+          "emotional",
+          "stressed",
+          "relaxed",
+          "nervous",
+          "confident",
+        ],
+        patterns: [
+          /\b(mood|emotional|stressed|relaxed|nervous|confident)\b/i,
+          /\bmakes?\s+me\s+(feel|happy|sad)\b/i,
+        ],
+        weight: 0.8,
+      },
+    ],
+  };
   /**
    * Classify a memory based on its content
    */
@@ -132,18 +288,18 @@ export class MemoryClassifier {
         let groupScore = 0;
 
         // Check keywords with weighted scoring
-        const keywordMatches = group.keywords.filter(keyword =>
-          this.hasKeywordMatch(lowerContent, keyword)
+        const keywordMatches = group.keywords.filter((keyword) =>
+          this.hasKeywordMatch(lowerContent, keyword),
         );
         if (keywordMatches.length > 0) {
           // Use exponential scoring for multiple matches
           groupScore += Math.pow(keywordMatches.length, 1.5) * 0.5;
-          typeReasoning.push(`contains keywords: ${keywordMatches.join(', ')}`);
+          typeReasoning.push(`contains keywords: ${keywordMatches.join(", ")}`);
         }
 
         // Check patterns with higher weight for exact matches
-        const patternMatches = group.patterns.filter(pattern =>
-          pattern.test(content)
+        const patternMatches = group.patterns.filter((pattern) =>
+          pattern.test(content),
         );
         if (patternMatches.length > 0) {
           groupScore += patternMatches.length * 0.7;
@@ -155,7 +311,7 @@ export class MemoryClassifier {
 
       scores[type as MemoryType] = typeScore;
       if (typeReasoning.length > 0) {
-        reasoning.push(`${type}: ${typeReasoning.join(', ')}`);
+        reasoning.push(`${type}: ${typeReasoning.join(", ")}`);
       }
     }
 
@@ -165,13 +321,20 @@ export class MemoryClassifier {
     this.applySpecificHeuristics(content, scores, reasoning);
 
     // Find the highest scoring type
-    const bestType = Object.entries(scores).reduce((best, [type, score]) =>
-      score > best.score ? { type: type as MemoryType, score } : best,
-      { type: 'thread' as MemoryType, score: 0 }
-    );    // Improved confidence calculation
-    const totalScore = Object.values(scores).reduce((sum, score) => sum + score, 0);
+    const bestType = Object.entries(scores).reduce(
+      (best, [type, score]) =>
+        score > best.score ? { type: type as MemoryType, score } : best,
+      { type: "thread" as MemoryType, score: 0 },
+    ); // Improved confidence calculation
+    const totalScore = Object.values(scores).reduce(
+      (sum, score) => sum + score,
+      0,
+    );
     const maxPossibleScore = this.calculateMaxPossibleScore(content);
-    const normalizedScore = Math.min(bestType.score / Math.max(maxPossibleScore, 1), 1.0);
+    const normalizedScore = Math.min(
+      bestType.score / Math.max(maxPossibleScore, 1),
+      1.0,
+    );
 
     // Calculate confidence with higher base and better distribution
     let confidence = 0.4; // Higher base confidence
@@ -193,7 +356,7 @@ export class MemoryClassifier {
     return {
       type: bestType.type,
       confidence: confidence,
-      reasoning: reasoning.join('; ') || 'No specific patterns detected',
+      reasoning: reasoning.join("; ") || "No specific patterns detected",
     };
   }
 
@@ -201,12 +364,12 @@ export class MemoryClassifier {
    * Batch classify multiple memories
    */
   public classifyBatch(contents: string[]): ClassificationResult[] {
-    return contents.map(content => this.classify(content));
+    return contents.map((content) => this.classify(content));
   }
 
   /**
    * Get classification confidence threshold recommendations
-   */  public getConfidenceThresholds(): Record<MemoryType, number> {
+   */ public getConfidenceThresholds(): Record<MemoryType, number> {
     return {
       personality: 0.7,
       procedure: 0.8,
@@ -216,7 +379,7 @@ export class MemoryClassifier {
       task: 0.8,
       emotion: 0.7,
     };
-  }  /**
+  } /**
    * Validate classification result
    */
   public validateClassification(result: ClassificationResult): boolean {
@@ -230,20 +393,31 @@ export class MemoryClassifier {
     }
 
     // Check if type is valid
-    const validTypes: MemoryType[] = ['personality', 'procedure', 'preference', 'fact', 'thread', 'task', 'emotion'];
+    const validTypes: MemoryType[] = [
+      "personality",
+      "procedure",
+      "preference",
+      "fact",
+      "thread",
+      "task",
+      "emotion",
+    ];
     if (!validTypes.includes(result.type)) {
       return false;
     }
 
     // Check if reasoning is provided
-    if (!result.reasoning || result.reasoning.trim() === '') {
+    if (!result.reasoning || result.reasoning.trim() === "") {
       return false;
     }
 
     return true;
   }
-  private applyLengthHeuristic(content: string, scores: Record<MemoryType, number>): void {
-    const length = content.length;    // Longer content might be procedures or facts
+  private applyLengthHeuristic(
+    content: string,
+    scores: Record<MemoryType, number>,
+  ): void {
+    const length = content.length; // Longer content might be procedures or facts
     if (length > 200) {
       scores.procedure = (scores.procedure || 0) + 0.25; // Increased slightly
       scores.fact = (scores.fact || 0) + 0.1;
@@ -259,7 +433,10 @@ export class MemoryClassifier {
       scores.preference = (scores.preference || 0) + 0.1;
     }
   }
-  private applyStructureHeuristic(content: string, scores: Record<MemoryType, number>): void {
+  private applyStructureHeuristic(
+    content: string,
+    scores: Record<MemoryType, number>,
+  ): void {
     // Check for numbered lists (procedures)
     if (/\b\d+\.\s/.test(content)) {
       scores.procedure = (scores.procedure || 0) + 0.3;
@@ -297,15 +474,35 @@ export class MemoryClassifier {
 
   private hasKeywordMatch(content: string, keyword: string): boolean {
     // More precise keyword matching with word boundaries
-    const regex = new RegExp(`\\b${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
+    const regex = new RegExp(
+      `\\b${keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`,
+      "i",
+    );
     return regex.test(content);
-  } private applySpecificHeuristics(content: string, scores: Record<MemoryType, number>, reasoning?: string[]): void {
+  }
+  private applySpecificHeuristics(
+    content: string,
+    scores: Record<MemoryType, number>,
+    reasoning?: string[],
+  ): void {
     // Check for strong preference indicators first
-    const preferenceIndicators = /\b(prefer|like|dislike|enjoy|avoid|better|worse|best|worst|favorite|rather|instead)\b/i.test(content);
-    const evaluativeWords = /\b(best|better|worst|worse|preferred|favorite|good|great|excellent|terrible|awful)\s+(approach|style|way|method|solution|choice|option)\b/i.test(content);
+    const preferenceIndicators =
+      /\b(prefer|like|dislike|enjoy|avoid|better|worse|best|worst|favorite|rather|instead)\b/i.test(
+        content,
+      );
+    const evaluativeWords =
+      /\b(best|better|worst|worse|preferred|favorite|good|great|excellent|terrible|awful)\s+(approach|style|way|method|solution|choice|option)\b/i.test(
+        content,
+      );
 
     // Strong boost for "best/better X" patterns and preference language
-    if (evaluativeWords || (preferenceIndicators && /\bfor\s+(our|my|your|their)\s+(use\s+case|needs?|purpose|project)\b/i.test(content))) {
+    if (
+      evaluativeWords ||
+      (preferenceIndicators &&
+        /\bfor\s+(our|my|your|their)\s+(use\s+case|needs?|purpose|project)\b/i.test(
+          content,
+        ))
+    ) {
       scores.preference = (scores.preference || 0) + 0.8; // Increased boost
     } else if (preferenceIndicators) {
       scores.preference = (scores.preference || 0) + 0.6;
@@ -313,10 +510,16 @@ export class MemoryClassifier {
 
     // Handle "approach" context-sensitively
     if (/\bapproach\b/i.test(content)) {
-      if (evaluativeWords || /\b(best|better|good|great)\s+approach\b/i.test(content)) {
+      if (
+        evaluativeWords ||
+        /\b(best|better|good|great)\s+approach\b/i.test(content)
+      ) {
         // Strong preference signal - "best approach", "better approach"
         scores.preference = (scores.preference || 0) + 0.7;
-      } else if (preferenceIndicators || /\bprefer\s+.*approach\b/i.test(content)) {
+      } else if (
+        preferenceIndicators ||
+        /\bprefer\s+.*approach\b/i.test(content)
+      ) {
         // Preference about approach
         scores.preference = (scores.preference || 0) + 0.6;
       } else if (/\b(step|process|procedure|method|how)\b/i.test(content)) {
@@ -328,19 +531,30 @@ export class MemoryClassifier {
       }
     } else {
       // Personality-specific signals (when not about approach preference)
-      if (/\b(personality|character|behavior|style|manner)\b/i.test(content) && !preferenceIndicators) {
+      if (
+        /\b(personality|character|behavior|style|manner)\b/i.test(content) &&
+        !preferenceIndicators
+      ) {
         scores.personality = (scores.personality || 0) + 0.4;
       }
     }
 
     // Procedure-specific signals
-    if (/\b(step|process|how|procedure|method|workflow|instructions|algorithm|first|then|next|finally)\b/i.test(content)) {
+    if (
+      /\b(step|process|how|procedure|method|workflow|instructions|algorithm|first|then|next|finally)\b/i.test(
+        content,
+      )
+    ) {
       scores.procedure = (scores.procedure || 0) + 0.4;
     }
 
     // Handle "should" when it's about preference, not task
     if (/\bshould\b/i.test(content)) {
-      if (/\b(use|choose|implement|instead\s+of|rather\s+than|better\s+to)\b/i.test(content)) {
+      if (
+        /\b(use|choose|implement|instead\s+of|rather\s+than|better\s+to)\b/i.test(
+          content,
+        )
+      ) {
         // This is a preference statement
         scores.preference = (scores.preference || 0) + 0.5;
       } else {
@@ -350,22 +564,40 @@ export class MemoryClassifier {
     }
 
     // Task-specific signals (excluding preference "should")
-    if (/\b(task|todo|need\s+to|must|complete|finish|deadline|due)\b/i.test(content)) {
+    if (
+      /\b(task|todo|need\s+to|must|complete|finish|deadline|due)\b/i.test(
+        content,
+      )
+    ) {
       scores.task = (scores.task || 0) + 0.4;
-    }    // Emotion-specific signals
-    if (/\b(feel|emotion|happy|sad|angry|excited|worried|anxious)\b/i.test(content)) {
+    } // Emotion-specific signals
+    if (
+      /\b(feel|emotion|happy|sad|angry|excited|worried|anxious)\b/i.test(
+        content,
+      )
+    ) {
       scores.emotion = (scores.emotion || 0) + 0.4;
     }
 
     // Handle love/hate as emotion when expressing feelings about something
-    if (/\b(love|hate)\s+(the|this|that)\b/i.test(content) || /\busers?\s+(love|hate)\b/i.test(content)) {
+    if (
+      /\b(love|hate)\s+(the|this|that)\b/i.test(content) ||
+      /\busers?\s+(love|hate)\b/i.test(content)
+    ) {
       scores.emotion = (scores.emotion || 0) + 0.6;
-    }    // Thread-specific signals
-    if (/\b(said|mentioned|discussed|talked|conversation|chat|question|answer|asked|replied)\b/i.test(content)) {
+    } // Thread-specific signals
+    if (
+      /\b(said|mentioned|discussed|talked|conversation|chat|question|answer|asked|replied)\b/i.test(
+        content,
+      )
+    ) {
       scores.thread = (scores.thread || 0) + 0.3;
-    }    // Handle "user" more carefully - boost thread only if not about personality/behavior
+    } // Handle "user" more carefully - boost thread only if not about personality/behavior
     if (/\buser\b/i.test(content)) {
-      const hasPersonalityContext = /\b(behaves?|personality|character|behavior|style|manner|trait|acts?|tends?\s+to|always|usually|calmly|friendly|outgoing|analytical|creative|cheerful|reliable|thoughtful|direct)\b/i.test(content);
+      const hasPersonalityContext =
+        /\b(behaves?|personality|character|behavior|style|manner|trait|acts?|tends?\s+to|always|usually|calmly|friendly|outgoing|analytical|creative|cheerful|reliable|thoughtful|direct)\b/i.test(
+          content,
+        );
       if (!hasPersonalityContext) {
         scores.thread = (scores.thread || 0) + 0.4;
       } else {
@@ -373,11 +605,16 @@ export class MemoryClassifier {
         scores.personality = (scores.personality || 0) + 0.8;
         // Update reasoning to reflect personality classification
         if (reasoning) {
-          const threadIndex = reasoning.findIndex(r => r.startsWith('thread:'));
+          const threadIndex = reasoning.findIndex((r) =>
+            r.startsWith("thread:"),
+          );
           if (threadIndex !== -1) {
-            reasoning[threadIndex] = `personality: user mentioned with personality traits`;
+            reasoning[threadIndex] =
+              `personality: user mentioned with personality traits`;
           } else {
-            reasoning.push(`personality: user mentioned with personality traits`);
+            reasoning.push(
+              `personality: user mentioned with personality traits`,
+            );
           }
         }
       }
@@ -385,14 +622,21 @@ export class MemoryClassifier {
 
     // Fact-specific signals - boost for technical content
     if (/\b(is|are|was|were|has|have|contains|includes)\b/i.test(content)) {
-      const hasStrongSignal = /\b(personality|character|prefer|like|step|process|how|feel|emotion|said|mentioned|task|todo)\b/i.test(content);
+      const hasStrongSignal =
+        /\b(personality|character|prefer|like|step|process|how|feel|emotion|said|mentioned|task|todo)\b/i.test(
+          content,
+        );
       if (!hasStrongSignal) {
         scores.fact = (scores.fact || 0) + 0.3;
       }
     }
 
     // Technical/programming facts
-    if (/\b(function|returns?|boolean|value|programming|language|server|database|api|library|framework)\b/i.test(content)) {
+    if (
+      /\b(function|returns?|boolean|value|programming|language|server|database|api|library|framework)\b/i.test(
+        content,
+      )
+    ) {
       scores.fact = (scores.fact || 0) + 0.4;
     }
   }

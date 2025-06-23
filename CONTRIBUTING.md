@@ -19,12 +19,14 @@ By participating in this project, you agree to abide by our [Code of Conduct](CO
 
 1. Fork the repository
 2. Clone your fork:
+
    ```bash
    git clone https://github.com/your-username/memorai-mcp.git
    cd memorai-mcp
    ```
 
 3. Set up the development environment:
+
    ```bash
    pnpm setup
    ```
@@ -57,11 +59,13 @@ memorai-mcp/
 ### Making Changes
 
 1. **Start development services**:
+
    ```bash
    pnpm docker:up
    ```
 
 2. **Start development mode**:
+
    ```bash
    pnpm dev
    ```
@@ -71,11 +75,13 @@ memorai-mcp/
 4. **Add tests** for new functionality
 
 5. **Run tests**:
+
    ```bash
    pnpm test
    ```
 
 6. **Check linting**:
+
    ```bash
    pnpm lint
    ```
@@ -98,6 +104,7 @@ We follow [Conventional Commits](https://www.conventionalcommits.org/):
 ```
 
 **Types:**
+
 - `feat`: A new feature
 - `fix`: A bug fix
 - `docs`: Documentation only changes
@@ -108,6 +115,7 @@ We follow [Conventional Commits](https://www.conventionalcommits.org/):
 - `chore`: Changes to build process or auxiliary tools
 
 **Examples:**
+
 ```bash
 feat(core): add semantic search functionality
 fix(server): resolve memory leak in connection pool
@@ -118,12 +126,14 @@ test(sdk): add integration tests for client
 ### Pull Request Process
 
 1. **Ensure your code follows our standards**:
+
    - All tests pass
    - Code is properly formatted
    - No linting errors
    - Documentation is updated
 
 2. **Create a pull request** with:
+
    - Clear title following conventional commits
    - Detailed description of changes
    - Link to any related issues
@@ -160,17 +170,18 @@ pnpm --filter @codai/memorai-core test
 - Follow the AAA pattern (Arrange, Act, Assert)
 
 Example:
+
 ```typescript
-describe('MemoryEngine', () => {
-  describe('remember', () => {
-    it('should store memory with correct metadata', async () => {
+describe("MemoryEngine", () => {
+  describe("remember", () => {
+    it("should store memory with correct metadata", async () => {
       // Arrange
       const engine = new MemoryEngine(config);
-      const content = 'Test memory content';
-      
+      const content = "Test memory content";
+
       // Act
       const result = await engine.remember(content);
-      
+
       // Assert
       expect(result.id).toBeDefined();
       expect(result.content).toBe(content);
@@ -268,11 +279,13 @@ When requesting features:
 Releases are automated using changesets:
 
 1. **Create changeset**:
+
    ```bash
    pnpm changeset
    ```
 
 2. **Version packages**:
+
    ```bash
    pnpm version-packages
    ```
@@ -291,6 +304,7 @@ Releases are automated using changesets:
 ## 🙏 Recognition
 
 Contributors will be:
+
 - Listed in the project README
 - Mentioned in release notes
 - Invited to join the maintainer team (for significant contributions)

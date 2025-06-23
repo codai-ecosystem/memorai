@@ -22,7 +22,7 @@ const specificFixes = [
         ]
     },
     {
-        file: 'packages/cli/src/cli.ts', 
+        file: 'packages/cli/src/cli.ts',
         fixes: [
             { from: /(error)\) => {/g, to: '(_error) => {' },
             { from: /(reason)\) => {/g, to: '(_reason) => {' }
@@ -94,7 +94,7 @@ function applyFixes() {
 
     for (const fileFix of specificFixes) {
         const filePath = path.join(rootDir, fileFix.file);
-        
+
         if (!fs.existsSync(filePath)) {
             console.log(`⚠️ File not found: ${fileFix.file}`);
             continue;

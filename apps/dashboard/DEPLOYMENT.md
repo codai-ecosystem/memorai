@@ -129,34 +129,34 @@ spec:
         app: memorai-dashboard
     spec:
       containers:
-      - name: memorai-dashboard
-        image: memorai-dashboard:latest
-        ports:
-        - containerPort: 3002
-        env:
-        - name: NODE_ENV
-          value: "production"
-        - name: WEB_PORT
-          value: "3002"
-        livenessProbe:
-          httpGet:
-            path: /api/health
-            port: 3002
-          initialDelaySeconds: 30
-          periodSeconds: 10
-        readinessProbe:
-          httpGet:
-            path: /api/health
-            port: 3002
-          initialDelaySeconds: 5
-          periodSeconds: 5
-        resources:
-          requests:
-            memory: "256Mi"
-            cpu: "250m"
-          limits:
-            memory: "512Mi"
-            cpu: "500m"
+        - name: memorai-dashboard
+          image: memorai-dashboard:latest
+          ports:
+            - containerPort: 3002
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: WEB_PORT
+              value: "3002"
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 3002
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 3002
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
 ---
 apiVersion: v1
 kind: Service
@@ -276,28 +276,28 @@ server {
 
 <VirtualHost *:443>
     ServerName yourdomain.com
-    
+
     SSLEngine on
     SSLCertificateFile /path/to/certificate.crt
     SSLCertificateKeyFile /path/to/private.key
-    
+
     # Security headers
     Header always set X-Frame-Options DENY
     Header always set X-Content-Type-Options nosniff
     Header always set X-XSS-Protection "1; mode=block"
     Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
-    
+
     ProxyPreserveHost On
     ProxyRequests Off
-    
+
     # Main application
     ProxyPass / http://localhost:3002/
     ProxyPassReverse / http://localhost:3002/
-    
+
     # WebSocket support
     ProxyPass /socket.io/ ws://localhost:3002/socket.io/
     ProxyPassReverse /socket.io/ ws://localhost:3002/socket.io/
-    
+
     # Enable modules
     LoadModule proxy_module modules/mod_proxy.so
     LoadModule proxy_http_module modules/mod_proxy_http.so
@@ -312,39 +312,39 @@ server {
 
 ```javascript
 // Enhanced logging configuration
-const winston = require('winston');
-const path = require('path');
+const winston = require("winston");
+const path = require("path");
 
 const logger = winston.createLogger({
-  level: process.env.LOG_LEVEL || 'info',
+  level: process.env.LOG_LEVEL || "info",
   format: winston.format.combine(
     winston.format.timestamp(),
     winston.format.errors({ stack: true }),
-    winston.format.json()
+    winston.format.json(),
   ),
-  defaultMeta: { service: 'memorai-dashboard' },
+  defaultMeta: { service: "memorai-dashboard" },
   transports: [
     // Error logs
-    new winston.transports.File({ 
-      filename: path.join(__dirname, 'logs/error.log'), 
-      level: 'error',
+    new winston.transports.File({
+      filename: path.join(__dirname, "logs/error.log"),
+      level: "error",
       maxsize: 10485760, // 10MB
-      maxFiles: 5
+      maxFiles: 5,
     }),
     // Combined logs
-    new winston.transports.File({ 
-      filename: path.join(__dirname, 'logs/combined.log'),
+    new winston.transports.File({
+      filename: path.join(__dirname, "logs/combined.log"),
       maxsize: 10485760,
-      maxFiles: 10
+      maxFiles: 10,
     }),
     // Console output
     new winston.transports.Console({
       format: winston.format.combine(
         winston.format.colorize(),
-        winston.format.simple()
-      )
-    })
-  ]
+        winston.format.simple(),
+      ),
+    }),
+  ],
 });
 ```
 
@@ -376,9 +376,9 @@ fi
 
 ```javascript
 // Production server optimizations
-const express = require('express');
-const compression = require('compression');
-const helmet = require('helmet');
+const express = require("express");
+const compression = require("compression");
+const helmet = require("helmet");
 
 const app = express();
 
@@ -386,30 +386,40 @@ const app = express();
 app.use(compression());
 
 // Security hardening
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://unpkg.com"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-      fontSrc: ["'self'", "https://fonts.gstatic.com"],
-      imgSrc: ["'self'", "data:", "https:"],
-      connectSrc: ["'self'", "ws:", "wss:"]
-    }
-  },
-  hsts: {
-    maxAge: 31536000,
-    includeSubDomains: true,
-    preload: true
-  }
-}));
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: [
+          "'self'",
+          "'unsafe-inline'",
+          "https://cdn.jsdelivr.net",
+          "https://unpkg.com",
+        ],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        imgSrc: ["'self'", "data:", "https:"],
+        connectSrc: ["'self'", "ws:", "wss:"],
+      },
+    },
+    hsts: {
+      maxAge: 31536000,
+      includeSubDomains: true,
+      preload: true,
+    },
+  }),
+);
 
 // Cache control for static assets
-app.use('/static', express.static('public', {
-  maxAge: '1y',
-  etag: true,
-  lastModified: true
-}));
+app.use(
+  "/static",
+  express.static("public", {
+    maxAge: "1y",
+    etag: true,
+    lastModified: true,
+  }),
+);
 ```
 
 ### Backup and Recovery
@@ -454,6 +464,7 @@ echo "✅ Configuration backup completed"
 #### Common Issues and Solutions
 
 **Port Already in Use**
+
 ```bash
 # Find process using port
 lsof -i :3002
@@ -462,6 +473,7 @@ sudo kill -9 <PID>
 ```
 
 **Memory Issues**
+
 ```bash
 # Check memory usage
 ps aux | grep node
@@ -470,6 +482,7 @@ top -p $(pgrep node)
 ```
 
 **WebSocket Connection Issues**
+
 ```bash
 # Check WebSocket connectivity
 curl -i -N -H "Connection: Upgrade" -H "Upgrade: websocket" \
@@ -479,6 +492,7 @@ curl -i -N -H "Connection: Upgrade" -H "Upgrade: websocket" \
 ```
 
 **SSL Certificate Issues**
+
 ```bash
 # Test SSL certificate
 openssl s_client -connect yourdomain.com:443 -servername yourdomain.com

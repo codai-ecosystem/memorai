@@ -2,16 +2,16 @@
  * @fileoverview Memory Agent - High-level interface for agent memory operations
  */
 
-import type { 
-  AgentMemory, 
-  MemorySession, 
-  RememberOptions, 
-  RecallOptions, 
-  ForgetOptions, 
+import type {
+  AgentMemory,
+  MemorySession,
+  RememberOptions,
+  RecallOptions,
+  ForgetOptions,
   ContextOptions,
-  ClientOptions 
-} from '../types/index.js';
-import { MemoraiClient } from '../client/MemoraiClient.js';
+  ClientOptions,
+} from "../types/index.js";
+import { MemoraiClient } from "../client/MemoraiClient.js";
 
 /**
  * Agent-specific memory operations wrapper
@@ -37,8 +37,8 @@ export class MemoryAgent {
    * Remember something important
    */
   public async remember(
-    what: string, 
-    options: Partial<RememberOptions> = {}
+    what: string,
+    options: Partial<RememberOptions> = {},
   ): Promise<AgentMemory> {
     return await this.client.remember(what, options);
   }
@@ -47,8 +47,8 @@ export class MemoryAgent {
    * Recall memories about a topic
    */
   public async recall(
-    about: string, 
-    options: Partial<RecallOptions> = {}
+    about: string,
+    options: Partial<RecallOptions> = {},
   ): Promise<AgentMemory[]> {
     return await this.client.recall(about, options);
   }
@@ -56,7 +56,9 @@ export class MemoryAgent {
   /**
    * Get relevant context for current conversation
    */
-  public async getContext(options: ContextOptions = {}): Promise<AgentMemory[]> {
+  public async getContext(
+    options: ContextOptions = {},
+  ): Promise<AgentMemory[]> {
     return await this.client.getContext(options);
   }
 

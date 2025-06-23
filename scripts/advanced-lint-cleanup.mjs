@@ -34,7 +34,7 @@ function removeUnusedErrorVariables(content) {
             /catch \(_error\) {\s*\/\/[^\}]*\s*}/g,
             'catch {\n            // Error ignored\n        }'
         );
-        
+
         // Replace catch (_error) with catch when no usage
         content = content.replace(
             /} catch \(_error\) {/g,
@@ -66,13 +66,13 @@ function fixUnusedParameters(content) {
             { from: /\(request: unknown, reply: unknown\)/g, to: '(_request: unknown, _reply: unknown)' },
             { from: /\(req: unknown\)/g, to: '(_req: unknown)' },
             { from: /\(res: unknown\)/g, to: '(_res: unknown)' },
-            
+
             // Already processed ones might need adjustment
             { from: /\(req:/g, to: '(_req:' },
             { from: /\(request:/g, to: '(_request:' },
             { from: /\(res:/g, to: '(_res:' },
             { from: /\(reply:/g, to: '(_reply:' },
-            
+
             // Arrow functions
             { from: /=> \{([^}]*req[^}]*)\}/g, to: '=> {\n            // Request parameter not used\n        }' }
         ];
@@ -104,7 +104,7 @@ function removeConsoleStatements(content, filePath) {
                 /if \(process\.env\.NODE_ENV === "development"\) console\./g,
                 'logger.'
             );
-            
+
             // Make sure logger is imported
             if (!content.includes('import { logger }')) {
                 content = content.replace(

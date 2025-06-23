@@ -8,21 +8,21 @@ export class Output {
   private verbose = false;
   private jsonMode = false;
   private colorEnabled = true;
-  
+
   setVerbose(verbose: boolean): void {
     this.verbose = verbose;
   }
-  
+
   setJsonMode(json: boolean): void {
     this.jsonMode = json;
   }
-  
+
   setColorEnabled(enabled: boolean): void {
     this.colorEnabled = enabled;
   }
 
   setFormat(format: string): void {
-    if (format === 'json') {
+    if (format === "json") {
       this.setJsonMode(true);
     }
   }
@@ -30,7 +30,7 @@ export class Output {
   setColors(enabled: boolean): void {
     this.setColorEnabled(enabled);
   }
-    info(_message: string, ..._args: unknown[]): void {
+  info(_message: string, ..._args: unknown[]): void {
     if (this.jsonMode) {
       // Console statement removed for production
     } else {
@@ -38,7 +38,7 @@ export class Output {
       // Console statement removed for production
     }
   }
-  
+
   success(_message: string, ..._args: unknown[]): void {
     if (this.jsonMode) {
       // Console statement removed for production
@@ -47,7 +47,7 @@ export class Output {
       // Console statement removed for production
     }
   }
-  
+
   warn(_message: string, ..._args: unknown[]): void {
     if (this.jsonMode) {
       // Console statement removed for production
@@ -56,7 +56,7 @@ export class Output {
       // Console statement removed for production
     }
   }
-  
+
   error(_message: string, ..._args: unknown[]): void {
     if (this.jsonMode) {
       // Console statement removed for production
@@ -65,10 +65,10 @@ export class Output {
       // Console statement removed for production
     }
   }
-  
+
   debug(_message: string, ..._args: unknown[]): void {
     if (!this.verbose) return;
-    
+
     if (this.jsonMode) {
       // Console statement removed for production
     } else {

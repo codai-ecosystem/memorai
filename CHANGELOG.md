@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
 - Initial implementation of Memorai MCP
 - Core memory engine with vector storage
 - MCP server implementation
@@ -20,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enterprise security features
 
 ### Core Features
+
 - **Memory Operations**: remember(), recall(), forget(), context()
 - **Vector Storage**: Qdrant integration for semantic search
 - **Caching**: Redis-based hot cache for performance
@@ -28,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Classification**: Automatic memory type classification
 
 ### Infrastructure
+
 - **Monorepo**: pnpm workspaces with multiple packages
 - **Build System**: Turbo for fast, cached builds
 - **Type Safety**: Full TypeScript with strict mode
@@ -36,6 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Formatting**: Prettier for consistent code style
 
 ### Documentation
+
 - Comprehensive README with quick start guide
 - API documentation for all packages
 - Deployment guides for various platforms
@@ -45,6 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.0] - 2025-06-09
 
 ### Added
+
 - Initial project structure and monorepo setup
 - Core package with memory engine implementation
 - Server package with MCP protocol support
@@ -56,18 +61,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Docker compose for local development
 
 ### Changed
+
 - N/A (initial release)
 
 ### Deprecated
+
 - N/A (initial release)
 
 ### Removed
+
 - N/A (initial release)
 
 ### Fixed
+
 - N/A (initial release)
 
 ### Security
+
 - JWT-based authentication
 - AES-256 encryption at rest
 - TLS 1.3 for data in transit

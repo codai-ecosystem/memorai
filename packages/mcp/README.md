@@ -49,10 +49,7 @@ Add to your VS Code settings (`settings.json`):
   "github.copilot.chat.experimental.mcpServers": {
     "MemoryMCPServer": {
       "command": "npx",
-      "args": [
-        "-y",
-        "@codai/memorai-mcp"
-      ]
+      "args": ["-y", "@codai/memorai-mcp"]
     }
   }
 }
@@ -74,6 +71,7 @@ Add to your VS Code settings (`settings.json`):
 ### Configuration Examples
 
 **Example 1: Using npx (recommended - always uses latest version)**
+
 ```json
 {
   "github.copilot.chat.experimental.mcpServers": {
@@ -86,6 +84,7 @@ Add to your VS Code settings (`settings.json`):
 ```
 
 **Example 2: Using global installation**
+
 ```json
 {
   "github.copilot.chat.experimental.mcpServers": {
@@ -98,6 +97,7 @@ Add to your VS Code settings (`settings.json`):
 ```
 
 **Example 3: Using node directly (if installed globally)**
+
 ```json
 {
   "github.copilot.chat.experimental.mcpServers": {
@@ -126,14 +126,17 @@ Once configured, you can use memory operations directly in Copilot Chat:
 ### Memory Operations
 
 - **Remember**: Store new information
+
   - "Remember that I use React with TypeScript"
   - "Remember the database schema for users table"
 
 - **Recall**: Retrieve specific information
+
   - "What do you remember about my testing preferences?"
   - "Recall information about the payment system"
 
 - **Context**: Get relevant context for current conversation
+
   - "Give me context about this codebase"
   - "What context do you have about error handling?"
 
@@ -145,21 +148,21 @@ Once configured, you can use memory operations directly in Copilot Chat:
 
 ### Environment Variables
 
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `MEMORAI_OPENAI_API_KEY` | Yes | - | OpenAI API key for embeddings |
-| `MEMORAI_QDRANT_URL` | No | `http://localhost:6333` | Qdrant vector database URL |
-| `MEMORAI_QDRANT_API_KEY` | No | - | Qdrant API key (if required) |
-| `MEMORAI_REDIS_URL` | No | `redis://localhost:6379` | Redis URL for caching |
-| `MEMORAI_REDIS_PASSWORD` | No | - | Redis password (if required) |
-| `MEMORAI_ENCRYPTION_KEY` | No | Safe default | 32+ character encryption key |
+| Variable                 | Required | Default                  | Description                   |
+| ------------------------ | -------- | ------------------------ | ----------------------------- |
+| `MEMORAI_OPENAI_API_KEY` | Yes      | -                        | OpenAI API key for embeddings |
+| `MEMORAI_QDRANT_URL`     | No       | `http://localhost:6333`  | Qdrant vector database URL    |
+| `MEMORAI_QDRANT_API_KEY` | No       | -                        | Qdrant API key (if required)  |
+| `MEMORAI_REDIS_URL`      | No       | `redis://localhost:6379` | Redis URL for caching         |
+| `MEMORAI_REDIS_PASSWORD` | No       | -                        | Redis password (if required)  |
+| `MEMORAI_ENCRYPTION_KEY` | No       | Safe default             | 32+ character encryption key  |
 
 ### Services Setup
 
 #### Docker Compose (Recommended)
 
 ```yaml
-version: '3.8'
+version: "3.8"
 services:
   qdrant:
     image: qdrant/qdrant
@@ -167,7 +170,7 @@ services:
       - "6333:6333"
     volumes:
       - qdrant_storage:/qdrant/storage
-  
+
   redis:
     image: redis:alpine
     ports:
@@ -180,6 +183,7 @@ volumes:
 #### Local Installation
 
 **Qdrant**:
+
 ```bash
 # Docker
 docker run -p 6333:6333 qdrant/qdrant
@@ -191,6 +195,7 @@ chmod +x qdrant
 ```
 
 **Redis**:
+
 ```bash
 # Docker
 docker run -p 6379:6379 redis:alpine
@@ -204,11 +209,13 @@ docker run -p 6379:6379 redis:alpine
 If you get "command not found" errors:
 
 1. **Verify global installation:**
+
    ```bash
    npm list -g @codai/memorai-mcp
    ```
 
 2. **Check npx availability:**
+
    ```bash
    npx @codai/memorai-mcp --help
    ```
@@ -222,25 +229,25 @@ If you get "command not found" errors:
 ### Programmatic Usage
 
 ```typescript
-import { MemoryEngine, MemoraiServer } from '@codai/memorai-mcp';
+import { MemoryEngine, MemoraiServer } from "@codai/memorai-mcp";
 
 // Create memory engine
 const engine = new MemoryEngine({
   vector_db: {
-    url: 'http://localhost:6333',
-    collection: 'memories'
+    url: "http://localhost:6333",
+    collection: "memories",
   },
   redis: {
-    url: 'redis://localhost:6379'
+    url: "redis://localhost:6379",
   },
   embedding: {
-    provider: 'openai',
-    api_key: process.env.OPENAI_API_KEY
+    provider: "openai",
+    api_key: process.env.OPENAI_API_KEY,
   },
   security: {
-    encryption_key: 'your-32-character-key-here',
-    tenant_isolation: true
-  }
+    encryption_key: "your-32-character-key-here",
+    tenant_isolation: true,
+  },
 });
 
 // Start server
@@ -255,29 +262,23 @@ await server.start();
 await engine.remember(
   "User prefers TypeScript for new projects",
   "tenant-123",
-  "agent-456"
+  "agent-456",
 );
 
 // Recall information
 const memories = await engine.recall(
   "coding preferences",
   "tenant-123",
-  "agent-456"
+  "agent-456",
 );
 
 // Get context
-const context = await engine.getContext(
-  "tenant-123",
-  "agent-456",
-  { limit: 10 }
-);
+const context = await engine.getContext("tenant-123", "agent-456", {
+  limit: 10,
+});
 
 // Forget information
-await engine.forget(
-  "old API configuration",
-  "tenant-123",
-  "agent-456"
-);
+await engine.forget("old API configuration", "tenant-123", "agent-456");
 ```
 
 ## Production Deployment
@@ -285,11 +286,13 @@ await engine.forget(
 ### Environment Setup
 
 1. **Required Services**:
+
    - Qdrant vector database
    - Redis for caching
    - OpenAI API access
 
 2. **Security**:
+
    - Use strong encryption keys (32+ characters)
    - Enable tenant isolation
    - Configure audit logging
@@ -312,6 +315,7 @@ CMD ["memorai-mcp"]
 ### Health Monitoring
 
 The server provides health endpoints:
+
 - Health check: Available through MemoraiServer
 - Metrics: Performance and usage statistics
 
@@ -320,14 +324,17 @@ The server provides health endpoints:
 ### Common Issues
 
 1. **"Cannot connect to Qdrant"**:
+
    - Verify `MEMORAI_QDRANT_URL` is correct
    - Ensure Qdrant is running: `curl http://localhost:6333/health`
 
 2. **"Redis connection failed"**:
+
    - Check `MEMORAI_REDIS_URL` configuration
    - Test Redis: `redis-cli ping`
 
 3. **"OpenAI API errors"**:
+
    - Verify `MEMORAI_OPENAI_API_KEY` is valid
    - Check API quota and billing
 

@@ -6,11 +6,11 @@ import { join } from 'path';
 function getAllTsFiles(dir) {
     const files = [];
     const items = readdirSync(dir);
-    
+
     for (const item of items) {
         const fullPath = join(dir, item);
         const stat = statSync(fullPath);
-        
+
         if (stat.isDirectory()) {
             files.push(...getAllTsFiles(fullPath));
         } else if (item.endsWith('.ts') || item.endsWith('.tsx')) {
@@ -19,7 +19,7 @@ function getAllTsFiles(dir) {
             }
         }
     }
-    
+
     return files;
 }
 

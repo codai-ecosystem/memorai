@@ -1,87 +1,93 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 
 export async function GET() {
-    try {
-        // Mock response for now - later we'll connect to MCP server
-        const mockMemories = [
-            {
-                id: "1",
-                content: "Sample memory 1",
-                agentId: "copilot-1",
-                timestamp: new Date().toISOString(),
-                metadata: {
-                    type: "note",
-                    tags: ["test"],
-                    importance: 0.8,
-                    source: "dashboard",
-                    confidence: 0.9
-                }
-            },
-            {
-                id: "2",
-                content: "Sample memory 2",
-                agentId: "copilot-1",
-                timestamp: new Date(Date.now() - 300000).toISOString(),
-                metadata: {
-                    type: "conversation",
-                    tags: ["chat", "important"],
-                    importance: 0.6,
-                    source: "user",
-                    confidence: 0.7
-                }
-            }
-        ];
+  try {
+    // Mock response for now - later we'll connect to MCP server
+    const mockMemories = [
+      {
+        id: "1",
+        content: "Sample memory 1",
+        agentId: "copilot-1",
+        timestamp: new Date().toISOString(),
+        metadata: {
+          type: "note",
+          tags: ["test"],
+          importance: 0.8,
+          source: "dashboard",
+          confidence: 0.9,
+        },
+      },
+      {
+        id: "2",
+        content: "Sample memory 2",
+        agentId: "copilot-1",
+        timestamp: new Date(Date.now() - 300000).toISOString(),
+        metadata: {
+          type: "conversation",
+          tags: ["chat", "important"],
+          importance: 0.6,
+          source: "user",
+          confidence: 0.7,
+        },
+      },
+    ];
 
-        return NextResponse.json({ data: mockMemories, success: true });
-    } catch (error) {
-        if (process.env.NODE_ENV === "development") console.error('Memory context API error:', error);
-        return NextResponse.json(
-            { error: 'Failed to fetch memory context', success: false },
-            { status: 500 }
-        );
+    return NextResponse.json({ data: mockMemories, success: true });
+  } catch (error) {
+    if (process.env.NODE_ENV === "development")
+      {
+        console.error("Memory context API error:", error);
     }
+    return NextResponse.json(
+      { error: "Failed to fetch memory context", success: false },
+      { status: 500 },
+    );
+  }
 }
 
 export async function POST(request: NextRequest) {
-    try {
-        const body = await request.json();
+  try {
+    const body = await request.json();
 
-        // Mock response for memory context
-        const mockMemories = [
-            {
-                id: "1",
-                content: "Sample memory 1",
-                agentId: body.agentId || "copilot-1",
-                timestamp: new Date().toISOString(),
-                metadata: {
-                    type: "note",
-                    tags: ["test"],
-                    importance: 0.8,
-                    source: "dashboard",
-                    confidence: 0.9
-                }
-            },
-            {
-                id: "2",
-                content: "Sample memory 2",
-                agentId: body.agentId || "copilot-1",
-                timestamp: new Date(Date.now() - 300000).toISOString(),
-                metadata: {
-                    type: "conversation",
-                    tags: ["chat", "important"],
-                    importance: 0.6,
-                    source: "user",
-                    confidence: 0.7
-                }
-            }
-        ];
+    // Mock response for memory context
+    const mockMemories = [
+      {
+        id: "1",
+        content: "Sample memory 1",
+        agentId: body.agentId || "copilot-1",
+        timestamp: new Date().toISOString(),
+        metadata: {
+          type: "note",
+          tags: ["test"],
+          importance: 0.8,
+          source: "dashboard",
+          confidence: 0.9,
+        },
+      },
+      {
+        id: "2",
+        content: "Sample memory 2",
+        agentId: body.agentId || "copilot-1",
+        timestamp: new Date(Date.now() - 300000).toISOString(),
+        metadata: {
+          type: "conversation",
+          tags: ["chat", "important"],
+          importance: 0.6,
+          source: "user",
+          confidence: 0.7,
+        },
+      },
+    ];
 
-        return NextResponse.json({ data: mockMemories, success: true });
-    } catch (error) {
-        if (process.env.NODE_ENV === "development") console.error('Memory context API error:', error);
-        return NextResponse.json(
-            { error: 'Failed to fetch memory context', success: false },
-            { status: 500 }
-        );
+    return NextResponse.json({ data: mockMemories, success: true });
+  } catch (error) {
+    if (process.env.NODE_ENV === "development")
+      {
+        console.error("Memory context API error:", error);
     }
+    return NextResponse.json(
+      { error: "Failed to fetch memory context", success: false },
+      { status: 500 },
+    );
+  }
 }

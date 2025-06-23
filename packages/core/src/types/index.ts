@@ -1,7 +1,15 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 // Core Memory Types
-export const MemoryTypeSchema = z.enum(['personality', 'procedure', 'preference', 'fact', 'thread', 'task', 'emotion']);
+export const MemoryTypeSchema = z.enum([
+  "personality",
+  "procedure",
+  "preference",
+  "fact",
+  "thread",
+  "task",
+  "emotion",
+]);
 export type MemoryType = z.infer<typeof MemoryTypeSchema>;
 
 export const MemoryMetadataSchema = z.object({
@@ -90,30 +98,33 @@ export const MemoryConfigSchema = z.object({
   vector_db: z.object({
     url: z.string().url(),
     api_key: z.string().optional(),
-    collection: z.string().default('memories'),
+    collection: z.string().default("memories"),
     dimension: z.number().int().min(1).default(1536),
-  }), redis: z.object({
+  }),
+  redis: z.object({
     url: z.string().url(),
     password: z.string().optional(),
     db: z.number().int().min(0).default(0),
   }),
   // OpenAI/Azure configuration for language model
-  openai: z.object({
-    provider: z.enum(['openai', 'azure']).default('openai'),
-    api_key: z.string().optional(),
-    model: z.string().default('gpt-4'),
+  openai: z
+    .object({
+      provider: z.enum(["openai", "azure"]).default("openai"),
+      api_key: z.string().optional(),
+      model: z.string().default("gpt-4"),
 
-    // Standard OpenAI configuration
-    base_url: z.string().url().optional(),
+      // Standard OpenAI configuration
+      base_url: z.string().url().optional(),
 
-    // Azure OpenAI specific configuration
-    azure_endpoint: z.string().url().optional(),
-    azure_deployment: z.string().optional(),
-    azure_api_version: z.string().optional(),
-  }).optional(),
+      // Azure OpenAI specific configuration
+      azure_endpoint: z.string().url().optional(),
+      azure_deployment: z.string().optional(),
+      azure_api_version: z.string().optional(),
+    })
+    .optional(),
   embedding: z.object({
-    provider: z.enum(['openai', 'azure', 'local']).default('openai'),
-    model: z.string().default('text-embedding-3-small'),
+    provider: z.enum(["openai", "azure", "local"]).default("openai"),
+    model: z.string().default("text-embedding-3-small"),
     api_key: z.string().optional(),
 
     // Standard OpenAI configuration
@@ -146,30 +157,30 @@ export class MemoryError extends Error {
   constructor(
     message: string,
     public code: string,
-    public context?: Record<string, unknown>
+    public context?: Record<string, unknown>,
   ) {
     super(message);
-    this.name = 'MemoryError';
+    this.name = "MemoryError";
   }
 }
 
 export class VectorStoreError extends MemoryError {
   constructor(message: string, context?: Record<string, unknown>) {
-    super(message, 'VECTOR_STORE_ERROR', context);
-    this.name = 'VectorStoreError';
+    super(message, "VECTOR_STORE_ERROR", context);
+    this.name = "VectorStoreError";
   }
 }
 
 export class EmbeddingError extends MemoryError {
   constructor(message: string, context?: Record<string, unknown>) {
-    super(message, 'EMBEDDING_ERROR', context);
-    this.name = 'EmbeddingError';
+    super(message, "EMBEDDING_ERROR", context);
+    this.name = "EmbeddingError";
   }
 }
 
 export class ContextError extends MemoryError {
   constructor(message: string, context?: Record<string, unknown>) {
-    super(message, 'CONTEXT_ERROR', context);
-    this.name = 'ContextError';
+    super(message, "CONTEXT_ERROR", context);
+    this.name = "ContextError";
   }
 }

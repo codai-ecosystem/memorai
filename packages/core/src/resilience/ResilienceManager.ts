@@ -3,7 +3,7 @@
  * Includes retry mechanisms, circuit breakers, and graceful degradation
  */
 
-import { logger } from '../utils/logger.js';
+import { logger } from "../utils/logger.js";
 
 export interface RetryOptions {
   maxAttempts: number;
@@ -22,9 +22,9 @@ export interface CircuitBreakerOptions {
 }
 
 export enum CircuitBreakerState {
-  CLOSED = 'CLOSED',
-  OPEN = 'OPEN',
-  HALF_OPEN = 'HALF_OPEN'
+  CLOSED = "CLOSED",
+  OPEN = "OPEN",
+  HALF_OPEN = "HALF_OPEN",
 }
 
 export class RetryManager {
@@ -42,12 +42,13 @@ export class RetryManager {
    */
   public async executeWithRetry<T>(
     operation: () => Promise<T>,
-    options: Partial<RetryOptions> = {}
+    options: Partial<RetryOptions> = {},
   ): Promise<T> {
     const opts = { ...this.defaultOptions, ...options };
     let lastError: Error;
 
-    for (let attempt = 1; attempt <= opts.maxAttempts; attempt++) {      try {
+    for (let attempt = 1; attempt <= opts.maxAttempts; attempt++) {
+      try {
         return await operation();
       } catch (error) {
         lastError = error as Error;
@@ -65,7 +66,10 @@ export class RetryManager {
         // Calculate delay
         const delay = this.calculateDelay(attempt, opts);
         // Log retry attempt
-        logger.warn(`Attempt ${attempt} failed, retrying in ${delay}ms:`, error);
+        logger.warn(
+          `Attempt ${attempt} failed, retrying in ${delay}ms:`,
+          error,
+        );
 
         await this.sleep(delay);
       }
@@ -79,9 +83,10 @@ export class RetryManager {
       return true;
     }
 
-    return retryableErrors.some(retryableError =>
-      error.message.includes(retryableError) ||
-      error.name.includes(retryableError)
+    return retryableErrors.some(
+      (retryableError) =>
+        error.message.includes(retryableError) ||
+        error.name.includes(retryableError),
     );
   }
 
@@ -89,7 +94,10 @@ export class RetryManager {
     let delay = options.baseDelayMs;
 
     if (options.exponentialBackoff) {
-      delay = Math.min(options.baseDelayMs * Math.pow(2, attempt - 1), options.maxDelayMs);
+      delay = Math.min(
+        options.baseDelayMs * Math.pow(2, attempt - 1),
+        options.maxDelayMs,
+      );
     }
 
     if (options.jitter) {
@@ -101,7 +109,7 @@ export class RetryManager {
   }
 
   private sleep(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }
 
@@ -114,21 +122,24 @@ export class CircuitBreaker {
 
   constructor(
     private name: string,
-    private options: CircuitBreakerOptions
-  ) { }
+    private options: CircuitBreakerOptions,
+  ) {}
 
   /**
    * Execute a function with circuit breaker protection
    */
   public async execute<T>(operation: () => Promise<T>): Promise<T> {
     if (this.shouldRejectCall()) {
-      throw new Error(`Circuit breaker '${this.name}' is OPEN - rejecting call`);
+      throw new Error(
+        `Circuit breaker '${this.name}' is OPEN - rejecting call`,
+      );
     }
 
     try {
       const result = await operation();
       this.onSuccess();
-      return result;    } catch (error) {
+      return result;
+    } catch (error) {
       this.onFailure();
       throw error;
     }
@@ -218,7 +229,7 @@ export class CircuitBreaker {
     const successRate = this.calculateSuccessRate();
     const failureRate = 1 - successRate;
 
-    return failureRate >= (this.options.failureThreshold / 100);
+    return failureRate >= this.options.failureThreshold / 100;
   }
 
   private recordCall(success: boolean): void {
@@ -227,13 +238,15 @@ export class CircuitBreaker {
 
     // Clean up old calls outside the monitoring window
     const cutoff = now - this.options.monitoringWindowMs;
-    this.recentCalls = this.recentCalls.filter(call => call.timestamp >= cutoff);
+    this.recentCalls = this.recentCalls.filter(
+      (call) => call.timestamp >= cutoff,
+    );
   }
 
   private getRecentCallsCount(): number {
     const now = Date.now();
     const cutoff = now - this.options.monitoringWindowMs;
-    return this.recentCalls.filter(call => call.timestamp >= cutoff).length;
+    return this.recentCalls.filter((call) => call.timestamp >= cutoff).length;
   }
 
   private calculateSuccessRate(): number {
@@ -242,14 +255,14 @@ export class CircuitBreaker {
       return 1.0;
     }
 
-    const successfulCalls = recentCalls.filter(call => call.success).length;
+    const successfulCalls = recentCalls.filter((call) => call.success).length;
     return successfulCalls / recentCalls.length;
   }
 
   private getRecentCallsInWindow(): { timestamp: number; success: boolean }[] {
     const now = Date.now();
     const cutoff = now - this.options.monitoringWindowMs;
-    return this.recentCalls.filter(call => call.timestamp >= cutoff);
+    return this.recentCalls.filter((call) => call.timestamp >= cutoff);
   }
 }
 
@@ -266,10 +279,13 @@ export class ResilienceManager {
     options: {
       retry?: Partial<RetryOptions>;
       circuitBreaker?: CircuitBreakerOptions;
-    } = {}
+    } = {},
   ): Promise<T> {
     // Get or create circuit breaker
-    const circuitBreaker = this.getOrCreateCircuitBreaker(operationName, options.circuitBreaker);
+    const circuitBreaker = this.getOrCreateCircuitBreaker(
+      operationName,
+      options.circuitBreaker,
+    );
 
     // Execute with circuit breaker protection and retry logic
     return circuitBreaker.execute(async () => {
@@ -287,14 +303,15 @@ export class ResilienceManager {
     options?: {
       retry?: Partial<RetryOptions>;
       circuitBreaker?: CircuitBreakerOptions;
-    }
+    },
   ): Promise<T> {
     try {
       if (operationName && options) {
         return await this.executeResilient(operationName, operation, options);
       } else {
         return await operation();
-      }    } catch (error) {
+      }
+    } catch (error) {
       logger.warn(`Primary operation failed, falling back:`, error);
       return fallback();
     }
@@ -303,8 +320,11 @@ export class ResilienceManager {
   /**
    * Get status of all circuit breakers
    */
-  public getAllCircuitBreakerStatus(): Record<string, ReturnType<CircuitBreaker['getStatus']>> {
-    const status: Record<string, ReturnType<CircuitBreaker['getStatus']>> = {};
+  public getAllCircuitBreakerStatus(): Record<
+    string,
+    ReturnType<CircuitBreaker["getStatus"]>
+  > {
+    const status: Record<string, ReturnType<CircuitBreaker["getStatus"]>> = {};
 
     for (const [name, circuitBreaker] of this.circuitBreakers) {
       status[name] = circuitBreaker.getStatus();
@@ -315,7 +335,7 @@ export class ResilienceManager {
 
   /**
    * Reset a specific circuit breaker
-   */  public resetCircuitBreaker(name: string): boolean {
+   */ public resetCircuitBreaker(name: string): boolean {
     const circuitBreaker = this.circuitBreakers.get(name);
     if (circuitBreaker) {
       // Create a new circuit breaker to reset state
@@ -325,7 +345,10 @@ export class ResilienceManager {
     return false;
   }
 
-  private getOrCreateCircuitBreaker(name: string, options?: CircuitBreakerOptions): CircuitBreaker {
+  private getOrCreateCircuitBreaker(
+    name: string,
+    options?: CircuitBreakerOptions,
+  ): CircuitBreaker {
     let circuitBreaker = this.circuitBreakers.get(name);
 
     if (!circuitBreaker) {
@@ -336,7 +359,10 @@ export class ResilienceManager {
         minimumCalls: 10, // Minimum calls before circuit can open
       };
 
-      circuitBreaker = new CircuitBreaker(name, { ...defaultOptions, ...options });
+      circuitBreaker = new CircuitBreaker(name, {
+        ...defaultOptions,
+        ...options,
+      });
       this.circuitBreakers.set(name, circuitBreaker);
     }
 

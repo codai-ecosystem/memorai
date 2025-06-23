@@ -1,7 +1,11 @@
-import { QdrantClient } from '@qdrant/js-client-rest';
+import { QdrantClient } from "@qdrant/js-client-rest";
 
-import type { MemoryMetadata, MemoryQuery, MemoryResult } from '../types/index.js';
-import { VectorStoreError } from '../types/index.js';
+import type {
+  MemoryMetadata,
+  MemoryQuery,
+  MemoryResult,
+} from "../types/index.js";
+import { VectorStoreError } from "../types/index.js";
 
 export interface VectorPoint {
   id: string;
@@ -33,7 +37,7 @@ export class QdrantVectorStore implements VectorStore {
     url: string,
     collection: string,
     dimension: number,
-    apiKey?: string
+    apiKey?: string,
   ) {
     const clientConfig: { url: string; apiKey?: string } = { url };
     if (apiKey) {
@@ -49,13 +53,15 @@ export class QdrantVectorStore implements VectorStore {
     try {
       // Check if collection exists
       const collections = await this.client.getCollections();
-      const exists = collections.collections.some((c: { name: string }) => c.name === this.collection);
+      const exists = collections.collections.some(
+        (c: { name: string }) => c.name === this.collection,
+      );
 
       if (!exists) {
         await this.client.createCollection(this.collection, {
           vectors: {
             size: this.dimension,
-            distance: 'Cosine',
+            distance: "Cosine",
           },
           optimizers_config: {
             default_segment_number: 2,
@@ -73,25 +79,27 @@ export class QdrantVectorStore implements VectorStore {
 
         // Create indexes for filtering
         await this.client.createPayloadIndex(this.collection, {
-          field_name: 'tenant_id',
-          field_schema: 'keyword',
+          field_name: "tenant_id",
+          field_schema: "keyword",
         });
 
         await this.client.createPayloadIndex(this.collection, {
-          field_name: 'type',
-          field_schema: 'keyword',
+          field_name: "type",
+          field_schema: "keyword",
         });
 
         await this.client.createPayloadIndex(this.collection, {
-          field_name: 'created_at',
-          field_schema: 'datetime',
+          field_name: "created_at",
+          field_schema: "datetime",
         });
       }
     } catch (error: unknown) {
       if (error instanceof Error) {
-        throw new VectorStoreError(`Failed to initialize Qdrant collection: ${error.message}`);
+        throw new VectorStoreError(
+          `Failed to initialize Qdrant collection: ${error.message}`,
+        );
       }
-      throw new VectorStoreError('Unknown initialization error');
+      throw new VectorStoreError("Unknown initialization error");
     }
   }
 
@@ -101,7 +109,7 @@ export class QdrantVectorStore implements VectorStore {
     }
 
     try {
-      const qdrantPoints = points.map(point => ({
+      const qdrantPoints = points.map((point) => ({
         id: point.id,
         vector: point.vector,
         payload: point.payload,
@@ -113,20 +121,26 @@ export class QdrantVectorStore implements VectorStore {
       });
     } catch (error: unknown) {
       if (error instanceof Error) {
-        throw new VectorStoreError(`Failed to upsert points: ${error.message}`, {
-          point_count: points.length,
-        });
+        throw new VectorStoreError(
+          `Failed to upsert points: ${error.message}`,
+          {
+            point_count: points.length,
+          },
+        );
       }
-      throw new VectorStoreError('Unknown upsert error');
+      throw new VectorStoreError("Unknown upsert error");
     }
   }
 
-  public async search(vector: number[], query: MemoryQuery): Promise<SearchResult[]> {
+  public async search(
+    vector: number[],
+    query: MemoryQuery,
+  ): Promise<SearchResult[]> {
     try {
       const filter: Record<string, unknown> = {
         must: [
           {
-            key: 'tenant_id',
+            key: "tenant_id",
             match: { value: query.tenant_id },
           },
         ],
@@ -135,14 +149,14 @@ export class QdrantVectorStore implements VectorStore {
       // Add optional filters
       if (query.type) {
         (filter.must as Array<Record<string, unknown>>).push({
-          key: 'type',
+          key: "type",
           match: { value: query.type },
         });
       }
 
       if (query.agent_id) {
         (filter.must as Array<Record<string, unknown>>).push({
-          key: 'agent_id',
+          key: "agent_id",
           match: { value: query.agent_id },
         });
       }
@@ -153,8 +167,8 @@ export class QdrantVectorStore implements VectorStore {
         limit: query.limit,
         score_threshold: query.threshold,
         with_payload: true,
-      });      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return searchResult.map((point: unknown) => ({
+      }); // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return searchResult.map((point: any) => ({
         id: point.id as string,
         score: point.score,
         payload: point.payload ?? {},
@@ -166,7 +180,7 @@ export class QdrantVectorStore implements VectorStore {
           tenant_id: query.tenant_id,
         });
       }
-      throw new VectorStoreError('Unknown search error');
+      throw new VectorStoreError("Unknown search error");
     }
   }
 
@@ -182,11 +196,14 @@ export class QdrantVectorStore implements VectorStore {
       });
     } catch (error: unknown) {
       if (error instanceof Error) {
-        throw new VectorStoreError(`Failed to delete points: ${error.message}`, {
-          id_count: ids.length,
-        });
+        throw new VectorStoreError(
+          `Failed to delete points: ${error.message}`,
+          {
+            id_count: ids.length,
+          },
+        );
       }
-      throw new VectorStoreError('Unknown delete error');
+      throw new VectorStoreError("Unknown delete error");
     }
   }
 
@@ -196,7 +213,7 @@ export class QdrantVectorStore implements VectorStore {
         filter: {
           must: [
             {
-              key: 'tenant_id',
+              key: "tenant_id",
               match: { value: tenantId },
             },
           ],
@@ -210,15 +227,16 @@ export class QdrantVectorStore implements VectorStore {
           tenant_id: tenantId,
         });
       }
-      throw new VectorStoreError('Unknown count error');
+      throw new VectorStoreError("Unknown count error");
     }
   }
 
   public async healthCheck(): Promise<boolean> {
     try {
-      const collections = await this.client.getCollections();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return collections.collections.some((c: unknown) => c.name === this.collection);
+      const collections = await this.client.getCollections(); // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return collections.collections.some(
+        (c: any) => c.name === this.collection,
+      );
     } catch {
       return false;
     }
@@ -242,7 +260,10 @@ export class MemoryVectorStore {
     this.isInitialized = true;
   }
 
-  public async storeMemory(memory: MemoryMetadata, embedding: number[]): Promise<void> {
+  public async storeMemory(
+    memory: MemoryMetadata,
+    embedding: number[],
+  ): Promise<void> {
     await this.ensureInitialized();
 
     const point: VectorPoint = {
@@ -262,12 +283,12 @@ export class MemoryVectorStore {
 
   public async storeMemories(
     memories: MemoryMetadata[],
-    embeddings: number[][]
+    embeddings: number[][],
   ): Promise<void> {
     await this.ensureInitialized();
 
     if (memories.length !== embeddings.length) {
-      throw new VectorStoreError('Memories and embeddings count mismatch');
+      throw new VectorStoreError("Memories and embeddings count mismatch");
     }
 
     const points: VectorPoint[] = memories.map((memory, index) => ({
@@ -287,19 +308,19 @@ export class MemoryVectorStore {
 
   public async searchMemories(
     queryEmbedding: number[],
-    query: MemoryQuery
+    query: MemoryQuery,
   ): Promise<MemoryResult[]> {
     await this.ensureInitialized();
 
     const results = await this.store.search(queryEmbedding, query);
 
-    return results.map(result => {
+    return results.map((result) => {
       const payload = result.payload;
 
       return {
         memory: {
           id: payload.id as string,
-          type: payload.type as MemoryMetadata['type'],
+          type: payload.type as MemoryMetadata["type"],
           content: payload.content as string,
           confidence: payload.confidence as number,
           createdAt: new Date(payload.created_at as string),
@@ -315,7 +336,10 @@ export class MemoryVectorStore {
           ttl: payload.ttl ? new Date(payload.ttl as string) : undefined,
         },
         score: result.score,
-        relevance_reason: this.generateRelevanceReason(result.score, query.query),
+        relevance_reason: this.generateRelevanceReason(
+          result.score,
+          query.query,
+        ),
       };
     });
   }
@@ -345,10 +369,11 @@ export class MemoryVectorStore {
   public async getHealth(): Promise<{ status: string; error?: string }> {
     try {
       const isHealthy = await this.healthCheck();
-      return { status: isHealthy ? 'healthy' : 'unhealthy' };    } catch (error) {
+      return { status: isHealthy ? "healthy" : "unhealthy" };
+    } catch (error) {
       return {
-        status: 'unhealthy',
-        error: error instanceof Error ? error.message : 'Unknown error'
+        status: "unhealthy",
+        error: error instanceof Error ? error.message : "Unknown error",
       };
     }
   }

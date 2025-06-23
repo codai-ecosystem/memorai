@@ -3,7 +3,7 @@
  * Provides entity relationship management and graph-based memory operations
  */
 
-import { nanoid } from 'nanoid';
+import { nanoid } from "nanoid";
 
 export interface GraphEntity {
   id: string;
@@ -69,22 +69,25 @@ export class KnowledgeGraph {
 
   /**
    * Add or update an entity in the knowledge graph
-   */  async addEntity(
+   */ async addEntity(
     name: string,
     type: string,
     properties: Record<string, unknown>,
     tenant_id: string,
-    agent_id?: string
+    agent_id?: string,
   ): Promise<string> {
     // Check for existing entity by name and type
     const existingEntity = this.findEntityByNameAndType(name, type, tenant_id);
 
     if (existingEntity) {
       // Update existing entity
-      existingEntity.properties = { ...existingEntity.properties, ...properties };
+      existingEntity.properties = {
+        ...existingEntity.properties,
+        ...properties,
+      };
       existingEntity.updatedAt = new Date();
       return existingEntity.id;
-    }    // Create new entity
+    } // Create new entity
     const id = nanoid();
     const entity: GraphEntity = {
       id,
@@ -94,7 +97,7 @@ export class KnowledgeGraph {
       createdAt: new Date(),
       updatedAt: new Date(),
       tenant_id,
-      ...(agent_id !== undefined && { agent_id })
+      ...(agent_id !== undefined && { agent_id }),
     };
 
     this.entities.set(id, entity);
@@ -112,7 +115,7 @@ export class KnowledgeGraph {
 
   /**
    * Add a relation between two entities
-   */  async addRelation(
+   */ async addRelation(
     fromId: string,
     toId: string,
     relationType: string,
@@ -120,18 +123,25 @@ export class KnowledgeGraph {
     weight: number = 1.0,
     confidence: number = 1.0,
     tenant_id: string,
-    agent_id?: string
+    agent_id?: string,
   ): Promise<string> {
     // Validate entities exist
     const fromEntity = this.entities.get(fromId);
     const toEntity = this.entities.get(toId);
 
     if (!fromEntity || !toEntity) {
-      throw new Error('Cannot create relation: one or both entities do not exist');
+      throw new Error(
+        "Cannot create relation: one or both entities do not exist",
+      );
     }
 
     // Check for existing relation
-    const existingRelationId = this.findExistingRelation(fromId, toId, relationType, tenant_id);
+    const existingRelationId = this.findExistingRelation(
+      fromId,
+      toId,
+      relationType,
+      tenant_id,
+    );
     if (existingRelationId) {
       // Update existing relation
       const relation = this.relations.get(existingRelationId)!;
@@ -140,7 +150,7 @@ export class KnowledgeGraph {
       relation.confidence = Math.max(relation.confidence, confidence);
       relation.updatedAt = new Date();
       return existingRelationId;
-    }    // Create new relation
+    } // Create new relation
     const id = nanoid();
     const relation: GraphRelation = {
       id,
@@ -153,7 +163,7 @@ export class KnowledgeGraph {
       createdAt: new Date(),
       updatedAt: new Date(),
       tenant_id,
-      ...(agent_id !== undefined && { agent_id })
+      ...(agent_id !== undefined && { agent_id }),
     };
 
     this.relations.set(id, relation);
@@ -177,21 +187,21 @@ export class KnowledgeGraph {
     let results: GraphEntity[] = Array.from(this.entities.values());
 
     // Filter by tenant
-    results = results.filter(e => e.tenant_id === query.tenant_id);
+    results = results.filter((e) => e.tenant_id === query.tenant_id);
 
     // Filter by agent if specified
     if (query.agent_id) {
-      results = results.filter(e => e.agent_id === query.agent_id);
+      results = results.filter((e) => e.agent_id === query.agent_id);
     }
 
     // Filter by entity types
     if (query.entityTypes && query.entityTypes.length > 0) {
-      results = results.filter(e => query.entityTypes!.includes(e.type));
+      results = results.filter((e) => query.entityTypes!.includes(e.type));
     }
 
     // Filter by properties
     if (query.properties) {
-      results = results.filter(entity => {
+      results = results.filter((entity) => {
         return Object.entries(query.properties!).every(([key, value]) => {
           return entity.properties[key] === value;
         });
@@ -224,19 +234,22 @@ export class KnowledgeGraph {
    * Find relations based on query criteria
    */
   findRelations(query: GraphQuery): GraphRelation[] {
-    let results = Array.from(this.relations.values())
-      .filter(r => r.tenant_id === query.tenant_id && (!query.agent_id || r.agent_id === query.agent_id));
+    let results = Array.from(this.relations.values()).filter(
+      (r) =>
+        r.tenant_id === query.tenant_id &&
+        (!query.agent_id || r.agent_id === query.agent_id),
+    );
 
     // Filter by relation types
     if (query.relationTypes && query.relationTypes.length > 0) {
-      results = results.filter(r => query.relationTypes!.includes(r.type));
+      results = results.filter((r) => query.relationTypes!.includes(r.type));
     }
 
     // Filter by properties
     if (query.properties) {
-      results = results.filter(r => {
-        return Object.entries(query.properties!).every(([key, value]) =>
-          r.properties[key] === value
+      results = results.filter((r) => {
+        return Object.entries(query.properties!).every(
+          ([key, value]) => r.properties[key] === value,
         );
       });
     }
@@ -258,23 +271,34 @@ export class KnowledgeGraph {
     }
 
     const paths: GraphPath[] = [];
-    const visited = new Set<string>();    const dfs = (currentId: string, targetId: string, currentPath: string[], currentRelations: string[], currentWeight: number, depth: number) => {
+    const visited = new Set<string>();
+    const dfs = (
+      currentId: string,
+      targetId: string,
+      currentPath: string[],
+      currentRelations: string[],
+      currentWeight: number,
+      depth: number,
+    ) => {
       if (depth > maxDepth) {
         return;
       }
 
       if (currentId === targetId && currentPath.length > 1) {
         // Found a path
-        const entities = currentPath.map(id => this.entities.get(id)!);
-        const relations = currentRelations.map(id => this.relations.get(id)!);
-        const confidence = relations.length > 0 ?
-          relations.reduce((sum, r) => sum + r.confidence, 0) / relations.length : 1.0;
+        const entities = currentPath.map((id) => this.entities.get(id)!);
+        const relations = currentRelations.map((id) => this.relations.get(id)!);
+        const confidence =
+          relations.length > 0
+            ? relations.reduce((sum, r) => sum + r.confidence, 0) /
+              relations.length
+            : 1.0;
 
         paths.push({
           entities,
           relations,
           totalWeight: currentWeight,
-          confidence
+          confidence,
         });
         return;
       }
@@ -284,7 +308,8 @@ export class KnowledgeGraph {
       const relationIds = this.entityRelations.get(currentId) || new Set();
       for (const relationId of relationIds) {
         const relation = this.relations.get(relationId)!;
-        const neighborId = relation.fromId === currentId ? relation.toId : relation.fromId;
+        const neighborId =
+          relation.fromId === currentId ? relation.toId : relation.fromId;
 
         if (!visited.has(neighborId)) {
           dfs(
@@ -293,7 +318,7 @@ export class KnowledgeGraph {
             [...currentPath, neighborId],
             [...currentRelations, relationId],
             currentWeight + relation.weight,
-            depth + 1
+            depth + 1,
           );
         }
       }
@@ -310,15 +335,29 @@ export class KnowledgeGraph {
   /**
    * Find shortest path between two entities
    */
-  findShortestPath(fromId: string, toId: string, maxDepth: number = 5): GraphPath | null {
+  findShortestPath(
+    fromId: string,
+    toId: string,
+    maxDepth: number = 5,
+  ): GraphPath | null {
     if (!this.entities.has(fromId) || !this.entities.has(toId)) {
       return null;
     }
 
     const visited = new Set<string>();
-    const queue: Array<{ entityId: string; path: string[]; relations: string[]; totalWeight: number }> = [];
+    const queue: Array<{
+      entityId: string;
+      path: string[];
+      relations: string[];
+      totalWeight: number;
+    }> = [];
 
-    queue.push({ entityId: fromId, path: [fromId], relations: [], totalWeight: 0 });
+    queue.push({
+      entityId: fromId,
+      path: [fromId],
+      relations: [],
+      totalWeight: 0,
+    });
     visited.add(fromId);
 
     while (queue.length > 0) {
@@ -326,16 +365,21 @@ export class KnowledgeGraph {
 
       if (current.entityId === toId) {
         // Found target, construct path
-        const entities = current.path.map(id => this.entities.get(id)!);
-        const relations = current.relations.map(id => this.relations.get(id)!);
-        const confidence = relations.length > 0 ?
-          relations.reduce((sum, r) => sum + r.confidence, 0) / relations.length : 1.0;
+        const entities = current.path.map((id) => this.entities.get(id)!);
+        const relations = current.relations.map(
+          (id) => this.relations.get(id)!,
+        );
+        const confidence =
+          relations.length > 0
+            ? relations.reduce((sum, r) => sum + r.confidence, 0) /
+              relations.length
+            : 1.0;
 
         return {
           entities,
           relations,
           totalWeight: current.totalWeight,
-          confidence
+          confidence,
         };
       }
 
@@ -344,10 +388,14 @@ export class KnowledgeGraph {
       }
 
       // Explore neighbors
-      const relationIds = this.entityRelations.get(current.entityId) || new Set();
+      const relationIds =
+        this.entityRelations.get(current.entityId) || new Set();
       for (const relationId of relationIds) {
         const relation = this.relations.get(relationId)!;
-        const neighborId = relation.fromId === current.entityId ? relation.toId : relation.fromId;
+        const neighborId =
+          relation.fromId === current.entityId
+            ? relation.toId
+            : relation.fromId;
 
         if (!visited.has(neighborId)) {
           visited.add(neighborId);
@@ -355,7 +403,7 @@ export class KnowledgeGraph {
             entityId: neighborId,
             path: [...current.path, neighborId],
             relations: [...current.relations, relationId],
-            totalWeight: current.totalWeight + relation.weight
+            totalWeight: current.totalWeight + relation.weight,
           });
         }
       }
@@ -386,10 +434,14 @@ export class KnowledgeGraph {
       }
 
       if (current.depth < maxDepth) {
-        const relationIds = this.entityRelations.get(current.entityId) || new Set();
+        const relationIds =
+          this.entityRelations.get(current.entityId) || new Set();
         for (const relationId of relationIds) {
           const relation = this.relations.get(relationId)!;
-          const neighborId = relation.fromId === current.entityId ? relation.toId : relation.fromId;
+          const neighborId =
+            relation.fromId === current.entityId
+              ? relation.toId
+              : relation.fromId;
 
           if (!visited.has(neighborId)) {
             visited.add(neighborId);
@@ -407,49 +459,57 @@ export class KnowledgeGraph {
    */
   getAnalytics(tenant_id: string, agent_id?: string): GraphAnalytics {
     // Filter entities and relations by tenant/agent
-    const entities = Array.from(this.entities.values())
-      .filter(e => e.tenant_id === tenant_id && (!agent_id || e.agent_id === agent_id));
+    const entities = Array.from(this.entities.values()).filter(
+      (e) =>
+        e.tenant_id === tenant_id && (!agent_id || e.agent_id === agent_id),
+    );
 
-    const relations = Array.from(this.relations.values())
-      .filter(r => r.tenant_id === tenant_id && (!agent_id || r.agent_id === agent_id));    // Calculate metrics
+    const relations = Array.from(this.relations.values()).filter(
+      (r) =>
+        r.tenant_id === tenant_id && (!agent_id || r.agent_id === agent_id),
+    ); // Calculate metrics
     const entityCount = entities.length;
     const relationCount = relations.length;
     // Each relation connects 2 entities, so the average relations per entity is (relationCount * 2) / entityCount
-    const avgRelationsPerEntity = entityCount > 0 ? (relationCount * 2) / entityCount : 0;
+    const avgRelationsPerEntity =
+      entityCount > 0 ? (relationCount * 2) / entityCount : 0;
 
     // Entity type distribution
     const entityTypeDistribution: Record<string, number> = {};
-    entities.forEach(e => {
-      entityTypeDistribution[e.type] = (entityTypeDistribution[e.type] || 0) + 1;
+    entities.forEach((e) => {
+      entityTypeDistribution[e.type] =
+        (entityTypeDistribution[e.type] || 0) + 1;
     });
 
     // Relation type distribution
     const relationTypeDistribution: Record<string, number> = {};
-    relations.forEach(r => {
-      relationTypeDistribution[r.type] = (relationTypeDistribution[r.type] || 0) + 1;
+    relations.forEach((r) => {
+      relationTypeDistribution[r.type] =
+        (relationTypeDistribution[r.type] || 0) + 1;
     });
 
     // Strongest connections
     const strongestConnections = relations
       .sort((a, b) => b.weight - a.weight)
       .slice(0, 10)
-      .map(r => ({
+      .map((r) => ({
         from: this.entities.get(r.fromId)?.name || r.fromId,
         to: this.entities.get(r.toId)?.name || r.toId,
-        weight: r.weight
+        weight: r.weight,
       }));
 
     // Calculate centrality (simplified degree centrality)
     const centralityMap = new Map<string, number>();
-    entities.forEach(entity => {
-      const connectionCount = (this.entityRelations.get(entity.id) || new Set()).size;
+    entities.forEach((entity) => {
+      const connectionCount = (this.entityRelations.get(entity.id) || new Set())
+        .size;
       centralityMap.set(entity.id, connectionCount);
     });
 
     const centralEntities = entities
-      .map(entity => ({
+      .map((entity) => ({
         entity,
-        centrality: centralityMap.get(entity.id) || 0
+        centrality: centralityMap.get(entity.id) || 0,
       }))
       .sort((a, b) => b.centrality - a.centrality)
       .slice(0, 10);
@@ -462,7 +522,7 @@ export class KnowledgeGraph {
       entityTypeDistribution,
       relationTypeDistribution,
       clustersDetected: this.detectClusters(entities, relations),
-      centralEntities
+      centralEntities,
     };
   }
 
@@ -518,12 +578,19 @@ export class KnowledgeGraph {
   /**
    * Export graph data
    */
-  exportGraph(tenant_id: string, agent_id?: string): { entities: GraphEntity[]; relations: GraphRelation[] } {
-    const entities = Array.from(this.entities.values())
-      .filter(e => e.tenant_id === tenant_id && (!agent_id || e.agent_id === agent_id));
+  exportGraph(
+    tenant_id: string,
+    agent_id?: string,
+  ): { entities: GraphEntity[]; relations: GraphRelation[] } {
+    const entities = Array.from(this.entities.values()).filter(
+      (e) =>
+        e.tenant_id === tenant_id && (!agent_id || e.agent_id === agent_id),
+    );
 
-    const relations = Array.from(this.relations.values())
-      .filter(r => r.tenant_id === tenant_id && (!agent_id || r.agent_id === agent_id));
+    const relations = Array.from(this.relations.values()).filter(
+      (r) =>
+        r.tenant_id === tenant_id && (!agent_id || r.agent_id === agent_id),
+    );
 
     return { entities, relations };
   }
@@ -531,7 +598,10 @@ export class KnowledgeGraph {
   /**
    * Import graph data
    */
-  async importGraph(data: { entities: GraphEntity[]; relations: GraphRelation[] }): Promise<void> {
+  async importGraph(data: {
+    entities: GraphEntity[];
+    relations: GraphRelation[];
+  }): Promise<void> {
     // Import entities
     for (const entity of data.entities) {
       this.entities.set(entity.id, entity);
@@ -562,13 +632,22 @@ export class KnowledgeGraph {
 
   // Private helper methods
 
-  private findEntityByNameAndType(name: string, type: string, tenant_id: string): GraphEntity | undefined {
+  private findEntityByNameAndType(
+    name: string,
+    type: string,
+    tenant_id: string,
+  ): GraphEntity | undefined {
     return Array.from(this.entities.values()).find(
-      e => e.name === name && e.type === type && e.tenant_id === tenant_id
+      (e) => e.name === name && e.type === type && e.tenant_id === tenant_id,
     );
   }
 
-  private findExistingRelation(fromId: string, toId: string, type: string, tenant_id: string): string | undefined {
+  private findExistingRelation(
+    fromId: string,
+    toId: string,
+    type: string,
+    tenant_id: string,
+  ): string | undefined {
     const relationIds = this.entityRelations.get(fromId) || new Set();
     for (const relationId of relationIds) {
       const relation = this.relations.get(relationId)!;
@@ -584,7 +663,10 @@ export class KnowledgeGraph {
     return undefined;
   }
 
-  private detectClusters(entities: GraphEntity[], _relations: GraphRelation[]): number {
+  private detectClusters(
+    entities: GraphEntity[],
+    _relations: GraphRelation[],
+  ): number {
     // Simplified clustering - count connected components
     const visited = new Set<string>();
     let clusters = 0;
@@ -605,7 +687,8 @@ export class KnowledgeGraph {
 
     for (const relationId of relationIds) {
       const relation = this.relations.get(relationId)!;
-      const neighborId = relation.fromId === entityId ? relation.toId : relation.fromId;
+      const neighborId =
+        relation.fromId === entityId ? relation.toId : relation.fromId;
 
       if (!visited.has(neighborId)) {
         this.dfsCluster(neighborId, visited);

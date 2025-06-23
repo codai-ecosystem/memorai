@@ -9,7 +9,9 @@ router.get('/', asyncHandler(async (req: Request, res: Response) => {
     const { memoryEngine } = req as any;
     if (!memoryEngine) {
         throw createApiError('Memory engine not available', 503, 'MEMORY_ENGINE_UNAVAILABLE');
-    }    try {
+    }
+    
+    try {
         const tierInfo = memoryEngine.getTierInfo();
           // Get standardized features based on tier capabilities
         const features = {

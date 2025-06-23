@@ -2,8 +2,12 @@
  * @fileoverview Type definitions for Memorai MCP Server
  */
 
-import type { FastifyRequest, FastifyReply } from 'fastify';
-import type { MemoryMetadata, MemoryQuery, ContextResponse } from '@codai/memorai-core';
+import type { FastifyRequest, FastifyReply } from "fastify";
+import type {
+  MemoryMetadata,
+  MemoryQuery,
+  ContextResponse,
+} from "@codai/memorai-core";
 
 // Server Configuration
 export interface ServerOptions {
@@ -29,8 +33,8 @@ export interface JWTOptions {
 }
 
 export interface LoggingOptions {
-  level: 'error' | 'warn' | 'info' | 'debug';
-  format: 'json' | 'simple';
+  level: "error" | "warn" | "info" | "debug";
+  format: "json" | "simple";
   file?: string;
 }
 
@@ -39,14 +43,14 @@ export interface MCPRequest {
   method: string;
   params?: Record<string, unknown>;
   id?: string | number;
-  jsonrpc: '2.0';
+  jsonrpc: "2.0";
 }
 
 export interface MCPResponse {
   result?: any;
   error?: MCPError;
   id?: string | number;
-  jsonrpc: '2.0';
+  jsonrpc: "2.0";
 }
 
 export interface MCPError {
@@ -68,7 +72,7 @@ export interface AuthContext {
 export interface TenantContext {
   tenantId: string;
   name: string;
-  plan: 'free' | 'pro' | 'enterprise';
+  plan: "free" | "pro" | "enterprise";
   limits: TenantLimits;
   settings: TenantSettings;
 }
@@ -89,7 +93,7 @@ export interface TenantSettings {
 
 // Memory Operations
 export interface MemoryRequest {
-  operation: 'remember' | 'recall' | 'forget' | 'context';
+  operation: "remember" | "recall" | "forget" | "context";
   data?: any;
   query?: MemoryQuery;
   memoryId?: string;
@@ -114,7 +118,7 @@ export interface ResponseMetadata {
 
 // Health & Monitoring
 export interface HealthStatus {
-  status: 'healthy' | 'degraded' | 'unhealthy';
+  status: "healthy" | "degraded" | "unhealthy";
   version: string;
   uptime: number;
   checks: HealthCheck[];
@@ -123,7 +127,7 @@ export interface HealthStatus {
 
 export interface HealthCheck {
   name: string;
-  status: 'pass' | 'fail' | 'warn';
+  status: "pass" | "fail" | "warn";
   message?: string;
   duration?: number;
 }
@@ -144,7 +148,7 @@ export interface AuthenticatedRequest extends FastifyRequest {
 
 export type MCPRouteHandler = (
   request: AuthenticatedRequest,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) => Promise<MCPResponse>;
 
 // Error Types
@@ -154,7 +158,7 @@ export enum MCPErrorCode {
   METHOD_NOT_FOUND = -32601,
   INVALID_PARAMS = -32602,
   INTERNAL_ERROR = -32603,
-  
+
   // Custom errors
   AUTHENTICATION_REQUIRED = -32000,
   AUTHORIZATION_FAILED = -32001,
@@ -162,5 +166,5 @@ export enum MCPErrorCode {
   TENANT_NOT_FOUND = -32003,
   MEMORY_NOT_FOUND = -32004,
   INVALID_QUERY = -32005,
-  STORAGE_ERROR = -32006
+  STORAGE_ERROR = -32006,
 }
