@@ -2,6 +2,9 @@ import React from "react";
 import "@testing-library/jest-dom";
 import { vi } from "vitest";
 
+// Set NODE_ENV for tests using vi.stubEnv
+vi.stubEnv('NODE_ENV', 'test');
+
 // Mock Next.js router
 vi.mock("next/navigation", () => ({
   useRouter: () => ({

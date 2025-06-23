@@ -10,6 +10,9 @@ export default defineConfig({
     setupFiles: ["./src/test/setup.ts"],
     css: true,
     exclude: ["tests/e2e/**", "**/node_modules/**"],
+    env: {
+      NODE_ENV: 'test'
+    },
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "html"],

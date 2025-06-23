@@ -54,7 +54,7 @@ describe("Memory Routes", () => {
       expect(response.body.message).toBe("Memory stored successfully");
       expect(mockMemoryEngine.remember).toHaveBeenCalledWith(
         testMemory.content,
-        "default",
+        "default-tenant",
         testMemory.agentId,
         testMemory.metadata,
       );
@@ -148,7 +148,7 @@ describe("Memory Routes", () => {
       expect(response.body.query).toBe(recallData.query);
       expect(mockMemoryEngine.recall).toHaveBeenCalledWith(
         recallData.query,
-        "default",
+        "default-tenant",
         recallData.agentId,
         { limit: recallData.limit },
       );
@@ -166,7 +166,7 @@ describe("Memory Routes", () => {
 
       expect(mockMemoryEngine.recall).toHaveBeenCalledWith(
         recallData.query,
-        "default",
+        "default-tenant",
         recallData.agentId,
         { limit: 10 }, // default limit
       );
@@ -230,7 +230,7 @@ describe("Memory Routes", () => {
       expect(response.body.success).toBe(true);
       expect(response.body.context).toBeDefined();
       expect(mockMemoryEngine.getContext).toHaveBeenCalledWith({
-        tenant_id: "default",
+        tenant_id: "default-tenant",
         agent_id: contextData.agentId,
         max_memories: contextData.contextSize,
       });
@@ -246,7 +246,7 @@ describe("Memory Routes", () => {
         .expect(200);
 
       expect(mockMemoryEngine.getContext).toHaveBeenCalledWith({
-        tenant_id: "default",
+        tenant_id: "default-tenant",
         agent_id: contextData.agentId,
         max_memories: 10, // default context size
       });
@@ -354,9 +354,9 @@ describe("Memory Routes", () => {
         .expect(200);
       expect(mockMemoryEngine.recall).toHaveBeenCalledWith(
         "test query",
-        "default",
+        "default-tenant",
         agentId,
-        { limit: expect.any(Number) },
+        { limit: 20 },
       );
     });
   });
