@@ -9,7 +9,7 @@ import { MemoryConfigFactory } from "../src/config/MemoryConfig.js";
 describe("MemoryEngine", () => {
   const testConfig = {
     embedding: {
-      provider: "openai" as const,
+      provider: "azure" as const, // Changed to azure for testing
       model: "text-embedding-3-small",
       api_key: "test-api-key",
     },

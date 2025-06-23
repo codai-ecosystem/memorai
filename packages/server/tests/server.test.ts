@@ -24,7 +24,7 @@ describe("MemoraiServer", () => {
           db: 0,
         },
         embedding: {
-          provider: "openai",
+          provider: "azure", // Changed to azure for testing
           model: "text-embedding-3-small",
           api_key: "test-api-key",
         },

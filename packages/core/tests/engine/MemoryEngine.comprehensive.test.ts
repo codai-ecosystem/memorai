@@ -28,7 +28,7 @@ describe("MemoryEngine - Comprehensive Tests", () => {
 
   const testConfig = {
     embedding: {
-      provider: "openai" as const,
+      provider: "azure" as const, // Changed to azure for testing
       model: "text-embedding-3-small",
       api_key: "test-api-key",
     },

@@ -22,14 +22,27 @@ export class OpenAIEmbeddingProvider implements EmbeddingProvider {
 
   constructor(config: MemoryConfig["embedding"]) {
     if (!config.api_key) {
-      throw new EmbeddingError("OpenAI API key is required");
+      throw new EmbeddingError("Azure OpenAI API key is required");
     }
 
-    this.client = new OpenAI({
+    // Configure for Azure OpenAI or standard OpenAI
+    const clientConfig: ConstructorParameters<typeof OpenAI>[0] = {
       apiKey: config.api_key,
-      baseURL: config.endpoint,
-    });
+    };
 
+    // Azure OpenAI configuration
+    if (config.provider === "azure" || config.endpoint?.includes("azure.com")) {
+      clientConfig.baseURL = config.endpoint;
+      clientConfig.defaultQuery = { "api-version": config.azure_api_version || "2024-02-15-preview" };
+      clientConfig.defaultHeaders = {
+        "api-key": config.api_key,
+      };
+    } else {
+      // Standard OpenAI configuration
+      clientConfig.baseURL = config.endpoint;
+    }
+
+    this.client = new OpenAI(clientConfig);
     this.model = config.model;
     this.dimension = this.getModelDimension(config.model);
   }
@@ -101,6 +114,8 @@ export class OpenAIEmbeddingProvider implements EmbeddingProvider {
       "text-embedding-3-small": 1536,
       "text-embedding-3-large": 3072,
       "text-embedding-ada-002": 1536,
+      // Azure OpenAI deployment names
+      "memorai-model-r": 1536, // Azure deployment for text-embedding-ada-002
     };
 
     return dimensions[model] ?? 1536;
@@ -167,15 +182,14 @@ export class EmbeddingService {
 
   constructor(config: MemoryConfig["embedding"]) {
     switch (config.provider) {
-      case "openai":
-        this.provider = new OpenAIEmbeddingProvider(config);
-        break;
       case "azure":
         this.provider = new OpenAIEmbeddingProvider({
           ...config,
-          endpoint:
-            config.endpoint ?? "https://api.cognitive.microsoft.com/openai",
+          endpoint: config.azure_endpoint || config.endpoint,
         });
+        break;
+      case "openai":
+        this.provider = new OpenAIEmbeddingProvider(config);
         break;
       case "local":
         this.provider = new LocalEmbeddingProvider();

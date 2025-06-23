@@ -24,8 +24,11 @@ async function startServer(): Promise<void> {
         dimension: 1536,
       },
       embedding: {
-        provider: "openai" as const,
-        api_key: process.env.OPENAI_API_KEY || "",
+        provider: "azure" as const, // Changed to azure
+        api_key: process.env.AZURE_OPENAI_API_KEY || "",
+        azure_endpoint: process.env.AZURE_OPENAI_ENDPOINT,
+        azure_deployment: process.env.AZURE_OPENAI_DEPLOYMENT_NAME,
+        azure_api_version: process.env.AZURE_OPENAI_API_VERSION,
         model: "text-embedding-3-small",
       },
       redis: {

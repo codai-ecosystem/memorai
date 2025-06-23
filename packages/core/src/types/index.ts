@@ -106,12 +106,12 @@ export const MemoryConfigSchema = z.object({
     password: z.string().optional(),
     db: z.number().int().min(0).default(0),
   }),
-  // OpenAI/Azure configuration for language model
+  // OpenAI/Azure configuration for language model - Default to Azure
   openai: z
     .object({
-      provider: z.enum(["openai", "azure"]).default("openai"),
+      provider: z.enum(["openai", "azure"]).default("azure"), // Changed default to azure
       api_key: z.string().optional(),
-      model: z.string().default("gpt-4"),
+      model: z.string().default("memorai-model-r"), // Azure deployment name
 
       // Standard OpenAI configuration
       base_url: z.string().url().optional(),
@@ -123,8 +123,8 @@ export const MemoryConfigSchema = z.object({
     })
     .optional(),
   embedding: z.object({
-    provider: z.enum(["openai", "azure", "local"]).default("openai"),
-    model: z.string().default("text-embedding-3-small"),
+    provider: z.enum(["openai", "azure", "local"]).default("azure"), // Changed default to azure
+    model: z.string().default("memorai-model-r"), // Azure deployment name
     api_key: z.string().optional(),
 
     // Standard OpenAI configuration

@@ -43,9 +43,11 @@ describe("Advanced Features Integration", () => {
         api_key: "test-key",
       },
       embedding: {
-        provider: "openai",
-        model: "text-embedding-3-small",
-        api_key: "test-openai-key",
+        provider: "azure", // Changed to azure for testing
+        model: "memorai-model-r", // Azure deployment name
+        api_key: "test-azure-key",
+        azure_endpoint: "https://test.openai.azure.com",
+        azure_deployment: "memorai-model-r",
       },
     });
 

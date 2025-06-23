@@ -23,16 +23,16 @@ import {
 import { PerformanceMonitor } from "@codai/memorai-core";
 import { infrastructureManager } from "./infrastructure.js";
 
-// Enterprise-grade configuration for real persistence - use BASIC tier for file storage consistency
+// Enterprise-grade configuration for real persistence - use ADVANCED tier with Azure OpenAI
 const memoryConfig: UnifiedMemoryConfig = {
   enableFallback: true,
-  autoDetect: false, // Force basic tier for unified storage
-  preferredTier: MemoryTierLevel.BASIC, // Use BASIC tier for file-based unified storage
+  autoDetect: false, // Force advanced tier for optimal performance
+  preferredTier: MemoryTierLevel.ADVANCED, // Use ADVANCED tier for semantic search and high performance
 
   // Use shared data directory for unified storage across API and MCP servers
   dataPath: process.env.MEMORAI_DATA_PATH || "e:\\GitHub\\memorai\\data\\memory",
 
-  // Azure OpenAI configuration (from environment) - fallback only
+  // Azure OpenAI configuration (primary) - from workspace-ai environment
   azureOpenAI: {
     endpoint: process.env.AZURE_OPENAI_ENDPOINT,
     apiKey: process.env.AZURE_OPENAI_API_KEY,
@@ -40,9 +40,9 @@ const memoryConfig: UnifiedMemoryConfig = {
     apiVersion: process.env.AZURE_OPENAI_API_VERSION || "2024-02-15-preview",
   },
 
-  // OpenAI fallback configuration
-  apiKey: process.env.OPENAI_API_KEY,
-  model: process.env.OPENAI_MODEL || "text-embedding-ada-002",
+  // Remove OpenAI fallback - use Azure OpenAI exclusively
+  // apiKey: process.env.OPENAI_API_KEY,
+  // model: process.env.OPENAI_MODEL || "text-embedding-ada-002",
 
   // Local embedding fallback for offline capability
   localEmbedding: {
