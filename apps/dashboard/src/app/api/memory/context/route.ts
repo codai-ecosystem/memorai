@@ -22,7 +22,7 @@ export async function GET() {
             }
           },
           {
-            id: "memory-2", 
+            id: "memory-2",
             content: "Another test memory for conversation context",
             agentId: "conversation-agent",
             timestamp: "2025-06-23T12:30:00.000Z",
@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
     // In test environment, return mock data based on request
     if (process.env.NODE_ENV === 'test') {
       const { query = "", agentId = "test-agent", tags = [], limit = 10 } = body;
-      
+
       return NextResponse.json({
         success: true,
         data: [

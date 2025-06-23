@@ -162,7 +162,7 @@ describe("MemoraiServer", () => {
       server = new MemoraiServer(mockMemoryEngine);
     });
     it("should handle runtime errors without crashing", () => {
-      const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      const errorSpy = vi.spyOn(console, "error").mockImplementation(() => { });
 
       // Should not throw during construction even with problematic engine
       const problematicEngine = {
