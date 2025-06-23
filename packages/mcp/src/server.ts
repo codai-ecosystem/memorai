@@ -5,8 +5,8 @@
  * Uses UnifiedMemoryEngine and PerformanceMonitor for production-ready performance
  */
 
-// Force in-memory mode to ensure no external dependencies are required
-process.env.MEMORAI_USE_INMEMORY = 'true';
+// Remove forced in-memory mode - use proper configuration from environment
+// process.env.MEMORAI_USE_INMEMORY = 'true'; // REMOVED - Use real persistence
 
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
@@ -21,38 +21,33 @@ import {
   MemoryTierLevel,
 } from "@codai/memorai-core";
 import { PerformanceMonitor } from "@codai/memorai-core";
+import { infrastructureManager } from "./infrastructure.js";
 
-// Enterprise-grade configuration
+// Enterprise-grade configuration for real persistence with Azure OpenAI
 const memoryConfig: UnifiedMemoryConfig = {
   enableFallback: true,
   autoDetect: true,
-  preferredTier: MemoryTierLevel.BASIC, // Start with basic tier to avoid external dependencies
+  preferredTier: MemoryTierLevel.SMART, // Use SMART tier for Azure OpenAI with proper embeddings
 
-  // Azure OpenAI configuration (if available)
+  // Azure OpenAI configuration (from environment)
   azureOpenAI: {
     endpoint: process.env.AZURE_OPENAI_ENDPOINT,
     apiKey: process.env.AZURE_OPENAI_API_KEY,
-    deploymentName:
-      process.env.AZURE_OPENAI_DEPLOYMENT_NAME || "text-embedding-ada-002",
-    apiVersion: process.env.AZURE_OPENAI_API_VERSION || "2023-05-15",
+    deploymentName: process.env.AZURE_OPENAI_DEPLOYMENT_NAME || "memorai-model-r",
+    apiVersion: process.env.AZURE_OPENAI_API_VERSION || "2024-02-15-preview",
   },
 
-  // OpenAI configuration (if available)
+  // OpenAI fallback configuration
   apiKey: process.env.OPENAI_API_KEY,
   model: process.env.OPENAI_MODEL || "text-embedding-ada-002",
 
-  // Local embedding fallback
+  // Local embedding fallback for offline capability
   localEmbedding: {
     model: "all-MiniLM-L6-v2",
     cachePath: "./embeddings-cache",
   },
 
-  // Mock configuration for testing - always works
-  mock: {
-    simulateDelay: false,
-    delayMs: 0,
-    failureRate: 0,
-  },
+  // Remove mock configuration - use real persistence only
 };
 
 class EnterpriseMemoryEngine {
@@ -517,14 +512,28 @@ async function main() {
   try {
     // Disable version compatibility check warnings
     process.env.MCP_DISABLE_VERSION_CHECK = 'true';
-    
+
+    // Start infrastructure services first
+    console.log('🚀 Memorai MCP Server starting with automated infrastructure...');
+    const infrastructureReady = await infrastructureManager.startInfrastructure();
+
+    if (!infrastructureReady) {
+      console.error('❌ Failed to start required infrastructure services');
+      console.error('💡 Please ensure Docker is installed and running');
+      process.exit(1);
+    }
+
+    console.log('🧠 Initializing memory engine...');
     await enterpriseEngine.initialize();
-    
+
     const transport = new StdioServerTransport();
-    
+
     // Connect server with error handling
+    console.log('🎯 Starting MCP server...');
     await server.connect(transport);
-    
+
+    console.log('✅ Memorai MCP Server ready with full infrastructure!');
+
   } catch (error) {
     console.error('[ERROR] Server startup failed:', error);
     process.exit(1);

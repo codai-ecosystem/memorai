@@ -1,6 +1,6 @@
 {
   "name": "@codai/memorai-mcp",
-  "version": "2.0.10",
+  "version": "2.0.17",
   "description": "Revolutionary Multi-Tier Memory MCP Server - Works with or without OpenAI",
   "type": "module",
   "main": "./dist/index.js",
@@ -22,7 +22,8 @@
     "dist",
     "README.md",
     "mcp.config.json",
-    ".env.example"
+    ".env.example",
+    "docker-compose.dev.yml"
   ],
   "scripts": {
     "build": "tsc",
