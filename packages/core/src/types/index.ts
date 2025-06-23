@@ -188,7 +188,7 @@ export class ContextError extends MemoryError {
 // Advanced Memory Relationship Types
 export const MemoryRelationshipTypeSchema = z.enum([
   "parent",
-  "child", 
+  "child",
   "sibling",
   "derived",
   "references",
@@ -221,19 +221,19 @@ export const EnhancedMemoryMetadataSchema = MemoryMetadataSchema.extend({
   parentId: z.string().optional(),
   childIds: z.array(z.string()).default([]),
   relationships: z.array(MemoryRelationshipSchema).default([]),
-  
+
   // Version tracking
   version: z.number().int().min(1).default(1),
   previousVersionId: z.string().optional(),
-  
+
   // Enhanced metadata
   sourceType: z.enum(["user", "system", "agent", "api", "integration"]).default("user"),
   sourceId: z.string().optional(),
-  
+
   // Smart categorization
   autoTags: z.array(z.string()).default([]),
   suggestedRelationships: z.array(z.string()).default([]),
-  
+
   // Usage patterns
   accessPattern: z.object({
     frequency: z.number().default(0),

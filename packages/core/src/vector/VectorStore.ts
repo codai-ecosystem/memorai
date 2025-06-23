@@ -416,28 +416,28 @@ export class InMemoryVectorStore implements VectorStore {
 
   public async search(vector: number[], query: MemoryQuery): Promise<SearchResult[]> {
     const results: SearchResult[] = [];
-    
+
     for (const [id, point] of this.vectors.entries()) {
       // Simple cosine similarity calculation
       const score = this.cosineSimilarity(vector, point.vector);
-      
+
       // Apply tenant filtering if specified
       if (query.tenant_id && point.payload.tenant_id !== query.tenant_id) {
         continue;
       }
-      
+
       // Apply type filtering if specified
       if (query.type && point.payload.type !== query.type) {
         continue;
       }
-      
+
       results.push({
         id,
         score,
         payload: point.payload
       });
     }
-    
+
     // Sort by score (highest first) and limit results
     return results
       .sort((a, b) => b.score - a.score)

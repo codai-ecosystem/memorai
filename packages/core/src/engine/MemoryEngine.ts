@@ -42,13 +42,13 @@ export class MemoryEngine {
     this.embedding = new EmbeddingService(this.config.getEmbedding());
 
     const vectorConfig = this.config.getVectorDB();
-    
+
     // Check if we should use in-memory store (for BASIC tier or when external deps not available)
-    const useInMemory = process.env.MEMORAI_USE_INMEMORY === 'true' || 
-                       !vectorConfig.url || 
-                       vectorConfig.url.includes('localhost') ||
-                       vectorConfig.url.includes('127.0.0.1');
-    
+    const useInMemory = process.env.MEMORAI_USE_INMEMORY === 'true' ||
+      !vectorConfig.url ||
+      vectorConfig.url.includes('localhost') ||
+      vectorConfig.url.includes('127.0.0.1');
+
     if (useInMemory) {
       // Use simple in-memory vector store - no external dependencies
       const inMemoryStore = new InMemoryVectorStore();
