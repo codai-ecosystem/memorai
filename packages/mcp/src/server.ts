@@ -15,6 +15,7 @@ import {
 import {
   UnifiedMemoryEngine,
   type UnifiedMemoryConfig,
+  MemoryTierLevel,
 } from "@codai/memorai-core";
 import { PerformanceMonitor } from "@codai/memorai-core";
 
@@ -22,7 +23,7 @@ import { PerformanceMonitor } from "@codai/memorai-core";
 const memoryConfig: UnifiedMemoryConfig = {
   enableFallback: true,
   autoDetect: true,
-  preferredTier: undefined, // Auto-detect best tier
+  preferredTier: MemoryTierLevel.BASIC, // Start with basic tier to avoid external dependencies
 
   // Azure OpenAI configuration (if available)
   azureOpenAI: {
@@ -43,7 +44,7 @@ const memoryConfig: UnifiedMemoryConfig = {
     cachePath: "./embeddings-cache",
   },
 
-  // Mock configuration for testing
+  // Mock configuration for testing - always works
   mock: {
     simulateDelay: false,
     delayMs: 0,
