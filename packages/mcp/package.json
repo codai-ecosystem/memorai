@@ -1,7 +1,7 @@
 {
   "name": "@codai/memorai-mcp",
-  "version": "2.0.20",
-  "description": "Revolutionary Multi-Tier Memory MCP Server - Works with or without OpenAI",
+  "version": "2.0.21",
+  "description": "Revolutionary Multi-Tier Memory MCP Server - Azure OpenAI Exclusive",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
