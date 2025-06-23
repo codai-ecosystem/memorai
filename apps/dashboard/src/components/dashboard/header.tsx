@@ -18,11 +18,11 @@ export function DashboardHeader({ onSearch, className }: DashboardHeaderProps) {
     onSearch?.(searchQuery);
   };
 
-  const handleReset = () : void => {
+  const handleReset = (): void => {
     setSearchQuery("");
   };
 
-  const toggleTheme = () : void => {
+  const toggleTheme = (): void => {
     const themes: Array<"light" | "dark" | "system"> = [
       "light",
       "dark",

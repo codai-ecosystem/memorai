@@ -60,7 +60,7 @@ export function MemorySearch({ className }: MemorySearchProps) {
     }
   };
 
-  const clearAllFilters = () : void => {
+  const clearAllFilters = (): void => {
     setFilters({
       type: "",
       agentId: "",
@@ -124,7 +124,7 @@ export function MemorySearch({ className }: MemorySearchProps) {
               "flex items-center space-x-2 px-4 py-2 border border-gray-300 dark:border-gray-600",
               "rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors",
               showFilters &&
-                "bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-600",
+              "bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-600",
             )}
           >
             <Filter className="h-4 w-4" />
@@ -143,17 +143,17 @@ export function MemorySearch({ className }: MemorySearchProps) {
           {(query ||
             (filters.type ?? filters.agentId) ||
             filters.tags.length > 0) && (
-            <button
-              onClick={clearAllFilters}
-              className={cn(
-                "flex items-center space-x-2 px-4 py-2 text-gray-600 dark:text-gray-400",
-                "hover:text-gray-800 dark:hover:text-gray-200 transition-colors",
-              )}
-            >
-              <X className="h-4 w-4" />
-              <span>Clear</span>
-            </button>
-          )}
+              <button
+                onClick={clearAllFilters}
+                className={cn(
+                  "flex items-center space-x-2 px-4 py-2 text-gray-600 dark:text-gray-400",
+                  "hover:text-gray-800 dark:hover:text-gray-200 transition-colors",
+                )}
+              >
+                <X className="h-4 w-4" />
+                <span>Clear</span>
+              </button>
+            )}
         </div>
 
         {/* Sort Controls */}

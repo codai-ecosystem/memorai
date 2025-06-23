@@ -116,7 +116,7 @@ export function MemoryResults({
 
   const handleBulkDelete = async () => {
     if (selectedMemories.size === 0) {
-        return;
+      return;
     }
 
     try {
@@ -142,7 +142,7 @@ export function MemoryResults({
     });
   };
 
-  const selectAllMemories = () : void => {
+  const selectAllMemories = (): void => {
     if (selectedMemories.size === filteredAndSortedMemories.length) {
       setSelectedMemories(new Set());
     } else {
@@ -322,7 +322,7 @@ export function MemoryResults({
               className={cn(
                 "border rounded-lg p-4 transition-all hover:shadow-md",
                 selectedMemories.has(memory.id) &&
-                  "ring-2 ring-blue-200 bg-blue-50",
+                "ring-2 ring-blue-200 bg-blue-50",
               )}
             >
               <div className="flex items-start gap-3">

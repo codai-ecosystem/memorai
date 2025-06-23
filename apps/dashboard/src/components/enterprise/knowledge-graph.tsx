@@ -50,7 +50,7 @@ export function KnowledgeGraph() {
       const response = await fetch("/api/mcp/read-graph");
       if (!response.ok) {
         throw new Error("Failed to fetch graph data");
-    }
+      }
       const data = await response.json();
       setGraphData(data);
     } catch (_err) {
@@ -138,11 +138,10 @@ export function KnowledgeGraph() {
                 <motion.div
                   key={index}
                   whileHover={{ scale: 1.02 }}
-                  className={`p-3 rounded-lg border cursor-pointer transition-colors ${
-                    selectedEntity?.name === entity.name
+                  className={`p-3 rounded-lg border cursor-pointer transition-colors ${selectedEntity?.name === entity.name
                       ? "border-primary bg-primary/5"
                       : "border-border hover:border-primary/50"
-                  }`}
+                    }`}
                   onClick={() => setSelectedEntity(entity)}
                 >
                   <div className="flex items-center justify-between mb-2">

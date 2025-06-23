@@ -17,8 +17,10 @@ interface PerformanceResult {
 }
 
 class PerformanceTestSuite {
-    private results: PerformanceResult[] = [];
-    private mcpProcess: any;
+    constructor() {
+        this.results = [];
+        this.mcpProcess = null;
+    }
 
     async runPerformanceTests(): Promise<void> {
         console.log('🚀 Starting Ultra-Fast MCP Server Performance Tests');

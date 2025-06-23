@@ -173,7 +173,7 @@ export default function PerformanceMonitoringDashboard() {
 
   const formatBytes = (bytes: number) => {
     if (bytes === 0) {
-        return "0 Bytes";
+      return "0 Bytes";
     }
     const k = 1024;
     const sizes = ["Bytes", "KB", "MB", "GB", "TB"];

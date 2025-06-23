@@ -108,7 +108,7 @@ export function EnterpriseHeader({
     }
   };
 
-  const toggleTheme = () : void => {
+  const toggleTheme = (): void => {
     const themes: Array<"light" | "dark" | "system"> = [
       "light",
       "dark",
@@ -265,7 +265,7 @@ export function EnterpriseHeader({
                 className={cn(
                   "w-80 pl-10 pr-12 h-10 rounded-lg transition-all duration-200",
                   isSearchFocused &&
-                    "ring-2 ring-blue-500/20 border-blue-300 dark:border-blue-700",
+                  "ring-2 ring-blue-500/20 border-blue-300 dark:border-blue-700",
                 )}
                 data-testid="header-search-input"
               />

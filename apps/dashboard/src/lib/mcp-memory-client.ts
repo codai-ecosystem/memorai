@@ -9,13 +9,13 @@ export interface Memory {
   content: string;
   timestamp: string;
   type:
-    | "conversation"
-    | "document"
-    | "note"
-    | "thread"
-    | "task"
-    | "personality"
-    | "emotion";
+  | "conversation"
+  | "document"
+  | "note"
+  | "thread"
+  | "task"
+  | "personality"
+  | "emotion";
   metadata: {
     tags: string[];
     similarity?: number;

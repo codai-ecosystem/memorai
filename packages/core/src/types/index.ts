@@ -184,3 +184,87 @@ export class ContextError extends MemoryError {
     this.name = "ContextError";
   }
 }
+
+// Advanced Memory Relationship Types
+export const MemoryRelationshipTypeSchema = z.enum([
+  "parent",
+  "child", 
+  "sibling",
+  "derived",
+  "references",
+  "conflicts",
+  "supersedes",
+  "complements",
+  "triggers",
+  "context"
+]);
+export type MemoryRelationshipType = z.infer<typeof MemoryRelationshipTypeSchema>;
+
+export const MemoryRelationshipSchema = z.object({
+  id: z.string(),
+  sourceMemoryId: z.string(),
+  targetMemoryId: z.string(),
+  relationshipType: MemoryRelationshipTypeSchema,
+  strength: z.number().min(0).max(1).default(1.0),
+  metadata: z.record(z.unknown()).optional(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+  tenantId: z.string(),
+  isActive: z.boolean().default(true),
+});
+
+export type MemoryRelationship = z.infer<typeof MemoryRelationshipSchema>;
+
+// Enhanced Memory with Relationships
+export const EnhancedMemoryMetadataSchema = MemoryMetadataSchema.extend({
+  // Hierarchical relationships
+  parentId: z.string().optional(),
+  childIds: z.array(z.string()).default([]),
+  relationships: z.array(MemoryRelationshipSchema).default([]),
+  
+  // Version tracking
+  version: z.number().int().min(1).default(1),
+  previousVersionId: z.string().optional(),
+  
+  // Enhanced metadata
+  sourceType: z.enum(["user", "system", "agent", "api", "integration"]).default("user"),
+  sourceId: z.string().optional(),
+  
+  // Smart categorization
+  autoTags: z.array(z.string()).default([]),
+  suggestedRelationships: z.array(z.string()).default([]),
+  
+  // Usage patterns
+  accessPattern: z.object({
+    frequency: z.number().default(0),
+    recency: z.number().default(0),
+    contextRelevance: z.number().default(0),
+  }).optional(),
+});
+
+export type EnhancedMemoryMetadata = z.infer<typeof EnhancedMemoryMetadataSchema>;
+
+// Memory Graph Operations
+export const MemoryGraphQuerySchema = z.object({
+  startMemoryId: z.string(),
+  relationshipTypes: z.array(MemoryRelationshipTypeSchema).optional(),
+  maxDepth: z.number().int().min(1).max(10).default(3),
+  includeInactive: z.boolean().default(false).optional(),
+  tenantId: z.string(),
+});
+
+export type MemoryGraphQuery = z.infer<typeof MemoryGraphQuerySchema>;
+
+export const MemoryGraphResultSchema = z.object({
+  nodes: z.array(EnhancedMemoryMetadataSchema),
+  edges: z.array(MemoryRelationshipSchema),
+  paths: z.array(z.array(z.string())),
+  statistics: z.object({
+    totalNodes: z.number(),
+    totalEdges: z.number(),
+    maxDepth: z.number(),
+    averageConnectivity: z.number(),
+  }),
+});
+
+export type MemoryGraphResult = z.infer<typeof MemoryGraphResultSchema>;

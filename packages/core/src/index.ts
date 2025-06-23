@@ -37,3 +37,7 @@ export {
   PerformanceOptimizer,
   performanceOptimizer,
 } from "./performance/PerformanceOptimizer.js";
+
+// Advanced Relationship and Integration Features
+export { MemoryRelationshipManager } from "./relationships/MemoryRelationshipManager.js";
+export { GitHubIntegration, type GitHubIntegrationConfig } from "./integrations/GitHubIntegration.js";

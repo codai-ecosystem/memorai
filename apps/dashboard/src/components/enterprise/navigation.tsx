@@ -141,9 +141,9 @@ export function EnterpriseNavigation({
     setMounted(true);
   }, []);
 
-  const toggleTheme = () : void => {
+  const toggleTheme = (): void => {
     if (!mounted) {
-        return;
+      return;
     }
 
     if (theme === "light") {
@@ -157,7 +157,7 @@ export function EnterpriseNavigation({
 
   const getThemeIcon = () => {
     if (!mounted) {
-        return Monitor;
+      return Monitor;
     }
     switch (theme) {
       case "light":
@@ -239,7 +239,7 @@ export function EnterpriseNavigation({
                 className={cn(
                   "w-full justify-start gap-3 h-11 rounded-lg transition-all duration-200",
                   isActive &&
-                    "bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/50 dark:to-purple-950/50 border border-blue-200/50 dark:border-blue-800/50 shadow-sm",
+                  "bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/50 dark:to-purple-950/50 border border-blue-200/50 dark:border-blue-800/50 shadow-sm",
                   !collapsed && "px-3",
                   collapsed && "px-0 justify-center",
                 )}
@@ -280,11 +280,11 @@ export function EnterpriseNavigation({
                           className={cn(
                             "text-xs px-2 py-0.5",
                             item.badge === "Live" &&
-                              "bg-green-500 text-white animate-pulse",
+                            "bg-green-500 text-white animate-pulse",
                             item.badge === "Pro" &&
-                              "bg-gradient-to-r from-orange-400 to-pink-400 text-white",
+                            "bg-gradient-to-r from-orange-400 to-pink-400 text-white",
                             item.badge === "New" &&
-                              "bg-gradient-to-r from-blue-400 to-purple-400 text-white",
+                            "bg-gradient-to-r from-blue-400 to-purple-400 text-white",
                           )}
                         >
                           {item.badge}

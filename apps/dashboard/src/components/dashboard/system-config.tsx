@@ -59,7 +59,7 @@ export function SystemConfiguration({ className }: SystemConfigurationProps) {
     setLocalConfig((prev) => {
       if (!prev) {
         return prev;
-    }
+      }
 
       const updatedSection = { ...(prev[section] as any), [key]: value };
 
@@ -73,7 +73,7 @@ export function SystemConfiguration({ className }: SystemConfigurationProps) {
 
   const handleSave = async () => {
     if (!localConfig) {
-        return;
+      return;
     }
 
     setSaving(true);
@@ -104,15 +104,15 @@ export function SystemConfiguration({ className }: SystemConfigurationProps) {
     }
   };
 
-  const handleReset = () : void => {
+  const handleReset = (): void => {
     setLocalConfig(config);
     setHasChanges(false);
     toast.success("Configuration reset to saved values");
   };
 
-  const exportConfig = () : void => {
+  const exportConfig = (): void => {
     if (!localConfig) {
-        return;
+      return;
     }
     const configData = {
       ...localConfig,
@@ -140,15 +140,15 @@ export function SystemConfiguration({ className }: SystemConfigurationProps) {
     URL.revokeObjectURL(url);
   };
 
-  const importConfig = () : void => {
+  const importConfig = (): void => {
     const input = document.createElement("input");
     input.type = "file";
     input.accept = ".json";
-    input.onchange = (e) : void => {
+    input.onchange = (e): void => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (file) {
         const reader = new FileReader();
-        reader.onload = (e) : void => {
+        reader.onload = (e): void => {
           try {
             const importedConfig = JSON.parse(e.target?.result as string);
             setLocalConfig(importedConfig);
