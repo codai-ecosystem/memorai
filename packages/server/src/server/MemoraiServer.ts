@@ -26,7 +26,9 @@ export class MemoraiServer {
   private tenantMiddleware: TenantMiddleware;
   private mcpHandler: MCPHandler;
   private metricsCollector: MetricsCollector;
-  private isStarted = false; constructor(memoryEngine: MemoryEngine) {
+  private isStarted = false;
+
+  constructor(memoryEngine: MemoryEngine) {
     if (!memoryEngine || memoryEngine === null || memoryEngine === undefined) {
       throw new Error('Memory engine cannot be null or undefined');
     }
@@ -85,25 +87,13 @@ export class MemoraiServer {
     this.server.register(import('@fastify/rate-limit'), {
       max: options.rateLimit.max,
       timeWindow: options.rateLimit.timeWindow
-    });
-
-    // JWT support
+    });    // JWT support
     this.server.register(import('@fastify/jwt'), {
       secret: options.jwt.secret
     });
+
     // Global hooks
     this.server.addHook('preHandler', async (request, reply) => {
-      // Track request start time
-      (request as any).startTime = Date.now();
-
-      // Track new connection
-      this.metricsCollector.recordConnection('open');
-
-      // Skip auth for health check and capabilities
-      if (request.url === '/health' || request.url === '/capabilities' || request.url === '/metrics') {
-        return;
-      }
-
       // Apply authentication
       await this.authMiddleware.authenticate(request, reply);
 
@@ -112,30 +102,14 @@ export class MemoraiServer {
 
       // Apply rate limiting
       await this.rateLimitMiddleware.checkRateLimit(request, reply);
-    });
-
-    // Track response completion
-    this.server.addHook('onResponse', async (request, reply) => {
-      const startTime = (request as any).startTime;
-      if (startTime) {
-        const responseTime = Date.now() - startTime;
-        const isError = reply.statusCode >= 400;
-        this.metricsCollector.recordRequest(responseTime, isError);
-      }
-
+    });    // Track response completion
+    this.server.addHook('onResponse', async (_request, _reply) => {
       // Track connection close
       this.metricsCollector.recordConnection('close');
     });
 
     // Error handler
     this.server.setErrorHandler(async (error, request, reply) => {
-      // Record error metrics
-      const startTime = (request as any).startTime;
-      if (startTime) {
-        const responseTime = Date.now() - startTime;
-        this.metricsCollector.recordRequest(responseTime, true);
-      }
-
       Logger.error('Server error', error);
 
       await reply.code(500).send({
@@ -145,8 +119,7 @@ export class MemoraiServer {
           message: 'Internal server error',
           data: {
             type: 'server_error',
-            timestamp: new Date().toISOString()
-          }
+            timestamp: new Date().toISOString()          }
         }
       });
     });
@@ -190,11 +163,12 @@ export class MemoraiServer {
         version: '0.1.0'
       });
     });
+
     // Metrics endpoint (for monitoring)
     this.server.get('/metrics', async (request, reply) => {
       try {
-        const format = (request.query as any)?.format || 'prometheus';
-
+        const format = (request.query as { format?: string })?.format || 'prometheus';
+        
         if (format === 'prometheus') {
           // Return Prometheus format metrics
           const prometheusMetrics = this.metricsCollector.exportPrometheusMetrics();
@@ -235,15 +209,7 @@ export class MemoraiServer {
       const { host, port } = this.config.options;
       await this.server.listen({ host, port });
 
-      this.isStarted = true;
-
-      Logger.info(`Memorai MCP Server started`, {
-        host,
-        port,
-        environment: this.config.isProduction() ? 'production' : 'development'
-      });
-
-    } catch (error) {
+      this.isStarted = true;      Logger.info(`Memorai MCP Server started on ${host}:${port} (${this.config.isProduction() ? 'production' : 'development'})`);} catch (error) {
       Logger.error('Failed to start server', error);
       throw error;
     }
@@ -263,9 +229,7 @@ export class MemoraiServer {
 
       this.isStarted = false;
 
-      Logger.info('Memorai MCP Server stopped');
-
-    } catch (error) {
+      Logger.info('Memorai MCP Server stopped');    } catch (error) {
       Logger.error('Error stopping server', error);
       throw error;
     }

@@ -4,6 +4,7 @@ export default defineConfig({
   test: {
     environment: 'node',
     include: ['src/**/*.{test,spec}.{js,ts}'],
+    exclude: ['dist/**/*'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
@@ -13,6 +14,11 @@ export default defineConfig({
         '*.config.{js,ts}',
         'src/**/*.d.ts'
       ]
+    }
+  },
+  resolve: {
+    alias: {
+      '@': new URL('./src', import.meta.url).pathname
     }
   }
 });

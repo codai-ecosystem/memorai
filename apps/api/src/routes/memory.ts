@@ -1,5 +1,4 @@
-import { Router } from 'express';
-// Removed unused imports: Request, Response
+import { Router, Request, Response } from 'express';
 import { z } from 'zod';
 import { asyncHandler, createApiError } from '../middleware/errorHandler';
 import { logger } from '../utils/logger';
@@ -30,7 +29,7 @@ const contextSchema = z.object({
 });
 
 // Store a memory
-router.post('/remember', asyncHandler(async (req: any, res: any) => {
+router.post('/remember', asyncHandler(async (req: Request, res: Response) => {
     const { memoryEngine } = req;
     if (!memoryEngine) {
         throw createApiError('Memory engine not available', 503, 'MEMORY_ENGINE_UNAVAILABLE');
@@ -46,20 +45,20 @@ router.post('/remember', asyncHandler(async (req: any, res: any) => {
             memory: result,
             message: 'Memory stored successfully'
         });
-    } catch (error: any) {
-        if (error.name === 'ZodError') {
-            logger.error('Validation error in remember', { error: error.errors });
-            const fieldErrors = error.errors.map((err: any) => `${err.path.join('.')}: ${err.message}`);
+    } catch (error: unknown) {
+        if ((error as any)?.name === 'ZodError') {
+            logger.error('Validation error in remember', { error: (error as any)?.errors });
+            const fieldErrors = (error as any)?.errors.map((err: unknown) => `${(err as any)?.path.join('.')}: ${(err as any)?.message}`);
             throw createApiError(`Validation error: ${fieldErrors.join(', ')}`, 400, 'VALIDATION_ERROR');
         }
 
-        logger.error('Failed to store memory', { error: error.message });
-        throw createApiError(`Failed to store memory: ${error.message}`, 500, 'MEMORY_STORE_FAILED');
+        logger.error('Failed to store memory', { error: (error as Error).message });
+        throw createApiError(`Failed to store memory: ${(error as Error).message}`, 500, 'MEMORY_STORE_FAILED');
     }
 }));
 
 // Recall memories
-router.post('/recall', asyncHandler(async (req: any, res: any) => {
+router.post('/recall', asyncHandler(async (req: Request, res: Response) => {
     const { memoryEngine } = req;
     if (!memoryEngine) {
         throw createApiError('Memory engine not available', 503, 'MEMORY_ENGINE_UNAVAILABLE');
@@ -78,20 +77,20 @@ router.post('/recall', asyncHandler(async (req: any, res: any) => {
             count: results.length,
             query,
         });
-    } catch (error: any) {
-        if (error.name === 'ZodError') {
-            logger.error('Validation error in recall', { error: error.errors });
-            const fieldErrors = error.errors.map((err: any) => `${err.path.join('.')}: ${err.message}`);
+    } catch (error: unknown) {
+        if ((error as any)?.name === 'ZodError') {
+            logger.error('Validation error in recall', { error: (error as any)?.errors });
+            const fieldErrors = (error as any)?.errors.map((err: unknown) => `${(err as any)?.path.join('.')}: ${(err as any)?.message}`);
             throw createApiError(`Validation error: ${fieldErrors.join(', ')}`, 400, 'VALIDATION_ERROR');
         }
 
-        logger.error('Failed to recall memories', { error: error.message });
-        throw createApiError(`Failed to recall memories: ${error.message}`, 500, 'MEMORY_RECALL_FAILED');
+        logger.error('Failed to recall memories', { error: (error as Error).message });
+        throw createApiError(`Failed to recall memories: ${(error as Error).message}`, 500, 'MEMORY_RECALL_FAILED');
     }
 }));
 
 // Get context
-router.post('/context', asyncHandler(async (req: any, res: any) => {
+router.post('/context', asyncHandler(async (req: Request, res: Response) => {
     const { memoryEngine } = req;
     if (!memoryEngine) {
         throw createApiError('Memory engine not available', 503, 'MEMORY_ENGINE_UNAVAILABLE');
@@ -114,29 +113,27 @@ router.post('/context', asyncHandler(async (req: any, res: any) => {
             success: true,
             context,
         });
-    } catch (error: any) {
-        if (error.name === 'ZodError') {
-            logger.error('Validation error in context', { error: error.errors });
-            const fieldErrors = error.errors.map((err: any) => `${err.path.join('.')}: ${err.message}`);
+    } catch (error: unknown) {
+        if ((error as any)?.name === 'ZodError') {
+            logger.error('Validation error in context', { error: (error as any)?.errors });
+            const fieldErrors = (error as any)?.errors.map((err: unknown) => `${(err as any)?.path.join('.')}: ${(err as any)?.message}`);
             throw createApiError(`Validation error: ${fieldErrors.join(', ')}`, 400, 'VALIDATION_ERROR');
         }
 
-        logger.error('Failed to get context', { agentId: req.body.agentId, error: error.message });
-        throw createApiError(`Failed to get context: ${error.message}`, 500, 'CONTEXT_RETRIEVAL_FAILED');
+        logger.error('Failed to get context', { agentId: req.body.agentId, error: (error as Error).message });
+        throw createApiError(`Failed to get context: ${(error as Error).message}`, 500, 'CONTEXT_RETRIEVAL_FAILED');
     }
 }));
 
 // Forget a memory
-router.delete('/forget', asyncHandler(async (req: any, res: any) => {
+router.delete('/forget', asyncHandler(async (req: Request, res: Response) => {
     const { memoryEngine } = req;
     if (!memoryEngine) {
         throw createApiError('Memory engine not available', 503, 'MEMORY_ENGINE_UNAVAILABLE');
-    }
-
-    try {
+    }    try {
         const { agentId, memoryId } = forgetSchema.parse(req.body);
 
-        const success = await memoryEngine.forget(agentId, memoryId);
+        const success = await memoryEngine.forget(memoryId);
 
         if (!success) {
             throw createApiError('Memory not found or could not be deleted', 404, 'MEMORY_NOT_FOUND');
@@ -148,39 +145,37 @@ router.delete('/forget', asyncHandler(async (req: any, res: any) => {
             success: true,
             message: 'Memory forgotten successfully'
         });
-    } catch (error: any) {
-        if (error.name === 'ZodError') {
-            logger.error('Validation error in forget', { error: error.errors });
-            const fieldErrors = error.errors.map((err: any) => `${err.path.join('.')}: ${err.message}`);
+    } catch (error: unknown) {
+        if ((error as any)?.name === 'ZodError') {
+            logger.error('Validation error in forget', { error: (error as any)?.errors });
+            const fieldErrors = (error as any)?.errors.map((err: unknown) => `${(err as any)?.path.join('.')}: ${(err as any)?.message}`);
             throw createApiError(`Validation error: ${fieldErrors.join(', ')}`, 400, 'VALIDATION_ERROR');
-        }
-
-        if (error.statusCode === 404) {
+        }        if (error && typeof error === 'object' && 'statusCode' in error && (error as any).statusCode === 404) {
             throw error; // Re-throw 404 errors as-is
         }
 
-        logger.error('Failed to forget memory', { error: error.message });
-        throw createApiError(`Failed to forget memory: ${error.message}`, 500, 'MEMORY_FORGET_FAILED');
+        logger.error('Failed to forget memory', { error: (error as Error).message });
+        throw createApiError(`Failed to forget memory: ${(error as Error).message}`, 500, 'MEMORY_FORGET_FAILED');
     }
 }));
 
 // List all memories for an agent
-router.get('/list/:agentId', asyncHandler(async (req: any, res: any) => {
+router.get('/list/:agentId', asyncHandler(async (req: Request, res: Response) => {
     const { memoryEngine } = req;
     if (!memoryEngine) {
         throw createApiError('Memory engine not available', 503, 'MEMORY_ENGINE_UNAVAILABLE');
-    }
+    }    const agentId = req.params.agentId;
+    const page = parseInt(String(req.query.page || '1')) || 1;
+    const limit = parseInt(String(req.query.limit || '20')) || 20;
+    const search = String(req.query.search || '');
 
-    const agentId = req.params.agentId;
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 20;
-    const search = req.query.search || ''; try {
-        let memories: any[];
+    try {
+        let memories: unknown[];
 
         if (search) {
             // Use recall for search functionality
             const results = await memoryEngine.recall(search, 'default', agentId, { limit: limit * page });
-            memories = results.map((r: any) => r.memory);
+            memories = results.map((r: any) => (r as any).memory);
         } else {
             // For listing all, use the getContext method
             const contextResponse = await memoryEngine.getContext({
@@ -188,7 +183,7 @@ router.get('/list/:agentId', asyncHandler(async (req: any, res: any) => {
                 agent_id: agentId,
                 max_memories: limit * page
             });
-            memories = contextResponse.memories.map((m: any) => m.memory);
+            memories = contextResponse.memories?.map((m: any) => (m as any).memory) || [];
         }
 
         // Simple pagination (this should be improved in the memory engine)
@@ -205,21 +200,21 @@ router.get('/list/:agentId', asyncHandler(async (req: any, res: any) => {
                 pages: Math.ceil(memories.length / limit),
             },
         });
-    } catch (error: any) {
-        logger.error('Failed to list memories', { agentId, error: error.message });
-        throw createApiError(`Failed to list memories: ${error.message}`, 500, 'MEMORY_LIST_FAILED');
+    } catch (error: unknown) {
+        logger.error('Failed to list memories', { agentId, error: (error as Error).message });
+        throw createApiError(`Failed to list memories: ${(error as Error).message}`, 500, 'MEMORY_LIST_FAILED');
     }
 }));
 
 // Export memories for an agent
-router.get('/export/:agentId', asyncHandler(async (req: any, res: any) => {
+router.get('/export/:agentId', asyncHandler(async (req: Request, res: Response) => {
     const { memoryEngine } = req;
     if (!memoryEngine) {
         throw createApiError('Memory engine not available', 503, 'MEMORY_ENGINE_UNAVAILABLE');
     }
 
     const agentId = req.params.agentId;
-    const format = req.query.format || 'json';
+    const format = String(req.query.format || 'json');
 
     try {
         // Validate format
@@ -231,13 +226,12 @@ router.get('/export/:agentId', asyncHandler(async (req: any, res: any) => {
         const exportData = {
             agentId,
             exportedAt: new Date().toISOString(),
-            memoryCount: memories.length,
-            memories: memories.map((memory: any) => ({
-                id: memory.id,
-                content: memory.content,
-                metadata: memory.metadata,
-                timestamp: memory.timestamp,
-                similarity: memory.similarity,
+            memoryCount: memories.length,            memories: memories.map((memory: any) => ({
+                id: (memory as any).id,
+                content: (memory as any).content,
+                metadata: (memory as any).metadata,
+                timestamp: (memory as any).timestamp,
+                similarity: (memory as any).similarity,
             })),
         };
 
@@ -245,14 +239,14 @@ router.get('/export/:agentId', asyncHandler(async (req: any, res: any) => {
         res.setHeader('Content-Disposition', `attachment; filename="memorai-export-${agentId}-${Date.now()}.json"`);
         res.json(exportData);
 
-        logger.info('Memories exported', { agentId, count: memories.length, format });
-    } catch (error: any) {
-        if (error.statusCode === 400) {
+        logger.info('Memories exported', { agentId, count: memories.length, format });    } catch (error: unknown) {
+        if (error && typeof error === 'object' && 'statusCode' in error && (error as any).statusCode === 400) {
             throw error; // Re-throw validation errors as-is
         }
 
-        logger.error('Failed to export memories', { agentId, error: error.message });
-        throw createApiError(`Failed to export memories: ${error.message}`, 500, 'MEMORY_EXPORT_FAILED');
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        logger.error('Failed to export memories', { agentId, error: errorMessage });
+        throw createApiError(`Failed to export memories: ${errorMessage}`, 500, 'MEMORY_EXPORT_FAILED');
     }
 }));
 

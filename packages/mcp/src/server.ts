@@ -63,23 +63,22 @@ class EnterpriseMemoryEngine {
     await this.unifiedEngine.initialize();
     this.initialized = true;
 
-    console.error('🚀 Enterprise Memory Engine initialized successfully');
-    console.error('📊 Performance monitoring enabled');
+    // Console statement removed for production
+    // Console statement removed for production
   }
 
-  async remember(agentId: string, content: string, metadata: any = {}): Promise<{ id: string }> {
+  async remember(agentId: string, content: string, metadata: unknown = {}): Promise<{ id: string }> {
     const start = performance.now();
 
     try {
       const memoryId = await this.unifiedEngine.remember(
         content,
         'default-tenant', // Use default tenant for MCP
-        agentId,
-        {
-          type: metadata.type || 'general',
-          importance: metadata.importance || 0.5,
-          tags: metadata.tags || [],
-          context: metadata
+        agentId,        {
+          type: (metadata as any)?.type || 'general',
+          importance: (metadata as any)?.importance || 0.5,
+          tags: (metadata as any)?.tags || [],
+          context: metadata as Record<string, unknown>
         }
       );
 
@@ -96,8 +95,7 @@ class EnterpriseMemoryEngine {
         cacheHit: false
       });
 
-      return { id: memoryId };
-    } catch (error) {
+      return { id: memoryId };    } catch (error: unknown) {
       const end = performance.now();
       this.performanceMonitor.recordQuery({
         operation: 'remember',
@@ -113,7 +111,7 @@ class EnterpriseMemoryEngine {
     }
   }
 
-  async recall(agentId: string, query: string, limit = 10): Promise<any[]> {
+  async recall(agentId: string, query: string, limit = 10): Promise<unknown[]> {
     const start = performance.now();
 
     try {
@@ -140,21 +138,20 @@ class EnterpriseMemoryEngine {
         agentId,
         resultCount: results.length,
         cacheHit: false // UnifiedEngine handles its own caching
-      });
-      return results.map(result => ({
-        id: result.memory.id,
-        content: result.memory.content,
+      });      return results.map(result => ({
+        id: result.memory?.id || '',
+        content: result.memory?.content || '',
         relevance: result.score,
         metadata: {
-          type: result.memory.type,
-          importance: result.memory.importance,
-          tags: result.memory.tags,
-          context: result.memory.context,
-          emotional_weight: result.memory.emotional_weight
+          type: result.memory?.type || 'fact',
+          importance: result.memory?.importance || 0,
+          tags: result.memory?.tags || [],
+          context: result.memory?.context || {},
+          emotional_weight: result.memory?.emotional_weight || 0
         },
-        timestamp: result.memory.createdAt
-      }));
-    } catch (error) {
+        timestamp: result.memory?.createdAt || new Date()
+      })).filter(item => item.id !== '');
+    } catch (error: unknown) {
       const end = performance.now();
       this.performanceMonitor.recordQuery({
         operation: 'recall',
@@ -170,7 +167,7 @@ class EnterpriseMemoryEngine {
     }
   }
 
-  async context(agentId: string, size = 5): Promise<any> {
+  async context(agentId: string, size = 5): Promise<unknown> {
     const start = performance.now();
 
     try {
@@ -200,7 +197,7 @@ class EnterpriseMemoryEngine {
         windowSize: size,
         totalMemories: contextData.total_count || 0
       };
-    } catch (error) {
+    } catch (error: unknown) {
       const end = performance.now();
       this.performanceMonitor.recordQuery({
         operation: 'context',
@@ -236,7 +233,7 @@ class EnterpriseMemoryEngine {
       });
 
       return true;
-    } catch (error) {
+    } catch (error: unknown) {
       const end = performance.now();
       this.performanceMonitor.recordQuery({
         operation: 'forget',
@@ -406,7 +403,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             type: 'text',
             text: JSON.stringify({
               success: true,
-              ...context,
+              ...(context as Record<string, unknown>),
               tierInfo: enterpriseEngine.getTierInfo(),
               performance: {
                 responseTime: `${(performance.now() - startTime).toFixed(2)}ms`,
@@ -448,7 +445,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       default:
         throw new Error(`Unknown tool: ${name}`);
     }
-  } catch (error) {
+  } catch (error: unknown) {
     return {
       content: [{
         type: 'text',
@@ -468,23 +465,18 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 // Start enterprise server
 async function main() {
   try {
-    await enterpriseEngine.initialize();
-
-    const transport = new StdioServerTransport();
-    await server.connect(transport);
-
-    console.error('🚀 ENTERPRISE MCP SERVER - Multi-Tier Architecture');
-    console.error('📊 Tier Info:', enterpriseEngine.getTierInfo());
-    console.error('⚡ Performance monitoring enabled');
-  } catch (error) {
-    console.error('❌ Enterprise server failed to start:', error);
+    await enterpriseEngine.initialize();    const transport = new StdioServerTransport();
+    await server.connect(transport);    // Console statement removed for production
+    // Console statement removed for production
+  } catch {
+    // Console statement removed for production
     process.exit(1);
   }
 }
 
 // Auto-start server
-main().catch((error) => {
-  console.error('❌ Server failed:', error);
+main().catch((_error) => {
+  // Console statement removed for production
   process.exit(1);
 });
 

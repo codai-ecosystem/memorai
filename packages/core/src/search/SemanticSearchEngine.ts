@@ -116,9 +116,7 @@ export class SemanticSearchEngine {
         scoredResults.push(result);
       }
     }    // Step 5: Apply diversity factor and rank results
-    const rankedResults = await this.applyDiversityRanking(scoredResults, diversityFactor);
-
-    // Step 6: Sort by final score and apply limit
+    const rankedResults = await this.applyDiversityRanking(scoredResults, diversityFactor);    // Step 6: Sort by final score and apply limit
     const sortedResults = rankedResults.sort((a: EnhancedMemoryResult, b: EnhancedMemoryResult) => b.searchScore - a.searchScore);
 
     // Apply limit if specified

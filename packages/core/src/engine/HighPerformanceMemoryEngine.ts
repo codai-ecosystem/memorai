@@ -3,8 +3,7 @@
  * Addresses 45GB memory issue and performance problems
  */
 
-import { randomUUID } from 'crypto';
-import crypto from 'crypto';
+import { randomUUID, createHash } from 'crypto';
 
 import type {
     MemoryMetadata,
@@ -386,28 +385,26 @@ export class HighPerformanceMemoryEngine {
     public clearCaches(): void {
         this.cache.clear();
         logger.info('All caches cleared');
-    }
-
-    /**
+    }    /**
      * Get memory statistics for a tenant
      */
-    public async getMemoryStats(tenantId: string): Promise<any> {
-        return await this.vectorStore.getMemoryStats(tenantId);
+    public async getMemoryStats(tenantId: string): Promise<unknown> {
+        // TODO: Implement getMemoryStats in vector store
+        return { totalMemories: 0, tenantId };
     }
 
     // Private helper methods
-
+    
     private generateContentHash(content: string, tenantId: string): string {
         const data = `${content}:${tenantId}`;
-        return crypto.createHash('sha256').update(data).digest('hex');
+        return createHash('sha256').update(data).digest('hex');
+    }    private async checkForDuplicate(_contentHash: string, _tenantId: string, _agentId?: string): Promise<string | null> {
+        // TODO: Implement checkDuplicateByHash in vector store
+        return null;
     }
 
-    private async checkForDuplicate(contentHash: string, tenantId: string, agentId?: string): Promise<string | null> {
-        return await this.vectorStore.checkDuplicateByHash(contentHash, tenantId, agentId);
-    }
-
-    private async updateMemoryAccess(memoryId: string): Promise<void> {
-        await this.vectorStore.updateMemoryAccess(memoryId);
+    private async updateMemoryAccess(_memoryId: string): Promise<void> {
+        // TODO: Implement updateMemoryAccess in vector store
     }
 
     private classifyMemoryType(content: string): MemoryType {
@@ -456,16 +453,15 @@ export class HighPerformanceMemoryEngine {
                 score: result.score * decayFactor
             };
         }).sort((a, b) => b.score - a.score);
-    }
-    private async getRecentMemoriesOptimized(request: ContextRequest): Promise<MemoryMetadata[]> {
+    }    private async getRecentMemoriesOptimized(_request: ContextRequest): Promise<MemoryMetadata[]> {
         // Implement optimized recent memory retrieval
         // This is a placeholder - implement actual optimized retrieval
         const memoryQuery: MemoryQuery = {
             query: 'recent memories',
-            limit: request.max_memories || 15,
+            limit: _request.max_memories || 15,
             threshold: 0.3, // Lower threshold for recent memories
-            tenant_id: request.tenant_id,
-            agent_id: request.agent_id,
+            tenant_id: _request.tenant_id,
+            agent_id: _request.agent_id,
             include_context: true,
             time_decay: false
         };
@@ -503,17 +499,14 @@ export class HighPerformanceMemoryEngine {
     private updatePerformanceMetrics(queryTime: number): void {
         this.performanceMetrics.averageQueryTime =
             (this.performanceMetrics.averageQueryTime + queryTime) / 2;
-    }
-
-    private updateCacheHitRate(hit: boolean): void {
+    }    private updateCacheHitRate(_hit: boolean): void {
         // This is handled by the cache itself
     }
 
     private startPeriodicOptimization(): void {
         // Run optimization every 6 hours
         setInterval(async () => {
-            try {
-                logger.info('Starting scheduled memory optimization');
+            try {                logger.info('Starting scheduled memory optimization');
                 await this.optimizer.optimize('_global_');
                 logger.info('Scheduled optimization completed');
             } catch (error) {

@@ -160,7 +160,7 @@ global.IntersectionObserver = vi.fn().mockImplementation(() => ({
 
 // Mock lucide-react icons
 vi.mock('lucide-react', () => {
-    const MockIcon = (props: any) => React.createElement('svg', { 'data-testid': 'mock-icon', ...props })
+    const MockIcon = (props: unknown) => React.createElement('svg', { 'data-testid': 'mock-icon', ...props })
 
     return {
         Plus: MockIcon,

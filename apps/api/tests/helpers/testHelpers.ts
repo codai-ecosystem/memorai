@@ -26,10 +26,9 @@ export const createMockMemoryEngine = (config: Partial<any> = {}) => {
             return agentMemories.slice(0, options?.limit || 10).map((memory: any) => ({
                 memory,
                 score: 0.9
-            }));
-        }), forget: vi.fn().mockImplementation(async (agentId: string, memoryId: string) => {
+            }));        }), forget: vi.fn().mockImplementation(async (memoryId: string) => {
             const memory = memories.get(memoryId);
-            if (memory && (memory as any).agentId === agentId) {
+            if (memory) {
                 memories.delete(memoryId);
                 return true;
             }
@@ -48,8 +47,7 @@ export const createMockMemoryEngine = (config: Partial<any> = {}) => {
                 total_count: agentMemories.length,
                 context_summary: `Context for ${agentId} with ${agentMemories.length} memories`
             };
-        }),
-        getTierInfo: vi.fn().mockReturnValue({
+        }),        getTierInfo: vi.fn().mockReturnValue({
             level: 'mock',
             currentTier: 'mock',
             message: 'Mock memory engine for testing',
@@ -59,6 +57,22 @@ export const createMockMemoryEngine = (config: Partial<any> = {}) => {
                 persistence: true,
                 scalability: false,
             },
+        }),        testTier: vi.fn().mockImplementation(async (tier: string) => {
+            if (!tier) {
+                throw new Error('Tier not specified');
+            }
+            if (['mock', 'basic', 'smart', 'advanced'].includes(tier)) {
+                return { success: true, message: `Tier '${tier}' is available and working` };
+            } else {
+                throw new Error(`Invalid tier: ${tier}`);
+            }
+        }),
+        getStatistics: vi.fn().mockResolvedValue({
+            totalMemories: memories.size,
+            memoryTypes: { semantic: 0, episodic: 0, procedural: 0, meta: 0 },
+            avgConfidence: 0.9,
+            recentActivity: 0,
+            currentTier: 'mock'
         }),
         ...config,
     };

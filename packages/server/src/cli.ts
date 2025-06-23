@@ -65,8 +65,8 @@ async function startServer(): Promise<void> {
       process.exit(0);
     });
 
-  } catch (error) {
-    Logger.error('Failed to start server', error);
+  } catch (error: unknown) {
+    Logger.error("Failed to start server", { error: error instanceof Error ? error.message : String(error) });
     process.exit(1);
   }
 }

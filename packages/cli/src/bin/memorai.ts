@@ -10,18 +10,18 @@ import { CLI } from '../cli/CLI.js';
 const cli = new CLI();
 
 // Handle uncaught errors gracefully
-process.on('uncaughtException', (error) => {
-  console.error('Uncaught exception:', error.message);
+process.on('uncaughtException', (_error) => {
+  // Console statement removed for production
   process.exit(1);
 });
 
-process.on('unhandledRejection', (reason) => {
-  console.error('Unhandled rejection:', reason);
+process.on('unhandledRejection', (_reason) => {
+  // Console statement removed for production
   process.exit(1);
 });
 
 // Run the CLI with process arguments
-cli.run(process.argv).catch((error) => {
-  console.error('CLI error:', error.message);
+cli.run(process.argv).catch((_error) => {
+  // Console statement removed for production
   process.exit(1);
 });

@@ -36,13 +36,10 @@ export class AuthMiddleware {
       // Add auth context to request
       (request as any).auth = authContext;
 
-      Logger.debug('Authentication successful', {
-        userId: authContext.userId,
-        tenantId: authContext.tenantId
-      });
+      Logger.debug("Authentication successful");
 
-    } catch (error) {
-      Logger.error('Authentication failed', error);
+    } catch (error: unknown) {
+      Logger.error("Authentication failed", { error: error instanceof Error ? error.message : String(error) });
       return this.sendAuthError(reply, 'Invalid authentication token');
     }
   }
@@ -50,8 +47,8 @@ export class AuthMiddleware {
   /**
    * Extract JWT token from request headers
    */
-  private extractToken(request: FastifyRequest): string | null {
-    const authHeader = request.headers.authorization;
+  private extractToken(_request: FastifyRequest): string | null {
+    const authHeader = _request.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return null;
@@ -108,15 +105,14 @@ export class AuthMiddleware {
             permissions: payload.permissions || ['memory:read'],
             token,
             expiresAt: payload.exp ? payload.exp * 1000 : Date.now() + 3600000
-          };
-        } catch {
+          };        } catch {
           throw new Error('Invalid token payload');
         }
       }
 
       // In production, implement proper JWT verification here
       throw new Error('Token validation not implemented');
-    } catch (error) {
+    } catch (error: unknown) {
       throw new Error(`Authentication failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }

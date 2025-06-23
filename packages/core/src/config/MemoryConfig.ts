@@ -118,8 +118,7 @@ export class MemoryConfigManager {
         }
         if (!url.hostname) {
           throw new Error('Invalid memory configuration: Vector database URL must have a valid hostname');
-        }
-      } catch (error) {
+        }      } catch (error) {
         if (error instanceof TypeError) {
           throw new Error('Invalid memory configuration: Vector database URL format is invalid');
         }
@@ -135,8 +134,7 @@ export class MemoryConfigManager {
         }
         if (!url.hostname) {
           throw new Error('Invalid memory configuration: Redis URL must have a valid hostname');
-        }
-      } catch (error) {
+        }      } catch (error) {
         if (error instanceof TypeError) {
           throw new Error('Invalid memory configuration: Redis URL format is invalid');
         }
@@ -178,11 +176,27 @@ export class MemoryConfigManager {
           logger.warn(`Memory configuration validation warning: ${JSON.stringify(error.errors, null, 2)}`);
         }
       });
-    } catch (error: unknown) {
-      if (error instanceof z.ZodError) {
+    } catch (error: unknown) {      if (error instanceof z.ZodError) {
         logger.warn(`Memory configuration validation warning: ${JSON.stringify(error.errors, null, 2)}`);
       }
     }
+  }
+
+  /**
+   * Get feature capabilities based on current configuration
+   */
+  public getFeatures(): {
+    embedding: boolean;
+    similarity: boolean;
+    persistence: boolean;
+    scalability: boolean;
+  } {
+    return {
+      embedding: !!this.config.embedding.api_key,
+      similarity: true, // Always supported
+      persistence: !!this.config.vector_db.url,
+      scalability: !!this.config.redis.url
+    };
   }
 }
 

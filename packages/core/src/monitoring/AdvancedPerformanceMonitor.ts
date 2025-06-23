@@ -46,7 +46,7 @@ export class AdvancedPerformanceMonitor {
     private errorCount = 0;
     private totalRequests = 0;
 
-    constructor(alertConfig: AlertConfig, memoryEngine?: any) {
+    constructor(_data: unknown) {
         this.alertConfig = alertConfig;
         this.memoryEngine = memoryEngine;
     }
@@ -56,12 +56,12 @@ export class AdvancedPerformanceMonitor {
      */
     startMonitoring(intervalMs = 30000): void {
         if (this.isMonitoring) {
-            console.warn('Monitoring is already active');
+            logger.warn('Monitoring is already active');
             return;
         }
 
         this.isMonitoring = true;
-        console.log('🔍 Starting advanced performance monitoring...');
+        logger.log('🔍 Starting advanced performance monitoring...');
 
         this.monitoringInterval = setInterval(async () => {
             await this.collectMetrics();
@@ -77,7 +77,7 @@ export class AdvancedPerformanceMonitor {
             this.monitoringInterval = undefined;
         }
         this.isMonitoring = false;
-        console.log('⏹️ Performance monitoring stopped');
+        logger.log('⏹️ Performance monitoring stopped');
     }
     /**
      * Collect current performance metrics
@@ -91,16 +91,15 @@ export class AdvancedPerformanceMonitor {
         const queryLatency = Date.now() - startTime;
 
         // Get real metrics from memory engine or fallback to defaults
-        let cacheHitRate = 0;
-        let errorRate = 0;
-        let concurrentUsers = this.activeConnections;
+        let cacheHitRate = 0;        let errorRate = 0;
+        const concurrentUsers = this.activeConnections;
 
         if (this.memoryEngine && typeof this.memoryEngine.getPerformanceMetrics === 'function') {
             try {
                 const engineMetrics = this.memoryEngine.getPerformanceMetrics();
                 cacheHitRate = engineMetrics.cacheHitRate || 0;
-            } catch (error) {
-                console.warn('Failed to get engine metrics:', error);
+            } catch {
+                logger.warn('Failed to get engine metrics:', error);
             }
         }
 
@@ -189,7 +188,7 @@ Recommended Actions:
   4. Consider scaling resources
     `;
 
-        console.warn(alertMessage);
+        logger.warn(alertMessage);
 
         // In production, implement actual notification sending:
         // - Email via SendGrid/SES
@@ -199,9 +198,9 @@ Recommended Actions:
         if (this.alertConfig.notifications.webhook) {
             try {
                 // Mock webhook call
-                console.log(`📡 Sending alert to webhook: ${this.alertConfig.notifications.webhook}`);
-            } catch (error) {
-                console.error('Failed to send webhook alert:', error);
+                logger.log(`📡 Sending alert to webhook: ${this.alertConfig.notifications.webhook}`);
+            } catch {
+                logger.error('Failed to send webhook alert:', error);
             }
         }
     }
@@ -297,12 +296,10 @@ Recommended Actions:
             try {
                 const startTime = Date.now();
                 // Test with a simple recall operation
-                await this.memoryEngine.recall('performance-test-query', { limit: 1 });
-                return Date.now() - startTime;
-            } catch (error) {
-                // If memory engine test fails, use minimal delay
-                return 50; // Default 50ms if memory operation fails
-            }
+                await this.memoryEngine.recall('performance-test-query', { limit: 1 });                return Date.now() - startTime;
+            } catch {
+            // Error ignored
+        }
         }
 
         // Fallback: minimal system latency test without random component

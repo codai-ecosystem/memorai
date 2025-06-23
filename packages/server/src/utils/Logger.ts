@@ -56,20 +56,19 @@ export class Logger {
       }
     });
   }
-  
-  public static info(message: string, meta?: any): void {
+    public static info(message: string, meta?: Record<string, unknown>): void {
     Logger.getInstance().info(message, meta);
   }
   
-  public static error(message: string, error?: Error | any): void {
+  public static error(message: string, error?: Error | unknown): void {
     Logger.getInstance().error(message, { error });
   }
   
-  public static warn(message: string, meta?: any): void {
+  public static warn(message: string, meta?: Record<string, unknown>): void {
     Logger.getInstance().warn(message, meta);
   }
   
-  public static debug(message: string, meta?: any): void {
+  public static debug(message: string, meta?: Record<string, unknown>): void {
     Logger.getInstance().debug(message, meta);
   }
 }

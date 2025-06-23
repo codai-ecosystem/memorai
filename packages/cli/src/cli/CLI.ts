@@ -154,9 +154,7 @@ export class CLI {
       }
 
       // Execute the program (this will trigger the appropriate command handler)
-      await this.program.parseAsync(args);
-
-    } catch (error) {
+      await this.program.parseAsync(args);    } catch (error: unknown) {
       if (error instanceof Error) {
         this.output.error(`CLI Error: ${error.message}`);
       } else {

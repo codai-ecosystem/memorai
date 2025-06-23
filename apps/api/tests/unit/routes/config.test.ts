@@ -143,16 +143,14 @@ describe('Config Routes', () => {
                 expect(response.body.error).toBe('Invalid tier specified');
                 expect(response.body.code).toBe('INVALID_TIER');
             }
-        });
-
-        it('should handle missing tier parameter', async () => {
+        });        it('should handle missing tier parameter', async () => {
             const response = await request(app)
                 .post('/api/config/test-tier')
                 .send({})
                 .expect(400);
 
-            expect(response.body.error).toBe('Invalid tier specified');
-            expect(response.body.code).toBe('INVALID_TIER');
+            expect(response.body.error).toBe('Tier not specified');
+            expect(response.body.code).toBe('TIER_NOT_SPECIFIED');
         });
     });
 });

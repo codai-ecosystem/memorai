@@ -8,7 +8,7 @@ import { promises as fs } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import type { EmbeddingResult } from './EmbeddingService.js';
-import { logger } from '../utils/logger.js';
+// import { logger } from '../utils/logger.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -66,8 +66,7 @@ export class LocalEmbeddingService {
             await this.saveCache();
 
             return {
-                embedding,
-                model: this.config.model,
+                embedding,                model: this.config.model,
                 tokens: this.estimateTokens(normalizedText)
             };
         } catch (error) {
@@ -102,8 +101,7 @@ export class LocalEmbeddingService {
                 if (code === 0) {
                     try {
                         const result = JSON.parse(stdout.trim());
-                        if (result.embedding && Array.isArray(result.embedding)) {
-                            resolve(result.embedding);
+                        if (result.embedding && Array.isArray(result.embedding)) {                            resolve(result.embedding);
                         } else {
                             reject(new Error('Invalid embedding format from Python script'));
                         }
@@ -221,9 +219,8 @@ if __name__ == '__main__':
                 const cacheObject = Object.fromEntries(this.cache);
                 await fs.writeFile(this.config.cachePath, JSON.stringify(cacheObject, null, 2));
             }
-        } catch (error) {
-            // Non-critical error, continue without caching
-            logger.warn('Failed to save embedding cache:', error);
+        } catch {
+            // Error ignored
         }
     }
 

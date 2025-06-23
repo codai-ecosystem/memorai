@@ -54,8 +54,7 @@ export class CLIConfig {
       const dir = filePath.substring(0, filePath.lastIndexOf('/'));
       await writeFile(dir + '/.keepdir', '', { flag: 'w' });
       
-      await writeFile(filePath, JSON.stringify(this.config, null, 2));
-    } catch (error) {
+      await writeFile(filePath, JSON.stringify(this.config, null, 2));    } catch (error: unknown) {
       throw new Error(`Failed to save config: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }

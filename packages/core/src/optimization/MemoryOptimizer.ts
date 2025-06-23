@@ -4,7 +4,7 @@
  */
 
 import { logger } from '../utils/logger.js';
-import type { MemoryMetadata, MemoryConfig } from '../types/index.js';
+import type { MemoryMetadata } from '../types/index.js';
 import type { VectorStore } from '../vector/VectorStore.js';
 
 export interface OptimizationConfig {
@@ -36,7 +36,7 @@ export interface MemoryStats {
 export class MemoryOptimizer {
     private config: OptimizationConfig;
     private vectorStore: VectorStore;
-    private cache: Map<string, { data: any; timestamp: number }> = new Map();
+    private cache: Map<string, { data: unknown; timestamp: number }> = new Map();
     private isOptimizing = false;
 
     constructor(vectorStore: VectorStore, config: Partial<OptimizationConfig> = {}) {
@@ -187,7 +187,7 @@ export class MemoryOptimizer {
     /**
      * Compress memory embeddings and metadata
      */
-    private async compressMemories(tenantId: string): Promise<void> {
+    private async compressMemories(_tenantId: string): Promise<void> {
         // Implementation would compress vector embeddings using techniques like:
         // - Vector quantization
         // - Dimensionality reduction for less important memories
@@ -198,7 +198,7 @@ export class MemoryOptimizer {
     /**
      * Optimize vector database indices
      */
-    private async optimizeIndices(tenantId: string): Promise<void> {
+    private async optimizeIndices(_tenantId: string): Promise<void> {
         // Implementation would:
         // - Rebuild HNSW indices
         // - Optimize segment structure
@@ -225,8 +225,7 @@ export class MemoryOptimizer {
 
     /**
      * Cache frequently accessed data
-     */
-    public getCachedData<T>(key: string): T | null {
+     */    public getCachedData<T>(key: string): T | null {
         const cached = this.cache.get(key);
         if (!cached) return null;
 
@@ -236,7 +235,7 @@ export class MemoryOptimizer {
             return null;
         }
 
-        return cached.data;
+        return cached.data as T;
     }
 
     public setCachedData<T>(key: string, data: T): void {
@@ -251,8 +250,7 @@ export class MemoryOptimizer {
 
         setInterval(async () => {
             try {
-                logger.info('Starting scheduled memory optimization');
-                // Get all tenants and optimize each
+                logger.info('Starting scheduled memory optimization');                // Get all tenants and optimize each
                 // Implementation would get tenant list and optimize each
                 logger.info('Scheduled optimization placeholder - implement tenant enumeration');
             } catch (error) {
@@ -262,7 +260,7 @@ export class MemoryOptimizer {
     }
 
     // Helper methods
-    private async getAllMemories(tenantId: string): Promise<MemoryMetadata[]> {
+    private async getAllMemories(_tenantId: string): Promise<MemoryMetadata[]> {
         // Implementation would efficiently fetch all memories for tenant
         // This is a placeholder - implement actual memory fetching
         return [];

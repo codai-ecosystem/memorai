@@ -38,6 +38,23 @@ vi.mock('@codai/memorai-core', () => ({
                 scalability: false,
             },
         }),
+        testTier: vi.fn().mockImplementation(async (tier: string) => {
+            if (!tier) {
+                throw new Error('Tier not specified');
+            }
+            if (['mock', 'basic', 'smart', 'advanced'].includes(tier)) {
+                return { success: true, message: `Tier '${tier}' is available and working` };
+            } else {
+                throw new Error(`Invalid tier: ${tier}`);
+            }
+        }),
+        getStatistics: vi.fn().mockResolvedValue({
+            totalMemories: 10,
+            memoryTypes: { semantic: 5, episodic: 3, procedural: 2, meta: 0 },
+            avgConfidence: 0.9,
+            recentActivity: 5,
+            currentTier: 'mock'
+        }),
     })),
 }));
 
@@ -251,10 +268,8 @@ describe('API Integration Tests', () => {
         it('should get comprehensive statistics', async () => {
             const response = await request(app)
                 .get('/api/stats')
-                .expect(200);
-
-            expect(response.body.success).toBe(true);
-            expect(response.body.stats).toBeDefined();
+                .expect(200);            expect(response.body.success).toBe(true);
+            expect(response.body.data).toBeDefined();
         });
     });
 });

@@ -37,13 +37,10 @@ export class TenantMiddleware {
       // Add tenant context to request
       (request as any).tenant = tenantContext;
 
-      Logger.debug('Tenant loaded', {
-        tenantId: tenantContext.tenantId,
-        plan: tenantContext.plan
-      });
+      Logger.debug("Tenant loaded");
 
-    } catch (error) {
-      Logger.error('Failed to load tenant context', error);
+    } catch (error: unknown) {
+      Logger.error("Failed to load tenant context", { error: error instanceof Error ? error.message : String(error) });
       await this.sendTenantError(reply, 'Failed to load tenant information');
     }
   }
@@ -138,11 +135,11 @@ export class TenantMiddleware {
       // const tenant = await this.databaseService.getTenant(tenantId);
       // if (tenant) return tenant;
 
-      Logger.warn('Tenant not found in built-in tenants', { tenantId });
+      Logger.warn("Tenant not found in built-in tenants");
       return null;
 
-    } catch (error) {
-      Logger.error('Error loading tenant from database', { tenantId, error });
+    } catch (error: unknown) {
+      Logger.error('Error loading tenant from database', { tenantId, error: error instanceof Error ? error.message : String(error) });
       return null;
     }
   }
@@ -171,21 +168,13 @@ export class TenantMiddleware {
         case 'create_memory':
           // Check memory count limit
           if (currentUsage.memoryCount !== undefined && currentUsage.memoryCount >= limits.maxMemories) {
-            Logger.warn('Memory count limit exceeded', {
-              tenantId: tenant.tenantId,
-              current: currentUsage.memoryCount,
-              limit: limits.maxMemories
-            });
+            Logger.warn("Memory count limit exceeded");
             return false;
           }
 
           // Check storage limit
           if (currentUsage.storageUsed !== undefined && currentUsage.storageUsed >= limits.maxStorageSize) {
-            Logger.warn('Storage limit exceeded', {
-              tenantId: tenant.tenantId,
-              current: currentUsage.storageUsed,
-              limit: limits.maxStorageSize
-            });
+            Logger.warn("Storage limit exceeded");
             return false;
           }
           break;
@@ -196,11 +185,7 @@ export class TenantMiddleware {
           if (currentUsage.requestsInWindow !== undefined && currentUsage.requestWindowMs !== undefined) {
             const requestsPerSecond = (currentUsage.requestsInWindow * 1000) / currentUsage.requestWindowMs;
             if (requestsPerSecond > limits.maxQueryRate) {
-              Logger.warn('Query rate limit exceeded', {
-                tenantId: tenant.tenantId,
-                currentRate: requestsPerSecond,
-                limit: limits.maxQueryRate
-              });
+              Logger.warn("Query rate limit exceeded");
               return false;
             }
           }
@@ -212,11 +197,7 @@ export class TenantMiddleware {
             const requestsPerSecond = (currentUsage.requestsInWindow * 1000) / currentUsage.requestWindowMs;
             const bulkLimit = Math.floor(limits.maxQueryRate * 0.5); // 50% of normal rate for bulk
             if (requestsPerSecond > bulkLimit) {
-              Logger.warn('Bulk operation rate limit exceeded', {
-                tenantId: tenant.tenantId,
-                currentRate: requestsPerSecond,
-                limit: bulkLimit
-              });
+              Logger.warn("Bulk operation rate limit exceeded");
               return false;
             }
           }
@@ -227,12 +208,7 @@ export class TenantMiddleware {
           if (currentUsage.requestsInWindow !== undefined && currentUsage.requestWindowMs !== undefined) {
             const requestsPerSecond = (currentUsage.requestsInWindow * 1000) / currentUsage.requestWindowMs;
             if (requestsPerSecond > limits.maxQueryRate) {
-              Logger.warn('General rate limit exceeded', {
-                tenantId: tenant.tenantId,
-                operation,
-                currentRate: requestsPerSecond,
-                limit: limits.maxQueryRate
-              });
+              Logger.warn("General rate limit exceeded");
               return false;
             }
           }
@@ -241,7 +217,7 @@ export class TenantMiddleware {
 
       return true;
 
-    } catch (error) {
+    } catch (error: unknown) {
       Logger.error('Error checking tenant limits', {
         tenantId: tenant.tenantId,
         operation,

@@ -1,19 +1,24 @@
-import { Router } from 'express';
-// Removed unused imports: Request, Response, z
+import { Router, Request, Response } from 'express';
 import { asyncHandler, createApiError } from '../middleware/errorHandler';
 import { logger } from '../utils/logger';
 
 const router: Router = Router();
 
 // Get current configuration
-router.get('/', asyncHandler(async (req: any, res: any) => {
-    const { memoryEngine } = req;
+router.get('/', asyncHandler(async (req: Request, res: Response) => {
+    const { memoryEngine } = req as any;
     if (!memoryEngine) {
         throw createApiError('Memory engine not available', 503, 'MEMORY_ENGINE_UNAVAILABLE');
-    }
-
-    try {
+    }    try {
         const tierInfo = memoryEngine.getTierInfo();
+          // Get standardized features based on tier capabilities
+        const features = {
+            embedding: tierInfo.capabilities.embedding || tierInfo.capabilities.embeddings || false,
+            similarity: tierInfo.capabilities.similarity || tierInfo.capabilities.vectorSimilarity || false,
+            persistence: tierInfo.capabilities.persistence || true, // Always available with filesystem storage
+            scalability: tierInfo.capabilities.scalability || (tierInfo.capabilities.performance === 'high')
+        };
+
         const config = {
             tier: tierInfo,
             environment: {
@@ -23,181 +28,55 @@ router.get('/', asyncHandler(async (req: any, res: any) => {
                 pythonPath: process.env.PYTHON_PATH || 'python',
                 cachePath: process.env.MEMORAI_CACHE_PATH || './cache',
             },
-            features: {
-                embedding: tierInfo.capabilities.embedding,
-                similarity: tierInfo.capabilities.similarity,
-                persistence: tierInfo.capabilities.persistence,
-                scalability: tierInfo.capabilities.scalability,
-            },
+            features
         };
 
         res.json({
             success: true,
             config,
         });
-    } catch (error: any) {
-        logger.error('Failed to get configuration', { error: error.message });
-        throw createApiError(`Failed to get configuration: ${error.message}`, 500, 'CONFIG_GET_FAILED');
+    } catch (error: unknown) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        logger.error('Failed to get configuration', { error: errorMessage });
+        throw createApiError(`Failed to get configuration: ${errorMessage}`, 500, 'CONFIG_GET_FAILED');
     }
 }));
 
-// Update configuration (limited - mainly for testing)
-router.post('/test-tier', asyncHandler(async (req: any, res: any) => {
+// Test tier availability
+router.post('/test-tier', asyncHandler(async (req: Request, res: Response) => {
+    const { tier } = req.body;
+    
+    // Check if tier is missing or undefined
+    if (tier === undefined || tier === null) {
+        throw createApiError('Tier not specified', 400, 'TIER_NOT_SPECIFIED');
+    }
+
+    // Validate tier value (including empty string)
+    const validTiers = ['mock', 'basic', 'smart', 'advanced'];
+    if (!validTiers.includes(tier)) {
+        throw createApiError('Invalid tier specified', 400, 'INVALID_TIER');
+    }
+
     try {
-        const { tier } = req.body;
-
-        if (!tier) {
-            throw createApiError('Invalid tier specified', 400, 'INVALID_TIER');
-        }
-
-        if (!['advanced', 'smart', 'basic', 'mock'].includes(tier)) {
-            throw createApiError('Invalid tier specified', 400, 'INVALID_TIER');
-        }
-
-        // This would reinitialize the memory engine with a specific tier
-        // For now, we'll just return the current status
-        const { memoryEngine } = req;
+        const { memoryEngine } = req as any;
         if (!memoryEngine) {
             throw createApiError('Memory engine not available', 503, 'MEMORY_ENGINE_UNAVAILABLE');
         }
 
-        const tierInfo = memoryEngine.getTierInfo();
-
+        await memoryEngine.testTier(tier);
         res.json({
             success: true,
-            message: `Current tier: ${tierInfo.level}`,
-            tierInfo,
+            message: `Tier '${tier}' is available and working`,
         });
-    } catch (error: any) {
-        if (error.statusCode === 400 || error.statusCode === 503) {
-            throw error; // Re-throw validation and unavailable errors as-is
+    } catch (error: unknown) {
+        const apiError = error as any;
+        if (apiError?.statusCode === 400 || apiError?.statusCode === 503) {
+            throw error;
         }
-
-        logger.error('Failed to test tier', { tier: req.body.tier, error: error.message });
-        throw createApiError(`Failed to test tier: ${error.message}`, 500, 'TIER_TEST_FAILED');
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        logger.error('Failed to test tier', { tier: req.body.tier, error: errorMessage });
+        throw createApiError(`Failed to test tier: ${errorMessage}`, 500, 'TIER_TEST_FAILED');
     }
 }));
-
-// Health check for specific components
-router.get('/health', asyncHandler(async (req: any, res: any) => {
-    const { memoryEngine } = req;
-
-    const health = {
-        memoryEngine: {
-            available: !!memoryEngine,
-            tier: memoryEngine ? memoryEngine.getTierInfo().level : 'none',
-            capabilities: memoryEngine ? memoryEngine.getTierInfo().capabilities : {},
-        },
-        environment: {
-            openai: !!process.env.OPENAI_API_KEY,
-            azure: !!(process.env.AZURE_OPENAI_ENDPOINT && process.env.AZURE_OPENAI_API_KEY),
-            python: process.env.PYTHON_PATH || 'python',
-        },
-        timestamp: new Date().toISOString(),
-    };
-
-    res.json({
-        success: true,
-        health,
-    });
-}));
-
-// Get available tiers and their requirements
-router.get('/tiers', asyncHandler(async (req: any, res: any) => {
-    const tiers = [
-        {
-            level: 'advanced',
-            name: 'Advanced (OpenAI)',
-            description: 'High-quality embeddings using OpenAI API',
-            requirements: ['OPENAI_API_KEY'],
-            capabilities: {
-                embedding: 'high',
-                similarity: 'high',
-                persistence: 'high',
-                scalability: 'high',
-            },
-        },
-        {
-            level: 'advanced',
-            name: 'Advanced (Azure OpenAI)',
-            description: 'High-quality embeddings using Azure OpenAI',
-            requirements: ['AZURE_OPENAI_ENDPOINT', 'AZURE_OPENAI_API_KEY', 'AZURE_OPENAI_DEPLOYMENT_NAME'],
-            capabilities: {
-                embedding: 'high',
-                similarity: 'high',
-                persistence: 'high',
-                scalability: 'high',
-            },
-        },
-        {
-            level: 'smart',
-            name: 'Smart (Local AI)',
-            description: 'Local embeddings using sentence-transformers',
-            requirements: ['Python with sentence-transformers'],
-            capabilities: {
-                embedding: 'medium',
-                similarity: 'medium',
-                persistence: 'high',
-                scalability: 'medium',
-            },
-        },
-        {
-            level: 'basic',
-            name: 'Basic (Keyword)',
-            description: 'Simple keyword-based matching',
-            requirements: ['None'],
-            capabilities: {
-                embedding: 'low',
-                similarity: 'low',
-                persistence: 'high',
-                scalability: 'high',
-            },
-        },
-        {
-            level: 'mock',
-            name: 'Mock (Testing)',
-            description: 'Mock implementation for testing',
-            requirements: ['None'],
-            capabilities: {
-                embedding: 'none',
-                similarity: 'none',
-                persistence: 'none',
-                scalability: 'high',
-            },
-        },
-    ];
-
-    // Check which tiers are currently available
-    const availableTiers = tiers.map(tier => ({
-        ...tier,
-        available: checkTierAvailability(tier.requirements),
-    }));
-
-    res.json({
-        success: true,
-        tiers: availableTiers,
-    });
-}));
-
-function checkTierAvailability(requirements: string[]): boolean {
-    return requirements.every(req => {
-        switch (req) {
-            case 'OPENAI_API_KEY':
-                return !!process.env.OPENAI_API_KEY;
-            case 'AZURE_OPENAI_ENDPOINT':
-                return !!process.env.AZURE_OPENAI_ENDPOINT;
-            case 'AZURE_OPENAI_API_KEY':
-                return !!process.env.AZURE_OPENAI_API_KEY;
-            case 'AZURE_OPENAI_DEPLOYMENT_NAME':
-                return !!process.env.AZURE_OPENAI_DEPLOYMENT_NAME;
-            case 'Python with sentence-transformers':
-                return true; // Assume available for now
-            case 'None':
-                return true;
-            default:
-                return false;
-        }
-    });
-}
 
 export { router as configRouter };

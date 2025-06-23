@@ -300,7 +300,12 @@ export class MemoraiClient {
       throw new Error(`Failed to get stats: ${response.error.message}`);
     }
 
-    return response.result;
+    return response.result as {
+      totalMemories: number;
+      memoryTypes: Record<string, number>;
+      memorySize: number;
+      sessionMemories: number;
+    };
   }
 
   /**
@@ -316,11 +321,9 @@ export class MemoraiClient {
   private generateRequestId(): string {
     return `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
-
   /**
    * Get connection status
-   */
-  public get isConnected(): boolean {
+   */  public get isConnected(): boolean {
     return this.connection.isConnected;
   }
 

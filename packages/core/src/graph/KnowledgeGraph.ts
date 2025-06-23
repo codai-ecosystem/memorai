@@ -258,9 +258,7 @@ export class KnowledgeGraph {
     }
 
     const paths: GraphPath[] = [];
-    const visited = new Set<string>();
-
-    const dfs = (currentId: string, targetId: string, currentPath: string[], currentRelations: string[], currentWeight: number, depth: number) => {
+    const visited = new Set<string>();    const dfs = (currentId: string, targetId: string, currentPath: string[], currentRelations: string[], currentWeight: number, depth: number) => {
       if (depth > maxDepth) {
         return;
       }

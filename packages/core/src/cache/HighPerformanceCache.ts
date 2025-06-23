@@ -4,7 +4,7 @@
  */
 
 import { logger } from '../utils/logger.js';
-import type { MemoryResult, MemoryMetadata } from '../types/index.js';
+import type { MemoryResult } from '../types/index.js';
 
 export interface CacheConfig {
     maxSize: number;
@@ -168,9 +168,7 @@ export class HighPerformanceCache<T = any> {
      * Invalidate cache entries for a tenant (when memories are added/removed)
      */
     public invalidateTenant(tenantId: string): void {
-        const keysToDelete: string[] = [];
-
-        for (const [key, entry] of this.cache.entries()) {
+        const keysToDelete: string[] = [];        for (const [key] of this.cache.entries()) {
             // Check if the key contains the tenantId (simple approach)
             if (key.includes(tenantId)) {
                 keysToDelete.push(key);
@@ -349,7 +347,7 @@ export const memoryCache = new HighPerformanceCache<MemoryResult[]>({
 /**
  * Context cache for frequently accessed context data
  */
-export const contextCache = new HighPerformanceCache<any>({
+export const contextCache = new HighPerformanceCache<unknown>({
     maxSize: 1000,
     defaultTtl: 600, // 10 minutes
     enableCompression: false, // Context is usually small

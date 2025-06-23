@@ -4,7 +4,6 @@
  */
 
 import { logger } from '../utils/logger.js';
-import type { MemoryMetadata } from '../types/index.js';
 
 export interface PerformanceConfig {
     // Query optimization
@@ -47,7 +46,7 @@ export interface PerformanceMetrics {
 export class PerformanceOptimizer {
     private config: PerformanceConfig;
     private metrics: PerformanceMetrics[] = [];
-    private queryCache = new Map<string, { data: any; expiry: number }>();
+    private queryCache = new Map<string, { data: unknown; expiry: number }>();
     private lastGC = Date.now();
     private lastCompaction = Date.now();
 
@@ -114,9 +113,7 @@ export class PerformanceOptimizer {
                     data: result,
                     expiry: Date.now() + this.config.cacheTTL
                 });
-            }
-
-            this.recordMetric('queryTime', Date.now() - startTime);
+            }            this.recordMetric('queryTime', Date.now() - startTime);
             return result;
 
         } catch (error) {
@@ -134,9 +131,7 @@ export class PerformanceOptimizer {
         batchSize: number = this.config.batchSize
     ): Promise<R[]> {
         const results: R[] = [];
-        const batches = this.createBatches(items, batchSize);
-
-        for (const batch of batches) {
+        const batches = this.createBatches(items, batchSize);        for (const batch of batches) {
             try {
                 const batchResults = await processor(batch);
                 results.push(...batchResults);

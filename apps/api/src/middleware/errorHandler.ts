@@ -42,8 +42,7 @@ export function asyncHandler(fn: Function) {
     return (req: Request, res: Response, next: NextFunction) => {
         try {
             const result = fn(req, res, next);
-            // Only handle promise if result is actually a promise
-            if (result && typeof result.then === 'function') {
+            if (result && typeof result.catch === 'function') {
                 return result.catch(next);
             }
             return result;

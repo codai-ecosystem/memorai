@@ -91,21 +91,20 @@ async function initializeMemoryEngine() {
         logger.info(`Memory engine initialized: ${tierInfo.message}`);
         logger.info(`Capabilities: ${JSON.stringify(tierInfo.capabilities)}`);
 
-        return memoryEngine;
-    } catch (error) {
+        return memoryEngine;    } catch (error) {
         logger.error('Failed to initialize memory engine:', error);
         return null;
     }
 }
 
 // Make memory engine available to routes
-app.use((req: any, res: Response, next: NextFunction) => {
+app.use((req: Request, _res: Response, next: NextFunction) => {
     req.memoryEngine = memoryEngine;
     next();
 });
 
 // Health check endpoint
-app.get('/health', (req: Request, res: Response) => {
+app.get('/health', (_req: Request, res: Response) => {
     const status = {
         status: 'healthy',
         timestamp: new Date().toISOString(),
@@ -127,7 +126,7 @@ app.use('/api/stats', statsRouter);
 app.use(errorHandler);
 
 // 404 handler
-app.use('*', (req: Request, res: Response) => {
+app.use('*', (_req: Request, res: Response) => {
     res.status(404).json({ error: 'Endpoint not found' });
 });
 
@@ -143,8 +142,7 @@ async function startServer() {
             logger.info(`🚀 Memorai API Server running on port ${PORT}`);
             logger.info(`📊 Health check: http://localhost:${PORT}/health`);
             logger.info(`🔌 WebSocket: ws://localhost:${PORT}`);
-        });
-    } catch (error) {
+        });    } catch (error) {
         logger.error('Failed to start server:', error);
         process.exit(1);
     }

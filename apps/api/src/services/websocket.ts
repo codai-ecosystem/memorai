@@ -1,8 +1,9 @@
 import { Server as SocketIOServer } from 'socket.io';
 import { logger } from '../utils/logger';
 import { updateStats, updateTierUsage } from '../routes/stats';
+import { UnifiedMemoryEngine } from '@codai/memorai-core';
 
-export function setupWebSocket(io: SocketIOServer, getMemoryEngine: () => any) {
+export function setupWebSocket(io: SocketIOServer, getMemoryEngine: () => UnifiedMemoryEngine | null) {
     io.on('connection', (socket) => {
         logger.info('WebSocket client connected', { id: socket.id });
 
@@ -23,10 +24,8 @@ export function setupWebSocket(io: SocketIOServer, getMemoryEngine: () => any) {
 
                 const startTime = Date.now();
                 const result = await memoryEngine.remember(data.agentId, data.content, data.metadata);
-                const responseTime = Date.now() - startTime;
-
-                updateStats('remember', data.agentId, responseTime);
-                updateTierUsage(memoryEngine.getTierInfo().level);
+                const responseTime = Date.now() - startTime;                updateStats('remember', data.agentId, responseTime);
+                updateTierUsage(memoryEngine.getTierInfo().currentTier, 1);
 
                 // Broadcast to all clients
                 io.emit('memory:created', {
@@ -36,10 +35,10 @@ export function setupWebSocket(io: SocketIOServer, getMemoryEngine: () => any) {
                 });
 
                 callback({ success: true, memory: result });
-                logger.info('WebSocket memory stored', { agentId: data.agentId, memoryId: result.id });
-            } catch (error: any) {
-                logger.error('WebSocket memory store failed', { error: error.message });
-                callback({ error: error.message });
+                logger.info('WebSocket memory stored', { agentId: data.agentId, memoryId: result });
+            } catch (error: unknown) {
+                logger.error('WebSocket memory store failed', { error: (error as Error).message });
+                callback({ error: (error as Error).message });
             }
         });
 
@@ -53,16 +52,14 @@ export function setupWebSocket(io: SocketIOServer, getMemoryEngine: () => any) {
 
                 const startTime = Date.now();
                 const results = await memoryEngine.recall(data.agentId, data.query, data.limit || 10);
-                const responseTime = Date.now() - startTime;
-
-                updateStats('recall', data.agentId, responseTime);
-                updateTierUsage(memoryEngine.getTierInfo().level);
+                const responseTime = Date.now() - startTime;                updateStats('recall', data.agentId, responseTime);
+                updateTierUsage(memoryEngine.getTierInfo().currentTier, results.length);
 
                 callback({ success: true, memories: results });
                 logger.info('WebSocket memory recalled', { agentId: data.agentId, resultsCount: results.length });
-            } catch (error: any) {
-                logger.error('WebSocket memory recall failed', { error: error.message });
-                callback({ error: error.message });
+            } catch (error: unknown) {
+                logger.error('WebSocket memory recall failed', { error: (error as Error).message });
+                callback({ error: (error as Error).message });
             }
         });
 
@@ -72,15 +69,13 @@ export function setupWebSocket(io: SocketIOServer, getMemoryEngine: () => any) {
                 if (!memoryEngine) {
                     callback({ error: 'Memory engine not available' });
                     return;
-                }
-
-                const startTime = Date.now();
-                const success = await memoryEngine.forget(data.agentId, data.memoryId);
+                }                const startTime = Date.now();
+                const success = await memoryEngine.forget(data.memoryId);
                 const responseTime = Date.now() - startTime;
 
                 if (success) {
                     updateStats('forget', data.agentId, responseTime);
-                    updateTierUsage(memoryEngine.getTierInfo().level);
+                    updateTierUsage(memoryEngine.getTierInfo().currentTier, 1);
 
                     // Broadcast to all clients
                     io.emit('memory:deleted', {
@@ -94,9 +89,9 @@ export function setupWebSocket(io: SocketIOServer, getMemoryEngine: () => any) {
                 } else {
                     callback({ error: 'Memory not found' });
                 }
-            } catch (error: any) {
-                logger.error('WebSocket memory forget failed', { error: error.message });
-                callback({ error: error.message });
+            } catch (error: unknown) {
+                logger.error('WebSocket memory forget failed', { error: (error as Error).message });
+                callback({ error: (error as Error).message });
             }
         });
 
@@ -115,9 +110,9 @@ export function setupWebSocket(io: SocketIOServer, getMemoryEngine: () => any) {
                 };
 
                 callback({ success: true, config });
-            } catch (error: any) {
-                logger.error('WebSocket config get failed', { error: error.message });
-                callback({ error: error.message });
+            } catch (error: unknown) {
+                logger.error('WebSocket config get failed', { error: (error as Error).message });
+                callback({ error: (error as Error).message });
             }
         });
 
@@ -131,9 +126,9 @@ export function setupWebSocket(io: SocketIOServer, getMemoryEngine: () => any) {
                 };
 
                 callback({ success: true, stats });
-            } catch (error: any) {
-                logger.error('WebSocket stats get failed', { error: error.message });
-                callback({ error: error.message });
+            } catch (error: unknown) {
+                logger.error('WebSocket stats get failed', { error: (error as Error).message });
+                callback({ error: (error as Error).message });
             }
         });
 
@@ -155,10 +150,8 @@ export function setupWebSocket(io: SocketIOServer, getMemoryEngine: () => any) {
         socket.on('error', (error) => {
             logger.error('WebSocket error', { id: socket.id, error });
         });
-    });
-
-    // Broadcast system events
-    const broadcastSystemEvent = (event: string, data: any) => {
+    });    // Broadcast system events
+    const broadcastSystemEvent = (event: string, data: unknown) => {
         io.to('monitors').emit('system:event', {
             event,
             data,

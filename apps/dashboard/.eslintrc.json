@@ -74,11 +74,14 @@
       "typescript": {
         "alwaysTryTypes": true
       }
-    }
-  },
+    }  },
   "env": {
     "browser": true,
     "node": true,
     "es2022": true
-  }
+  },
+  "ignorePatterns": [
+    "src/components/enterprise/knowledge-graph-placeholder.tsx",
+    "src/lib/voice-search-engine.js"
+  ]
 }

@@ -22,31 +22,31 @@ export class MemoryCommands {
       });
   }
   
-  async remember(content: string, options: any): Promise<void> {
+  async remember(content: string, options: unknown): Promise<void> {
     this.output.info(`Remember: ${content} (options: ${JSON.stringify(options)})`);
   }
   
-  async recall(query: string, options: any): Promise<void> {
+  async recall(query: string, options: unknown): Promise<void> {
     this.output.info(`Recall: ${query} (options: ${JSON.stringify(options)})`);
   }
   
-  async context(topic: string, options: any): Promise<void> {
+  async context(topic: string, options: unknown): Promise<void> {
     this.output.info(`Context: ${topic} (options: ${JSON.stringify(options)})`);
   }
   
-  async forget(query: string, options: any): Promise<void> {
+  async forget(query: string, options: unknown): Promise<void> {
     this.output.info(`Forget: ${query} (options: ${JSON.stringify(options)})`);
   }
 
-  async handleRemember(content: string, options: any): Promise<void> {
+  async handleRemember(content: string, options: unknown): Promise<void> {
     return this.remember(content, options);
   }
 
-  async handleRecall(query: string, options: any): Promise<void> {
+  async handleRecall(query: string, options: unknown): Promise<void> {
     return this.recall(query, options);
   }
 
-  async handleForget(query: string, options: any): Promise<void> {
+  async handleForget(query: string, options: unknown): Promise<void> {
     return this.forget(query, options);
   }
 }

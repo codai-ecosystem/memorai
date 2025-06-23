@@ -46,7 +46,7 @@ export interface OperationOptions {
 export interface RememberOptions {
   content: string;
   context?: MemoryContext;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   tags?: string[];
   priority?: number;
   expires?: Date;
@@ -67,7 +67,7 @@ export interface RecallFilters {
     start?: Date;
     end?: Date;
   };
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   userId?: string;
 }
 
@@ -94,7 +94,7 @@ export interface AgentMemory {
   id: string;
   content: string;
   context: MemoryContext;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   createdAt: Date;
   updatedAt: Date;
   relevanceScore?: number;
@@ -157,7 +157,7 @@ export class MemoraiSDKError extends Error {
 // Event Types
 export interface MemoryEvent {
   type: 'memory_created' | 'memory_recalled' | 'memory_forgotten' | 'context_generated';
-  data: any;
+  data: unknown;
   timestamp: Date;
   sessionId?: string;
 }

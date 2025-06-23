@@ -36,11 +36,7 @@ export class RateLimitMiddleware {
     
     // Check if limit exceeded
     if (requests.length >= this.maxRequests) {
-      Logger.warn('Rate limit exceeded', {
-        clientId,
-        requests: requests.length,
-        limit: this.maxRequests
-      });
+      Logger.warn("Rate limit exceeded");
       
       await this.sendRateLimitError(reply);
       return;
@@ -58,22 +54,20 @@ export class RateLimitMiddleware {
   
   /**
    * Get unique client identifier
-   */
-  private getClientId(request: FastifyRequest): string {
+   */  private getClientId(_request: FastifyRequest): string {
     // Use auth context if available, fallback to IP
-    const auth = (request as any).auth;
+    const auth = (_request as any).auth;
     if (auth) {
       return `user:${auth.userId}`;
     }
     
-    return `ip:${request.ip}`;
+    return `ip:${_request.ip}`;
   }
   
   /**
    * Send rate limit error response
-   */
-  private async sendRateLimitError(reply: FastifyReply): Promise<void> {
-    await reply.code(429).send({
+   */  private async sendRateLimitError(_reply: FastifyReply): Promise<void> {
+    await _reply.code(429).send({
       jsonrpc: '2.0',
       error: {
         code: -32002, // MCPErrorCode.RATE_LIMIT_EXCEEDED

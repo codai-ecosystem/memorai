@@ -47,8 +47,7 @@ export class RetryManager {
     const opts = { ...this.defaultOptions, ...options };
     let lastError: Error;
 
-    for (let attempt = 1; attempt <= opts.maxAttempts; attempt++) {
-      try {
+    for (let attempt = 1; attempt <= opts.maxAttempts; attempt++) {      try {
         return await operation();
       } catch (error) {
         lastError = error as Error;
@@ -129,8 +128,7 @@ export class CircuitBreaker {
     try {
       const result = await operation();
       this.onSuccess();
-      return result;
-    } catch (error) {
+      return result;    } catch (error) {
       this.onFailure();
       throw error;
     }
@@ -296,8 +294,7 @@ export class ResilienceManager {
         return await this.executeResilient(operationName, operation, options);
       } else {
         return await operation();
-      }
-    } catch (error) {
+      }    } catch (error) {
       logger.warn(`Primary operation failed, falling back:`, error);
       return fallback();
     }

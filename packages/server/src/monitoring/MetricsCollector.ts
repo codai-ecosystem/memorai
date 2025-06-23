@@ -3,6 +3,7 @@
  */
 
 import type { ServerMetrics } from '../types/index.js';
+// import { logger } from '../utils/logger.js';
 import { Logger } from '../utils/Logger.js';
 
 /**
@@ -277,8 +278,8 @@ export class MetricsCollector {
             try {
                 const memoryMB = process.memoryUsage().heapUsed / 1024 / 1024;
                 this.recordMemoryUsage(memoryMB);
-            } catch (error) {
-                Logger.error('Error recording periodic memory usage', error);
+            } catch (error: unknown) {
+                Logger.error("Error recording periodic memory usage", { error: error instanceof Error ? error.message : String(error) });
             }
         }, intervalMs);
     }

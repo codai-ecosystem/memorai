@@ -35,39 +35,44 @@ const filesToFix = [
 ];
 
 function fixConsoleStatements(content, filePath) {
-  console.log(`🔍 Fixing console statements in ${filePath}...`);
+  try {
+    console.log(`🔍 Fixing console statements in ${filePath}...`);
 
-  // Replace console.log with conditional logging for API routes
-  if (filePath.includes('/api/')) {
-    content = content.replace(
-      /console\.log\(/g,
-      'if (process.env.NODE_ENV === "development") console.log('
-    );
-    content = content.replace(
-      /console\.error\(/g,
-      'if (process.env.NODE_ENV === "development") console.error('
-    );
-    content = content.replace(
-      /console\.warn\(/g,
-      'if (process.env.NODE_ENV === "development") console.warn('
-    );
-  } else {
-    // For non-API files, add conditional logging or remove simple logs
-    content = content.replace(
-      /console\.log\(/g,
-      'if (process.env.NODE_ENV === "development") console.log('
-    );
-    content = content.replace(
-      /console\.error\(/g,
-      'if (process.env.NODE_ENV === "development") console.error('
-    );
-    content = content.replace(
-      /console\.warn\(/g,
-      'if (process.env.NODE_ENV === "development") console.warn('
-    );
+    // Replace console.log with conditional logging for API routes
+    if (filePath.includes('/api/')) {
+      content = content.replace(
+        /console\.log\(/g,
+        'if (process.env.NODE_ENV === "development") console.log('
+      );
+      content = content.replace(
+        /console\.error\(/g,
+        'if (process.env.NODE_ENV === "development") console.error('
+      );
+      content = content.replace(
+        /console\.warn\(/g,
+        'if (process.env.NODE_ENV === "development") console.warn('
+      );
+    } else {
+      // For non-API files, add conditional logging or remove simple logs
+      content = content.replace(
+        /console\.log\(/g,
+        'if (process.env.NODE_ENV === "development") console.log('
+      );
+      content = content.replace(
+        /console\.error\(/g,
+        'if (process.env.NODE_ENV === "development") console.error('
+      );
+      content = content.replace(
+        /console\.warn\(/g,
+        'if (process.env.NODE_ENV === "development") console.warn('
+      );
+    }
+
+    return content;
+  } catch (error) {
+    console.error(`❌ Error fixing console statements in ${filePath}:`, error.message);
+    return content;
   }
-  
-  return content;
 }
 
 function fixImportOrder(content) {
@@ -75,7 +80,7 @@ function fixImportOrder(content) {
   const imports = [];
   const nonImports = [];
   let inImportSection = true;
-  
+
   for (const line of lines) {
     if (line.trim().startsWith('import ') || line.trim().startsWith('export ')) {
       imports.push(line);
@@ -87,23 +92,23 @@ function fixImportOrder(content) {
       nonImports.push(line);
     }
   }
-  
+
   // Sort imports: React first, then third-party, then local
   const reactImports = imports.filter(line => line.includes('react'));
-  const thirdPartyImports = imports.filter(line => 
-    line.trim().startsWith('import ') && 
-    !line.includes('react') && 
-    !line.includes('./') && 
+  const thirdPartyImports = imports.filter(line =>
+    line.trim().startsWith('import ') &&
+    !line.includes('react') &&
+    !line.includes('./') &&
     !line.includes('../') &&
     !line.includes('@/')
   );
-  const localImports = imports.filter(line => 
-    line.trim().startsWith('import ') && 
+  const localImports = imports.filter(line =>
+    line.trim().startsWith('import ') &&
     (line.includes('./') || line.includes('../') || line.includes('@/'))
   );
   const exportLines = imports.filter(line => line.trim().startsWith('export '));
   const emptyLines = imports.filter(line => line.trim() === '');
-  
+
   // Combine with proper spacing
   const sortedImports = [
     ...reactImports,
@@ -114,7 +119,7 @@ function fixImportOrder(content) {
     ...(localImports.length > 0 && exportLines.length > 0 ? [''] : []),
     ...exportLines
   ];
-  
+
   return [...sortedImports, '', ...nonImports].join('\n');
 }
 
@@ -158,18 +163,18 @@ function removeUnusedImports(content) {
   const importLines = lines.filter(line => line.trim().startsWith('import'));
   const codeLines = lines.filter(line => !line.trim().startsWith('import'));
   const codeContent = codeLines.join('\n');
-  
+
   const filteredImports = importLines.filter(importLine => {
     const match = importLine.match(/import\s+(?:{([^}]+)}|\*\s+as\s+(\w+)|(\w+))\s+from/);
     if (!match) return true;
-    
+
     const imports = match[1] ? match[1].split(',').map(s => s.trim()) : [match[2] || match[3]];
     return imports.some(imp => {
       const cleanImp = imp.trim().replace(/\s+as\s+\w+/, '');
       return codeContent.includes(cleanImp);
     });
   });
-  
+
   return [...filteredImports, '', ...codeLines].join('\n');
 }
 
@@ -188,14 +193,6 @@ function fixUnusedVariables(content) {
     }
     return line;
   }).join('\n');
-}
-    content = content.replace(
-      /^\s*console\.log\([^)]*\);\s*$/gm,
-      '// Removed console.log for production'
-    );
-  }
-
-  return content;
 }
 
 function fixReturnTypes(content) {

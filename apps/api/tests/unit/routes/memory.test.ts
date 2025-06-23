@@ -270,12 +270,9 @@ describe('Memory Routes', () => {
             const response = await request(app)
                 .delete('/api/memory/forget')
                 .send(forgetData)
-                .expect(200);
-
-            expect(response.body.success).toBe(true);
+                .expect(200);            expect(response.body.success).toBe(true);
             expect(response.body.message).toBe('Memory forgotten successfully');
             expect(mockMemoryEngine.forget).toHaveBeenCalledWith(
-                forgetData.agentId,
                 forgetData.memoryId
             );
         });

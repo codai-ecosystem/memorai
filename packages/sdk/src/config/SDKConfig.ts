@@ -88,7 +88,7 @@ export class SDKConfig {
   /**
    * Get configuration as plain object
    */
-  public toObject(): Record<string, any> {
+  public toObject(): Record<string, unknown> {
     return {
       serverUrl: this.serverUrl,
       apiKey: (this.apiKey !== undefined && this.apiKey.length > 0) ? '***REDACTED***' : undefined,

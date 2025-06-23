@@ -14,7 +14,7 @@ import {
 
 // Hyper-optimized cache entry
 interface HyperCacheEntry {
-    data: any;
+    data: unknown;
     timestamp: number;
     hits: number;
     expiry: number;
@@ -48,7 +48,7 @@ class HyperOptimizedMemoryEngine {
         this.preloadCache();
     }
 
-    private key(agent: string, op: string, params: any): string {
+    private key(agent: string, op: string, params: unknown): string {
         return `${agent}:${op}:${typeof params === 'string' ? params : JSON.stringify(params)}`;
     }
 
@@ -97,16 +97,15 @@ class HyperOptimizedMemoryEngine {
             (this.metrics.avgResponseTime * (this.metrics.queries - 1) + responseTime) / this.metrics.queries;
         this.metrics.cacheHitRate =
             (this.metrics.cacheHitRate * (this.metrics.queries - 1) + (hit ? 100 : 0)) / this.metrics.queries;
-    }
-
-    async remember(agent: string, content: string, metadata?: any): Promise<string> {
+    }    async remember(data: unknown): Promise<string> {
         const start = Date.now();
+        const params = data as { agentId: string; content: string; metadata?: unknown };
 
         // Ultra-fast ID generation
         const id = `${Date.now().toString(36)}_${Math.random().toString(36).substr(2, 4)}`;
 
         // Instant cache (no real backend for demo)
-        const cacheKey = this.key(agent, 'remember', content.substr(0, 50));
+        const cacheKey = this.key(params.agentId, 'remember', params.content.substr(0, 50));
         this.cache.set(cacheKey, {
             data: { id, success: true },
             timestamp: start,
@@ -118,7 +117,7 @@ class HyperOptimizedMemoryEngine {
         return id;
     }
 
-    async recall(agent: string, query: string, limit = 10): Promise<any[]> {
+    async recall(agent: string, query: string, limit = 10): Promise<unknown[]> {
         const start = Date.now();
         const cacheKey = this.key(agent, 'recall', `${query}_${limit}`);
 
@@ -127,7 +126,7 @@ class HyperOptimizedMemoryEngine {
         if (cached && Date.now() < cached.expiry) {
             cached.hits++;
             this.updateMetrics(Date.now() - start, true);
-            return cached.data;
+            return cached.data as unknown[];
         }
 
         // Ultra-fast mock results
@@ -154,7 +153,7 @@ class HyperOptimizedMemoryEngine {
         return results;
     }
 
-    async context(agent: string, size = 5): Promise<any> {
+    async context(agent: string, size = 5): Promise<unknown> {
         const start = Date.now();
         const cacheKey = this.key(agent, 'context', size);
 
@@ -163,7 +162,7 @@ class HyperOptimizedMemoryEngine {
         if (cached && Date.now() < cached.expiry) {
             cached.hits++;
             this.updateMetrics(Date.now() - start, true);
-            return cached.data;
+            return cached.data as unknown[];
         }
 
         const result = {
@@ -184,7 +183,7 @@ class HyperOptimizedMemoryEngine {
         return result;
     }
 
-    async forget(agent: string, memoryId: string): Promise<boolean> {
+    async forget(agent: string, _memoryId: string): Promise<boolean> {
         const start = Date.now();
 
         // Ultra-fast cache invalidation
@@ -294,7 +293,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                     content: string;
                     metadata?: any;
                 };
-                const memoryId = await hyperEngine.remember(agentId, content, metadata);
+                const memoryId = await hyperEngine.remember({ agentId, content, metadata });
                 result = { success: true, memoryId, message: 'Hyper-fast storage' };
                 break;
             }
@@ -316,7 +315,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                     contextSize?: number;
                 };
                 const context = await hyperEngine.context(agentId, contextSize);
-                result = { success: true, ...context };
+                result = { success: true, ...(context as Record<string, unknown>) };
                 break;
             }
 
@@ -346,7 +345,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 })
             }]
         };
-    } catch (error) {
+    } catch (error: unknown) {
         return {
             content: [{
                 type: 'text',
@@ -367,13 +366,13 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 async function main() {
     const transport = new StdioServerTransport();
     await server.connect(transport);
-    console.error('🚀 HYPER-FAST MCP Server - Sub-25ms Response Times');
-    console.error('📊 Performance:', hyperEngine.getMetrics());
+    // Console statement removed for production
+    // Console statement removed for production
 }
 
 if (require.main === module) {
-    main().catch((error) => {
-        console.error('❌ Server failed:', error);
+    main().catch((_error) => {
+        // Console statement removed for production
         process.exit(1);
     });
 }

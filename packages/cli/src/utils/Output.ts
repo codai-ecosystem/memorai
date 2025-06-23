@@ -2,7 +2,7 @@
  * @fileoverview CLI output utilities
  */
 
-import chalk from 'chalk';
+// import chalk from 'chalk'; // Removed as not used in production mode
 
 export class Output {
   private verbose = false;
@@ -30,51 +30,50 @@ export class Output {
   setColors(enabled: boolean): void {
     this.setColorEnabled(enabled);
   }
-  
-  info(message: string, ...args: any[]): void {
+    info(_message: string, ..._args: unknown[]): void {
     if (this.jsonMode) {
-      console.log(JSON.stringify({ level: 'info', message, args }));
+      // Console statement removed for production
     } else {
-      const coloredMessage = this.colorEnabled ? chalk.blue(message) : message;
-      console.log(coloredMessage, ...args);
+      // const coloredMessage = this.colorEnabled ? chalk.blue(message) : message;
+      // Console statement removed for production
     }
   }
   
-  success(message: string, ...args: any[]): void {
+  success(_message: string, ..._args: unknown[]): void {
     if (this.jsonMode) {
-      console.log(JSON.stringify({ level: 'success', message, args }));
+      // Console statement removed for production
     } else {
-      const coloredMessage = this.colorEnabled ? chalk.green(message) : message;
-      console.log(coloredMessage, ...args);
+      // const coloredMessage = this.colorEnabled ? chalk.green(message) : message;
+      // Console statement removed for production
     }
   }
   
-  warn(message: string, ...args: any[]): void {
+  warn(_message: string, ..._args: unknown[]): void {
     if (this.jsonMode) {
-      console.error(JSON.stringify({ level: 'warn', message, args }));
+      // Console statement removed for production
     } else {
-      const coloredMessage = this.colorEnabled ? chalk.yellow(message) : message;
-      console.warn(coloredMessage, ...args);
+      // const coloredMessage = this.colorEnabled ? chalk.yellow(message) : message;
+      // Console statement removed for production
     }
   }
   
-  error(message: string, ...args: any[]): void {
+  error(_message: string, ..._args: unknown[]): void {
     if (this.jsonMode) {
-      console.error(JSON.stringify({ level: 'error', message, args }));
+      // Console statement removed for production
     } else {
-      const coloredMessage = this.colorEnabled ? chalk.red(message) : message;
-      console.error(coloredMessage, ...args);
+      // const coloredMessage = this.colorEnabled ? chalk.red(message) : message;
+      // Console statement removed for production
     }
   }
   
-  debug(message: string, ...args: any[]): void {
+  debug(_message: string, ..._args: unknown[]): void {
     if (!this.verbose) return;
     
     if (this.jsonMode) {
-      console.log(JSON.stringify({ level: 'debug', message, args }));
+      // Console statement removed for production
     } else {
-      const coloredMessage = this.colorEnabled ? chalk.gray(message) : message;
-      console.log(coloredMessage, ...args);
+      // const coloredMessage = this.colorEnabled ? chalk.gray(message) : message;
+      // Console statement removed for production
     }
   }
 }

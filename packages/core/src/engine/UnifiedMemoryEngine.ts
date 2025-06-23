@@ -221,9 +221,7 @@ export class UnifiedMemoryEngine {
             for (const result of results) {
                 result.memory.lastAccessedAt = new Date();
                 result.memory.accessCount++;
-            }
-
-            return results;
+            }            return results;
         } catch (error) {
             if (this.config.enableFallback) {
                 logger.warn(`Memory operation failed on ${this.currentTier} tier, attempting fallback...`);
@@ -237,16 +235,14 @@ export class UnifiedMemoryEngine {
     /**
      * Get context for agent with automatic tier routing
      */
-    public async getContext(request: ContextRequest): Promise<ContextResponse> {
+    public async getContext(_request: ContextRequest): Promise<ContextResponse> {
         if (!this.isInitialized) {
             throw new MemoryError('Memory engine not initialized. Call initialize() first.', 'NOT_INITIALIZED');
-        }
-
-        try {
+        }        try {
             const memories = await this.activeEngine.getContext(
-                request.tenant_id,
-                request.agent_id,
-                request.max_memories ?? 10
+                _request.tenant_id,
+                _request.agent_id,
+                _request.max_memories ?? 10
             );
 
             return {
@@ -256,13 +252,12 @@ export class UnifiedMemoryEngine {
                 confidence: 0.9,
                 generated_at: new Date(),
                 total_count: memories.length,
-                context_summary: this.generateContextSummary(memories)
-            };
+                context_summary: this.generateContextSummary(memories)            };
         } catch (error) {
             if (this.config.enableFallback) {
                 logger.warn(`Memory operation failed on ${this.currentTier} tier, attempting fallback...`);
                 await this.fallbackToNextTier();
-                return this.getContext(request);
+                return this.getContext(_request);
             }
             throw this.handleError(error, 'CONTEXT_ERROR');
         }
@@ -276,8 +271,7 @@ export class UnifiedMemoryEngine {
             throw new MemoryError('Memory engine not initialized. Call initialize() first.', 'NOT_INITIALIZED');
         }
 
-        try {
-            return await this.activeEngine.forget(memoryId);
+        try {            return await this.activeEngine.forget(memoryId);
         } catch (error) {
             if (this.config.enableFallback) {
                 logger.warn(`Memory operation failed on ${this.currentTier} tier, attempting fallback...`);
@@ -307,8 +301,7 @@ export class UnifiedMemoryEngine {
             return;
         }
 
-        try {
-            await this.initializeTier(tier);
+        try {            await this.initializeTier(tier);
             logger.info(`🔄 Switched to ${this.getTierInfo().message}`);
         } catch (error) {
             throw new MemoryError(`Failed to switch to ${tier} tier: ${error instanceof Error ? error.message : 'Unknown error'}`, 'TIER_SWITCH_ERROR');
@@ -422,8 +415,7 @@ export class UnifiedMemoryEngine {
 
                     // Update classification models with new data
                     await this.updateClassificationModels();
-                }
-            } catch (error) {
+                }            } catch (error) {
                 logger.warn('Background optimization error', { error });
             }
         }, 5 * 60 * 1000);        // Store interval for cleanup
@@ -464,8 +456,7 @@ export class UnifiedMemoryEngine {
                 if (health.status === 'healthy') {
                     logger.debug('Vector indices optimized successfully');
                 }
-            }
-        } catch (error) {
+            }        } catch (error) {
             logger.warn('Vector index optimization failed', { error });
         }
     }
@@ -487,8 +478,7 @@ export class UnifiedMemoryEngine {
             // 3. Consider memory importance and user preferences
             // 4. Perform cleanup while maintaining data integrity
 
-            logger.debug('Memory cleanup completed for smart tier');
-        } catch (error) {
+            logger.debug('Memory cleanup completed for smart tier');        } catch (error) {
             logger.warn('Memory cleanup failed', { error });
         }
     }
@@ -507,8 +497,7 @@ export class UnifiedMemoryEngine {
             // 3. Update memory type predictions
             // 4. Improve categorization accuracy
 
-            logger.debug('Classification models updated for smart tier');
-        } catch (error) {
+            logger.debug('Classification models updated for smart tier');        } catch (error) {
             logger.warn('Classification model update failed', { error });
         }
     }
@@ -635,14 +624,14 @@ export class UnifiedMemoryEngine {
         if (error instanceof Error) {
             return new MemoryError(`${code}: ${error.message}`, code);
         }
-        return new MemoryError(`${code}: Unknown error`, code);
-    }
+        return new MemoryError(`${code}: Unknown error`, code);    }
 
     /**
      * Get engine statistics
      */
     public async getStats(): Promise<{
-        currentTier: MemoryTierLevel; capabilities: MemoryTierCapabilities;
+        currentTier: MemoryTierLevel;
+        capabilities: MemoryTierCapabilities;
         engineStats: Record<string, unknown>;
     }> {
         const tierInfo = this.getTierInfo();
@@ -656,6 +645,66 @@ export class UnifiedMemoryEngine {
             currentTier: this.currentTier,
             capabilities: tierInfo.capabilities,
             engineStats
+        };
+    }
+
+    /**
+     * Test tier functionality - required by API
+     */
+    public async testTier(tier: string): Promise<{ success: boolean; message: string }> {
+        try {
+            // Validate tier
+            if (!['advanced', 'smart', 'basic', 'mock'].includes(tier)) {
+                return { success: false, message: `Invalid tier: ${tier}` };
+            }
+
+            // If this is the current tier, test it
+            if (tier === this.currentTier) {
+                if (this.activeEngine && typeof this.activeEngine.testTier === 'function') {
+                    return await this.activeEngine.testTier(tier);                } else {
+                    // Basic test - just check if we can remember and recall
+                    const testId = await this.remember('test-content', 'test-tenant', 'test-agent');
+                    await this.recall('test-content', 'test-tenant', 'test-agent', { limit: 1 });
+                    await this.forget(testId);
+                    
+                    return { 
+                        success: true, 
+                        message: `Tier '${tier}' is working correctly` 
+                    };
+                }
+            } else {
+                // Try to switch to this tier temporarily to test it
+                const originalTier = this.currentTier;
+                try {
+                    await this.switchTier(tier as MemoryTierLevel);
+                    const result = await this.testTier(tier); // Recursive call with actual tier
+                    await this.switchTier(originalTier); // Switch back
+                    return result;
+                } catch (error) {
+                    await this.switchTier(originalTier); // Switch back on error
+                    return { 
+                        success: false, 
+                        message: `Failed to test tier '${tier}': ${error instanceof Error ? error.message : 'Unknown error'}` 
+                    };
+                }
+            }
+        } catch (error) {
+            return { 
+                success: false, 
+                message: `Failed to test tier '${tier}': ${error instanceof Error ? error.message : 'Unknown error'}` 
+            };
+        }
+    }
+
+    /**
+     * Get statistics - alias for getStats to match API expectations
+     */
+    public async getStatistics(): Promise<Record<string, unknown>> {
+        const stats = await this.getStats();
+        return {
+            ...stats.engineStats,
+            currentTier: stats.currentTier,
+            capabilities: stats.capabilities
         };
     }
 }

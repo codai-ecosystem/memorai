@@ -49,8 +49,8 @@ export class MCPHandler {
         id: mcpRequest.id
       } as MCPResponse);
 
-    } catch (error) {
-      Logger.error('MCP request failed', error);
+    } catch (error: unknown) {
+      Logger.error("MCP request failed", { error: error instanceof Error ? error.message : String(error) });
       await this.sendError(reply, -32603, 'Internal error', (request.body as any)?.id);
     }
   }
@@ -61,7 +61,7 @@ export class MCPHandler {
   private async routeRequest(
     mcpRequest: MCPRequest,
     request: AuthenticatedRequest
-  ): Promise<any> {
+  ): Promise<unknown> {
     const { method, params } = mcpRequest;
 
     switch (method) {
@@ -92,10 +92,10 @@ export class MCPHandler {
    * Handle memory creation
    */
   private async handleRemember(
-    params: any,
+    params: unknown,
     request: AuthenticatedRequest
   ): Promise<MemoryResponse> {
-    const { content, context } = params;
+    const { content, context } = params as any;
 
     if (!content) {
       throw new Error('Content is required for remember operation');
@@ -124,10 +124,10 @@ export class MCPHandler {
    * Handle memory retrieval
    */
   private async handleRecall(
-    params: any,
+    params: unknown,
     request: AuthenticatedRequest
   ): Promise<MemoryResponse> {
-    const { query, limit = 10, threshold = 0.7 } = params;
+    const { query, limit = 10, threshold = 0.7 } = params as any;
 
     if (!query) {
       throw new Error('Query is required for recall operation');
@@ -142,11 +142,9 @@ export class MCPHandler {
           limit,
           threshold
         }
-      ));
-
-    return {
+      ));    return {
       success: true,
-      memories: memories.map(result => result.memory),
+      memories: memories.map(result => result.memory).filter(memory => memory !== undefined),
       metadata: {
         requestId: this.generateRequestId(),
         timestamp: new Date().toISOString(),
@@ -159,10 +157,10 @@ export class MCPHandler {
    * Handle memory deletion
    */
   private async handleForget(
-    params: any,
+    params: unknown,
     request: AuthenticatedRequest
   ): Promise<MemoryResponse> {
-    const { memoryId, query } = params;
+    const { memoryId, query } = params as any;
 
     if (!memoryId && !query) {
       throw new Error('Either memoryId or query is required for forget operation');
@@ -190,10 +188,10 @@ export class MCPHandler {
    * Handle context generation
    */
   private async handleContext(
-    params: any,
+    params: unknown,
     request: AuthenticatedRequest
   ): Promise<MemoryResponse> {
-    const { topic, timeframe, limit = 50 } = params;
+    const { topic, timeframe, limit = 50 } = params as any;
 
     const { result: context, processingTime } = await this.withTiming(() =>
       this.memoryEngine.context({
@@ -218,7 +216,7 @@ export class MCPHandler {
   /**
    * Handle health check
    */
-  private async handleHealth(): Promise<any> {
+  private async handleHealth(): Promise<unknown> {
     const health = await this.memoryEngine.getHealth();
     return health;
   }
@@ -226,7 +224,7 @@ export class MCPHandler {
   /**
    * Handle capabilities inquiry
    */
-  private async handleCapabilities(): Promise<any> {
+  private async handleCapabilities(): Promise<unknown> {
     return {
       methods: [
         'memory/remember',
@@ -251,11 +249,9 @@ export class MCPHandler {
   /**
    * Validate MCP request format
    */
-  private isValidMCPRequest(request: any): request is MCPRequest {
+  private isValidMCPRequest(request: unknown): request is MCPRequest {
     return (
-      request &&
-      request.jsonrpc === '2.0' &&
-      typeof request.method === 'string'
+      (request as any) && (request as any).jsonrpc === "2.0" && typeof (request as any).method === "string"
     );
   }
 

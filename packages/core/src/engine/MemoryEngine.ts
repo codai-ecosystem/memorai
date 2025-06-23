@@ -350,8 +350,7 @@ export class MemoryEngine {
           checks.vectorStore = false;
           vectorStoreHealthy = false;
           components.vectorStore = { status: 'unhealthy', error: 'Not initialized' };
-        }
-      } catch (error) {
+        }      } catch (error) {
         checks.vectorStore = false;
         vectorStoreHealthy = false;
         components.vectorStore = {
@@ -581,7 +580,6 @@ export class MemoryEngine {
       .map(m => `[${m.memory.type}] ${m.memory.content}`)
       .join('\n\n');
   }
-
   private calculateContextConfidence(memories: MemoryResult[]): number {
     if (memories.length === 0) {
       return 0;
@@ -591,5 +589,82 @@ export class MemoryEngine {
     const avgConfidence = memories.reduce((sum, m) => sum + m.memory.confidence, 0) / memories.length;
 
     return (avgScore + avgConfidence) / 2;
+  }
+  /**
+   * Test tier functionality
+   */
+  async testTier(tier: string): Promise<{ success: boolean; message: string }> {
+    try {
+      await this.ensureInitialized();
+      
+      // Test basic functionality for the given tier
+      const testContent = 'test memory';
+      const testTenantId = 'test-tenant';
+      const testAgentId = 'test-agent';
+
+      // Try to remember and recall to test functionality
+      const rememberedId = await this.remember(testContent, testTenantId, testAgentId, {
+        type: 'procedural' as MemoryType,
+        context: { tier }
+      });
+      
+      const recalled = await this.recall('test memory', testTenantId, testAgentId, {
+        limit: 1
+      });
+
+      // Clean up test memory
+      try {
+        await this.forget(testAgentId, rememberedId);
+      } catch {
+        // Ignore cleanup errors
+      }
+
+      return {
+        success: recalled.length > 0,
+        message: recalled.length > 0 ? `Tier ${tier} is working correctly` : `Tier ${tier} test failed`
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: `Tier ${tier} test failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      };
+    }
+  }
+
+  /**
+   * Get comprehensive statistics
+   */
+  async getStatistics(): Promise<{
+    totalMemories: number;
+    memoryTypes: Record<string, number>;
+    avgConfidence: number;
+    recentActivity: number;
+    vectorStoreHealth: string;
+  }> {
+    try {
+      await this.ensureInitialized();
+      
+      const health = await this.getHealth();
+      
+      // For now, return basic statistics
+      // In a real implementation, these would be calculated from the vector store
+      return {
+        totalMemories: 0, // Would be calculated from vector store
+        memoryTypes: {
+          semantic: 0,
+          episodic: 0,
+          procedural: 0,
+          meta: 0
+        },
+        avgConfidence: 0.0,
+        recentActivity: 0,
+        vectorStoreHealth: health.status
+      };
+    } catch (error) {
+      throw new MemoryError(
+        `Failed to get statistics: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        'STATISTICS_ERROR'
+      );
+    }
   }
 }

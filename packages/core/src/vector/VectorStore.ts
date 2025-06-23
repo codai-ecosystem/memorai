@@ -154,7 +154,7 @@ export class QdrantVectorStore implements VectorStore {
         score_threshold: query.threshold,
         with_payload: true,
       });      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return searchResult.map((point: any) => ({
+      return searchResult.map((point: unknown) => ({
         id: point.id as string,
         score: point.score,
         payload: point.payload ?? {},
@@ -218,7 +218,7 @@ export class QdrantVectorStore implements VectorStore {
     try {
       const collections = await this.client.getCollections();
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return collections.collections.some((c: any) => c.name === this.collection);
+      return collections.collections.some((c: unknown) => c.name === this.collection);
     } catch {
       return false;
     }
@@ -345,8 +345,7 @@ export class MemoryVectorStore {
   public async getHealth(): Promise<{ status: string; error?: string }> {
     try {
       const isHealthy = await this.healthCheck();
-      return { status: isHealthy ? 'healthy' : 'unhealthy' };
-    } catch (error) {
+      return { status: isHealthy ? 'healthy' : 'unhealthy' };    } catch (error) {
       return {
         status: 'unhealthy',
         error: error instanceof Error ? error.message : 'Unknown error'

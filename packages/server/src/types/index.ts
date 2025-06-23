@@ -37,7 +37,7 @@ export interface LoggingOptions {
 // MCP Protocol Types
 export interface MCPRequest {
   method: string;
-  params?: Record<string, any>;
+  params?: Record<string, unknown>;
   id?: string | number;
   jsonrpc: '2.0';
 }

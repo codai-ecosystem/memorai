@@ -3,7 +3,7 @@
  * Includes input validation, rate limiting, and security auditing
  */
 
-import crypto from 'crypto';
+import { createHash, randomBytes, createCipheriv, createDecipheriv, timingSafeEqual } from 'crypto';
 import { logger } from '../utils/logger.js';
 
 export interface ValidationRule {
@@ -420,13 +420,12 @@ export class EncryptionManager {
       throw new Error('Encryption key must be at least 32 characters long');
     }
     // Create a 32-byte key from the input string
-    this.key = crypto.createHash('sha256').update(encryptionKey).digest();
+    this.key = createHash('sha256').update(encryptionKey).digest();
   }  /**
    * Encrypt sensitive data
    */
-  public encrypt(text: string): string {
-    const iv = crypto.randomBytes(16);
-    const cipher = crypto.createCipheriv(this.algorithm, this.key, iv);
+  public encrypt(text: string): string {    const iv = randomBytes(16);
+    const cipher = createCipheriv(this.algorithm, this.key, iv);
 
     let encrypted = cipher.update(text, 'utf8', 'hex');
     encrypted += cipher.final('hex');
@@ -449,7 +448,7 @@ export class EncryptionManager {
       throw new Error('Invalid encrypted text format - missing parts');
     } const iv = Buffer.from(ivPart, 'hex');
 
-    const decipher = crypto.createDecipheriv(this.algorithm, this.key, iv);
+    const decipher = createDecipheriv(this.algorithm, this.key, iv);
 
     let decrypted: string = decipher.update(encryptedPart, 'hex', 'utf8');
     decrypted += decipher.final('utf8');
@@ -460,9 +459,8 @@ export class EncryptionManager {
   /**
    * Hash data for secure comparison
    */
-  public hash(data: string, salt?: string): string {
-    const actualSalt = salt || crypto.randomBytes(16).toString('hex');
-    const hash = crypto.createHash('sha256');
+  public hash(data: string, salt?: string): string {    const actualSalt = salt || randomBytes(16).toString('hex');
+    const hash = createHash('sha256');
     hash.update(data + actualSalt);
 
     return actualSalt + ':' + hash.digest('hex');
@@ -496,7 +494,7 @@ export class EncryptionManager {
       return false;
     }
 
-    return crypto.timingSafeEqual(
+    return timingSafeEqual(
       Buffer.from(expectedHash, 'hex'),
       Buffer.from(actualHash, 'hex')
     );

@@ -5,7 +5,7 @@
 
 import { QdrantClient } from '@qdrant/js-client-rest';
 import type { VectorStore, VectorPoint, SearchResult } from './VectorStore.js';
-import type { MemoryMetadata, MemoryQuery } from '../types/index.js';
+import type { MemoryQuery } from '../types/index.js';
 import { VectorStoreError } from '../types/index.js';
 import { logger } from '../utils/logger.js';
 
@@ -102,8 +102,7 @@ export class OptimizedQdrantVectorStore implements VectorStore {
             // Create optimized indexes
             await this.createOptimizedIndexes();
 
-            logger.info('Optimized Qdrant vector store initialized successfully');
-        } catch (error) {
+            logger.info('Optimized Qdrant vector store initialized successfully');        } catch (error: unknown) {
             logger.error('Failed to initialize optimized Qdrant store:', error);
             throw new VectorStoreError('Failed to initialize vector store');
         }
@@ -168,8 +167,7 @@ export class OptimizedQdrantVectorStore implements VectorStore {
                 }
             });
 
-            logger.info('Updated Qdrant collection configuration for optimization');
-        } catch (error) {
+            logger.info('Updated Qdrant collection configuration for optimization');        } catch (error: unknown) {
             logger.warn('Failed to update collection config, continuing:', error);
         }
     }
@@ -186,11 +184,9 @@ export class OptimizedQdrantVectorStore implements VectorStore {
 
         for (const index of indexes) {
             try {
-                await this.client.createPayloadIndex(this.collection, index);
-            } catch (error) {
-                // Index might already exist, continue
-                logger.debug(`Index ${index.field_name} might already exist:`, error);
-            }
+                await this.client.createPayloadIndex(this.collection, index);        } catch (error) {
+            logger.warn(`Collection ${this.config.collection} might already exist:`, error);
+        }
         }
     }
 
@@ -236,7 +232,7 @@ export class OptimizedQdrantVectorStore implements VectorStore {
             return await connection.search(this.collection, searchParams);
         });
 
-        return searchResult.map((point: any) => ({
+        return searchResult.map((point: unknown) => ({
             id: point.id,
             score: point.score,
             payload: point.payload
@@ -295,7 +291,7 @@ export class OptimizedQdrantVectorStore implements VectorStore {
             must: [
                 { key: 'content_hash', match: { value: contentHash } },
                 { key: 'tenant_id', match: { value: tenantId } }
-            ] as any[]
+            ] as unknown[]
         };
 
         if (agentId) {
@@ -368,15 +364,14 @@ export class OptimizedQdrantVectorStore implements VectorStore {
                 }
             });
 
-            logger.info('Collection optimization completed');
-        } catch (error) {
+            logger.info('Collection optimization completed');        } catch (error: unknown) {
             logger.error('Collection optimization failed:', error);
         }
     }
 
     // Helper methods
     private buildFilter(query: MemoryQuery): any {
-        const filter: { must: any[] } = { must: [] };
+        const filter: { must: unknown[] } = { must: [] };
 
         if (query.tenant_id) {
             filter.must.push({ key: 'tenant_id', match: { value: query.tenant_id } });
@@ -409,8 +404,7 @@ export class OptimizedQdrantVectorStore implements VectorStore {
 
         for (let attempt = 1; attempt <= this.config.maxRetries; attempt++) {
             try {
-                return await operation();
-            } catch (error) {
+                return await operation();            } catch (error: unknown) {
                 lastError = error as Error;
 
                 if (attempt < this.config.maxRetries) {
