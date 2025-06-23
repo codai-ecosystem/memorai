@@ -5,6 +5,9 @@
  * Uses UnifiedMemoryEngine and PerformanceMonitor for production-ready performance
  */
 
+// Force in-memory mode to ensure no external dependencies are required
+process.env.MEMORAI_USE_INMEMORY = 'true';
+
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {

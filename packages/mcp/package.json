@@ -1,6 +1,6 @@
 {
   "name": "@codai/memorai-mcp",
-  "version": "2.0.9",
+  "version": "2.0.10",
   "description": "Revolutionary Multi-Tier Memory MCP Server - Works with or without OpenAI",
   "type": "module",
   "main": "./dist/index.js",

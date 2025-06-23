@@ -396,3 +396,97 @@ export class MemoryVectorStore {
     }
   }
 }
+
+/**
+ * Simple in-memory vector store for BASIC tier - no external dependencies
+ */
+export class InMemoryVectorStore implements VectorStore {
+  private vectors: Map<string, VectorPoint> = new Map();
+
+  public async initialize(): Promise<void> {
+    // No initialization needed for in-memory store
+    return Promise.resolve();
+  }
+
+  public async upsert(points: VectorPoint[]): Promise<void> {
+    for (const point of points) {
+      this.vectors.set(point.id, point);
+    }
+  }
+
+  public async search(vector: number[], query: MemoryQuery): Promise<SearchResult[]> {
+    const results: SearchResult[] = [];
+    
+    for (const [id, point] of this.vectors.entries()) {
+      // Simple cosine similarity calculation
+      const score = this.cosineSimilarity(vector, point.vector);
+      
+      // Apply tenant filtering if specified
+      if (query.tenant_id && point.payload.tenant_id !== query.tenant_id) {
+        continue;
+      }
+      
+      // Apply type filtering if specified
+      if (query.type && point.payload.type !== query.type) {
+        continue;
+      }
+      
+      results.push({
+        id,
+        score,
+        payload: point.payload
+      });
+    }
+    
+    // Sort by score (highest first) and limit results
+    return results
+      .sort((a, b) => b.score - a.score)
+      .slice(0, query.limit || 10);
+  }
+
+  public async delete(ids: string[]): Promise<void> {
+    for (const id of ids) {
+      this.vectors.delete(id);
+    }
+  }
+
+  public async count(tenantId: string): Promise<number> {
+    let count = 0;
+    for (const point of this.vectors.values()) {
+      if (!tenantId || point.payload.tenant_id === tenantId) {
+        count++;
+      }
+    }
+    return count;
+  }
+
+  public async healthCheck(): Promise<boolean> {
+    return true; // In-memory store is always healthy
+  }
+
+  public async close(): Promise<void> {
+    this.vectors.clear();
+  }
+
+  private cosineSimilarity(a: number[], b: number[]): number {
+    if (a.length !== b.length) {
+      return 0;
+    }
+
+    let dotProduct = 0;
+    let normA = 0;
+    let normB = 0;
+
+    for (let i = 0; i < a.length; i++) {
+      dotProduct += a[i]! * b[i]!;
+      normA += a[i]! * a[i]!;
+      normB += b[i]! * b[i]!;
+    }
+
+    if (normA === 0 || normB === 0) {
+      return 0;
+    }
+
+    return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
+  }
+}

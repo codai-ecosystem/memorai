@@ -11,7 +11,7 @@ import type {
 } from "../types/index.js";
 import { MemoryError } from "../types/index.js";
 import { EmbeddingService } from "../embedding/EmbeddingService.js";
-import { MemoryVectorStore, QdrantVectorStore } from "../vector/VectorStore.js";
+import { MemoryVectorStore, QdrantVectorStore, InMemoryVectorStore } from "../vector/VectorStore.js";
 import { MemoryConfigManager } from "../config/MemoryConfig.js";
 
 export interface RememberOptions {
@@ -42,13 +42,27 @@ export class MemoryEngine {
     this.embedding = new EmbeddingService(this.config.getEmbedding());
 
     const vectorConfig = this.config.getVectorDB();
-    const qdrantStore = new QdrantVectorStore(
-      vectorConfig.url,
-      vectorConfig.collection,
-      vectorConfig.dimension,
-      vectorConfig.api_key,
-    );
-    this.vectorStore = new MemoryVectorStore(qdrantStore);
+    
+    // Check if we should use in-memory store (for BASIC tier or when external deps not available)
+    const useInMemory = process.env.MEMORAI_USE_INMEMORY === 'true' || 
+                       !vectorConfig.url || 
+                       vectorConfig.url.includes('localhost') ||
+                       vectorConfig.url.includes('127.0.0.1');
+    
+    if (useInMemory) {
+      // Use simple in-memory vector store - no external dependencies
+      const inMemoryStore = new InMemoryVectorStore();
+      this.vectorStore = new MemoryVectorStore(inMemoryStore);
+    } else {
+      // Use Qdrant for production environments
+      const qdrantStore = new QdrantVectorStore(
+        vectorConfig.url,
+        vectorConfig.collection,
+        vectorConfig.dimension,
+        vectorConfig.api_key,
+      );
+      this.vectorStore = new MemoryVectorStore(qdrantStore);
+    }
   }
 
   public async initialize(): Promise<void> {
