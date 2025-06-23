@@ -276,7 +276,7 @@ const enterpriseEngine = new EnterpriseMemoryEngine();
 const server = new Server(
   {
     name: "memorai-enterprise",
-    version: "2.0.3",
+    version: "2.0.8",
   },
   {
     capabilities: {
@@ -511,19 +511,25 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 // Start enterprise server
 async function main() {
   try {
+    // Disable version compatibility check warnings
+    process.env.MCP_DISABLE_VERSION_CHECK = 'true';
+    
     await enterpriseEngine.initialize();
+    
     const transport = new StdioServerTransport();
-    await server.connect(transport); // Console statement removed for production
-    // Console statement removed for production
-  } catch {
-    // Console statement removed for production
+    
+    // Connect server with error handling
+    await server.connect(transport);
+    
+  } catch (error) {
+    console.error('[ERROR] Server startup failed:', error);
     process.exit(1);
   }
 }
 
 // Auto-start server
-main().catch((_error) => {
-  // Console statement removed for production
+main().catch((error) => {
+  console.error('[ERROR] Main function failed:', error);
   process.exit(1);
 });
 

@@ -1,7 +1,8 @@
 {
   "name": "memorai",
   "description": "Enterprise-grade memory management for AI agents",
-  "version": "1.0.0",
+  "version": "2.0.8",
+  "checkCompatibility": false,
   "server": {
     "command": "memorai-mcp",
     "args": [],
