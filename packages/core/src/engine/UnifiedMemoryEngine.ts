@@ -31,6 +31,9 @@ export interface UnifiedMemoryConfig extends Partial<MemoryConfig> {
   enableFallback?: boolean;
   autoDetect?: boolean;
 
+  // Data path for shared file storage
+  dataPath?: string;
+
   // API configuration - optional
   apiKey?: string;
   model?: string;
@@ -559,7 +562,10 @@ export class UnifiedMemoryEngine {
    */
   private async initializeBasicTier(): Promise<void> {
     if (!this.basicEngine) {
-      this.basicEngine = new BasicMemoryEngine();
+      // Use shared data directory for persistent storage
+      const dataDirectory = this.config.dataPath || process.env.MEMORAI_DATA_PATH || "./data/memory";
+      this.basicEngine = new BasicMemoryEngine(dataDirectory);
+      await this.basicEngine.initialize();
     }
     this.activeEngine = this.basicEngine;
   }

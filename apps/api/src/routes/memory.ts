@@ -38,7 +38,7 @@ router.post('/remember', asyncHandler(async (req: Request, res: Response) => {
   try {
     const { agentId, content, metadata } = rememberSchema.parse(req.body);
 
-    const result = await memoryEngine.remember(content, 'default', agentId, metadata); logger.info('Memory stored', { agentId, memoryId: result });
+    const result = await memoryEngine.remember(content, 'default-tenant', agentId, metadata); logger.info('Memory stored', { agentId, memoryId: result });
 
     res.json({
       success: true,
@@ -67,7 +67,7 @@ router.post('/recall', asyncHandler(async (req: Request, res: Response) => {
   try {
     const { agentId, query, limit = 10 } = recallSchema.parse(req.body);
 
-    const results = await memoryEngine.recall(query, 'default', agentId, { limit });
+    const results = await memoryEngine.recall(query, 'default-tenant', agentId, { limit });
 
     logger.info('Memory recalled', { agentId, query, resultsCount: results.length });
 
@@ -100,7 +100,7 @@ router.post('/context', asyncHandler(async (req: Request, res: Response) => {
     const { agentId, contextSize = 10 } = contextSchema.parse(req.body);
 
     const contextRequest = {
-      tenant_id: 'default',
+      tenant_id: 'default-tenant',
       agent_id: agentId,
       max_memories: contextSize
     };
@@ -174,12 +174,12 @@ router.get('/list/:agentId', asyncHandler(async (req: Request, res: Response) =>
 
     if (search) {
       // Use recall for search functionality
-      const results = await memoryEngine.recall(search, 'default', agentId, { limit: limit * page });
+      const results = await memoryEngine.recall(search, 'default-tenant', agentId, { limit: limit * page });
       memories = results.map((r: any) => (r as any).memory);
     } else {
       // For listing all, use the getContext method
       const contextResponse = await memoryEngine.getContext({
-        tenant_id: 'default',
+        tenant_id: 'default-tenant',
         agent_id: agentId,
         max_memories: limit * page
       });

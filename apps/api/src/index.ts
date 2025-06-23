@@ -12,7 +12,7 @@ import rateLimit from "express-rate-limit";
 import { createServer } from "http";
 import { Server as SocketIOServer } from "socket.io";
 import { config } from "dotenv";
-import { UnifiedMemoryEngine } from "@codai/memorai-core";
+import { UnifiedMemoryEngine, MemoryTierLevel } from "@codai/memorai-core";
 import { logger } from "./utils/logger";
 import { memoryRouter } from "./routes/memory";
 import { configRouter } from "./routes/config";
@@ -90,8 +90,10 @@ let memoryEngine: UnifiedMemoryEngine | null = null;
 async function initializeMemoryEngine() {
   try {
     memoryEngine = new UnifiedMemoryEngine({
-      autoDetect: true,
+      autoDetect: false, // Force basic tier for unified storage
       enableFallback: true,
+      preferredTier: MemoryTierLevel.BASIC, // Use basic tier for file-based unified storage
+      dataPath: process.env.MEMORAI_DATA_PATH || "e:\\GitHub\\memorai\\data\\memory",
       localEmbedding: {
         model: "all-MiniLM-L6-v2",
         pythonPath: process.env.PYTHON_PATH ?? "python",

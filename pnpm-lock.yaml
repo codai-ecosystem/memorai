@@ -367,7 +367,7 @@ importers:
   packages/mcp:
     dependencies:
       '@codai/memorai-core':
-        specifier: ^1.0.0
+        specifier: ^1.0.5
         version: link:../core
       '@codai/memorai-server':
         specifier: ^0.1.2

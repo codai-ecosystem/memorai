@@ -139,10 +139,16 @@ memorai-mcp/
 │   ├── sdk/           # TypeScript SDK
 │   └── cli/           # Command-line tools
 ├── apps/
+│   ├── dashboard/     # Web dashboard
+│   ├── api/           # REST API server
 │   └── demo/          # Demo applications
 ├── tools/
+│   ├── performance/   # Performance testing suite
+│   ├── test-data/     # Test data and configurations
 │   ├── scripts/       # Development scripts
 │   └── docker/        # Docker configurations
+├── docs/
+│   └── project-history/ # Project evolution documentation
 └── .github/
     └── workflows/     # CI/CD pipelines
 ```

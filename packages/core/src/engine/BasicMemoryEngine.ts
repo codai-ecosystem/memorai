@@ -1,6 +1,6 @@
 /**
  * Basic Memory Engine - No AI Required
- * Provides keyword-based search and simple classification
+ * Provides keyword-based search and simple classification with persistent file storage
  */
 
 import type {
@@ -9,27 +9,50 @@ import type {
   MemoryResult,
   MemoryType,
 } from "../types/index.js";
-
-export interface BasicMemoryStore {
-  [id: string]: MemoryMetadata;
-}
+import { FileStorageAdapter } from "../storage/StorageAdapter.js";
 
 export interface KeywordIndex {
   [keyword: string]: Set<string>; // Set of memory IDs
 }
 
 export class BasicMemoryEngine {
-  private memories: BasicMemoryStore = {};
+  private storage: FileStorageAdapter;
   private keywordIndex: KeywordIndex = {};
   private typeIndex: Map<MemoryType, Set<string>> = new Map();
   private tagIndex: Map<string, Set<string>> = new Map();
+  private initialized = false;
+
+  constructor(dataDirectory?: string) {
+    this.storage = new FileStorageAdapter(dataDirectory);
+  }
 
   /**
-   * Store a memory using keyword indexing
+   * Initialize the engine and rebuild indices from persistent storage
+   */
+  public async initialize(): Promise<void> {
+    if (this.initialized) return;
+
+    // Load all memories from storage and rebuild indices
+    const memories = await this.storage.list();
+    for (const memory of memories) {
+      this.indexMemoryKeywords(memory);
+      this.indexMemoryType(memory);
+      this.indexMemoryTags(memory);
+    }
+
+    this.initialized = true;
+  }
+
+  /**
+   * Store a memory using keyword indexing and persistent storage
    */
   public async remember(memory: MemoryMetadata): Promise<void> {
-    // Store the memory
-    this.memories[memory.id] = memory;
+    if (!this.initialized) {
+      await this.initialize();
+    }
+
+    // Store in persistent storage
+    await this.storage.store(memory);
 
     // Index by keywords
     this.indexMemoryKeywords(memory);
@@ -45,6 +68,10 @@ export class BasicMemoryEngine {
    * Search memories using keyword matching
    */
   public async recall(query: MemoryQuery): Promise<MemoryResult[]> {
+    if (!this.initialized) {
+      await this.initialize();
+    }
+
     const searchTerms = this.extractKeywords(query.query);
     const candidateIds = new Set<string>();
 
@@ -75,7 +102,7 @@ export class BasicMemoryEngine {
     // Convert to MemoryResult array with basic scoring
     const results: MemoryResult[] = [];
     for (const id of candidateIds) {
-      const memory = this.memories[id];
+      const memory = await this.storage.retrieve(id);
       if (memory && memory.tenant_id === query.tenant_id) {
         // Check agent filter
         if (query.agent_id && memory.agent_id !== query.agent_id) {
@@ -93,67 +120,67 @@ export class BasicMemoryEngine {
       }
     }
 
-    // Sort by score and apply time decay if requested
-    results.sort((a, b) => {
-      let scoreA = a.score;
-      let scoreB = b.score;
-
-      if (query.time_decay) {
-        scoreA *= this.getTimeDecayFactor(a.memory);
-        scoreB *= this.getTimeDecayFactor(b.memory);
-      }
-
-      return scoreB - scoreA;
-    });
+    // Sort by score (descending)
+    results.sort((a, b) => b.score - a.score);
 
     // Apply limit
-    return results.slice(0, query.limit);
+    const limit = query.limit || 10;
+    return results.slice(0, limit);
   }
 
   /**
-   * Get context for an agent
+   * List memories with filtering
    */
-  public async getContext(
-    tenantId: string,
+  public async list(
+    limit: number = 50,
+    tenantId?: string,
     agentId?: string,
-    limit = 10,
   ): Promise<MemoryMetadata[]> {
-    const memories = Object.values(this.memories)
-      .filter((memory) => {
-        if (memory.tenant_id !== tenantId) return false;
-        if (agentId && memory.agent_id !== agentId) return false;
-        return true;
-      })
-      .sort((a, b) => {
-        // Sort by last accessed time and importance
-        const timeA = a.lastAccessedAt.getTime();
-        const timeB = b.lastAccessedAt.getTime();
-        const importanceA = a.importance;
-        const importanceB = b.importance;
+    if (!this.initialized) {
+      await this.initialize();
+    }
 
-        return (
-          timeB + importanceB * 86400000 - (timeA + importanceA * 86400000)
-        );
+    const filters: any = {};
+    if (tenantId) filters.tenantId = tenantId;
+    if (agentId) filters.agentId = agentId;
+    filters.limit = limit;
+
+    return await this.storage.list(filters);
+  }
+
+  /**
+   * Update memory access statistics
+   */
+  public async updateMemoryAccess(memoryId: string): Promise<void> {
+    if (!this.initialized) {
+      await this.initialize();
+    }
+
+    const memory = await this.storage.retrieve(memoryId);
+    if (memory) {
+      await this.storage.update(memoryId, {
+        lastAccessedAt: new Date(),
+        accessCount: memory.accessCount + 1,
       });
-
-    return memories.slice(0, limit);
+    }
   }
 
   /**
    * Delete a memory
    */
-  public async forget(memoryId: string): Promise<boolean> {
-    const memory = this.memories[memoryId];
-    if (!memory) return false;
+  public async forget(memoryId: string): Promise<void> {
+    if (!this.initialized) {
+      await this.initialize();
+    }
 
-    // Remove from indices
-    this.removeFromKeywordIndex(memory);
-    this.removeFromTypeIndex(memory);
-    this.removeFromTagIndex(memory);
+    const memory = await this.storage.retrieve(memoryId);
+    if (memory) {
+      // Remove from storage
+      await this.storage.delete(memoryId);
 
-    // Remove from storage
-    delete this.memories[memoryId];
-    return true;
+      // Remove from indices
+      this.removeFromIndices(memory);
+    }
   }
 
   /**
@@ -167,6 +194,15 @@ export class BasicMemoryEngine {
         this.keywordIndex[normalizedKeyword] = new Set();
       }
       this.keywordIndex[normalizedKeyword].add(memory.id);
+    }
+
+    // Also index by tags
+    for (const tag of memory.tags) {
+      const normalizedTag = tag.toLowerCase();
+      if (!this.keywordIndex[normalizedTag]) {
+        this.keywordIndex[normalizedTag] = new Set();
+      }
+      this.keywordIndex[normalizedTag].add(memory.id);
     }
   }
 
@@ -185,73 +221,59 @@ export class BasicMemoryEngine {
    */
   private indexMemoryTags(memory: MemoryMetadata): void {
     for (const tag of memory.tags) {
-      if (!this.tagIndex.has(tag)) {
-        this.tagIndex.set(tag, new Set());
+      const normalizedTag = tag.toLowerCase();
+      if (!this.tagIndex.has(normalizedTag)) {
+        this.tagIndex.set(normalizedTag, new Set());
       }
-      this.tagIndex.get(tag)!.add(memory.id);
+      this.tagIndex.get(normalizedTag)!.add(memory.id);
     }
   }
 
   /**
-   * Remove memory from keyword index
+   * Remove memory from all indices
    */
-  private removeFromKeywordIndex(memory: MemoryMetadata): void {
+  private removeFromIndices(memory: MemoryMetadata): void {
+    // Remove from keyword index
     const keywords = this.extractKeywords(memory.content);
     for (const keyword of keywords) {
       const normalizedKeyword = keyword.toLowerCase();
-      const indexSet = this.keywordIndex[normalizedKeyword];
-      if (indexSet) {
-        indexSet.delete(memory.id);
-        if (indexSet.size === 0) {
-          delete this.keywordIndex[normalizedKeyword];
-        }
+      this.keywordIndex[normalizedKeyword]?.delete(memory.id);
+      if (this.keywordIndex[normalizedKeyword]?.size === 0) {
+        delete this.keywordIndex[normalizedKeyword];
       }
     }
-  }
 
-  /**
-   * Remove memory from type index
-   */
-  private removeFromTypeIndex(memory: MemoryMetadata): void {
-    const typeSet = this.typeIndex.get(memory.type);
-    if (typeSet) {
-      typeSet.delete(memory.id);
-      if (typeSet.size === 0) {
-        this.typeIndex.delete(memory.type);
-      }
+    // Remove from type index
+    this.typeIndex.get(memory.type)?.delete(memory.id);
+    if (this.typeIndex.get(memory.type)?.size === 0) {
+      this.typeIndex.delete(memory.type);
     }
-  }
 
-  /**
-   * Remove memory from tag index
-   */
-  private removeFromTagIndex(memory: MemoryMetadata): void {
+    // Remove from tag index
     for (const tag of memory.tags) {
-      const tagSet = this.tagIndex.get(tag);
-      if (tagSet) {
-        tagSet.delete(memory.id);
-        if (tagSet.size === 0) {
-          this.tagIndex.delete(tag);
-        }
+      const normalizedTag = tag.toLowerCase();
+      this.tagIndex.get(normalizedTag)?.delete(memory.id);
+      if (this.tagIndex.get(normalizedTag)?.size === 0) {
+        this.tagIndex.delete(normalizedTag);
       }
     }
   }
 
   /**
-   * Extract keywords from text
+   * Extract keywords from text using simple tokenization
    */
   private extractKeywords(text: string): string[] {
-    // Simple keyword extraction: split on whitespace and punctuation
+    // Simple keyword extraction
     return text
       .toLowerCase()
-      .replace(/[^\w\s]/g, " ")
-      .split(/\s+/)
-      .filter((word) => word.length > 2) // Filter short words
-      .filter((word) => !this.isStopWord(word));
+      .replace(/[^\w\s]/g, " ") // Replace punctuation with spaces
+      .split(/\s+/) // Split on whitespace
+      .filter((word) => word.length > 2) // Filter out short words
+      .filter((word) => !this.isStopWord(word)); // Filter out stop words
   }
 
   /**
-   * Check if word is a stop word
+   * Check if a word is a stop word
    */
   private isStopWord(word: string): boolean {
     const stopWords = new Set([
@@ -269,25 +291,12 @@ export class BasicMemoryEngine {
       "of",
       "with",
       "by",
-      "from",
-      "up",
-      "about",
-      "into",
-      "through",
-      "during",
-      "before",
-      "after",
-      "above",
-      "below",
-      "around",
-      "among",
       "is",
       "are",
       "was",
       "were",
       "be",
       "been",
-      "being",
       "have",
       "has",
       "had",
@@ -296,114 +305,136 @@ export class BasicMemoryEngine {
       "did",
       "will",
       "would",
-      "should",
       "could",
-      "can",
+      "should",
       "may",
       "might",
-      "must",
-      "shall",
+      "can",
       "this",
       "that",
       "these",
       "those",
+      "i",
+      "you",
+      "he",
+      "she",
+      "it",
+      "we",
+      "they",
+      "me",
+      "him",
+      "her",
+      "us",
+      "them",
     ]);
     return stopWords.has(word);
   }
 
   /**
-   * Calculate keyword-based relevance score
+   * Calculate keyword match score
    */
   private calculateKeywordScore(
     memory: MemoryMetadata,
     searchTerms: string[],
   ): number {
-    const memoryKeywords = this.extractKeywords(memory.content);
-    const memoryKeywordSet = new Set(memoryKeywords);
+    const contentWords = this.extractKeywords(memory.content);
+    const titleWords = memory.tags || [];
 
-    let matches = 0;
+    let score = 0;
+    let totalTerms = searchTerms.length;
+
     for (const term of searchTerms) {
-      if (memoryKeywordSet.has(term.toLowerCase())) {
-        matches++;
+      let termScore = 0;
+
+      // Check for exact matches in content
+      if (contentWords.includes(term)) {
+        termScore += 0.5;
       }
+
+      // Check for exact matches in tags
+      if (titleWords.some((tag) => tag.toLowerCase().includes(term))) {
+        termScore += 0.3;
+      }
+
+      // Check for partial matches
+      if (memory.content.toLowerCase().includes(term)) {
+        termScore += 0.2;
+      }
+
+      score += termScore;
     }
 
-    const keywordScore = matches / Math.max(searchTerms.length, 1);
-
-    // Boost score based on memory importance and access frequency
-    const importanceBoost = memory.importance * 0.2;
-    const accessBoost = Math.min(memory.accessCount / 10, 0.2);
-
-    return Math.min(keywordScore + importanceBoost + accessBoost, 1.0);
+    // Normalize score
+    return totalTerms > 0 ? score / totalTerms : 0;
   }
 
   /**
-   * Calculate time decay factor
-   */
-  private getTimeDecayFactor(memory: MemoryMetadata): number {
-    const now = new Date();
-    const lastAccessed = memory.lastAccessedAt;
-    const daysSinceAccess =
-      (now.getTime() - lastAccessed.getTime()) / (1000 * 60 * 60 * 24);
-
-    // Exponential decay with half-life of 30 days
-    return Math.exp(-daysSinceAccess / 30);
-  }
-
-  /**
-   * Get relevance reason for search result
+   * Get relevance reason for a memory
    */
   private getRelevanceReason(
     memory: MemoryMetadata,
     searchTerms: string[],
   ): string {
-    const memoryKeywords = this.extractKeywords(memory.content);
-    const matches = searchTerms.filter((term) =>
-      memoryKeywords.some(
-        (keyword) => keyword.toLowerCase() === term.toLowerCase(),
-      ),
-    );
+    const reasons: string[] = [];
 
-    if (matches.length === 0) {
-      return "Partial text match";
-    } else if (matches.length === 1) {
-      return `Matches keyword: "${matches[0]}"`;
-    } else {
-      return `Matches keywords: ${matches
-        .slice(0, 3)
-        .map((m) => `"${m}"`)
-        .join(", ")}`;
+    for (const term of searchTerms) {
+      if (memory.content.toLowerCase().includes(term)) {
+        reasons.push(`matches "${term}"`);
+      }
     }
+
+    if (memory.tags.length > 0) {
+      for (const term of searchTerms) {
+        if (memory.tags.some((tag) => tag.toLowerCase().includes(term))) {
+          reasons.push(`tagged with "${term}"`);
+        }
+      }
+    }
+
+    return reasons.length > 0
+      ? reasons.join(", ")
+      : "keyword match in content";
   }
 
   /**
-   * Get statistics about the memory store
+   * Get statistics about stored memories
    */
-  public getStats(): {
+  public async getStats(): Promise<{
     totalMemories: number;
     memoryTypes: Record<MemoryType, number>;
-    totalKeywords: number;
-    totalTags: number;
-  } {
+    indexStats: {
+      keywords: number;
+      types: number;
+      tags: number;
+    };
+  }> {
+    if (!this.initialized) {
+      await this.initialize();
+    }
+
+    const memories = await this.storage.list();
     const memoryTypes: Record<MemoryType, number> = {
-      personality: 0,
+      fact: 0,
       procedure: 0,
       preference: 0,
-      fact: 0,
-      thread: 0,
-      task: 0,
+      personality: 0,
       emotion: 0,
+      task: 0,
+      thread: 0,
     };
 
-    for (const memory of Object.values(this.memories)) {
+    for (const memory of memories) {
       memoryTypes[memory.type]++;
     }
 
     return {
-      totalMemories: Object.keys(this.memories).length,
+      totalMemories: memories.length,
       memoryTypes,
-      totalKeywords: Object.keys(this.keywordIndex).length,
-      totalTags: this.tagIndex.size,
+      indexStats: {
+        keywords: Object.keys(this.keywordIndex).length,
+        types: this.typeIndex.size,
+        tags: this.tagIndex.size,
+      },
     };
   }
 }

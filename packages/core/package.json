@@ -1,6 +1,6 @@
 {
   "name": "@codai/memorai-core",
-  "version": "1.0.3",
+  "version": "1.0.5",
   "description": "Core memory engine with vector operations for AI agents",
   "type": "module",
   "main": "./dist/index.js",

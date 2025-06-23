@@ -23,13 +23,16 @@ import {
 import { PerformanceMonitor } from "@codai/memorai-core";
 import { infrastructureManager } from "./infrastructure.js";
 
-// Enterprise-grade configuration for real persistence with Azure OpenAI
+// Enterprise-grade configuration for real persistence - use BASIC tier for file storage consistency
 const memoryConfig: UnifiedMemoryConfig = {
   enableFallback: true,
-  autoDetect: true,
-  preferredTier: MemoryTierLevel.SMART, // Use SMART tier for Azure OpenAI with proper embeddings
+  autoDetect: false, // Force basic tier for unified storage
+  preferredTier: MemoryTierLevel.BASIC, // Use BASIC tier for file-based unified storage
 
-  // Azure OpenAI configuration (from environment)
+  // Use shared data directory for unified storage across API and MCP servers
+  dataPath: process.env.MEMORAI_DATA_PATH || "e:\\GitHub\\memorai\\data\\memory",
+
+  // Azure OpenAI configuration (from environment) - fallback only
   azureOpenAI: {
     endpoint: process.env.AZURE_OPENAI_ENDPOINT,
     apiKey: process.env.AZURE_OPENAI_API_KEY,

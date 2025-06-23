@@ -1,47 +1,38 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 
 export async function GET() {
   try {
-    // Mock response for now - later we'll connect to MCP server
-    const mockMemories = [
-      {
-        id: "1",
-        content: "Sample memory 1",
-        agentId: "copilot-1",
-        timestamp: new Date().toISOString(),
-        metadata: {
-          type: "note",
-          tags: ["test"],
-          importance: 0.8,
-          source: "dashboard",
-          confidence: 0.9,
-        },
+    // Connect to actual MCP server instead of using mock data
+    const response = await fetch("http://localhost:6367/api/memory/context", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
       },
-      {
-        id: "2",
-        content: "Sample memory 2",
-        agentId: "copilot-1",
-        timestamp: new Date(Date.now() - 300000).toISOString(),
-        metadata: {
-          type: "conversation",
-          tags: ["chat", "important"],
-          importance: 0.6,
-          source: "user",
-          confidence: 0.7,
-        },
-      },
-    ];
+    });
 
-    return NextResponse.json({ data: mockMemories, success: true });
-  } catch (error) {
-    if (process.env.NODE_ENV === "development")
-      {
-        console.error("Memory context API error:", error);
+    if (!response.ok) {
+      throw new Error(`MCP Server error: ${response.status}`);
     }
-    return NextResponse.json(
-      { error: "Failed to fetch memory context", success: false },
-      { status: 500 },
-    );
+
+    const mcpData = await response.json();
+
+    return NextResponse.json({
+      success: true,
+      data: mcpData,
+    });
+  } catch (error) {
+    console.error("Error fetching memory context:", error);
+
+    // Fallback to empty state if MCP server is not available
+    return NextResponse.json({
+      success: false,
+      error: "Unable to connect to MCP server",
+      data: {
+        memories: [],
+        totalCount: 0,
+        agents: [],
+      },
+    });
   }
 }
 
@@ -49,45 +40,31 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    // Mock response for memory context
-    const mockMemories = [
-      {
-        id: "1",
-        content: "Sample memory 1",
-        agentId: body.agentId || "copilot-1",
-        timestamp: new Date().toISOString(),
-        metadata: {
-          type: "note",
-          tags: ["test"],
-          importance: 0.8,
-          source: "dashboard",
-          confidence: 0.9,
-        },
+    // Forward request to actual MCP server
+    const response = await fetch("http://localhost:6367/api/memory/context", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
-      {
-        id: "2",
-        content: "Sample memory 2",
-        agentId: body.agentId || "copilot-1",
-        timestamp: new Date(Date.now() - 300000).toISOString(),
-        metadata: {
-          type: "conversation",
-          tags: ["chat", "important"],
-          importance: 0.6,
-          source: "user",
-          confidence: 0.7,
-        },
-      },
-    ];
+      body: JSON.stringify(body),
+    });
 
-    return NextResponse.json({ data: mockMemories, success: true });
-  } catch (error) {
-    if (process.env.NODE_ENV === "development")
-      {
-        console.error("Memory context API error:", error);
+    if (!response.ok) {
+      throw new Error(`MCP Server error: ${response.status}`);
     }
-    return NextResponse.json(
-      { error: "Failed to fetch memory context", success: false },
-      { status: 500 },
-    );
+
+    const mcpData = await response.json();
+
+    return NextResponse.json({
+      success: true,
+      data: mcpData,
+    });
+  } catch (error) {
+    console.error("Error posting memory context:", error);
+
+    return NextResponse.json({
+      success: false,
+      error: "Unable to connect to MCP server",
+    }, { status: 500 });
   }
 }
