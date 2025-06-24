@@ -5,35 +5,20 @@
  * RESTful API and WebSocket server for the Memorai web interface
  */
 
-import express, { Express, Request, Response, NextFunction } from "express";
-import cors from "cors";
-import helmet from "helmet";
-import rateLimit from "express-rate-limit";
-import { createServer } from "http";
-import { Server as SocketIOServer } from "socket.io";
-import { config } from "dotenv";
-import { UnifiedMemoryEngine, MemoryTierLevel } from "@codai/memorai-core";
-import { logger } from "./utils/logger";
-import { memoryRouter } from "./routes/memory";
-import { configRouter } from "./routes/config";
-import { statsRouter } from "./routes/stats";
-import { errorHandler } from "./middleware/errorHandler";
-import { setupWebSocket } from "./services/websocket";
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+import { MemoryTierLevel, UnifiedMemoryEngine } from '@codai/memorai-core';
+import cors from 'cors';
+import { config } from 'dotenv';
+import express, { Express, NextFunction, Request, Response } from 'express';
+import rateLimit from 'express-rate-limit';
+import helmet from 'helmet';
+import { createServer } from 'http';
+import { Server as SocketIOServer } from 'socket.io';
+import { errorHandler } from './middleware/errorHandler';
+import { configRouter } from './routes/config';
+import { memoryRouter } from './routes/memory';
+import { statsRouter } from './routes/stats';
+import { setupWebSocket } from './services/websocket';
+import { logger } from './utils/logger';
 
 // Load environment variables
 config();
@@ -42,8 +27,8 @@ const app: Express = express();
 const server = createServer(app);
 const io = new SocketIOServer(server, {
   cors: {
-    origin: process.env.CORS_ORIGIN || "http://localhost:6366",
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    origin: process.env.CORS_ORIGIN || 'http://localhost:6366',
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
   },
 });
 
@@ -57,31 +42,31 @@ app.use(
         defaultSrc: ["'self'"],
         styleSrc: ["'self'", "'unsafe-inline'"],
         scriptSrc: ["'self'"],
-        imgSrc: ["'self'", "data:", "https:"],
+        imgSrc: ["'self'", 'data:', 'https:'],
       },
     },
-  }),
+  })
 );
 
 // CORS middleware
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN || "http://localhost:6366",
+    origin: process.env.CORS_ORIGIN || 'http://localhost:6366',
     credentials: true,
-  }),
+  })
 );
 
 // Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // limit each IP to 100 requests per windowMs
-  message: "Too many requests from this IP, please try again later.",
+  message: 'Too many requests from this IP, please try again later.',
 });
-app.use("/api/", limiter);
+app.use('/api/', limiter);
 
 // Body parsing middleware
-app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Global memory engine instance
 let memoryEngine: UnifiedMemoryEngine | null = null;
@@ -93,10 +78,11 @@ async function initializeMemoryEngine() {
       autoDetect: false, // Force basic tier for unified storage
       enableFallback: true,
       preferredTier: MemoryTierLevel.BASIC, // Use basic tier for file-based unified storage
-      dataPath: process.env.MEMORAI_DATA_PATH || "e:\\GitHub\\memorai\\data\\memory",
+      dataPath:
+        process.env.MEMORAI_DATA_PATH || 'e:\\GitHub\\memorai\\data\\memory',
       localEmbedding: {
-        model: "all-MiniLM-L6-v2",
-        pythonPath: process.env.PYTHON_PATH ?? "python",
+        model: 'all-MiniLM-L6-v2',
+        pythonPath: process.env.PYTHON_PATH ?? 'python',
         ...(process.env.MEMORAI_CACHE_PATH
           ? { cachePath: process.env.MEMORAI_CACHE_PATH }
           : {}),
@@ -111,7 +97,7 @@ async function initializeMemoryEngine() {
 
     return memoryEngine;
   } catch (error) {
-    logger.error("Failed to initialize memory engine:", error);
+    logger.error('Failed to initialize memory engine:', error);
     return null;
   }
 }
@@ -123,30 +109,30 @@ app.use((req: Request, _res: Response, next: NextFunction) => {
 });
 
 // Health check endpoint
-app.get("/health", (_req: Request, res: Response) => {
+app.get('/health', (_req: Request, res: Response) => {
   const status = {
-    status: "healthy",
+    status: 'healthy',
     timestamp: new Date().toISOString(),
-    version: process.env.npm_package_version || "1.0.0",
+    version: process.env.npm_package_version || '1.0.0',
     memoryEngine: {
       initialized: !!memoryEngine,
-      tier: memoryEngine ? memoryEngine.getTierInfo().currentTier : "none",
+      tier: memoryEngine ? memoryEngine.getTierInfo().currentTier : 'none',
     },
   };
   res.json(status);
 });
 
 // API routes
-app.use("/api/memory", memoryRouter);
-app.use("/api/config", configRouter);
-app.use("/api/stats", statsRouter);
+app.use('/api/memory', memoryRouter);
+app.use('/api/config', configRouter);
+app.use('/api/stats', statsRouter);
 
 // Error handling middleware
 app.use(errorHandler);
 
 // 404 handler
-app.use("*", (_req: Request, res: Response) => {
-  res.status(404).json({ error: "Endpoint not found" });
+app.use('*', (_req: Request, res: Response) => {
+  res.status(404).json({ error: 'Endpoint not found' });
 });
 
 // WebSocket setup
@@ -163,24 +149,24 @@ async function startServer() {
       logger.info(`🔌 WebSocket: ws://localhost:${PORT}`);
     });
   } catch (error) {
-    logger.error("Failed to start server:", error);
+    logger.error('Failed to start server:', error);
     process.exit(1);
   }
 }
 
 // Graceful shutdown
-process.on("SIGINT", () => {
-  logger.info("Received SIGINT, shutting down gracefully");
+process.on('SIGINT', () => {
+  logger.info('Received SIGINT, shutting down gracefully');
   server.close(() => {
-    logger.info("Server closed");
+    logger.info('Server closed');
     process.exit(0);
   });
 });
 
-process.on("SIGTERM", () => {
-  logger.info("Received SIGTERM, shutting down gracefully");
+process.on('SIGTERM', () => {
+  logger.info('Received SIGTERM, shutting down gracefully');
   server.close(() => {
-    logger.info("Server closed");
+    logger.info('Server closed');
     process.exit(0);
   });
 });
@@ -197,4 +183,4 @@ declare global {
   }
 }
 
-export { app, server, io };
+export { app, io, server };

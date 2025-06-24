@@ -1,6 +1,6 @@
 {
   "name": "@codai/memorai-mcp",
-  "version": "2.0.26",
+  "version": "2.0.40",
   "description": "Revolutionary Multi-Tier Memory MCP Server - Azure OpenAI Exclusive",
   "type": "module",
   "main": "./dist/index.js",
@@ -58,7 +58,7 @@
     "url": "https://github.com/dragoscv/memorai-mcp/issues"
   },
   "dependencies": {
-    "@codai/memorai-core": "^1.0.5",
+    "@codai/memorai-core": "^1.0.11",
     "@codai/memorai-server": "^0.1.2",
     "@modelcontextprotocol/sdk": "^1.12.2",
     "commander": "^12.0.0",

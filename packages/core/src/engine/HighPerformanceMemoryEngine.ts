@@ -158,12 +158,14 @@ export class HighPerformanceMemoryEngine {
       );
     }
 
-    if (!content || content.trim().length === 0) {
+    // Ensure content is a string
+    const contentStr = String(content || '');
+    if (!contentStr || contentStr.trim().length === 0) {
       throw new MemoryError("Content cannot be empty", "INVALID_CONTENT");
     }
 
     // Enhanced content validation and sanitization
-    const validation = InputValidator.validateMemoryContent(content);
+    const validation = InputValidator.validateMemoryContent(contentStr);
     if (!validation.isValid) {
       throw new MemoryError(
         `Invalid content: ${validation.errors.join(", ")}`,
@@ -265,7 +267,9 @@ export class HighPerformanceMemoryEngine {
       );
     }
 
-    if (!query || query.trim().length === 0) {
+    // Ensure query is a string
+    const queryStr = String(query || '');
+    if (!queryStr || queryStr.trim().length === 0) {
       throw new MemoryError("Query cannot be empty", "INVALID_QUERY");
     }
 
@@ -273,25 +277,25 @@ export class HighPerformanceMemoryEngine {
       // Check cache first (unless disabled)
       if (options.useCache !== false) {
         const cachedResults = this.cache.getCachedMemoryResults(
-          query,
+          queryStr,
           tenantId,
           agentId,
           options,
         );
         if (cachedResults) {
           this.updateCacheHitRate(true);
-          logger.debug(`Cache hit for query: ${query.substring(0, 50)}...`);
+          logger.debug(`Cache hit for query: ${queryStr.substring(0, 50)}...`);
           return cachedResults;
         }
         this.updateCacheHitRate(false);
       }
 
       // Generate query embedding
-      const embeddingResult = await this.embedding.embed(query);
+      const embeddingResult = await this.embedding.embed(queryStr);
 
       // Build optimized memory query
       const memoryQuery: MemoryQuery = {
-        query: query.trim(),
+        query: queryStr.trim(),
         type: options.type,
         limit: Math.min(options.limit ?? 10, 50), // Cap at 50 for performance
         threshold: options.threshold ?? 0.6, // Slightly higher for better quality
