@@ -51,7 +51,7 @@ describe("Config Routes", () => {
       const response = await request(app).get("/api/config").expect(200);
 
       const { config } = response.body;
-      expect(config.tier.level).toBe("mock");
+      expect(config.tier.level).toBe("basic");
       expect(config.tier.capabilities).toBeDefined();
       expect(config.tier.message).toBeDefined();
     });
@@ -109,7 +109,7 @@ describe("Config Routes", () => {
 
   describe("POST /test-tier", () => {
     it("should accept valid tier values", async () => {
-      const validTiers = ["advanced", "smart", "basic", "mock"];
+      const validTiers = ["advanced", "smart", "basic"];
 
       for (const tier of validTiers) {
         const response = await request(app)

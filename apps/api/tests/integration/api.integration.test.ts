@@ -53,9 +53,9 @@ vi.mock("@codai/memorai-core", () => ({
         }),
       ),
     getTierInfo: vi.fn().mockReturnValue({
-      level: "mock",
-      currentTier: "mock",
-      message: "Mock memory engine for integration testing",
+      level: "basic",
+      currentTier: "basic",
+      message: "Basic memory engine for integration testing",
       capabilities: {
         embedding: true,
         similarity: true,
@@ -67,7 +67,7 @@ vi.mock("@codai/memorai-core", () => ({
       if (!tier) {
         throw new Error("Tier not specified");
       }
-      if (["mock", "basic", "smart", "advanced"].includes(tier)) {
+      if (["basic", "smart", "advanced"].includes(tier)) {
         return {
           success: true,
           message: `Tier '${tier}' is available and working`,
@@ -81,7 +81,7 @@ vi.mock("@codai/memorai-core", () => ({
       memoryTypes: { semantic: 5, episodic: 3, procedural: 2, meta: 0 },
       avgConfidence: 0.9,
       recentActivity: 5,
-      currentTier: "mock",
+      currentTier: "basic",
     }),
   })),
 }));
@@ -157,7 +157,7 @@ describe("API Integration Tests", () => {
         version: expect.any(String),
         memoryEngine: {
           initialized: true,
-          tier: "mock",
+          tier: "basic",
         },
       });
     });
@@ -260,7 +260,7 @@ describe("API Integration Tests", () => {
     it("should test tier switching", async () => {
       const response = await request(app)
         .post("/api/config/test-tier")
-        .send({ tier: "mock" })
+        .send({ tier: "basic" })
         .expect(200);
 
       expect(response.body).toBeDefined();

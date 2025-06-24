@@ -774,7 +774,7 @@ export class UnifiedMemoryEngine {
   ): Promise<{ success: boolean; message: string }> {
     try {
       // Validate tier
-      if (!['advanced', 'smart', 'basic', 'mock'].includes(tier)) {
+      if (!['advanced', 'smart', 'basic'].includes(tier)) {
         return { success: false, message: `Invalid tier: ${tier}` };
       }
 

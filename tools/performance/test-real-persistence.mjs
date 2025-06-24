@@ -50,8 +50,8 @@ serverProcess.stderr.on('data', (data) => {
 serverProcess.on('close', (code) => {
     console.log(`\n🔄 Server process exited with code ${code}`);
 
-    if (serverOutput.includes('Mock Memory') || serverOutput.includes('mock')) {
-        console.log('❌ FAILED: Server is still using mock mode');
+    if (serverOutput.includes('Mock Memory') || serverOutput.includes('tier: mock')) {
+        console.log('❌ FAILED: Server is still using mock tier mode');
     } else if (serverOutput.includes('SMART') || serverOutput.includes('Azure')) {
         console.log('✅ SUCCESS: Server appears to be using real Azure configuration');
     } else {

@@ -338,7 +338,7 @@ class MemoraiDashboardEnhanced {
         console.error("Failed to load stats:", stats.reason);
         this.stats = {
           totalMemories: 0,
-          memoryTiers: { smart: 0, basic: 0, advanced: 0, mock: 0 },
+          memoryTiers: { smart: 0, basic: 0, advanced: 0 },
           recentActivity: 0,
           storageUsed: "0 MB",
         };
@@ -391,7 +391,7 @@ class MemoraiDashboardEnhanced {
         data.stats ||
         data || {
           totalMemories: 0,
-          memoryTiers: { smart: 0, basic: 0, advanced: 0, mock: 0 },
+          memoryTiers: { smart: 0, basic: 0, advanced: 0 },
           recentActivity: 0,
           storageUsed: "0 MB",
         }
@@ -401,7 +401,7 @@ class MemoraiDashboardEnhanced {
       this.performance.errors++;
       return {
         totalMemories: 0,
-        memoryTiers: { smart: 0, basic: 0, advanced: 0, mock: 0 },
+        memoryTiers: { smart: 0, basic: 0, advanced: 0 },
         recentActivity: 0,
         storageUsed: "0 MB",
       };
@@ -494,7 +494,6 @@ class MemoraiDashboardEnhanced {
       advanced: { label: "Advanced", class: "tier-advanced", icon: "crown" },
       smart: { label: "Smart", class: "tier-smart", icon: "cpu" },
       basic: { label: "Basic", class: "tier-basic", icon: "hash" },
-      mock: { label: "Mock", class: "tier-mock", icon: "flask-conical" },
     };
 
     const config = tierConfig[tier] || tierConfig.smart;
@@ -581,7 +580,6 @@ class MemoraiDashboardEnhanced {
       advanced: "#10b981",
       smart: "#3b82f6",
       basic: "#f59e0b",
-      mock: "#6b7280",
     };
 
     let currentAngle = -90;
@@ -1135,7 +1133,6 @@ class MemoraiDashboardEnhanced {
       advanced: "online",
       smart: "online",
       basic: "warning",
-      mock: "offline",
     };
     this.updateStatusDot("memory-tier-status", statusMap[tier] || "warning");
   }

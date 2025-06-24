@@ -88,7 +88,7 @@ Write-Host "✅ Redis Cache: localhost:6379" -ForegroundColor White
 Write-Host "✅ PostgreSQL Database: localhost:5432" -ForegroundColor White
 Write-Host ""
 Write-Host "🔥 Your Memorai MCP tool in VS Code now has REAL PERSISTENCE!" -ForegroundColor Yellow
-Write-Host "   No more mock mode - real Azure OpenAI + Qdrant storage! 🚀" -ForegroundColor Yellow
+Write-Host "   No more mock tier mode - real Azure OpenAI + Qdrant storage! 🚀" -ForegroundColor Yellow
 Write-Host ""
 Write-Host "💡 Next Steps:" -ForegroundColor Cyan
 Write-Host "   1. Restart VS Code to reload MCP tool" -ForegroundColor White

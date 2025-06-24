@@ -77,9 +77,9 @@ export const createMockMemoryEngine = (config: Partial<any> = {}) => {
       };
     }),
     getTierInfo: vi.fn().mockReturnValue({
-      level: "mock",
-      currentTier: "mock",
-      message: "Mock memory engine for testing",
+      level: "basic",
+      currentTier: "basic",
+      message: "Basic memory engine for testing",
       capabilities: {
         embedding: true,
         similarity: true,

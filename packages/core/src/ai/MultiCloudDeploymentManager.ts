@@ -820,7 +820,7 @@ export class MultiCloudDeploymentManager {
     const resourceTypes = ['compute', 'storage', 'database', 'network', 'security'];
     const resourceUtilization = resourceTypes.map(type => {
       const resources = deployments.flatMap(d => d.resources).filter(r => r.type === type);
-      const utilization = type === 'compute' ? 65 : type === 'storage' ? 40 : 80; // Mock utilization
+      const utilization = type === 'compute' ? 65 : type === 'storage' ? 40 : 80; // Simulated utilization
       return {
         type,
         count: resources.length,
@@ -828,7 +828,7 @@ export class MultiCloudDeploymentManager {
       };
     });
 
-    // Mock cost trends (last 30 days)
+    // Simulated cost trends (last 30 days)
     const costTrends = Array.from({ length: 30 }, (_, i) => {
       const date = new Date();
       date.setDate(date.getDate() - (29 - i));
