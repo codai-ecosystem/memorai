@@ -5,15 +5,11 @@
  * Uses UnifiedMemoryEngine and PerformanceMonitor for production-ready performance
  */
 
-// Force in-memory mode to avoid Qdrant dependency issues in dev environment
-process.env.MEMORAI_USE_INMEMORY = 'true';
-// Force advanced tier regardless of detection
-process.env.MEMORAI_FORCE_TIER = 'advanced';
-// Ensure Azure OpenAI variables are set with placeholders (configure via .env)
-process.env.AZURE_OPENAI_ENDPOINT = process.env.AZURE_OPENAI_ENDPOINT || 'https://your-openai-instance.openai.azure.com';
-process.env.AZURE_OPENAI_API_KEY = process.env.AZURE_OPENAI_API_KEY || 'your-azure-openai-key-here';
-process.env.AZURE_OPENAI_DEPLOYMENT_NAME = process.env.AZURE_OPENAI_DEPLOYMENT_NAME || 'memorai-model-r';
-
+// Load environment variables from .env files
+import { config } from 'dotenv';
+import { readFileSync } from 'fs';
+import { dirname, resolve } from 'path';
+import { fileURLToPath } from 'url';
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
@@ -29,25 +25,92 @@ import {
 import { PerformanceMonitor } from "@codai/memorai-core";
 import { infrastructureManager } from "./infrastructure.js";
 
+// Try to load environment variables from multiple possible locations
+const envPaths = [
+  'E:\\GitHub\\workspace-ai\\.env', // VS Code MCP configured path
+  resolve(process.cwd(), '../../../.env.local'),
+  resolve(process.cwd(), '../../../.env'),
+  resolve(process.cwd(), '.env.local'),
+  resolve(process.cwd(), '.env')
+];
+
+console.log('🔍 Attempting to load environment variables from:');
+for (const envPath of envPaths) {
+  try {
+    const result = config({ path: envPath });
+    if (result.parsed) {
+      console.log(`✅ Loaded environment variables from: ${envPath}`);
+      console.log(`📊 Loaded ${Object.keys(result.parsed).length} variables`);
+      break;
+    }
+  } catch (error) {
+    console.log(`❌ Failed to load from: ${envPath}`);
+  }
+}
+
+// Configure defaults - only force in-memory if explicitly set or no vector DB available
+if (!process.env.MEMORAI_USE_INMEMORY) {
+  process.env.MEMORAI_USE_INMEMORY = 'true'; // Default to in-memory for dev
+}
+
+// Only force advanced tier if credentials are available
+console.log('🔍 Checking credentials...');
+console.log('AZURE_OPENAI_ENDPOINT:', process.env.AZURE_OPENAI_ENDPOINT ? 'SET' : 'NOT SET');
+console.log('AZURE_OPENAI_API_KEY:', process.env.AZURE_OPENAI_API_KEY ? 'SET' : 'NOT SET');
+console.log('OPENAI_API_KEY:', process.env.OPENAI_API_KEY ? 'SET' : 'NOT SET');
+
+const hasAzureOpenAI = process.env.AZURE_OPENAI_ENDPOINT && 
+                      process.env.AZURE_OPENAI_API_KEY && 
+                      !process.env.AZURE_OPENAI_API_KEY.includes('your_') &&
+                      !process.env.AZURE_OPENAI_ENDPOINT.includes('your-');
+
+const hasOpenAI = process.env.OPENAI_API_KEY && 
+                 !process.env.OPENAI_API_KEY.includes('your_');
+
+console.log('hasAzureOpenAI:', hasAzureOpenAI);
+console.log('hasOpenAI:', hasOpenAI);
+
+if (hasAzureOpenAI || hasOpenAI) {
+  process.env.MEMORAI_FORCE_TIER = process.env.MEMORAI_FORCE_TIER || 'advanced';
+  console.log('✅ Valid AI credentials found. Setting tier to advanced.');
+} else {
+  // Don't force advanced tier without proper credentials
+  console.log('⚠️  No valid AI credentials found. Memorai will use smart/basic tier.');
+  console.log('💡 To enable advanced tier with semantic search, configure credentials in .env.local');
+  console.log('📋 See .env.local.example for configuration template');
+}
+
+// Function to get MCP version from package.json
+function getMCPVersion(): string {
+  try {
+    const __dirname = dirname(fileURLToPath(import.meta.url));
+    const packagePath = resolve(__dirname, '../package.json');
+    const packageJson = JSON.parse(readFileSync(packagePath, 'utf8'));
+    return packageJson.version || 'unknown';
+  } catch (error) {
+    return 'unknown';
+  }
+}
+
 // Enterprise-grade configuration for real persistence - use ADVANCED tier with Azure OpenAI
 const memoryConfig: UnifiedMemoryConfig = {
-  enableFallback: false, // Disable fallback to prevent falling back to mock mode
-  autoDetect: false, // Force advanced tier for optimal performance
-  preferredTier: MemoryTierLevel.ADVANCED, // Use ADVANCED tier for semantic search and high performance
+  enableFallback: true, // Enable fallback to handle missing credentials gracefully
+  autoDetect: true, // Let the system detect the best available tier
+  preferredTier: hasAzureOpenAI || hasOpenAI ? MemoryTierLevel.ADVANCED : MemoryTierLevel.SMART,
 
   // Use shared data directory for unified storage across API and MCP servers
   dataPath: process.env.MEMORAI_DATA_PATH || "e:\\GitHub\\memorai\\data\\memory",
 
-  // Azure OpenAI configuration (primary) - from workspace-ai environment
-  azureOpenAI: {
+  // Azure OpenAI configuration (primary) - only if credentials are available
+  azureOpenAI: hasAzureOpenAI ? {
     endpoint: process.env.AZURE_OPENAI_ENDPOINT,
     apiKey: process.env.AZURE_OPENAI_API_KEY,
     deploymentName: process.env.AZURE_OPENAI_DEPLOYMENT_NAME || "memorai-model-r",
     apiVersion: process.env.AZURE_OPENAI_API_VERSION || "2024-02-15-preview",
-  },
+  } : undefined,
 
-  // OpenAI fallback configuration
-  apiKey: process.env.MEMORAI_OPENAI_API_KEY || process.env.OPENAI_API_KEY,
+  // OpenAI fallback configuration - only if credentials are available
+  apiKey: hasOpenAI ? (process.env.MEMORAI_OPENAI_API_KEY || process.env.OPENAI_API_KEY) : undefined,
   model: process.env.OPENAI_MODEL || "text-embedding-ada-002",
 
   // Local embedding fallback for offline capability
@@ -390,6 +453,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 success: true,
                 memoryId: result.id,
                 tierInfo: enterpriseEngine.getTierInfo(),
+                mcpVersion: getMCPVersion(),
                 performance: {
                   responseTime: `${(performance.now() - startTime).toFixed(2)}ms`,
                   metrics: {
@@ -420,6 +484,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 success: true,
                 memories,
                 tierInfo: enterpriseEngine.getTierInfo(),
+                mcpVersion: getMCPVersion(),
                 performance: {
                   responseTime: `${(performance.now() - startTime).toFixed(2)}ms`,
                   metrics: {
@@ -449,6 +514,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 success: true,
                 ...(context as Record<string, unknown>),
                 tierInfo: enterpriseEngine.getTierInfo(),
+                mcpVersion: getMCPVersion(),
                 performance: {
                   responseTime: `${(performance.now() - startTime).toFixed(2)}ms`,
                   metrics: {
@@ -477,6 +543,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
               text: JSON.stringify({
                 success: forgotten,
                 tierInfo: enterpriseEngine.getTierInfo(),
+                mcpVersion: getMCPVersion(),
                 performance: {
                   responseTime: `${(performance.now() - startTime).toFixed(2)}ms`,
                   metrics: {
@@ -503,6 +570,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           text: JSON.stringify({
             success: false,
             error: error instanceof Error ? error.message : "Unknown error",
+            mcpVersion: getMCPVersion(),
             performance: {
               responseTime: `${(performance.now() - startTime).toFixed(2)}ms`,
               tierInfo: enterpriseEngine.getTierInfo(),
