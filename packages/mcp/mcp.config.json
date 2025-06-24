@@ -9,7 +9,11 @@
     "env": {
       "MEMORAI_STORAGE_TYPE": "memory",
       "MEMORAI_LOG_LEVEL": "info",
-      "WEB_PORT": "6366"
+      "WEB_PORT": "6366",
+      "MEMORAI_FORCE_TIER": "advanced",
+      "MEMORAI_TIER": "advanced",
+      "MEMORAI_DISABLE_FALLBACK": "true",
+      "MEMORAI_ENABLE_ENTERPRISE": "true"
     }
   },
   "capabilities": [
