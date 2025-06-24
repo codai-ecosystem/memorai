@@ -40,3 +40,6 @@ export {
   type GitHubIntegrationConfig,
 } from './integrations/GitHubIntegration.js';
 export { MemoryRelationshipManager } from './relationships/MemoryRelationshipManager.js';
+
+// AI-Powered Memory Intelligence (v3.0 Features)
+export * from './ai/index.js';

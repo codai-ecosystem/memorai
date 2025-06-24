@@ -1,13 +1,9 @@
 /**
  * Basic test for web dashboard server
  */
-import { describe, it, expect } from "vitest";
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const { describe, it, expect } = require('@jest/globals');
+const fs = require('fs');
+const path = require('path');
 
 describe("Web Dashboard", () => {
   it("should have basic server functionality", () => {
