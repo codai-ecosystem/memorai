@@ -5,7 +5,7 @@
 [![Tests](https://img.shields.io/badge/tests-1162%2B_passing-brightgreen)](tests)
 [![Coverage](https://img.shields.io/badge/coverage-98%25-brightgreen)](coverage)
 [![Status](https://img.shields.io/badge/status-production_ready-success)](FINAL_STATUS_REPORT.md)
-[![License](https://img.shields.io/github/license/dragoscv/memorai-mcp)](LICENSE)
+[![License](https://img.shields.io/github/license/codai-ecosystem/memorai)](LICENSE)
 
 Enterprise-grade memory system built specifically for AI agents. Provides natural, semantic memory operations with sub-100ms performance and enterprise-scale reliability.
 
@@ -40,7 +40,7 @@ Enterprise-grade memory system built specifically for AI agents. Provides natura
 
 ```bash
 # Clone and setup
-git clone https://github.com/dragoscv/memorai-mcp.git
+git clone https://github.com/codai-ecosystem/memorai.git
 cd memorai-mcp
 pnpm install
 
@@ -56,21 +56,21 @@ pnpm test
 ### Basic Usage
 
 ```typescript
-import { MemoraiClient } from "@codai/memorai-sdk";
+import { MemoraiClient } from '@codai/memorai-sdk';
 
 const client = new MemoraiClient({
-  serverUrl: "http://localhost:6367",
-  apiKey: "your-api-key",
+  serverUrl: 'http://localhost:6367',
+  apiKey: 'your-api-key',
 });
 
 // Remember something
-await client.remember("User prefers dark mode and minimal designs");
+await client.remember('User prefers dark mode and minimal designs');
 
 // Recall relevant memories
-const memories = await client.recall("what does the user prefer?");
+const memories = await client.recall('what does the user prefer?');
 
 // Generate contextual summary
-const context = await client.context({ topic: "user preferences" });
+const context = await client.context({ topic: 'user preferences' });
 ```
 
 ## 📦 Packages
@@ -235,7 +235,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - 📧 Email: support@codai.dev
 - 💬 Discord: [Join our community](https://discord.gg/memorai)
 - 📖 Docs: [docs.memorai.dev](https://docs.memorai.dev)
-- 🐛 Issues: [GitHub Issues](https://github.com/dragoscv/memorai-mcp/issues)
+- 🐛 Issues: [GitHub Issues](https://github.com/codai-ecosystem/memorai/issues)
 
 ---
 

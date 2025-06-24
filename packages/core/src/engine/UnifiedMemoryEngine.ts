@@ -116,8 +116,25 @@ export class UnifiedMemoryEngine {
     }
 
     try {
-      // Auto-detect best available tier if enabled
-      if (this.config.autoDetect) {
+      // Check for forced tier override first
+      const forcedTier = process.env.MEMORAI_FORCE_TIER;
+      if (forcedTier) {
+        switch (forcedTier.toLowerCase()) {
+          case 'advanced':
+            this.currentTier = MemoryTierLevel.ADVANCED;
+            break;
+          case 'smart':
+            this.currentTier = MemoryTierLevel.SMART;
+            break;
+          case 'basic':
+            this.currentTier = MemoryTierLevel.BASIC;
+            break;
+          case 'mock':
+            this.currentTier = MemoryTierLevel.MOCK;
+            break;
+        }
+      } else if (this.config.autoDetect) {
+        // Auto-detect best available tier if enabled and no forced tier
         this.currentTier = await this.tierDetector.detectBestTier();
       }
 

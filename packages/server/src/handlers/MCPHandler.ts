@@ -132,17 +132,20 @@ export class MCPHandler {
   }
 
   /**
-   * Handle memory retrieval
+   * Handle memory retrieval with intelligent output management
    */
   private async handleRecall(
     params: unknown,
     request: AuthenticatedRequest,
   ): Promise<MemoryResponse> {
-    const { query, limit = 10, threshold = 0.7 } = params as any;
+    const { query, limit, threshold = 0.7 } = params as any;
 
     if (!query) {
       throw new Error("Query is required for recall operation");
     }
+
+    // Intelligent limit management: default to 5, max 20 to prevent excessive output
+    const intelligentLimit = Math.min(limit || 5, 20);
 
     const { result: memories, processingTime } = await this.withTiming(() =>
       this.memoryEngine.recall(
@@ -150,16 +153,29 @@ export class MCPHandler {
         request.auth.tenantId,
         request.auth.userId,
         {
-          limit,
+          limit: intelligentLimit,
           threshold,
         },
       ),
     );
+
+    // Filter and format memories for clean output
+    const filteredMemories = memories
+      .map((result) => result.memory)
+      .filter((memory) => memory !== undefined)
+      .slice(0, intelligentLimit); // Ensure we don't exceed the limit
+
+    // Truncate long content for cleaner output
+    const processedMemories = filteredMemories.map((memory) => ({
+      ...memory,
+      content: memory.content.length > 200 
+        ? memory.content.substring(0, 200) + "..." 
+        : memory.content,
+    }));
+
     return {
       success: true,
-      memories: memories
-        .map((result) => result.memory)
-        .filter((memory) => memory !== undefined),
+      memories: processedMemories,
       metadata: {
         requestId: this.generateRequestId(),
         timestamp: new Date().toISOString(),

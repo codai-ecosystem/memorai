@@ -61,7 +61,7 @@ The MCP server now loads environment variables from:
 - **Version:** `2.0.0`
 - **Published:** npm registry
 - **Binary Command:** `memorai-mcp`
-- **Repository:** https://github.com/dragoscv/memorai-mcp
+- **Repository:** https://github.com/codai-ecosystem/memorai
 
 ### Verification
 

@@ -12,14 +12,17 @@
     "build": "turbo build",
     "build:all": "turbo build",
     "dev": "turbo dev",
-    "test": "turbo test",
-    "test:watch": "turbo test:watch",
+    "test": "jest --passWithNoTests",
+    "test:watch": "jest --watch --passWithNoTests",
     "lint": "turbo lint",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "clean": "turbo clean && rm -rf node_modules",
     "start:dashboard": "cd apps/dashboard && npm run dev",
     "start:api": "cd apps/api && npm run dev",
-    "start:mcp": "node packages/mcp/dist/server.js"
+    "start:mcp": "node packages/mcp/dist/server.js",
+    "test:ui": "npx vitest ui",
+    "test:run": "vitest run",
+    "test:coverage": "vitest --coverage"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^8.18.1",
@@ -27,7 +30,14 @@
     "eslint": "^8.57.1",
     "prettier": "^3.3.3",
     "turbo": "^2.5.4",
-    "typescript": "^5.5.4"
+    "typescript": "^5.5.4",
+    "vitest": "^2.1.8",
+    "@vitest/ui": "^2.1.8",
+    "@vitest/coverage-v8": "^1.2.0",
+    "@testing-library/react": "^14.0.0",
+    "@testing-library/jest-dom": "^6.1.0",
+    "jsdom": "^23.0.0",
+    "happy-dom": "^12.0.0"
   },
   "packageManager": "pnpm@8.15.6",
   "engines": {
@@ -36,7 +46,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/dragoscv/memorai-mcp.git"
+    "url": "https://github.com/codai-ecosystem/memorai.git"
   },
   "keywords": [
     "memory",

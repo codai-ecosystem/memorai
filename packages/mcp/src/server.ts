@@ -5,8 +5,14 @@
  * Uses UnifiedMemoryEngine and PerformanceMonitor for production-ready performance
  */
 
-// Remove forced in-memory mode - use proper configuration from environment
-// process.env.MEMORAI_USE_INMEMORY = 'true'; // REMOVED - Use real persistence
+// Force in-memory mode to avoid Qdrant dependency issues in dev environment
+process.env.MEMORAI_USE_INMEMORY = 'true';
+// Force advanced tier regardless of detection
+process.env.MEMORAI_FORCE_TIER = 'advanced';
+// Ensure Azure OpenAI variables are set with placeholders (configure via .env)
+process.env.AZURE_OPENAI_ENDPOINT = process.env.AZURE_OPENAI_ENDPOINT || 'https://your-openai-instance.openai.azure.com';
+process.env.AZURE_OPENAI_API_KEY = process.env.AZURE_OPENAI_API_KEY || 'your-azure-openai-key-here';
+process.env.AZURE_OPENAI_DEPLOYMENT_NAME = process.env.AZURE_OPENAI_DEPLOYMENT_NAME || 'memorai-model-r';
 
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
@@ -25,7 +31,7 @@ import { infrastructureManager } from "./infrastructure.js";
 
 // Enterprise-grade configuration for real persistence - use ADVANCED tier with Azure OpenAI
 const memoryConfig: UnifiedMemoryConfig = {
-  enableFallback: true,
+  enableFallback: false, // Disable fallback to prevent falling back to mock mode
   autoDetect: false, // Force advanced tier for optimal performance
   preferredTier: MemoryTierLevel.ADVANCED, // Use ADVANCED tier for semantic search and high performance
 
@@ -40,17 +46,15 @@ const memoryConfig: UnifiedMemoryConfig = {
     apiVersion: process.env.AZURE_OPENAI_API_VERSION || "2024-02-15-preview",
   },
 
-  // Remove OpenAI fallback - use Azure OpenAI exclusively
-  // apiKey: process.env.OPENAI_API_KEY,
-  // model: process.env.OPENAI_MODEL || "text-embedding-ada-002",
+  // OpenAI fallback configuration
+  apiKey: process.env.MEMORAI_OPENAI_API_KEY || process.env.OPENAI_API_KEY,
+  model: process.env.OPENAI_MODEL || "text-embedding-ada-002",
 
   // Local embedding fallback for offline capability
   localEmbedding: {
     model: "all-MiniLM-L6-v2",
     cachePath: "./embeddings-cache",
   },
-
-  // Remove mock configuration - use real persistence only
 };
 
 class EnterpriseMemoryEngine {

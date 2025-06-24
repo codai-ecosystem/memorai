@@ -52,7 +52,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/dragoscv/memorai-mcp.git",
+    "url": "https://github.com/codai-ecosystem/memorai.git",
     "directory": "packages/core"
   },
   "keywords": [

@@ -8,7 +8,7 @@
 
 **Name:** Memorai MCP  
 **Scope:** @codai/\*  
-**Repository:** https://github.com/dragoscv/memorai-mcp  
+**Repository:** https://github.com/codai-ecosystem/memorai  
 **Target:** Enterprise-grade memory system for AI agents  
 **Performance:** <100ms queries, 10M+ entries per tenant, 99.9% uptime
 

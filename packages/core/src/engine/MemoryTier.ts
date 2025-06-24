@@ -107,6 +107,21 @@ export class MemoryTierDetector {
    * Detect the best available memory tier based on environment
    */
   public async detectBestTier(): Promise<MemoryTierLevel> {
+    // Check for forced tier override
+    const forcedTier = process.env.MEMORAI_FORCE_TIER;
+    if (forcedTier) {
+      switch (forcedTier.toLowerCase()) {
+        case 'advanced':
+          return MemoryTierLevel.ADVANCED;
+        case 'smart':
+          return MemoryTierLevel.SMART;
+        case 'basic':
+          return MemoryTierLevel.BASIC;
+        case 'mock':
+          return MemoryTierLevel.MOCK;
+      }
+    }
+
     // Check for OpenAI availability
     if (await this.isOpenAIAvailable()) {
       return MemoryTierLevel.ADVANCED;
