@@ -101,11 +101,6 @@ async function initializeMemoryEngine() {
           ? { cachePath: process.env.MEMORAI_CACHE_PATH }
           : {}),
       },
-      mock: {
-        simulateDelay: false,
-        delayMs: 0,
-        failureRate: 0,
-      },
     });
 
     await memoryEngine.initialize();

@@ -5,10 +5,6 @@ export {
   type UnifiedMemoryConfig,
 } from "./engine/UnifiedMemoryEngine.js";
 export { BasicMemoryEngine } from "./engine/BasicMemoryEngine.js";
-export {
-  MockMemoryEngine,
-  type MockMemoryConfig,
-} from "./engine/MockMemoryEngine.js";
 export * from "./engine/MemoryTier.js";
 export * from "./vector/VectorStore.js";
 export * from "./context/ContextEngine.js";

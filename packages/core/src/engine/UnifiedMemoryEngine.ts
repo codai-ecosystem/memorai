@@ -17,7 +17,6 @@ import type {
 import { MemoryError } from "../types/index.js";
 import { MemoryEngine } from "./MemoryEngine.js";
 import { BasicMemoryEngine } from "./BasicMemoryEngine.js";
-import { MockMemoryEngine } from "./MockMemoryEngine.js";
 import { LocalEmbeddingService } from "../embedding/LocalEmbeddingService.js";
 import {
   MemoryTierLevel,
@@ -57,11 +56,6 @@ export interface UnifiedMemoryConfig extends Partial<MemoryConfig> {
     pythonPath?: string;
     cachePath?: string;
   };
-  mock?: {
-    simulateDelay?: boolean;
-    delayMs?: number;
-    failureRate?: number;
-  };
 }
 
 export interface RememberOptions {
@@ -91,7 +85,6 @@ export class UnifiedMemoryEngine {
   private advancedEngine?: MemoryEngine;
   private smartEngine?: MemoryEngine;
   private basicEngine?: BasicMemoryEngine;
-  private mockEngine?: MockMemoryEngine;
   private localEmbedding?: LocalEmbeddingService; // Current active engine
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private activeEngine: any; // Multiple engine types with different APIs
@@ -128,9 +121,6 @@ export class UnifiedMemoryEngine {
             break;
           case 'basic':
             this.currentTier = MemoryTierLevel.BASIC;
-            break;
-          case 'mock':
-            this.currentTier = MemoryTierLevel.MOCK;
             break;
         }
       } else if (this.config.autoDetect) {
@@ -382,9 +372,6 @@ export class UnifiedMemoryEngine {
       case MemoryTierLevel.BASIC:
         await this.initializeBasicTier();
         break;
-      case MemoryTierLevel.MOCK:
-        await this.initializeMockTier();
-        break;
       default:
         throw new Error(`Unknown tier: ${tier}`);
     }
@@ -585,16 +572,6 @@ export class UnifiedMemoryEngine {
       await this.basicEngine.initialize();
     }
     this.activeEngine = this.basicEngine;
-  }
-
-  /**
-   * Initialize Mock (Testing) tier
-   */
-  private async initializeMockTier(): Promise<void> {
-    if (!this.mockEngine) {
-      this.mockEngine = new MockMemoryEngine(this.config.mock);
-    }
-    this.activeEngine = this.mockEngine;
   }
 
   /**

@@ -7,7 +7,6 @@ export enum MemoryTierLevel {
   ADVANCED = "advanced", // OpenAI-powered semantic search
   SMART = "smart", // Local AI embeddings
   BASIC = "basic", // Keyword-based search
-  MOCK = "mock", // Testing/development mode
 }
 
 export interface MemoryTierCapabilities {
@@ -75,21 +74,7 @@ export const MEMORY_TIER_CONFIGS: Record<MemoryTierLevel, MemoryTierConfig> = {
       performance: "medium",
       accuracy: "low",
     },
-    fallbackTier: MemoryTierLevel.MOCK,
     priority: 3,
-  },
-  [MemoryTierLevel.MOCK]: {
-    level: MemoryTierLevel.MOCK,
-    capabilities: {
-      semanticSearch: false,
-      embeddings: false,
-      classification: false,
-      vectorSimilarity: false,
-      offline: true,
-      performance: "high",
-      accuracy: "low",
-    },
-    priority: 4,
   },
 };
 
@@ -117,8 +102,6 @@ export class MemoryTierDetector {
           return MemoryTierLevel.SMART;
         case 'basic':
           return MemoryTierLevel.BASIC;
-        case 'mock':
-          return MemoryTierLevel.MOCK;
       }
     }
 
@@ -130,11 +113,6 @@ export class MemoryTierDetector {
     // Check for local AI availability
     if (await this.isLocalAIAvailable()) {
       return MemoryTierLevel.SMART;
-    }
-
-    // Check if we're in testing environment
-    if (this.isTestingEnvironment()) {
-      return MemoryTierLevel.MOCK;
     }
 
     // Default to basic memory
@@ -238,17 +216,6 @@ export class MemoryTierDetector {
   }
 
   /**
-   * Check if we're in testing environment
-   */
-  private isTestingEnvironment(): boolean {
-    return (
-      process.env.NODE_ENV === "test" ||
-      process.env.MEMORAI_MODE === "test" ||
-      process.env.JEST_WORKER_ID !== undefined
-    );
-  }
-
-  /**
    * Build fallback chain for a tier
    */
   private buildFallbackChain(tier: MemoryTierLevel): MemoryTierLevel[] {
@@ -275,8 +242,6 @@ export class MemoryTierDetector {
         return "🧠 Smart Memory: Local AI embeddings for offline semantic search";
       case MemoryTierLevel.BASIC:
         return "📝 Basic Memory: Keyword-based search, fully offline";
-      case MemoryTierLevel.MOCK:
-        return "🧪 Mock Memory: Testing mode with simulated responses";
       default:
         return "❓ Unknown Memory Tier";
     }
