@@ -168,8 +168,8 @@ export class MCPHandler {
     // Truncate long content for cleaner output
     const processedMemories = filteredMemories.map((memory) => ({
       ...memory,
-      content: memory.content.length > 200 
-        ? memory.content.substring(0, 200) + "..." 
+      content: memory.content.length > 200
+        ? memory.content.substring(0, 200) + "..."
         : memory.content,
     }));
 

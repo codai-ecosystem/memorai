@@ -53,8 +53,9 @@ if (!process.env.MEMORAI_USE_INMEMORY) {
   process.env.MEMORAI_USE_INMEMORY = 'true'; // Default to in-memory for dev
 }
 
-// Only force advanced tier if credentials are available
-console.log('🔍 Checking credentials...');
+// Check for explicit tier setting and credentials
+console.log('🔍 Checking environment configuration...');
+console.log('MEMORAI_TIER:', process.env.MEMORAI_TIER || 'NOT SET');
 console.log('AZURE_OPENAI_ENDPOINT:', process.env.AZURE_OPENAI_ENDPOINT ? 'SET' : 'NOT SET');
 console.log('AZURE_OPENAI_API_KEY:', process.env.AZURE_OPENAI_API_KEY ? 'SET' : 'NOT SET');
 console.log('OPENAI_API_KEY:', process.env.OPENAI_API_KEY ? 'SET' : 'NOT SET');
@@ -70,9 +71,20 @@ const hasOpenAI = process.env.OPENAI_API_KEY &&
 console.log('hasAzureOpenAI:', hasAzureOpenAI);
 console.log('hasOpenAI:', hasOpenAI);
 
-if (hasAzureOpenAI || hasOpenAI) {
+// Check if MEMORAI_TIER is explicitly set (from VS Code MCP config)
+const explicitTier = process.env.MEMORAI_TIER?.toLowerCase();
+if (explicitTier === 'advanced') {
+  if (hasAzureOpenAI || hasOpenAI) {
+    process.env.MEMORAI_FORCE_TIER = 'advanced';
+    console.log('✅ MEMORAI_TIER=advanced set with valid credentials. Using advanced tier.');
+  } else {
+    console.log('⚠️  MEMORAI_TIER=advanced set but no valid AI credentials found.');
+    console.log('📋 Advanced tier requires Azure OpenAI or OpenAI credentials.');
+    console.log('🔄 Falling back to smart/basic tier.');
+  }
+} else if (hasAzureOpenAI || hasOpenAI) {
   process.env.MEMORAI_FORCE_TIER = process.env.MEMORAI_FORCE_TIER || 'advanced';
-  console.log('✅ Valid AI credentials found. Setting tier to advanced.');
+  console.log('✅ Valid AI credentials found. Auto-setting tier to advanced.');
 } else {
   // Don't force advanced tier without proper credentials
   console.log('⚠️  No valid AI credentials found. Memorai will use smart/basic tier.');
