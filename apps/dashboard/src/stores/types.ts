@@ -32,7 +32,7 @@ export interface Config {
   version: string;
   tier: string;
   capabilities: string[];
-  status: "active" | "inactive" | "error";
+  status: 'active' | 'inactive' | 'error';
   endpoints: {
     api: string;
     websocket: string;
@@ -41,7 +41,7 @@ export interface Config {
     maxMemories: number;
     defaultAgent: string;
     autoBackup: boolean;
-    logLevel: "debug" | "info" | "warn" | "error";
+    logLevel: 'debug' | 'info' | 'warn' | 'error';
     retentionDays: number;
   };
   security: {
@@ -70,7 +70,7 @@ export interface MemoryState {
   selectedAgentId: string;
   totalCount: number;
   lastOperation: {
-    type: "create" | "search" | "delete" | "export" | "import" | null;
+    type: 'create' | 'search' | 'delete' | 'export' | 'import' | null;
     timestamp: string;
     success: boolean;
     message?: string;
@@ -91,12 +91,12 @@ export interface MemoryActions {
   addMemory: (
     agentId: string,
     content: string,
-    metadata?: Record<string, unknown>,
+    metadata?: Record<string, unknown>
   ) => Promise<boolean>;
   searchMemories: (
     agentId: string,
     query: string,
-    limit?: number,
+    limit?: number
   ) => Promise<boolean>;
   deleteMemory: (agentId: string, memoryId: string) => Promise<boolean>;
   setSearchResults: (results: Memory[]) => void;
@@ -165,14 +165,14 @@ export interface StatsData {
 
 // Event types for real-time updates
 export interface MemoryEvent {
-  type: "memory:created" | "memory:deleted" | "memory:updated";
+  type: 'memory:created' | 'memory:deleted' | 'memory:updated';
   agentId: string;
   memory: Memory;
   timestamp: string;
 }
 
 export interface SystemEvent {
-  type: "system:status" | "system:error" | "system:config";
+  type: 'system:status' | 'system:error' | 'system:config';
   data: any;
   timestamp: string;
 }
@@ -182,10 +182,10 @@ export class MemoryError extends Error {
   constructor(
     message: string,
     public code: string,
-    public details?: any,
+    public details?: any
   ) {
     super(message);
-    this.name = "MemoryError";
+    this.name = 'MemoryError';
   }
 }
 
@@ -193,10 +193,10 @@ export class ConfigError extends Error {
   constructor(
     message: string,
     public code: string,
-    public details?: any,
+    public details?: any
   ) {
     super(message);
-    this.name = "ConfigError";
+    this.name = 'ConfigError';
   }
 }
 
@@ -208,27 +208,27 @@ export type DeepPartial<T> = {
 export type RequiredFields<T, K extends keyof T> = T & Required<Pick<T, K>>;
 
 // Default values
-export const DEFAULT_AGENT_ID = "default-agent";
+export const DEFAULT_AGENT_ID = 'default-agent';
 export const DEFAULT_SEARCH_LIMIT = 10;
 export const DEFAULT_CONTEXT_SIZE = 5;
 
 export const DEFAULT_CONFIG: Config = {
-  id: "memorai-dashboard",
-  name: "Memorai Dashboard",
-  description: "Advanced memory management dashboard",
-  version: "2.0.0",
-  tier: "development",
-  capabilities: ["memory", "search", "analytics"],
-  status: "active",
+  id: 'memorai-dashboard',
+  name: 'Memorai Dashboard',
+  description: 'Advanced memory management dashboard',
+  version: '2.0.0',
+  tier: 'development',
+  capabilities: ['memory', 'search', 'analytics'],
+  status: 'active',
   endpoints: {
-    api: "http://localhost:6367/api",
-    websocket: "ws://localhost:6367/ws",
+    api: 'http://localhost:6367/api',
+    websocket: 'ws://localhost:6367/ws',
   },
   settings: {
     maxMemories: 10000,
     defaultAgent: DEFAULT_AGENT_ID,
     autoBackup: true,
-    logLevel: "info",
+    logLevel: 'info',
     retentionDays: 30,
   },
   security: {

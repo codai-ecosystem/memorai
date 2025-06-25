@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
@@ -6,12 +6,12 @@ export async function POST(request: NextRequest) {
 
     if (!entities || !Array.isArray(entities)) {
       return NextResponse.json(
-        { error: "Entities array is required" },
-        { status: 400 },
+        { error: 'Entities array is required' },
+        { status: 400 }
       );
     } // Log the entities being created
-    if (process.env.NODE_ENV === "development") {
-      console.log("Creating entities:", entities);
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Creating entities:', entities);
     }
 
     // In a real implementation, this would call the MCP server
@@ -22,12 +22,12 @@ export async function POST(request: NextRequest) {
       entities,
     });
   } catch (error) {
-    if (process.env.NODE_ENV === "development") {
-      console.error("Error in create-entities API:", error);
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Error in create-entities API:', error);
     }
     return NextResponse.json(
-      { error: "Failed to create entities" },
-      { status: 500 },
+      { error: 'Failed to create entities' },
+      { status: 500 }
     );
   }
 }

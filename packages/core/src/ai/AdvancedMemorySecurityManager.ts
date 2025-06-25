@@ -8,7 +8,10 @@ import { MemoryMetadata, MemoryResult } from '../types/index';
 
 export interface SecurityConfig {
   zeroTrustEnabled: boolean;
-  encryptionAlgorithm: 'aes-256-gcm' | 'chacha20-poly1305' | 'quantum-resistant';
+  encryptionAlgorithm:
+    | 'aes-256-gcm'
+    | 'chacha20-poly1305'
+    | 'quantum-resistant';
   keyRotationInterval: number; // hours
   auditLogging: boolean;
   threatDetection: boolean;
@@ -19,7 +22,13 @@ export interface SecurityConfig {
   quantumSafety: boolean;
 }
 
-export type ComplianceStandard = 'GDPR' | 'HIPAA' | 'SOC2' | 'ISO27001' | 'FedRAMP' | 'PCI-DSS';
+export type ComplianceStandard =
+  | 'GDPR'
+  | 'HIPAA'
+  | 'SOC2'
+  | 'ISO27001'
+  | 'FedRAMP'
+  | 'PCI-DSS';
 
 export interface SecurityContext {
   userId: string;
@@ -38,9 +47,25 @@ export interface SecurityContext {
   timestamp: Date;
 }
 
-export type SecurityLevel = 'public' | 'internal' | 'confidential' | 'restricted' | 'top-secret';
-export type Permission = 'read' | 'write' | 'delete' | 'share' | 'export' | 'admin';
-export type AuthMethod = 'password' | 'mfa' | 'biometric' | 'certificate' | 'zero-knowledge';
+export type SecurityLevel =
+  | 'public'
+  | 'internal'
+  | 'confidential'
+  | 'restricted'
+  | 'top-secret';
+export type Permission =
+  | 'read'
+  | 'write'
+  | 'delete'
+  | 'share'
+  | 'export'
+  | 'admin';
+export type AuthMethod =
+  | 'password'
+  | 'mfa'
+  | 'biometric'
+  | 'certificate'
+  | 'zero-knowledge';
 
 export interface MemoryClassification {
   level: SecurityLevel;
@@ -76,7 +101,7 @@ export interface SecurityAuditEvent {
   };
 }
 
-export type AuditEventType = 
+export type AuditEventType =
   | 'memory_access'
   | 'memory_creation'
   | 'memory_modification'
@@ -97,7 +122,7 @@ export interface ThreatDetectionRule {
   enabled: boolean;
 }
 
-export type ThreatResponseAction = 
+export type ThreatResponseAction =
   | 'log_only'
   | 'alert_admin'
   | 'block_user'
@@ -111,7 +136,7 @@ export class AdvancedMemorySecurityManager {
   private threatDetectionRules: ThreatDetectionRule[] = [];
   private encryptionKeys = new Map<string, Buffer>();
   private accessTokens = new Map<string, SecurityContext>();
-  
+
   private readonly MASTER_KEY_ID = 'master-key-v1';
   private readonly QUANTUM_ALGORITHM = 'kyber-768'; // Post-quantum cryptography
 
@@ -127,7 +152,7 @@ export class AdvancedMemorySecurityManager {
       accessControlModel: 'abac',
       biometricAuth: false,
       quantumSafety: true,
-      ...config
+      ...config,
     };
 
     this.initializeSecurityInfrastructure();
@@ -139,16 +164,20 @@ export class AdvancedMemorySecurityManager {
   private async initializeSecurityInfrastructure(): Promise<void> {
     // Generate master encryption key
     await this.generateMasterKey();
-    
+
     // Initialize threat detection rules
     this.initializeThreatDetectionRules();
-    
+
     // Start key rotation schedule
     this.scheduleKeyRotation();
 
     console.log('🔒 Advanced Memory Security Manager initialized');
-    console.log(`🛡️ Zero-trust: ${this.config.zeroTrustEnabled ? 'ENABLED' : 'DISABLED'}`);
-    console.log(`🔐 Encryption: ${this.config.encryptionAlgorithm.toUpperCase()}`);
+    console.log(
+      `🛡️ Zero-trust: ${this.config.zeroTrustEnabled ? 'ENABLED' : 'DISABLED'}`
+    );
+    console.log(
+      `🔐 Encryption: ${this.config.encryptionAlgorithm.toUpperCase()}`
+    );
     console.log(`📋 Compliance: ${this.config.complianceMode.join(', ')}`);
   }
 
@@ -176,17 +205,23 @@ export class AdvancedMemorySecurityManager {
       permissions: context.permissions || [],
       riskScore: await this.calculateRiskScore(userId, agentId, context),
       geoLocation: context.geoLocation,
-      deviceFingerprint: context.deviceFingerprint || this.generateDeviceFingerprint(),
+      deviceFingerprint:
+        context.deviceFingerprint || this.generateDeviceFingerprint(),
       authenticationMethods: context.authenticationMethods || ['password'],
-      timestamp: new Date()
+      timestamp: new Date(),
     };
 
     // Zero-trust verification
-    const zeroTrustResult = this.config.zeroTrustEnabled ? 
-      await this.performZeroTrustVerification(securityContext) : { verified: true, restrictions: [] };
+    const zeroTrustResult = this.config.zeroTrustEnabled
+      ? await this.performZeroTrustVerification(securityContext)
+      : { verified: true, restrictions: [] };
 
     // Access control decision
-    const accessDecision = await this.makeAccessControlDecision(securityContext, memoryId, action);
+    const accessDecision = await this.makeAccessControlDecision(
+      securityContext,
+      memoryId,
+      action
+    );
 
     // Audit the access attempt
     const auditEventId = await this.auditMemoryAccess(
@@ -204,15 +239,21 @@ export class AdvancedMemorySecurityManager {
     return {
       authorized: zeroTrustResult.verified && accessDecision.authorized,
       securityContext,
-      restrictions: [...zeroTrustResult.restrictions, ...accessDecision.restrictions],
-      auditEventId
+      restrictions: [
+        ...zeroTrustResult.restrictions,
+        ...accessDecision.restrictions,
+      ],
+      auditEventId,
     };
   }
 
   /**
    * Encrypt memory data with advanced encryption
    */
-  async encryptMemory(memory: MemoryMetadata, securityContext: SecurityContext): Promise<{
+  async encryptMemory(
+    memory: MemoryMetadata,
+    securityContext: SecurityContext
+  ): Promise<{
     encryptedData: string;
     encryptionMetadata: {
       algorithm: string;
@@ -223,8 +264,11 @@ export class AdvancedMemorySecurityManager {
     };
   }> {
     const classification = await this.classifyMemoryData(memory);
-    
-    if (!classification.encryptionRequired && securityContext.accessLevel !== 'restricted') {
+
+    if (
+      !classification.encryptionRequired &&
+      securityContext.accessLevel !== 'restricted'
+    ) {
       // Return unencrypted data for low-security content
       return {
         encryptedData: JSON.stringify(memory),
@@ -232,14 +276,14 @@ export class AdvancedMemorySecurityManager {
           algorithm: 'none',
           keyId: 'none',
           iv: '',
-          timestamp: new Date()
-        }
+          timestamp: new Date(),
+        },
       };
     }
 
     const keyId = await this.getCurrentEncryptionKey();
     const key = this.encryptionKeys.get(keyId);
-    
+
     if (!key) {
       throw new Error('Encryption key not available');
     }
@@ -249,42 +293,53 @@ export class AdvancedMemorySecurityManager {
 
     switch (this.config.encryptionAlgorithm) {
       case 'aes-256-gcm':
-        const result = await this.encryptWithAES256GCM(JSON.stringify(memory), key);
+        const result = await this.encryptWithAES256GCM(
+          JSON.stringify(memory),
+          key
+        );
         encryptedData = result.encrypted;
         encryptionMetadata = {
           algorithm: 'aes-256-gcm',
           keyId,
           iv: result.iv,
           authTag: result.authTag,
-          timestamp: new Date()
+          timestamp: new Date(),
         };
         break;
 
       case 'chacha20-poly1305':
-        const chachaResult = await this.encryptWithChaCha20(JSON.stringify(memory), key);
+        const chachaResult = await this.encryptWithChaCha20(
+          JSON.stringify(memory),
+          key
+        );
         encryptedData = chachaResult.encrypted;
         encryptionMetadata = {
           algorithm: 'chacha20-poly1305',
           keyId,
           iv: chachaResult.nonce,
           authTag: chachaResult.authTag,
-          timestamp: new Date()
+          timestamp: new Date(),
         };
         break;
 
       case 'quantum-resistant':
-        const quantumResult = await this.encryptWithQuantumResistant(JSON.stringify(memory), key);
+        const quantumResult = await this.encryptWithQuantumResistant(
+          JSON.stringify(memory),
+          key
+        );
         encryptedData = quantumResult.encrypted;
         encryptionMetadata = {
           algorithm: 'quantum-resistant',
           keyId,
           iv: quantumResult.nonce,
-          timestamp: new Date()
+          timestamp: new Date(),
         };
         break;
 
       default:
-        throw new Error(`Unsupported encryption algorithm: ${this.config.encryptionAlgorithm}`);
+        throw new Error(
+          `Unsupported encryption algorithm: ${this.config.encryptionAlgorithm}`
+        );
     }
 
     // Audit encryption event
@@ -302,12 +357,12 @@ export class AdvancedMemorySecurityManager {
         userAgent: securityContext.deviceFingerprint,
         details: {
           algorithm: this.config.encryptionAlgorithm,
-          classification: classification.level
-        }
+          classification: classification.level,
+        },
       },
       compliance: {
-        gdprCompliant: true
-      }
+        gdprCompliant: true,
+      },
     });
 
     return { encryptedData, encryptionMetadata };
@@ -360,7 +415,9 @@ export class AdvancedMemorySecurityManager {
         break;
 
       default:
-        throw new Error(`Unsupported encryption algorithm: ${encryptionMetadata.algorithm}`);
+        throw new Error(
+          `Unsupported encryption algorithm: ${encryptionMetadata.algorithm}`
+        );
     }
 
     return JSON.parse(decryptedData);
@@ -369,7 +426,9 @@ export class AdvancedMemorySecurityManager {
   /**
    * Perform zero-trust verification
    */
-  private async performZeroTrustVerification(context: SecurityContext): Promise<{
+  private async performZeroTrustVerification(
+    context: SecurityContext
+  ): Promise<{
     verified: boolean;
     restrictions: string[];
   }> {
@@ -385,7 +444,10 @@ export class AdvancedMemorySecurityManager {
     }
 
     // Geographic restrictions
-    if (context.geoLocation && this.hasGeographicRestrictions(context.geoLocation)) {
+    if (
+      context.geoLocation &&
+      this.hasGeographicRestrictions(context.geoLocation)
+    ) {
       restrictions.push('geographic_restriction');
       verified = false;
     }
@@ -399,8 +461,10 @@ export class AdvancedMemorySecurityManager {
     }
 
     // Multi-factor authentication requirement
-    if (context.accessLevel === 'restricted' && 
-        !context.authenticationMethods.includes('mfa')) {
+    if (
+      context.accessLevel === 'restricted' &&
+      !context.authenticationMethods.includes('mfa')
+    ) {
       restrictions.push('mfa_required');
       verified = false;
     }
@@ -419,13 +483,13 @@ export class AdvancedMemorySecurityManager {
     switch (this.config.accessControlModel) {
       case 'rbac':
         return this.evaluateRoleBasedAccess(context, action);
-      
+
       case 'abac':
         return this.evaluateAttributeBasedAccess(context, memoryId, action);
-      
+
       case 'pbac':
         return this.evaluatePolicyBasedAccess(context, memoryId, action);
-      
+
       default:
         return { authorized: false, restrictions: ['unknown_access_model'] };
     }
@@ -462,7 +526,9 @@ export class AdvancedMemorySecurityManager {
     }
 
     // Authentication method risk
-    const authRisk = this.assessAuthenticationRisk(context.authenticationMethods || []);
+    const authRisk = this.assessAuthenticationRisk(
+      context.authenticationMethods || []
+    );
     riskScore += authRisk * 0.1;
 
     return Math.min(1, riskScore);
@@ -471,7 +537,9 @@ export class AdvancedMemorySecurityManager {
   /**
    * Classify memory data for security purposes
    */
-  private async classifyMemoryData(memory: MemoryMetadata): Promise<MemoryClassification> {
+  private async classifyMemoryData(
+    memory: MemoryMetadata
+  ): Promise<MemoryClassification> {
     // Simplified classification logic
     let level: SecurityLevel = 'internal';
     const categories: string[] = [];
@@ -480,15 +548,23 @@ export class AdvancedMemorySecurityManager {
 
     // Content-based classification
     const content = memory.content.toLowerCase();
-    
-    if (content.includes('password') || content.includes('secret') || content.includes('key')) {
+
+    if (
+      content.includes('password') ||
+      content.includes('secret') ||
+      content.includes('key')
+    ) {
       level = 'confidential';
       encryptionRequired = true;
       auditRequired = true;
       categories.push('credentials');
     }
 
-    if (content.includes('personal') || content.includes('private') || content.includes('ssn')) {
+    if (
+      content.includes('personal') ||
+      content.includes('private') ||
+      content.includes('ssn')
+    ) {
       level = 'restricted';
       encryptionRequired = true;
       auditRequired = true;
@@ -502,7 +578,11 @@ export class AdvancedMemorySecurityManager {
     }
 
     // Tag-based classification
-    if (memory.tags.some(tag => ['secret', 'confidential', 'private'].includes(tag.toLowerCase()))) {
+    if (
+      memory.tags.some(tag =>
+        ['secret', 'confidential', 'private'].includes(tag.toLowerCase())
+      )
+    ) {
       level = 'restricted';
       encryptionRequired = true;
       auditRequired = true;
@@ -515,7 +595,7 @@ export class AdvancedMemorySecurityManager {
       encryptionRequired,
       auditRequired,
       geographicRestrictions: this.getGeographicRestrictions(level),
-      accessLog: auditRequired
+      accessLog: auditRequired,
     };
   }
 
@@ -541,14 +621,20 @@ export class AdvancedMemorySecurityManager {
       metadata: {
         ip: context.geoLocation?.ip || 'unknown',
         userAgent: context.deviceFingerprint,
-        location: context.geoLocation ? `${context.geoLocation.country}/${context.geoLocation.region}` : undefined,
+        location: context.geoLocation
+          ? `${context.geoLocation.country}/${context.geoLocation.region}`
+          : undefined,
         details: {
           accessLevel: context.accessLevel,
           permissions: context.permissions,
-          authMethods: context.authenticationMethods
-        }
+          authMethods: context.authenticationMethods,
+        },
       },
-      compliance: await this.generateComplianceMetadata(context, memoryId, action)
+      compliance: await this.generateComplianceMetadata(
+        context,
+        memoryId,
+        action
+      ),
     };
 
     return this.auditEvent(auditEvent);
@@ -563,7 +649,7 @@ export class AdvancedMemorySecurityManager {
     action: Permission
   ): Promise<SecurityAuditEvent['compliance']> {
     const compliance: SecurityAuditEvent['compliance'] = {
-      gdprCompliant: true
+      gdprCompliant: true,
     };
 
     // GDPR compliance checks
@@ -578,7 +664,10 @@ export class AdvancedMemorySecurityManager {
 
   // Encryption implementations
 
-  private async encryptWithAES256GCM(data: string, key: Buffer): Promise<{
+  private async encryptWithAES256GCM(
+    data: string,
+    key: Buffer
+  ): Promise<{
     encrypted: string;
     iv: string;
     authTag: string;
@@ -586,16 +675,16 @@ export class AdvancedMemorySecurityManager {
     const iv = crypto.randomBytes(16);
     const cipher = crypto.createCipher('aes-256-gcm', key);
     cipher.setAAD(Buffer.from('memory-security'));
-    
+
     let encrypted = cipher.update(data, 'utf8', 'hex');
     encrypted += cipher.final('hex');
-    
+
     const authTag = cipher.getAuthTag();
 
     return {
       encrypted,
       iv: iv.toString('hex'),
-      authTag: authTag.toString('hex')
+      authTag: authTag.toString('hex'),
     };
   }
 
@@ -608,14 +697,17 @@ export class AdvancedMemorySecurityManager {
     const decipher = crypto.createDecipher('aes-256-gcm', key);
     decipher.setAAD(Buffer.from('memory-security'));
     decipher.setAuthTag(Buffer.from(authTag, 'hex'));
-    
+
     let decrypted = decipher.update(encryptedData, 'hex', 'utf8');
     decrypted += decipher.final('utf8');
-    
+
     return decrypted;
   }
 
-  private async encryptWithChaCha20(data: string, key: Buffer): Promise<{
+  private async encryptWithChaCha20(
+    data: string,
+    key: Buffer
+  ): Promise<{
     encrypted: string;
     nonce: string;
     authTag: string;
@@ -624,14 +716,14 @@ export class AdvancedMemorySecurityManager {
     // In production, would use a proper crypto library
     const nonce = crypto.randomBytes(12);
     const cipher = crypto.createCipher('chacha20-poly1305', key);
-    
+
     let encrypted = cipher.update(data, 'utf8', 'hex');
     encrypted += cipher.final('hex');
-    
+
     return {
       encrypted,
       nonce: nonce.toString('hex'),
-      authTag: crypto.randomBytes(16).toString('hex') // Placeholder
+      authTag: crypto.randomBytes(16).toString('hex'), // Placeholder
     };
   }
 
@@ -643,29 +735,33 @@ export class AdvancedMemorySecurityManager {
   ): Promise<string> {
     // Simplified implementation
     const decipher = crypto.createDecipher('chacha20-poly1305', key);
-    
+
     let decrypted = decipher.update(encryptedData, 'hex', 'utf8');
     decrypted += decipher.final('utf8');
-    
+
     return decrypted;
   }
 
-  private async encryptWithQuantumResistant(data: string, key: Buffer): Promise<{
+  private async encryptWithQuantumResistant(
+    data: string,
+    key: Buffer
+  ): Promise<{
     encrypted: string;
     nonce: string;
   }> {
     // Placeholder for post-quantum cryptography
     // In production, would use libraries like liboqs or similar
     const nonce = crypto.randomBytes(32);
-    
+
     // Simulate quantum-resistant encryption
-    const encrypted = crypto.createHash('sha512')
+    const encrypted = crypto
+      .createHash('sha512')
       .update(data + key.toString('hex') + nonce.toString('hex'))
       .digest('hex');
 
     return {
       encrypted,
-      nonce: nonce.toString('hex')
+      nonce: nonce.toString('hex'),
     };
   }
 
@@ -702,25 +798,32 @@ export class AdvancedMemorySecurityManager {
     return `audit_${Date.now()}_${crypto.randomBytes(6).toString('hex')}`;
   }
 
-  private async auditEvent(event: Omit<SecurityAuditEvent, 'id'>): Promise<string> {
+  private async auditEvent(
+    event: Omit<SecurityAuditEvent, 'id'>
+  ): Promise<string> {
     const auditEvent: SecurityAuditEvent = {
       id: this.generateAuditId(),
-      ...event
+      ...event,
     };
 
     this.auditEvents.push(auditEvent);
 
     if (this.config.auditLogging) {
-      console.log(`🔍 AUDIT: ${auditEvent.eventType} by ${auditEvent.userId} - ${auditEvent.result}`);
+      console.log(
+        `🔍 AUDIT: ${auditEvent.eventType} by ${auditEvent.userId} - ${auditEvent.result}`
+      );
     }
 
     return auditEvent.id;
   }
 
   private scheduleKeyRotation(): void {
-    setInterval(async () => {
-      await this.rotateEncryptionKeys();
-    }, this.config.keyRotationInterval * 60 * 60 * 1000);
+    setInterval(
+      async () => {
+        await this.rotateEncryptionKeys();
+      },
+      this.config.keyRotationInterval * 60 * 60 * 1000
+    );
   }
 
   private async rotateEncryptionKeys(): Promise<void> {
@@ -736,42 +839,51 @@ export class AdvancedMemorySecurityManager {
         name: 'Rapid Access Attempts',
         description: 'Detect unusual number of access attempts in short time',
         severity: 'high',
-        condition: (events) => {
-          const recentEvents = events.filter(e => 
-            Date.now() - e.timestamp.getTime() < 60000 && // Last minute
-            e.eventType === 'memory_access'
+        condition: events => {
+          const recentEvents = events.filter(
+            e =>
+              Date.now() - e.timestamp.getTime() < 60000 && // Last minute
+              e.eventType === 'memory_access'
           );
           return recentEvents.length > 10;
         },
         action: 'rate_limit',
-        enabled: true
+        enabled: true,
       },
       {
         id: 'geographic_anomaly',
         name: 'Geographic Anomaly',
         description: 'Detect access from unusual locations',
         severity: 'medium',
-        condition: (events) => {
+        condition: events => {
           // Simplified: check for access from different countries in short time
-          const recentEvents = events.filter(e => 
-            Date.now() - e.timestamp.getTime() < 3600000 // Last hour
+          const recentEvents = events.filter(
+            e => Date.now() - e.timestamp.getTime() < 3600000 // Last hour
           );
-          const countries = new Set(recentEvents.map(e => e.metadata.location?.split('/')[0]));
+          const countries = new Set(
+            recentEvents.map(e => e.metadata.location?.split('/')[0])
+          );
           return countries.size > 2;
         },
         action: 'require_auth',
-        enabled: true
-      }
+        enabled: true,
+      },
     ];
   }
 
   // Access control implementations (simplified)
 
-  private async evaluateRoleBasedAccess(context: SecurityContext, action: Permission): Promise<{
+  private async evaluateRoleBasedAccess(
+    context: SecurityContext,
+    action: Permission
+  ): Promise<{
     authorized: boolean;
     restrictions: string[];
   }> {
-    return { authorized: context.permissions.includes(action), restrictions: [] };
+    return {
+      authorized: context.permissions.includes(action),
+      restrictions: [],
+    };
   }
 
   private async evaluateAttributeBasedAccess(
@@ -780,7 +892,8 @@ export class AdvancedMemorySecurityManager {
     action: Permission
   ): Promise<{ authorized: boolean; restrictions: string[] }> {
     // Simplified ABAC implementation
-    const authorized = context.permissions.includes(action) && context.riskScore < 0.5;
+    const authorized =
+      context.permissions.includes(action) && context.riskScore < 0.5;
     return { authorized, restrictions: authorized ? [] : ['abac_denied'] };
   }
 
@@ -804,7 +917,9 @@ export class AdvancedMemorySecurityManager {
     return false; // Simplified - would check against restricted locations
   }
 
-  private async getUserSecurityHistory(userId: string): Promise<{ violationCount: number }> {
+  private async getUserSecurityHistory(
+    userId: string
+  ): Promise<{ violationCount: number }> {
     return { violationCount: 0 }; // Simplified
   }
 
@@ -814,7 +929,7 @@ export class AdvancedMemorySecurityManager {
 
   private assessTimeBasedRisk(timestamp: Date): number {
     const hour = timestamp.getHours();
-    return (hour < 6 || hour > 22) ? 0.3 : 0.1; // Higher risk outside business hours
+    return hour < 6 || hour > 22 ? 0.3 : 0.1; // Higher risk outside business hours
   }
 
   private async assessDeviceRisk(fingerprint: string): Promise<number> {
@@ -828,7 +943,13 @@ export class AdvancedMemorySecurityManager {
   }
 
   private getRetentionPeriod(level: SecurityLevel): number {
-    const periods = { public: 365, internal: 1095, confidential: 2555, restricted: 3650, 'top-secret': 7300 };
+    const periods = {
+      public: 365,
+      internal: 1095,
+      confidential: 2555,
+      restricted: 3650,
+      'top-secret': 7300,
+    };
     return periods[level];
   }
 
@@ -846,7 +967,7 @@ export class AdvancedMemorySecurityManager {
       delete: 'consent',
       share: 'explicit_consent',
       export: 'explicit_consent',
-      admin: 'legal_obligation'
+      admin: 'legal_obligation',
     };
     return basisMap[action] || 'legitimate_interest';
   }
@@ -855,9 +976,12 @@ export class AdvancedMemorySecurityManager {
     return action === 'admin' ? 2555 : 1095; // Different retention for different actions
   }
 
-  private async analyzeThreatIndicators(context: SecurityContext, action: Permission): Promise<void> {
-    const recentEvents = this.auditEvents.filter(e => 
-      Date.now() - e.timestamp.getTime() < 3600000 // Last hour
+  private async analyzeThreatIndicators(
+    context: SecurityContext,
+    action: Permission
+  ): Promise<void> {
+    const recentEvents = this.auditEvents.filter(
+      e => Date.now() - e.timestamp.getTime() < 3600000 // Last hour
     );
 
     for (const rule of this.threatDetectionRules) {
@@ -867,9 +991,12 @@ export class AdvancedMemorySecurityManager {
     }
   }
 
-  private async handleThreatDetection(rule: ThreatDetectionRule, context: SecurityContext): Promise<void> {
+  private async handleThreatDetection(
+    rule: ThreatDetectionRule,
+    context: SecurityContext
+  ): Promise<void> {
     console.warn(`🚨 THREAT DETECTED: ${rule.name} (${rule.severity})`);
-    
+
     await this.auditEvent({
       eventType: 'security_violation',
       timestamp: new Date(),
@@ -881,9 +1008,9 @@ export class AdvancedMemorySecurityManager {
       metadata: {
         ip: context.geoLocation?.ip || 'unknown',
         userAgent: context.deviceFingerprint,
-        details: { threatRule: rule.id, severity: rule.severity }
+        details: { threatRule: rule.id, severity: rule.severity },
       },
-      compliance: { gdprCompliant: true }
+      compliance: { gdprCompliant: true },
     });
   }
 
@@ -897,27 +1024,37 @@ export class AdvancedMemorySecurityManager {
     encryptionUsage: number;
     complianceStatus: Record<ComplianceStandard, boolean>;
   } {
-    const violations = this.auditEvents.filter(e => e.eventType === 'security_violation').length;
-    const avgRisk = this.auditEvents.length > 0 
-      ? this.auditEvents.reduce((sum, e) => sum + e.riskScore, 0) / this.auditEvents.length 
-      : 0;
-    
-    const encryptedEvents = this.auditEvents.filter(e => 
-      e.action === 'encrypt' || e.metadata.details?.encrypted === true
+    const violations = this.auditEvents.filter(
+      e => e.eventType === 'security_violation'
     ).length;
-    const encryptionUsage = this.auditEvents.length > 0 ? encryptedEvents / this.auditEvents.length : 0;
+    const avgRisk =
+      this.auditEvents.length > 0
+        ? this.auditEvents.reduce((sum, e) => sum + e.riskScore, 0) /
+          this.auditEvents.length
+        : 0;
 
-    const complianceStatus = this.config.complianceMode.reduce((status, standard) => {
-      status[standard] = true; // Simplified - would perform actual compliance checks
-      return status;
-    }, {} as Record<ComplianceStandard, boolean>);
+    const encryptedEvents = this.auditEvents.filter(
+      e => e.action === 'encrypt' || e.metadata.details?.encrypted === true
+    ).length;
+    const encryptionUsage =
+      this.auditEvents.length > 0
+        ? encryptedEvents / this.auditEvents.length
+        : 0;
+
+    const complianceStatus = this.config.complianceMode.reduce(
+      (status, standard) => {
+        status[standard] = true; // Simplified - would perform actual compliance checks
+        return status;
+      },
+      {} as Record<ComplianceStandard, boolean>
+    );
 
     return {
       totalAuditEvents: this.auditEvents.length,
       securityViolations: violations,
       averageRiskScore: Math.round(avgRisk * 100) / 100,
       encryptionUsage: Math.round(encryptionUsage * 100) / 100,
-      complianceStatus
+      complianceStatus,
     };
   }
 }

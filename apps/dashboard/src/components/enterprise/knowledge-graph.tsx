@@ -1,19 +1,17 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { GitBranch, Network, RefreshCw, Database } from "lucide-react";
-import { motion } from "framer-motion";
+import { useState, useEffect } from 'react';
+import { GitBranch, Network, RefreshCw, Database } from 'lucide-react';
+import { motion } from 'framer-motion';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "../ui/card";
-import { Button } from "../ui/button";
-import { Badge } from "../ui/badge";
-
-
+} from '../ui/card';
+import { Button } from '../ui/button';
+import { Badge } from '../ui/badge';
 
 interface Entity {
   name: string;
@@ -47,15 +45,15 @@ export function KnowledgeGraph() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch("/api/mcp/read-graph");
+      const response = await fetch('/api/mcp/read-graph');
       if (!response.ok) {
-        throw new Error("Failed to fetch graph data");
+        throw new Error('Failed to fetch graph data');
       }
       const data = await response.json();
       setGraphData(data);
     } catch (_err) {
       setError(
-        _err instanceof Error ? _err.message : "Failed to load graph data",
+        _err instanceof Error ? _err.message : 'Failed to load graph data'
       );
     } finally {
       setLoading(false);
@@ -68,14 +66,14 @@ export function KnowledgeGraph() {
 
   const getEntityTypeColor = (type: string) => {
     const colors: Record<string, string> = {
-      system: "bg-blue-100 text-blue-800",
-      agent: "bg-green-100 text-green-800",
-      configuration: "bg-purple-100 text-purple-800",
-      status: "bg-yellow-100 text-yellow-800",
-      milestone: "bg-orange-100 text-orange-800",
-      test_data: "bg-gray-100 text-gray-800",
+      system: 'bg-blue-100 text-blue-800',
+      agent: 'bg-green-100 text-green-800',
+      configuration: 'bg-purple-100 text-purple-800',
+      status: 'bg-yellow-100 text-yellow-800',
+      milestone: 'bg-orange-100 text-orange-800',
+      test_data: 'bg-gray-100 text-gray-800',
     };
-    return colors[type] || "bg-gray-100 text-gray-800";
+    return colors[type] || 'bg-gray-100 text-gray-800';
   };
 
   return (
@@ -95,7 +93,7 @@ export function KnowledgeGraph() {
           variant="outline"
         >
           <RefreshCw
-            className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`}
+            className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`}
           />
           Refresh
         </Button>
@@ -138,10 +136,11 @@ export function KnowledgeGraph() {
                 <motion.div
                   key={index}
                   whileHover={{ scale: 1.02 }}
-                  className={`p-3 rounded-lg border cursor-pointer transition-colors ${selectedEntity?.name === entity.name
-                      ? "border-primary bg-primary/5"
-                      : "border-border hover:border-primary/50"
-                    }`}
+                  className={`p-3 rounded-lg border cursor-pointer transition-colors ${
+                    selectedEntity?.name === entity.name
+                      ? 'border-primary bg-primary/5'
+                      : 'border-border hover:border-primary/50'
+                  }`}
                   onClick={() => setSelectedEntity(entity)}
                 >
                   <div className="flex items-center justify-between mb-2">
@@ -163,7 +162,7 @@ export function KnowledgeGraph() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Network className="h-5 w-5" />
-                {selectedEntity ? "Entity Details" : "Relations"}
+                {selectedEntity ? 'Entity Details' : 'Relations'}
               </CardTitle>
               <CardDescription>
                 {selectedEntity
@@ -185,7 +184,7 @@ export function KnowledgeGraph() {
                           >
                             {observation}
                           </p>
-                        ),
+                        )
                       )}
                     </div>
                   </div>
@@ -212,7 +211,8 @@ export function KnowledgeGraph() {
                       </div>
                     </div>
                   ))}
-                  {(!graphData.relations || graphData.relations.length === 0) && (
+                  {(!graphData.relations ||
+                    graphData.relations.length === 0) && (
                     <p className="text-muted-foreground text-center py-4">
                       No relations found
                     </p>
@@ -239,15 +239,15 @@ export function KnowledgeGraph() {
             <div className="flex items-center justify-between text-sm text-muted-foreground">
               <span>Source: {graphData.metadata.source}</span>
               <span>
-                Updated:{" "}
+                Updated:{' '}
                 {new Date(graphData.metadata.timestamp).toLocaleTimeString()}
               </span>
               <Badge
                 variant={
-                  graphData.metadata.mcpEnabled ? "default" : "secondary"
+                  graphData.metadata.mcpEnabled ? 'default' : 'secondary'
                 }
               >
-                MCP {graphData.metadata.mcpEnabled ? "Enabled" : "Disabled"}
+                MCP {graphData.metadata.mcpEnabled ? 'Enabled' : 'Disabled'}
               </Badge>
             </div>
           </CardContent>

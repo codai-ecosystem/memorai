@@ -3,7 +3,11 @@
  * Comprehensive compliance monitoring and reporting for enterprise environments
  */
 
-import { SecurityAuditEvent, ComplianceStandard, SecurityLevel } from './AdvancedMemorySecurityManager';
+import {
+  SecurityAuditEvent,
+  ComplianceStandard,
+  SecurityLevel,
+} from './AdvancedMemorySecurityManager';
 import { MemoryMetadata } from '../types/index';
 
 export interface CompliancePolicy {
@@ -26,9 +30,9 @@ export interface ComplianceRule {
   remediation?: string;
 }
 
-export type ComplianceAction = 
+export type ComplianceAction =
   | 'log_violation'
-  | 'alert_admin' 
+  | 'alert_admin'
   | 'block_access'
   | 'encrypt_data'
   | 'delete_data'
@@ -100,7 +104,13 @@ export interface ComplianceRecommendation {
 
 export interface DataSubjectRequest {
   id: string;
-  type: 'access' | 'rectification' | 'erasure' | 'portability' | 'restriction' | 'objection';
+  type:
+    | 'access'
+    | 'rectification'
+    | 'erasure'
+    | 'portability'
+    | 'restriction'
+    | 'objection';
   dataSubject: string;
   requestDate: Date;
   status: 'pending' | 'processing' | 'completed' | 'rejected';
@@ -148,14 +158,18 @@ export class EnterpriseComplianceMonitor {
       }
     }
 
-    console.log(`📋 Compliance Monitor initialized with ${this.policies.length} policies`);
+    console.log(
+      `📋 Compliance Monitor initialized with ${this.policies.length} policies`
+    );
     console.log(`🛡️ Standards: ${this.enabledStandards.join(', ')}`);
   }
 
   /**
    * Monitor audit event for compliance violations
    */
-  async monitorAuditEvent(event: SecurityAuditEvent): Promise<ComplianceViolation[]> {
+  async monitorAuditEvent(
+    event: SecurityAuditEvent
+  ): Promise<ComplianceViolation[]> {
     const violations: ComplianceViolation[] = [];
 
     for (const policy of this.policies.filter(p => p.enabled)) {
@@ -163,7 +177,7 @@ export class EnterpriseComplianceMonitor {
         if (rule.condition(event)) {
           const violation = await this.createViolation(policy, rule, event);
           violations.push(violation);
-          
+
           if (policy.autoRemediation) {
             await this.remediateViolation(violation);
           }
@@ -178,15 +192,22 @@ export class EnterpriseComplianceMonitor {
   /**
    * Monitor memory data for compliance violations
    */
-  async monitorMemoryData(memory: MemoryMetadata): Promise<ComplianceViolation[]> {
+  async monitorMemoryData(
+    memory: MemoryMetadata
+  ): Promise<ComplianceViolation[]> {
     const violations: ComplianceViolation[] = [];
 
     for (const policy of this.policies.filter(p => p.enabled)) {
       for (const rule of policy.rules) {
         if (rule.condition(memory)) {
-          const violation = await this.createViolation(policy, rule, undefined, memory);
+          const violation = await this.createViolation(
+            policy,
+            rule,
+            undefined,
+            memory
+          );
           violations.push(violation);
-          
+
           if (policy.autoRemediation) {
             await this.remediateViolation(violation);
           }
@@ -201,12 +222,14 @@ export class EnterpriseComplianceMonitor {
   /**
    * Process data subject request (GDPR Article 15-21)
    */
-  async processDataSubjectRequest(request: Omit<DataSubjectRequest, 'id' | 'status' | 'dueDate'>): Promise<DataSubjectRequest> {
+  async processDataSubjectRequest(
+    request: Omit<DataSubjectRequest, 'id' | 'status' | 'dueDate'>
+  ): Promise<DataSubjectRequest> {
     const dsr: DataSubjectRequest = {
       id: this.generateRequestId(),
       status: 'pending',
       dueDate: this.calculateDueDate(request.type, request.requestDate),
-      ...request
+      ...request,
     };
 
     this.dataSubjectRequests.push(dsr);
@@ -228,13 +251,18 @@ export class EnterpriseComplianceMonitor {
     const reportId = this.generateReportId();
     const relevantViolations = this.violations.filter(v => {
       const policy = this.policies.find(p => p.id === v.policyId);
-      return policy?.standard === standard && 
-             v.timestamp >= startDate && 
-             v.timestamp <= endDate;
+      return (
+        policy?.standard === standard &&
+        v.timestamp >= startDate &&
+        v.timestamp <= endDate
+      );
     });
 
     const totalEvents = relevantViolations.length + 1000; // Simulated total events
-    const complianceScore = this.calculateComplianceScore(relevantViolations, totalEvents);
+    const complianceScore = this.calculateComplianceScore(
+      relevantViolations,
+      totalEvents
+    );
 
     const report: ComplianceReport = {
       id: reportId,
@@ -244,13 +272,20 @@ export class EnterpriseComplianceMonitor {
       summary: {
         totalEvents,
         violations: relevantViolations.length,
-        remediatedViolations: relevantViolations.filter(v => v.remediated).length,
+        remediatedViolations: relevantViolations.filter(v => v.remediated)
+          .length,
         complianceScore,
-        riskLevel: this.calculateRiskLevel(complianceScore, relevantViolations)
+        riskLevel: this.calculateRiskLevel(complianceScore, relevantViolations),
       },
-      categories: await this.generateCategoryAnalysis(standard, relevantViolations),
-      recommendations: await this.generateRecommendations(standard, relevantViolations),
-      violations: relevantViolations
+      categories: await this.generateCategoryAnalysis(
+        standard,
+        relevantViolations
+      ),
+      recommendations: await this.generateRecommendations(
+        standard,
+        relevantViolations
+      ),
+      violations: relevantViolations,
     };
 
     this.reports.push(report);
@@ -281,7 +316,9 @@ export class EnterpriseComplianceMonitor {
     const now = new Date();
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-    const recentViolations = this.violations.filter(v => v.timestamp >= thirtyDaysAgo);
+    const recentViolations = this.violations.filter(
+      v => v.timestamp >= thirtyDaysAgo
+    );
     const openViolations = this.violations.filter(v => !v.remediated);
 
     // Generate violations trend (last 30 days)
@@ -289,8 +326,8 @@ export class EnterpriseComplianceMonitor {
     for (let i = 29; i >= 0; i--) {
       const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
       const dateStr = date.toISOString().split('T')[0];
-      const count = this.violations.filter(v => 
-        v.timestamp.toISOString().split('T')[0] === dateStr
+      const count = this.violations.filter(
+        v => v.timestamp.toISOString().split('T')[0] === dateStr
       ).length;
       violationsTrend.push({ date: dateStr, count });
     }
@@ -300,7 +337,10 @@ export class EnterpriseComplianceMonitor {
     recentViolations.forEach(v => {
       const policy = this.policies.find(p => p.id === v.policyId);
       if (policy) {
-        violationCounts.set(policy.name, (violationCounts.get(policy.name) || 0) + 1);
+        violationCounts.set(
+          policy.name,
+          (violationCounts.get(policy.name) || 0) + 1
+        );
       }
     });
 
@@ -311,12 +351,16 @@ export class EnterpriseComplianceMonitor {
 
     // Data subject requests status
     const dsrStatus = {
-      pending: this.dataSubjectRequests.filter(r => r.status === 'pending').length,
-      processing: this.dataSubjectRequests.filter(r => r.status === 'processing').length,
-      completed: this.dataSubjectRequests.filter(r => r.status === 'completed').length,
-      overdue: this.dataSubjectRequests.filter(r => 
-        r.status !== 'completed' && new Date() > r.dueDate
-      ).length
+      pending: this.dataSubjectRequests.filter(r => r.status === 'pending')
+        .length,
+      processing: this.dataSubjectRequests.filter(
+        r => r.status === 'processing'
+      ).length,
+      completed: this.dataSubjectRequests.filter(r => r.status === 'completed')
+        .length,
+      overdue: this.dataSubjectRequests.filter(
+        r => r.status !== 'completed' && new Date() > r.dueDate
+      ).length,
     };
 
     // Compliance scores by standard
@@ -335,12 +379,14 @@ export class EnterpriseComplianceMonitor {
         activePolicies: this.policies.filter(p => p.enabled).length,
         totalViolations: this.violations.length,
         openViolations: openViolations.length,
-        averageComplianceScore: complianceScores.reduce((sum, s) => sum + s.score, 0) / complianceScores.length || 100
+        averageComplianceScore:
+          complianceScores.reduce((sum, s) => sum + s.score, 0) /
+            complianceScores.length || 100,
       },
       violationsTrend,
       topViolations,
       dataSubjectRequests: dsrStatus,
-      complianceScores
+      complianceScores,
     };
   }
 
@@ -351,7 +397,8 @@ export class EnterpriseComplianceMonitor {
         id: 'gdpr-data-minimization',
         name: 'Data Minimization (GDPR Art. 5.1.c)',
         standard: 'GDPR',
-        description: 'Personal data must be adequate, relevant and limited to what is necessary',
+        description:
+          'Personal data must be adequate, relevant and limited to what is necessary',
         severity: 'high',
         enabled: true,
         autoRemediation: false,
@@ -360,25 +407,31 @@ export class EnterpriseComplianceMonitor {
             id: 'excessive-personal-data',
             name: 'Excessive Personal Data Collection',
             description: 'Detect collection of unnecessary personal data',
-            condition: (data) => {
+            condition: data => {
               if ('content' in data) {
                 const content = data.content.toLowerCase();
                 const personalDataCount = [
-                  'name', 'email', 'phone', 'address', 'ssn', 'id number'
+                  'name',
+                  'email',
+                  'phone',
+                  'address',
+                  'ssn',
+                  'id number',
                 ].filter(term => content.includes(term)).length;
                 return personalDataCount > 3; // Threshold for excessive collection
               }
               return false;
             },
-            action: 'alert_admin'
-          }
-        ]
+            action: 'alert_admin',
+          },
+        ],
       },
       {
         id: 'gdpr-purpose-limitation',
         name: 'Purpose Limitation (GDPR Art. 5.1.b)',
         standard: 'GDPR',
-        description: 'Personal data must be collected for specified, explicit and legitimate purposes',
+        description:
+          'Personal data must be collected for specified, explicit and legitimate purposes',
         severity: 'high',
         enabled: true,
         autoRemediation: false,
@@ -386,17 +439,20 @@ export class EnterpriseComplianceMonitor {
           {
             id: 'purpose-change-detection',
             name: 'Purpose Change Detection',
-            description: 'Detect when data is used for different purposes than originally intended',
-            condition: (event) => {
+            description:
+              'Detect when data is used for different purposes than originally intended',
+            condition: event => {
               if ('eventType' in event) {
-                return event.eventType === 'memory_sharing' && 
-                       event.metadata.details?.purposeChange === true;
+                return (
+                  event.eventType === 'memory_sharing' &&
+                  event.metadata.details?.purposeChange === true
+                );
               }
               return false;
             },
-            action: 'block_access'
-          }
-        ]
+            action: 'block_access',
+          },
+        ],
       },
       {
         id: 'gdpr-retention-limitation',
@@ -411,9 +467,9 @@ export class EnterpriseComplianceMonitor {
             id: 'retention-period-exceeded',
             name: 'Retention Period Exceeded',
             description: 'Detect personal data kept beyond retention period',
-            condition: (data) => {
+            condition: data => {
               if ('createdAt' in data && 'tags' in data) {
-                const isPersonalData = data.tags.some((tag: string) => 
+                const isPersonalData = data.tags.some((tag: string) =>
                   ['personal', 'pii', 'gdpr'].includes(tag.toLowerCase())
                 );
                 if (isPersonalData) {
@@ -425,10 +481,11 @@ export class EnterpriseComplianceMonitor {
               return false;
             },
             action: 'delete_data',
-            remediation: 'Automatically delete personal data that exceeds retention period'
-          }
-        ]
-      }
+            remediation:
+              'Automatically delete personal data that exceeds retention period',
+          },
+        ],
+      },
     ];
   }
 
@@ -446,19 +503,21 @@ export class EnterpriseComplianceMonitor {
           {
             id: 'unauthorized-phi-access',
             name: 'Unauthorized PHI Access',
-            description: 'Detect unauthorized access to protected health information',
-            condition: (event) => {
+            description:
+              'Detect unauthorized access to protected health information',
+            condition: event => {
               if ('eventType' in event && event.eventType === 'memory_access') {
                 const isPHI = event.metadata.details?.classification === 'phi';
-                const isAuthorized = event.metadata.details?.hipaaAuthorized === true;
+                const isAuthorized =
+                  event.metadata.details?.hipaaAuthorized === true;
                 return isPHI && !isAuthorized;
               }
               return false;
             },
-            action: 'block_access'
-          }
-        ]
-      }
+            action: 'block_access',
+          },
+        ],
+      },
     ];
   }
 
@@ -468,7 +527,8 @@ export class EnterpriseComplianceMonitor {
         id: 'soc2-availability',
         name: 'Availability (SOC 2 Type II)',
         standard: 'SOC2',
-        description: 'System and information are available for operation and use',
+        description:
+          'System and information are available for operation and use',
         severity: 'high',
         enabled: true,
         autoRemediation: false,
@@ -477,17 +537,19 @@ export class EnterpriseComplianceMonitor {
             id: 'system-unavailability',
             name: 'System Unavailability',
             description: 'Detect system availability issues',
-            condition: (event) => {
+            condition: event => {
               if ('eventType' in event) {
-                return event.result === 'failure' && 
-                       event.metadata.details?.errorType === 'system_unavailable';
+                return (
+                  event.result === 'failure' &&
+                  event.metadata.details?.errorType === 'system_unavailable'
+                );
               }
               return false;
             },
-            action: 'alert_admin'
-          }
-        ]
-      }
+            action: 'alert_admin',
+          },
+        ],
+      },
     ];
   }
 
@@ -497,7 +559,8 @@ export class EnterpriseComplianceMonitor {
         id: 'iso27001-access-control',
         name: 'Access Control (ISO 27001 A.9)',
         standard: 'ISO27001',
-        description: 'Limit access to information and information processing facilities',
+        description:
+          'Limit access to information and information processing facilities',
         severity: 'high',
         enabled: true,
         autoRemediation: false,
@@ -506,17 +569,19 @@ export class EnterpriseComplianceMonitor {
             id: 'privileged-access-monitoring',
             name: 'Privileged Access Monitoring',
             description: 'Monitor privileged access to sensitive information',
-            condition: (event) => {
+            condition: event => {
               if ('eventType' in event && event.eventType === 'memory_access') {
-                return event.metadata.details?.accessLevel === 'admin' ||
-                       event.metadata.details?.privileged === true;
+                return (
+                  event.metadata.details?.accessLevel === 'admin' ||
+                  event.metadata.details?.privileged === true
+                );
               }
               return false;
             },
-            action: 'log_violation'
-          }
-        ]
-      }
+            action: 'log_violation',
+          },
+        ],
+      },
     ];
   }
 
@@ -526,7 +591,8 @@ export class EnterpriseComplianceMonitor {
         id: 'fedramp-encryption',
         name: 'Cryptographic Protection (FedRAMP SC-13)',
         standard: 'FedRAMP',
-        description: 'Implement cryptographic mechanisms to prevent unauthorized disclosure',
+        description:
+          'Implement cryptographic mechanisms to prevent unauthorized disclosure',
         severity: 'critical',
         enabled: true,
         autoRemediation: true,
@@ -535,21 +601,25 @@ export class EnterpriseComplianceMonitor {
             id: 'unencrypted-sensitive-data',
             name: 'Unencrypted Sensitive Data',
             description: 'Detect sensitive data stored without encryption',
-            condition: (data) => {
+            condition: data => {
               if ('content' in data && 'tags' in data) {
-                const isSensitive = data.tags.some((tag: string) => 
-                  ['classified', 'sensitive', 'restricted'].includes(tag.toLowerCase())
+                const isSensitive = data.tags.some((tag: string) =>
+                  ['classified', 'sensitive', 'restricted'].includes(
+                    tag.toLowerCase()
+                  )
                 );
-                const isEncrypted = 'metadata' in data && (data as any).metadata?.encrypted === true;
+                const isEncrypted =
+                  'metadata' in data &&
+                  (data as any).metadata?.encrypted === true;
                 return isSensitive && !isEncrypted;
               }
               return false;
             },
             action: 'encrypt_data',
-            remediation: 'Automatically encrypt sensitive data'
-          }
-        ]
-      }
+            remediation: 'Automatically encrypt sensitive data',
+          },
+        ],
+      },
     ];
   }
 
@@ -568,20 +638,23 @@ export class EnterpriseComplianceMonitor {
             id: 'unprotected-card-data',
             name: 'Unprotected Card Data',
             description: 'Detect unprotected cardholder data',
-            condition: (data) => {
+            condition: data => {
               if ('content' in data) {
                 const content = data.content;
-                const hasCardData = /\b\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}\b/.test(content);
-                const isProtected = 'metadata' in data && (data as any).metadata?.pciCompliant === true;
+                const hasCardData =
+                  /\b\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}\b/.test(content);
+                const isProtected =
+                  'metadata' in data &&
+                  (data as any).metadata?.pciCompliant === true;
                 return hasCardData && !isProtected;
               }
               return false;
             },
             action: 'encrypt_data',
-            remediation: 'Encrypt cardholder data and mark as PCI compliant'
-          }
-        ]
-      }
+            remediation: 'Encrypt cardholder data and mark as PCI compliant',
+          },
+        ],
+      },
     ];
   }
 
@@ -600,7 +673,9 @@ export class EnterpriseComplianceMonitor {
       ruleId: rule.id,
       severity: policy.severity,
       description: `${policy.name}: ${rule.description}`,
-      dataSubject: event?.userId || (memory && 'userId' in memory ? (memory as any).userId : undefined),
+      dataSubject:
+        event?.userId ||
+        (memory && 'userId' in memory ? (memory as any).userId : undefined),
       memoryId: memory?.id || event?.memoryId,
       auditEventId: event?.id,
       remediated: false,
@@ -609,15 +684,17 @@ export class EnterpriseComplianceMonitor {
         standard: policy.standard,
         autoRemediation: policy.autoRemediation,
         ruleAction: rule.action,
-        context: event || memory
-      }
+        context: event || memory,
+      },
     };
   }
 
-  private async remediateViolation(violation: ComplianceViolation): Promise<void> {
+  private async remediateViolation(
+    violation: ComplianceViolation
+  ): Promise<void> {
     const policy = this.policies.find(p => p.id === violation.policyId);
     const rule = policy?.rules.find(r => r.id === violation.ruleId);
-    
+
     if (!rule) return;
 
     const actions = [];
@@ -644,9 +721,11 @@ export class EnterpriseComplianceMonitor {
     console.log(`🔧 Auto-remediated violation: ${violation.id}`);
   }
 
-  private async startDataSubjectRequestProcessing(request: DataSubjectRequest): Promise<void> {
+  private async startDataSubjectRequestProcessing(
+    request: DataSubjectRequest
+  ): Promise<void> {
     request.status = 'processing';
-    
+
     // Simulate processing workflow
     setTimeout(async () => {
       switch (request.type) {
@@ -660,7 +739,7 @@ export class EnterpriseComplianceMonitor {
           request.data = await this.exportDataSubjectData(request.dataSubject);
           break;
       }
-      
+
       request.status = 'completed';
       request.completionDate = new Date();
     }, 1000); // Simulate processing time
@@ -681,9 +760,12 @@ export class EnterpriseComplianceMonitor {
     return { exportFile: 'data-export.json', format: 'JSON' };
   }
 
-  private calculateDueDate(type: DataSubjectRequest['type'], requestDate: Date): Date {
+  private calculateDueDate(
+    type: DataSubjectRequest['type'],
+    requestDate: Date
+  ): Date {
     const dueDate = new Date(requestDate);
-    
+
     // GDPR timelines
     switch (type) {
       case 'access':
@@ -697,30 +779,35 @@ export class EnterpriseComplianceMonitor {
       default:
         dueDate.setDate(dueDate.getDate() + 30);
     }
-    
+
     return dueDate;
   }
 
-  private calculateComplianceScore(violations: ComplianceViolation[], totalEvents: number): number {
+  private calculateComplianceScore(
+    violations: ComplianceViolation[],
+    totalEvents: number
+  ): number {
     if (totalEvents === 0) return 100;
-    
+
     const violationScore = violations.reduce((score, v) => {
       const weight = { low: 1, medium: 2, high: 4, critical: 8 }[v.severity];
       return score + weight;
     }, 0);
-    
+
     const maxPossibleScore = totalEvents * 8; // All critical violations
     const score = 100 - (violationScore / maxPossibleScore) * 100;
-    
+
     return Math.max(0, Math.round(score));
   }
 
   private calculateRiskLevel(
-    complianceScore: number, 
+    complianceScore: number,
     violations: ComplianceViolation[]
   ): 'low' | 'medium' | 'high' | 'critical' {
-    const criticalViolations = violations.filter(v => v.severity === 'critical').length;
-    
+    const criticalViolations = violations.filter(
+      v => v.severity === 'critical'
+    ).length;
+
     if (criticalViolations > 0 || complianceScore < 50) return 'critical';
     if (complianceScore < 70) return 'high';
     if (complianceScore < 85) return 'medium';
@@ -736,45 +823,54 @@ export class EnterpriseComplianceMonitor {
       dataProcessing: {
         name: 'Data Processing',
         score: 85,
-        violations: violations.filter(v => v.description.includes('data')).length,
-        recommendations: ['Implement data classification', 'Review processing purposes'],
-        status: 'compliant'
+        violations: violations.filter(v => v.description.includes('data'))
+          .length,
+        recommendations: [
+          'Implement data classification',
+          'Review processing purposes',
+        ],
+        status: 'compliant',
       },
       accessControl: {
         name: 'Access Control',
         score: 92,
-        violations: violations.filter(v => v.description.includes('access')).length,
+        violations: violations.filter(v => v.description.includes('access'))
+          .length,
         recommendations: ['Enable MFA for all users'],
-        status: 'compliant'
+        status: 'compliant',
       },
       encryption: {
         name: 'Encryption',
         score: 98,
-        violations: violations.filter(v => v.description.includes('encrypt')).length,
+        violations: violations.filter(v => v.description.includes('encrypt'))
+          .length,
         recommendations: [],
-        status: 'compliant'
+        status: 'compliant',
       },
       audit: {
         name: 'Audit & Monitoring',
         score: 88,
-        violations: violations.filter(v => v.description.includes('audit')).length,
+        violations: violations.filter(v => v.description.includes('audit'))
+          .length,
         recommendations: ['Increase audit log retention'],
-        status: 'compliant'
+        status: 'compliant',
       },
       retention: {
         name: 'Data Retention',
         score: 75,
-        violations: violations.filter(v => v.description.includes('retention')).length,
+        violations: violations.filter(v => v.description.includes('retention'))
+          .length,
         recommendations: ['Implement automated retention policies'],
-        status: 'partial'
+        status: 'partial',
       },
       breach: {
         name: 'Breach Response',
         score: 90,
-        violations: violations.filter(v => v.description.includes('breach')).length,
+        violations: violations.filter(v => v.description.includes('breach'))
+          .length,
         recommendations: ['Test incident response procedures'],
-        status: 'compliant'
-      }
+        status: 'compliant',
+      },
     };
   }
 
@@ -793,7 +889,7 @@ export class EnterpriseComplianceMonitor {
         impact: 'Significantly improves data protection compliance',
         effort: 'medium',
         timeline: '2-4 weeks',
-        cost: 'medium'
+        cost: 'medium',
       });
     }
 
@@ -801,12 +897,13 @@ export class EnterpriseComplianceMonitor {
       recommendations.push({
         id: 'rec-access-control',
         title: 'Strengthen Access Controls',
-        description: 'Implement role-based access control with principle of least privilege',
+        description:
+          'Implement role-based access control with principle of least privilege',
         priority: 'high',
         impact: 'Reduces unauthorized access risks',
         effort: 'high',
         timeline: '4-6 weeks',
-        cost: 'high'
+        cost: 'high',
       });
     }
 

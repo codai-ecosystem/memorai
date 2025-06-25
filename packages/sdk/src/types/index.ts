@@ -2,7 +2,7 @@
  * @fileoverview Type definitions for Memorai SDK
  */
 
-import type { MemoryContext } from "@codai/memorai-core";
+import type { MemoryContext } from '@codai/memorai-core';
 
 // Client Configuration
 export interface ClientOptions {
@@ -26,12 +26,12 @@ export interface CacheOptions {
   enabled: boolean;
   ttl?: number;
   maxSize?: number;
-  strategy?: "lru" | "fifo";
+  strategy?: 'lru' | 'fifo';
 }
 
 // Memory Operations
 export interface MemoryOperation {
-  operation: "remember" | "recall" | "forget" | "context";
+  operation: 'remember' | 'recall' | 'forget' | 'context';
   data?: any;
   options?: OperationOptions;
 }
@@ -40,7 +40,7 @@ export interface OperationOptions {
   timeout?: number;
   retry?: boolean;
   cache?: boolean;
-  priority?: "low" | "normal" | "high";
+  priority?: 'low' | 'normal' | 'high';
 }
 
 export interface RememberOptions {
@@ -86,7 +86,7 @@ export interface ContextOptions {
   };
   limit?: number;
   includeMemories?: boolean;
-  summaryType?: "brief" | "detailed" | "highlights";
+  summaryType?: 'brief' | 'detailed' | 'highlights';
 }
 
 // Agent Types
@@ -147,7 +147,7 @@ export class MemoraiSDKError extends Error {
 
   constructor(code: string, message: string, details?: any, retryable = false) {
     super(message);
-    this.name = "MemoraiSDKError";
+    this.name = 'MemoraiSDKError';
     this.code = code;
     this.details = details;
     this.retryable = retryable;
@@ -157,10 +157,10 @@ export class MemoraiSDKError extends Error {
 // Event Types
 export interface MemoryEvent {
   type:
-    | "memory_created"
-    | "memory_recalled"
-    | "memory_forgotten"
-    | "context_generated";
+    | 'memory_created'
+    | 'memory_recalled'
+    | 'memory_forgotten'
+    | 'context_generated';
   data: unknown;
   timestamp: Date;
   sessionId?: string;

@@ -11,7 +11,7 @@ class MemoraiDashboardEnhanced {
     this.stats = null;
     this.config = null;
     this.isLoading = false;
-    this.currentTab = "overview";
+    this.currentTab = 'overview';
     this.searchDebounceTimer = null;
     this.wsConnection = null;
     this.performance = {
@@ -21,20 +21,20 @@ class MemoraiDashboardEnhanced {
     };
 
     // Initialize on DOM ready
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", () => this.init());
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => this.init());
     } else {
       this.init();
     }
   }
 
   async init() {
-    console.log("🧠 Initializing Enhanced Memorai Dashboard...");
+    console.log('🧠 Initializing Enhanced Memorai Dashboard...');
     const startTime = performance.now();
 
     try {
       // Initialize Lucide icons
-      if (typeof lucide !== "undefined") {
+      if (typeof lucide !== 'undefined') {
         lucide.createIcons();
       }
 
@@ -59,21 +59,21 @@ class MemoraiDashboardEnhanced {
       // Performance tracking
       this.performance.loadTime = performance.now() - startTime;
       console.log(
-        `✅ Dashboard initialized in ${this.performance.loadTime.toFixed(2)}ms`,
+        `✅ Dashboard initialized in ${this.performance.loadTime.toFixed(2)}ms`
       );
 
       // Show success toast
-      this.showToast("Dashboard loaded successfully", "success");
+      this.showToast('Dashboard loaded successfully', 'success');
     } catch (error) {
-      console.error("❌ Failed to initialize dashboard:", error);
-      this.showToast("Failed to initialize dashboard", "error");
+      console.error('❌ Failed to initialize dashboard:', error);
+      this.showToast('Failed to initialize dashboard', 'error');
     }
   }
 
   setupEventListeners() {
     // Tab navigation
-    document.querySelectorAll("[data-tab]").forEach((tab) => {
-      tab.addEventListener("click", (e) => {
+    document.querySelectorAll('[data-tab]').forEach(tab => {
+      tab.addEventListener('click', e => {
         e.preventDefault();
         const tabName = tab.dataset.tab;
         this.switchTab(tabName);
@@ -81,9 +81,9 @@ class MemoraiDashboardEnhanced {
     });
 
     // Search functionality
-    const searchInput = document.getElementById("memory-search");
+    const searchInput = document.getElementById('memory-search');
     if (searchInput) {
-      searchInput.addEventListener("input", (e) => {
+      searchInput.addEventListener('input', e => {
         clearTimeout(this.searchDebounceTimer);
         this.searchDebounceTimer = setTimeout(() => {
           this.searchMemories(e.target.value);
@@ -92,85 +92,85 @@ class MemoraiDashboardEnhanced {
     }
 
     // Create memory form
-    const createForm = document.getElementById("create-memory-form");
+    const createForm = document.getElementById('create-memory-form');
     if (createForm) {
-      createForm.addEventListener("submit", (e) => {
+      createForm.addEventListener('submit', e => {
         e.preventDefault();
         this.createMemory();
       });
     }
 
     // Theme toggle
-    const themeToggle = document.getElementById("theme-toggle");
+    const themeToggle = document.getElementById('theme-toggle');
     if (themeToggle) {
-      themeToggle.addEventListener("click", () => this.toggleTheme());
+      themeToggle.addEventListener('click', () => this.toggleTheme());
     }
 
     // Quick actions
     document
-      .getElementById("test-connection")
-      ?.addEventListener("click", () => this.testConnection());
+      .getElementById('test-connection')
+      ?.addEventListener('click', () => this.testConnection());
     document
-      .getElementById("refresh-config")
-      ?.addEventListener("click", () => this.refreshConfig());
+      .getElementById('refresh-config')
+      ?.addEventListener('click', () => this.refreshConfig());
     document
-      .getElementById("export-config")
-      ?.addEventListener("click", () => this.exportConfig());
+      .getElementById('export-config')
+      ?.addEventListener('click', () => this.exportConfig());
     document
-      .getElementById("system-logs")
-      ?.addEventListener("click", () => this.showSystemLogs());
+      .getElementById('system-logs')
+      ?.addEventListener('click', () => this.showSystemLogs());
 
     // Modal controls
-    document.getElementById("modal-overlay")?.addEventListener("click", (e) => {
-      if (e.target.id === "modal-overlay") this.closeModal();
+    document.getElementById('modal-overlay')?.addEventListener('click', e => {
+      if (e.target.id === 'modal-overlay') this.closeModal();
     });
 
     // Help shortcuts
     document
-      .getElementById("close-shortcuts")
-      ?.addEventListener("click", () => this.hideShortcuts());
+      .getElementById('close-shortcuts')
+      ?.addEventListener('click', () => this.hideShortcuts());
 
     // Advanced search filters
     this.setupAdvancedFilters();
   }
 
   setupKeyboardShortcuts() {
-    document.addEventListener("keydown", (e) => {
+    document.addEventListener('keydown', e => {
       // Check for modifier keys
       const isCmd = e.metaKey || e.ctrlKey;
       const isShift = e.shiftKey;
 
       // Quick search (Cmd/Ctrl + K)
-      if (isCmd && e.key === "k") {
+      if (isCmd && e.key === 'k') {
         e.preventDefault();
-        document.getElementById("memory-search")?.focus();
+        document.getElementById('memory-search')?.focus();
         return;
       }
 
       // Create memory (Cmd/Ctrl + N)
-      if (isCmd && e.key === "n") {
+      if (isCmd && e.key === 'n') {
         e.preventDefault();
-        this.switchTab("create");
-        document.getElementById("memory-content")?.focus();
+        this.switchTab('create');
+        document.getElementById('memory-content')?.focus();
         return;
       }
 
       // Toggle theme (Cmd/Ctrl + Shift + L)
-      if (isCmd && isShift && e.key === "L") {
+      if (isCmd && isShift && e.key === 'L') {
         e.preventDefault();
         this.toggleTheme();
         return;
       }
 
       // Show help (?)
-      if (e.key === "?" && !e.target.matches("input, textarea")) {
+      if (e.key === '?' && !e.target.matches('input, textarea')) {
         e.preventDefault();
         this.showShortcuts();
         return;
       }
 
       // Close modals (Escape)
-      if (e.key === "Escape") {
+      if (e.key === 'Escape') {
         this.closeModal();
         this.hideShortcuts();
         return;
@@ -179,101 +179,101 @@ class MemoraiDashboardEnhanced {
   }
   setupAdvancedFilters() {
     // Search form functionality
-    const searchForm = document.getElementById("search-form");
+    const searchForm = document.getElementById('search-form');
     if (searchForm) {
-      searchForm.addEventListener("submit", (e) => {
+      searchForm.addEventListener('submit', e => {
         e.preventDefault();
         this.performAdvancedSearch();
       });
     }
 
     // Search filters toggle
-    const filtersToggle = document.getElementById("search-filters-toggle");
-    const filtersPanel = document.getElementById("search-filters");
+    const filtersToggle = document.getElementById('search-filters-toggle');
+    const filtersPanel = document.getElementById('search-filters');
     if (filtersToggle && filtersPanel) {
-      filtersToggle.addEventListener("click", () => {
-        filtersPanel.classList.toggle("hidden");
-        const icon = filtersToggle.querySelector("i");
+      filtersToggle.addEventListener('click', () => {
+        filtersPanel.classList.toggle('hidden');
+        const icon = filtersToggle.querySelector('i');
         if (icon) {
           icon.setAttribute(
-            "data-lucide",
-            filtersPanel.classList.contains("hidden") ? "filter" : "x",
+            'data-lucide',
+            filtersPanel.classList.contains('hidden') ? 'filter' : 'x'
           );
-          if (typeof lucide !== "undefined") lucide.createIcons();
+          if (typeof lucide !== 'undefined') lucide.createIcons();
         }
       });
     }
 
     // Clear search button
-    const clearSearch = document.getElementById("clear-search");
+    const clearSearch = document.getElementById('clear-search');
     if (clearSearch) {
-      clearSearch.addEventListener("click", () => {
-        document.getElementById("search-query")?.value &&
-          (document.getElementById("search-query").value = "");
-        document.getElementById("search-agent-id")?.value &&
-          (document.getElementById("search-agent-id").value = "");
+      clearSearch.addEventListener('click', () => {
+        document.getElementById('search-query')?.value &&
+          (document.getElementById('search-query').value = '');
+        document.getElementById('search-agent-id')?.value &&
+          (document.getElementById('search-agent-id').value = '');
         this.loadInitialData();
-        this.updateResultsSummary("Showing all memories");
+        this.updateResultsSummary('Showing all memories');
       });
     }
 
     // Voice search button (placeholder for future implementation)
-    const voiceSearch = document.getElementById("voice-search");
+    const voiceSearch = document.getElementById('voice-search');
     if (voiceSearch) {
-      voiceSearch.addEventListener("click", () => {
-        this.showToast("Voice search coming soon!", "info");
+      voiceSearch.addEventListener('click', () => {
+        this.showToast('Voice search coming soon!', 'info');
       });
     }
 
     // Tag preset buttons
-    document.querySelectorAll(".tag-preset").forEach((btn) => {
-      btn.addEventListener("click", () => {
+    document.querySelectorAll('.tag-preset').forEach(btn => {
+      btn.addEventListener('click', () => {
         const tag = btn.dataset.tag;
-        const tagsInput = document.getElementById("memory-tags");
+        const tagsInput = document.getElementById('memory-tags');
         if (tagsInput) {
           const currentTags = tagsInput.value
-            .split(",")
-            .map((t) => t.trim())
+            .split(',')
+            .map(t => t.trim())
             .filter(Boolean);
           if (!currentTags.includes(tag)) {
             currentTags.push(tag);
-            tagsInput.value = currentTags.join(", ");
+            tagsInput.value = currentTags.join(', ');
           }
         }
       });
     });
 
     // Memory type filter
-    const typeFilter = document.getElementById("memory-type-filter");
+    const typeFilter = document.getElementById('memory-type-filter');
     if (typeFilter) {
-      typeFilter.addEventListener("change", () => this.applyFilters());
+      typeFilter.addEventListener('change', () => this.applyFilters());
     }
 
     // Date range filter
-    const dateFilter = document.getElementById("date-range-filter");
+    const dateFilter = document.getElementById('date-range-filter');
     if (dateFilter) {
-      dateFilter.addEventListener("change", () => this.applyFilters());
+      dateFilter.addEventListener('change', () => this.applyFilters());
     }
 
     // Sort options
-    const sortFilter = document.getElementById("sort-filter");
+    const sortFilter = document.getElementById('sort-filter');
     if (sortFilter) {
-      sortFilter.addEventListener("change", () => this.applyFilters());
+      sortFilter.addEventListener('change', () => this.applyFilters());
     }
   }
 
   async performAdvancedSearch() {
-    const query = document.getElementById("search-query")?.value?.trim();
-    const agentId = document.getElementById("search-agent-id")?.value?.trim();
+    const query = document.getElementById('search-query')?.value?.trim();
+    const agentId = document.getElementById('search-agent-id')?.value?.trim();
     const limit =
-      parseInt(document.getElementById("search-limit")?.value) || 25;
+      parseInt(document.getElementById('search-limit')?.value) || 25;
 
     if (!query) {
-      this.showToast("Please enter a search query", "warning");
+      this.showToast('Please enter a search query', 'warning');
       return;
     }
 
-    this.showLoading("Searching with advanced filters...");
+    this.showLoading('Searching with advanced filters...');
 
     try {
       this.performance.apiCalls++;
@@ -281,8 +281,8 @@ class MemoraiDashboardEnhanced {
       if (agentId) body.agentId = agentId;
 
       const response = await fetch(`${this.baseURL}/api/memories/search`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
 
@@ -293,27 +293,27 @@ class MemoraiDashboardEnhanced {
       this.updateMemoriesDisplay();
 
       this.updateResultsSummary(
-        `Found ${results.length} memories matching "${query}"`,
+        `Found ${results.length} memories matching "${query}"`
       );
-      this.showToast(`Found ${results.length} memories`, "success");
+      this.showToast(`Found ${results.length} memories`, 'success');
     } catch (error) {
-      console.error("Advanced search failed:", error);
+      console.error('Advanced search failed:', error);
       this.performance.errors++;
-      this.showToast("Advanced search failed", "error");
-      this.updateResultsSummary("Search failed");
+      this.showToast('Advanced search failed', 'error');
+      this.updateResultsSummary('Search failed');
     } finally {
       this.hideLoading();
     }
   }
 
   updateResultsSummary(text) {
-    const summaryElement = document.getElementById("results-summary");
+    const summaryElement = document.getElementById('results-summary');
     if (summaryElement) {
       summaryElement.textContent = text;
     }
   }
   async loadInitialData() {
-    this.showLoading("Loading dashboard data...");
+    this.showLoading('Loading dashboard data...');
 
     try {
       // Load data in parallel with proper error handling
@@ -324,33 +324,33 @@ class MemoraiDashboardEnhanced {
       ]);
 
       // Handle memories result
-      if (memories.status === "fulfilled") {
+      if (memories.status === 'fulfilled') {
         this.memories = memories.value;
       } else {
-        console.error("Failed to load memories:", memories.reason);
+        console.error('Failed to load memories:', memories.reason);
         this.memories = [];
       }
 
       // Handle stats result
-      if (stats.status === "fulfilled") {
+      if (stats.status === 'fulfilled') {
         this.stats = stats.value;
       } else {
-        console.error("Failed to load stats:", stats.reason);
+        console.error('Failed to load stats:', stats.reason);
         this.stats = {
           totalMemories: 0,
           memoryTiers: { smart: 0, basic: 0, advanced: 0 },
           recentActivity: 0,
-          storageUsed: "0 MB",
+          storageUsed: '0 MB',
         };
       }
 
       // Handle config result
-      if (config.status === "fulfilled") {
+      if (config.status === 'fulfilled') {
         this.config = config.value;
       } else {
-        console.error("Failed to load config:", config.reason);
+        console.error('Failed to load config:', config.reason);
         this.config = {
-          tier: { level: "unknown", message: "Configuration unavailable" },
+          tier: { level: 'unknown', message: 'Configuration unavailable' },
           environment: {},
         };
       }
@@ -361,8 +361,8 @@ class MemoraiDashboardEnhanced {
       this.updateConfigDisplay();
       this.updateSystemStatus();
     } catch (error) {
-      console.error("Failed to load initial data:", error);
-      this.showToast("Failed to load data", "error");
+      console.error('Failed to load initial data:', error);
+      this.showToast('Failed to load data', 'error');
     } finally {
       // Always hide loading, regardless of success or failure
       this.hideLoading();
@@ -376,7 +376,7 @@ class MemoraiDashboardEnhanced {
       const data = await response.json();
       return data.memories || data || [];
     } catch (error) {
-      console.error("Failed to fetch memories:", error);
+      console.error('Failed to fetch memories:', error);
       this.performance.errors++;
       return [];
     }
@@ -393,17 +393,17 @@ class MemoraiDashboardEnhanced {
           totalMemories: 0,
           memoryTiers: { smart: 0, basic: 0, advanced: 0 },
           recentActivity: 0,
-          storageUsed: "0 MB",
+          storageUsed: '0 MB',
         }
       );
     } catch (error) {
-      console.error("Failed to fetch stats:", error);
+      console.error('Failed to fetch stats:', error);
       this.performance.errors++;
       return {
         totalMemories: 0,
         memoryTiers: { smart: 0, basic: 0, advanced: 0 },
         recentActivity: 0,
-        storageUsed: "0 MB",
+        storageUsed: '0 MB',
       };
     }
   }
@@ -416,37 +416,37 @@ class MemoraiDashboardEnhanced {
       return (
         data.config ||
         data || {
-          tier: { level: "unknown", message: "Configuration unavailable" },
+          tier: { level: 'unknown', message: 'Configuration unavailable' },
           environment: {},
         }
       );
     } catch (error) {
-      console.error("Failed to fetch config:", error);
+      console.error('Failed to fetch config:', error);
       this.performance.errors++;
       return {
-        tier: { level: "unknown", message: "Configuration unavailable" },
+        tier: { level: 'unknown', message: 'Configuration unavailable' },
         environment: {},
       };
     }
   }
   updateMemoriesDisplay() {
-    const container = document.getElementById("memory-results");
+    const container = document.getElementById('memory-results');
     if (!container) return;
 
     if (this.memories.length === 0) {
       container.innerHTML = this.getEmptyMemoriesHTML();
-      this.updateResultsSummary("No memories found");
+      this.updateResultsSummary('No memories found');
       return;
     }
 
     const html = this.memories
-      .map((memory) => this.getMemoryCardHTML(memory))
-      .join("");
+      .map(memory => this.getMemoryCardHTML(memory))
+      .join('');
     container.innerHTML = html;
 
     // Update results summary
     this.updateResultsSummary(
-      `Showing ${this.memories.length} ${this.memories.length === 1 ? "memory" : "memories"}`,
+      `Showing ${this.memories.length} ${this.memories.length === 1 ? 'memory' : 'memories'}`
     );
 
     // Update stats
@@ -458,7 +458,7 @@ class MemoraiDashboardEnhanced {
 
   getMemoryCardHTML(memory) {
     const timestamp = new Date(memory.timestamp || Date.now()).toLocaleString();
-    const tierBadge = this.getTierBadgeHTML(memory.tier || "smart");
+    const tierBadge = this.getTierBadgeHTML(memory.tier || 'smart');
 
     return `
             <div class="memory-card bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1" data-memory-id="${memory.id || memory.content}">
@@ -486,12 +486,12 @@ class MemoraiDashboardEnhanced {
                     ? `
                 <div class="border-t border-gray-200 dark:border-gray-600 pt-3">
                     <div class="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400">
-                        ${memory.metadata.source ? `<span>Source: ${memory.metadata.source}</span>` : ""}
-                        ${memory.metadata.tags ? `<span>Tags: ${memory.metadata.tags.join(", ")}</span>` : ""}
+                        ${memory.metadata.source ? `<span>Source: ${memory.metadata.source}</span>` : ''}
+                        ${memory.metadata.tags ? `<span>Tags: ${memory.metadata.tags.join(', ')}</span>` : ''}
                     </div>
                 </div>
                 `
-                    : ""
+                    : ''
                 }
             </div>
         `;
@@ -499,9 +499,9 @@ class MemoraiDashboardEnhanced {
 
   getTierBadgeHTML(tier) {
     const tierConfig = {
-      advanced: { label: "Advanced", class: "tier-advanced", icon: "crown" },
-      smart: { label: "Smart", class: "tier-smart", icon: "cpu" },
-      basic: { label: "Basic", class: "tier-basic", icon: "hash" },
+      advanced: { label: 'Advanced', class: 'tier-advanced', icon: 'crown' },
+      smart: { label: 'Smart', class: 'tier-smart', icon: 'cpu' },
+      basic: { label: 'Basic', class: 'tier-basic', icon: 'hash' },
     };
 
     const config = tierConfig[tier] || tierConfig.smart;
@@ -529,38 +529,38 @@ class MemoraiDashboardEnhanced {
 
   setupMemoryCardListeners() {
     // Edit memory buttons
-    document.querySelectorAll(".edit-memory").forEach((btn) => {
-      btn.addEventListener("click", (e) => {
+    document.querySelectorAll('.edit-memory').forEach(btn => {
+      btn.addEventListener('click', e => {
         e.stopPropagation();
-        const memoryId = btn.closest("[data-memory-id]").dataset.memoryId;
+        const memoryId = btn.closest('[data-memory-id]').dataset.memoryId;
         this.editMemory(memoryId);
       });
     });
 
     // Delete memory buttons
-    document.querySelectorAll(".delete-memory").forEach((btn) => {
-      btn.addEventListener("click", (e) => {
+    document.querySelectorAll('.delete-memory').forEach(btn => {
+      btn.addEventListener('click', e => {
         e.stopPropagation();
-        const memoryId = btn.closest("[data-memory-id]").dataset.memoryId;
+        const memoryId = btn.closest('[data-memory-id]').dataset.memoryId;
         this.deleteMemory(memoryId);
       });
     });
 
     // Re-initialize icons for new content
-    if (typeof lucide !== "undefined") {
+    if (typeof lucide !== 'undefined') {
       lucide.createIcons();
     }
   }
   updateMemoryStats() {
     // Update memory count
-    const totalElement = document.getElementById("stat-total-memories");
+    const totalElement = document.getElementById('stat-total-memories');
     if (totalElement) {
       totalElement.textContent = this.memories.length.toLocaleString();
     }
 
     // Update active agents count (based on unique agent IDs)
-    const agentIds = new Set(this.memories.map((m) => m.agentId || "unknown"));
-    const activeAgentsElement = document.getElementById("stat-active-agents");
+    const agentIds = new Set(this.memories.map(m => m.agentId || 'unknown'));
+    const activeAgentsElement = document.getElementById('stat-active-agents');
     if (activeAgentsElement) {
       activeAgentsElement.textContent = agentIds.size.toString();
     }
@@ -572,8 +572,8 @@ class MemoraiDashboardEnhanced {
       basic: 0,
     };
 
-    this.memories.forEach((memory) => {
-      const tier = memory.tier || "smart";
+    this.memories.forEach(memory => {
+      const tier = memory.tier || 'smart';
       if (tierCounts.hasOwnProperty(tier)) {
         tierCounts[tier]++;
       }
@@ -588,19 +588,19 @@ class MemoraiDashboardEnhanced {
     });
 
     // Update performance metrics
-    const successRateElement = document.getElementById("success-rate");
+    const successRateElement = document.getElementById('success-rate');
     if (successRateElement) {
       const rate =
         this.performance.errors > 0
           ? Math.max(
               0,
-              100 - (this.performance.errors / this.performance.apiCalls) * 100,
+              100 - (this.performance.errors / this.performance.apiCalls) * 100
             )
           : 98.5;
       successRateElement.textContent = `${rate.toFixed(1)}%`;
     }
 
-    const apiCallsElement = document.getElementById("api-calls-count");
+    const apiCallsElement = document.getElementById('api-calls-count');
     if (apiCallsElement) {
       apiCallsElement.textContent = this.performance.apiCalls.toString();
     }
@@ -611,12 +611,12 @@ class MemoraiDashboardEnhanced {
 
     // Update stat cards
     this.updateElement(
-      "total-memories",
-      this.stats.totalMemories?.toLocaleString() || "0",
+      'total-memories',
+      this.stats.totalMemories?.toLocaleString() || '0'
     );
-    this.updateElement("recent-activity", this.stats.recentActivity || "0");
-    this.updateElement("storage-used", this.stats.storageUsed || "0 MB");
-    this.updateElement("active-tier", this.config?.activeTier || "smart");
+    this.updateElement('recent-activity', this.stats.recentActivity || '0');
+    this.updateElement('storage-used', this.stats.storageUsed || '0 MB');
+    this.updateElement('active-tier', this.config?.activeTier || 'smart');
 
     // Update tier distribution chart
     this.updateTierChart();
@@ -626,7 +626,7 @@ class MemoraiDashboardEnhanced {
   }
 
   updateTierChart() {
-    const chartContainer = document.getElementById("tier-chart");
+    const chartContainer = document.getElementById('tier-chart');
     if (!chartContainer || !this.stats.memoryTiers) return;
 
     const tiers = this.stats.memoryTiers;
@@ -639,9 +639,9 @@ class MemoraiDashboardEnhanced {
     }
 
     const colors = {
-      advanced: "#10b981",
-      smart: "#3b82f6",
-      basic: "#f59e0b",
+      advanced: '#10b981',
+      smart: '#3b82f6',
+      basic: '#f59e0b',
     };
 
     let currentAngle = -90;
@@ -653,7 +653,7 @@ class MemoraiDashboardEnhanced {
         50,
         40,
         currentAngle,
-        currentAngle + angle,
+        currentAngle + angle
       );
       currentAngle += angle;
 
@@ -662,7 +662,7 @@ class MemoraiDashboardEnhanced {
         count,
         percentage: percentage.toFixed(1),
         path,
-        color: colors[tier] || "#6b7280",
+        color: colors[tier] || '#6b7280',
       };
     });
 
@@ -670,24 +670,24 @@ class MemoraiDashboardEnhanced {
             <svg viewBox="0 0 100 100" class="w-32 h-32">
                 ${segments
                   .map(
-                    (segment) => `
+                    segment => `
                     <path d="${segment.path}" fill="${segment.color}" stroke="white" stroke-width="0.5" opacity="0.8"/>
-                `,
+                `
                   )
-                  .join("")}
+                  .join('')}
             </svg>
         `;
 
     const legendContent = segments
       .map(
-        (segment) => `
+        segment => `
             <div class="flex items-center space-x-2">
                 <div class="w-3 h-3 rounded-full" style="background-color: ${segment.color}"></div>
                 <span class="text-sm text-gray-600 dark:text-gray-400">${segment.tier}: ${segment.count} (${segment.percentage}%)</span>
             </div>
-        `,
+        `
       )
-      .join("");
+      .join('');
 
     chartContainer.innerHTML = `
             <div class="flex items-center justify-between">
@@ -700,7 +700,7 @@ class MemoraiDashboardEnhanced {
   createPieSlice(cx, cy, r, startAngle, endAngle) {
     const start = this.polarToCartesian(cx, cy, r, endAngle);
     const end = this.polarToCartesian(cx, cy, r, startAngle);
-    const largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1";
+    const largeArcFlag = endAngle - startAngle <= 180 ? '0' : '1';
     return `M ${cx} ${cy} L ${start.x} ${start.y} A ${r} ${r} 0 ${largeArcFlag} 0 ${end.x} ${end.y} Z`;
   }
 
@@ -713,7 +713,7 @@ class MemoraiDashboardEnhanced {
   }
 
   updateActivityChart() {
-    const chartContainer = document.getElementById("activity-chart");
+    const chartContainer = document.getElementById('activity-chart');
     if (!chartContainer) return;
 
     // Generate sample activity data for the last 7 days
@@ -722,12 +722,12 @@ class MemoraiDashboardEnhanced {
       const date = new Date();
       date.setDate(date.getDate() - (days - 1 - i));
       return {
-        date: date.toLocaleDateString("en-US", { weekday: "short" }),
+        date: date.toLocaleDateString('en-US', { weekday: 'short' }),
         value: Math.floor(Math.random() * 20) + 1,
       };
     });
 
-    const maxValue = Math.max(...data.map((d) => d.value));
+    const maxValue = Math.max(...data.map(d => d.value));
     const barWidth = 80 / days;
 
     const barsContent = data
@@ -743,7 +743,7 @@ class MemoraiDashboardEnhanced {
                       class="text-xs fill-gray-500 dark:fill-gray-400">${d.date}</text>
             `;
       })
-      .join("");
+      .join('');
 
     chartContainer.innerHTML = `
             <svg viewBox="0 0 100 90" class="w-full h-24">
@@ -758,13 +758,13 @@ class MemoraiDashboardEnhanced {
       return;
     }
 
-    this.showLoading("Searching memories...");
+    this.showLoading('Searching memories...');
 
     try {
       this.performance.apiCalls++;
       const response = await fetch(`${this.baseURL}/api/memories/search`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query, limit: 50 }),
       });
 
@@ -774,32 +774,32 @@ class MemoraiDashboardEnhanced {
       this.memories = results;
       this.updateMemoriesDisplay();
 
-      this.showToast(`Found ${results.length} memories`, "success");
+      this.showToast(`Found ${results.length} memories`, 'success');
     } catch (error) {
-      console.error("Search failed:", error);
+      console.error('Search failed:', error);
       this.performance.errors++;
-      this.showToast("Search failed", "error");
+      this.showToast('Search failed', 'error');
     } finally {
       this.hideLoading();
     }
   }
 
   async createMemory() {
-    const content = document.getElementById("memory-content")?.value?.trim();
+    const content = document.getElementById('memory-content')?.value?.trim();
     const metadata = this.getMemoryMetadata();
 
     if (!content) {
-      this.showToast("Please enter memory content", "warning");
+      this.showToast('Please enter memory content', 'warning');
       return;
     }
 
-    this.showLoading("Creating memory...");
+    this.showLoading('Creating memory...');
 
     try {
       this.performance.apiCalls++;
       const response = await fetch(`${this.baseURL}/api/memories`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content, metadata }),
       });
 
@@ -809,32 +809,32 @@ class MemoraiDashboardEnhanced {
       this.memories.unshift(newMemory);
 
       // Clear form
-      document.getElementById("create-memory-form")?.reset();
+      document.getElementById('create-memory-form')?.reset();
 
       // Update displays
       this.updateMemoriesDisplay();
       this.updateStatsDisplay();
 
       // Switch to memories tab
-      this.switchTab("memories");
+      this.switchTab('memories');
 
-      this.showToast("Memory created successfully", "success");
+      this.showToast('Memory created successfully', 'success');
     } catch (error) {
-      console.error("Failed to create memory:", error);
+      console.error('Failed to create memory:', error);
       this.performance.errors++;
-      this.showToast("Failed to create memory", "error");
+      this.showToast('Failed to create memory', 'error');
     } finally {
       this.hideLoading();
     }
   }
 
   getMemoryMetadata() {
-    const source = document.getElementById("memory-source")?.value?.trim();
-    const tagsInput = document.getElementById("memory-tags")?.value?.trim();
+    const source = document.getElementById('memory-source')?.value?.trim();
+    const tagsInput = document.getElementById('memory-tags')?.value?.trim();
     const tags = tagsInput
       ? tagsInput
-          .split(",")
-          .map((tag) => tag.trim())
+          .split(',')
+          .map(tag => tag.trim())
           .filter(Boolean)
       : [];
 
@@ -846,11 +846,11 @@ class MemoraiDashboardEnhanced {
   }
 
   async editMemory(memoryId) {
-    const memory = this.memories.find((m) => (m.id || m.content) === memoryId);
+    const memory = this.memories.find(m => (m.id || m.content) === memoryId);
     if (!memory) return;
 
     this.showModal(
-      "Edit Memory",
+      'Edit Memory',
       `
             <form id="edit-memory-form" class="space-y-4">
                 <div>
@@ -860,11 +860,11 @@ class MemoraiDashboardEnhanced {
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Source</label>
-                        <input type="text" id="edit-memory-source" class="form-input" value="${memory.metadata?.source || ""}">
+                        <input type="text" id="edit-memory-source" class="form-input" value="${memory.metadata?.source || ''}">
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Tags</label>
-                        <input type="text" id="edit-memory-tags" class="form-input" value="${memory.metadata?.tags?.join(", ") || ""}" placeholder="tag1, tag2, tag3">
+                        <input type="text" id="edit-memory-tags" class="form-input" value="${memory.metadata?.tags?.join(', ') || ''}" placeholder="tag1, tag2, tag3">
                     </div>
                 </div>
                 <div class="flex justify-end space-x-3">
@@ -872,12 +872,12 @@ class MemoraiDashboardEnhanced {
                     <button type="submit" class="btn-primary">Save Changes</button>
                 </div>
             </form>
-        `,
+        `
     );
 
     document
-      .getElementById("edit-memory-form")
-      ?.addEventListener("submit", async (e) => {
+      .getElementById('edit-memory-form')
+      ?.addEventListener('submit', async e => {
         e.preventDefault();
         await this.updateMemory(memoryId);
       });
@@ -885,21 +885,21 @@ class MemoraiDashboardEnhanced {
 
   async updateMemory(memoryId) {
     const content = document
-      .getElementById("edit-memory-content")
+      .getElementById('edit-memory-content')
       ?.value?.trim();
     if (!content) {
-      this.showToast("Please enter memory content", "warning");
+      this.showToast('Please enter memory content', 'warning');
       return;
     }
 
-    const source = document.getElementById("edit-memory-source")?.value?.trim();
+    const source = document.getElementById('edit-memory-source')?.value?.trim();
     const tagsInput = document
-      .getElementById("edit-memory-tags")
+      .getElementById('edit-memory-tags')
       ?.value?.trim();
     const tags = tagsInput
       ? tagsInput
-          .split(",")
-          .map((tag) => tag.trim())
+          .split(',')
+          .map(tag => tag.trim())
           .filter(Boolean)
       : [];
 
@@ -907,27 +907,27 @@ class MemoraiDashboardEnhanced {
     if (source) metadata.source = source;
     if (tags.length > 0) metadata.tags = tags;
 
-    this.showLoading("Updating memory...");
+    this.showLoading('Updating memory...');
 
     try {
       this.performance.apiCalls++;
       const response = await fetch(
         `${this.baseURL}/api/memories/${encodeURIComponent(memoryId)}`,
         {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             content,
             metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
           }),
-        },
+        }
       );
 
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
       // Update local data
       const memoryIndex = this.memories.findIndex(
-        (m) => (m.id || m.content) === memoryId,
+        m => (m.id || m.content) === memoryId
       );
       if (memoryIndex !== -1) {
         this.memories[memoryIndex] = {
@@ -939,11 +939,11 @@ class MemoraiDashboardEnhanced {
       }
 
       this.closeModal();
-      this.showToast("Memory updated successfully", "success");
+      this.showToast('Memory updated successfully', 'success');
     } catch (error) {
-      console.error("Failed to update memory:", error);
+      console.error('Failed to update memory:', error);
       this.performance.errors++;
-      this.showToast("Failed to update memory", "error");
+      this.showToast('Failed to update memory', 'error');
     } finally {
       this.hideLoading();
     }
@@ -952,37 +952,37 @@ class MemoraiDashboardEnhanced {
   async deleteMemory(memoryId) {
     if (
       !confirm(
-        "Are you sure you want to delete this memory? This action cannot be undone.",
+        'Are you sure you want to delete this memory? This action cannot be undone.'
       )
     ) {
       return;
     }
 
-    this.showLoading("Deleting memory...");
+    this.showLoading('Deleting memory...');
 
     try {
       this.performance.apiCalls++;
       const response = await fetch(
         `${this.baseURL}/api/memories/${encodeURIComponent(memoryId)}`,
         {
-          method: "DELETE",
-        },
+          method: 'DELETE',
+        }
       );
 
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
       // Remove from local data
       this.memories = this.memories.filter(
-        (m) => (m.id || m.content) !== memoryId,
+        m => (m.id || m.content) !== memoryId
       );
       this.updateMemoriesDisplay();
       this.updateStatsDisplay();
 
-      this.showToast("Memory deleted successfully", "success");
+      this.showToast('Memory deleted successfully', 'success');
     } catch (error) {
-      console.error("Failed to delete memory:", error);
+      console.error('Failed to delete memory:', error);
       this.performance.errors++;
-      this.showToast("Failed to delete memory", "error");
+      this.showToast('Failed to delete memory', 'error');
     } finally {
       this.hideLoading();
     }
@@ -990,49 +990,49 @@ class MemoraiDashboardEnhanced {
 
   switchTab(tabName) {
     // Update active tab
-    document.querySelectorAll("[data-tab]").forEach((tab) => {
-      tab.classList.toggle("active", tab.dataset.tab === tabName);
+    document.querySelectorAll('[data-tab]').forEach(tab => {
+      tab.classList.toggle('active', tab.dataset.tab === tabName);
     });
 
     // Update tab content visibility
-    document.querySelectorAll("[data-tab-content]").forEach((content) => {
+    document.querySelectorAll('[data-tab-content]').forEach(content => {
       content.classList.toggle(
-        "hidden",
-        content.dataset.tabContent !== tabName,
+        'hidden',
+        content.dataset.tabContent !== tabName
       );
     });
 
     this.currentTab = tabName;
 
     // Load tab-specific data
-    if (tabName === "memories" && this.memories.length === 0) {
+    if (tabName === 'memories' && this.memories.length === 0) {
       this.loadInitialData();
     }
   }
 
   // Theme management
   initializeTheme() {
-    const savedTheme = localStorage.getItem("memorai-theme") || "dark";
+    const savedTheme = localStorage.getItem('memorai-theme') || 'dark';
     this.setTheme(savedTheme);
   }
 
   toggleTheme() {
-    const currentTheme = document.documentElement.classList.contains("dark")
-      ? "dark"
-      : "light";
-    const newTheme = currentTheme === "dark" ? "light" : "dark";
+    const currentTheme = document.documentElement.classList.contains('dark')
+      ? 'dark'
+      : 'light';
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
     this.setTheme(newTheme);
   }
 
   setTheme(theme) {
-    document.documentElement.classList.toggle("dark", theme === "dark");
-    localStorage.setItem("memorai-theme", theme);
+    document.documentElement.classList.toggle('dark', theme === 'dark');
+    localStorage.setItem('memorai-theme', theme);
 
     // Update theme toggle icon
-    const themeIcon = document.querySelector("#theme-toggle i");
+    const themeIcon = document.querySelector('#theme-toggle i');
     if (themeIcon) {
-      themeIcon.setAttribute("data-lucide", theme === "dark" ? "sun" : "moon");
-      if (typeof lucide !== "undefined") {
+      themeIcon.setAttribute('data-lucide', theme === 'dark' ? 'sun' : 'moon');
+      if (typeof lucide !== 'undefined') {
         lucide.createIcons();
       }
     }
@@ -1040,8 +1040,8 @@ class MemoraiDashboardEnhanced {
 
   // Modal system
   showModal(title, content) {
-    const modal = document.getElementById("modal-overlay");
-    const modalContent = document.getElementById("modal-content");
+    const modal = document.getElementById('modal-overlay');
+    const modalContent = document.getElementById('modal-content');
 
     if (!modal || !modalContent) return;
 
@@ -1055,41 +1055,41 @@ class MemoraiDashboardEnhanced {
             <div class="p-6">${content}</div>
         `;
 
-    modal.classList.remove("hidden");
+    modal.classList.remove('hidden');
 
-    if (typeof lucide !== "undefined") {
+    if (typeof lucide !== 'undefined') {
       lucide.createIcons();
     }
   }
 
   closeModal() {
-    const modal = document.getElementById("modal-overlay");
+    const modal = document.getElementById('modal-overlay');
     if (modal) {
-      modal.classList.add("hidden");
+      modal.classList.add('hidden');
     }
   }
 
   // Toast notifications
-  showToast(message, type = "info", duration = 5000) {
-    const container = document.getElementById("toast-container");
+  showToast(message, type = 'info', duration = 5000) {
+    const container = document.getElementById('toast-container');
     if (!container) return;
 
     const toastId = Date.now();
     const icons = {
-      success: "check-circle",
-      error: "x-circle",
-      warning: "alert-triangle",
-      info: "info",
+      success: 'check-circle',
+      error: 'x-circle',
+      warning: 'alert-triangle',
+      info: 'info',
     };
 
     const colors = {
-      success: "bg-green-500",
-      error: "bg-red-500",
-      warning: "bg-yellow-500",
-      info: "bg-blue-500",
+      success: 'bg-green-500',
+      error: 'bg-red-500',
+      warning: 'bg-yellow-500',
+      info: 'bg-blue-500',
     };
 
-    const toast = document.createElement("div");
+    const toast = document.createElement('div');
     toast.id = `toast-${toastId}`;
     toast.className = `toast-notification ${colors[type]} text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3 transform translate-x-full transition-transform duration-300`;
 
@@ -1103,13 +1103,13 @@ class MemoraiDashboardEnhanced {
 
     container.appendChild(toast);
 
-    if (typeof lucide !== "undefined") {
+    if (typeof lucide !== 'undefined') {
       lucide.createIcons();
     }
 
     // Slide in
     setTimeout(() => {
-      toast.classList.remove("translate-x-full");
+      toast.classList.remove('translate-x-full');
     }, 100);
 
     // Auto remove
@@ -1123,7 +1123,7 @@ class MemoraiDashboardEnhanced {
   hideToast(toastId) {
     const toast = document.getElementById(`toast-${toastId}`);
     if (toast) {
-      toast.classList.add("translate-x-full");
+      toast.classList.add('translate-x-full');
       setTimeout(() => {
         toast.remove();
       }, 300);
@@ -1131,14 +1131,14 @@ class MemoraiDashboardEnhanced {
   }
 
   // Loading states
-  showLoading(message = "Loading...") {
+  showLoading(message = 'Loading...') {
     if (this.isLoading) return;
     this.isLoading = true;
 
-    const loadingOverlay = document.createElement("div");
-    loadingOverlay.id = "loading-overlay";
+    const loadingOverlay = document.createElement('div');
+    loadingOverlay.id = 'loading-overlay';
     loadingOverlay.className =
-      "fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center";
+      'fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center';
 
     loadingOverlay.innerHTML = `
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 text-center">
@@ -1153,22 +1153,22 @@ class MemoraiDashboardEnhanced {
     this.isLoading = false;
 
     // Remove programmatically created loading overlay
-    const overlay = document.getElementById("loading-overlay");
+    const overlay = document.getElementById('loading-overlay');
     if (overlay) {
       overlay.remove();
     }
 
     // Hide the static loading screen from HTML
-    const loadingScreen = document.getElementById("loading-screen");
+    const loadingScreen = document.getElementById('loading-screen');
     if (loadingScreen) {
-      loadingScreen.classList.add("hidden");
+      loadingScreen.classList.add('hidden');
     }
 
     // Show the main dashboard content
-    const dashboard = document.getElementById("dashboard");
+    const dashboard = document.getElementById('dashboard');
     if (dashboard) {
-      dashboard.classList.remove("hidden");
-      dashboard.classList.add("fade-in");
+      dashboard.classList.remove('hidden');
+      dashboard.classList.add('fade-in');
     }
   }
 
@@ -1185,51 +1185,51 @@ class MemoraiDashboardEnhanced {
       const response = await fetch(`${this.baseURL}/api/health`);
       const isOnline = response.ok;
 
-      const connectionStatus = document.getElementById("connection-status");
-      const connectionDot = document.getElementById("connection-dot");
-      const connectionText = document.getElementById("connection-text");
+      const connectionStatus = document.getElementById('connection-status');
+      const connectionDot = document.getElementById('connection-dot');
+      const connectionText = document.getElementById('connection-text');
 
       if (connectionStatus && connectionDot && connectionText) {
         if (isOnline) {
           connectionStatus.className =
-            "flex items-center space-x-2 px-4 py-2 rounded-full text-sm bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 border border-green-200 dark:border-green-800";
-          connectionDot.className = "status-dot status-online";
-          connectionText.textContent = "Connected";
+            'flex items-center space-x-2 px-4 py-2 rounded-full text-sm bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-200 border border-green-200 dark:border-green-800';
+          connectionDot.className = 'status-dot status-online';
+          connectionText.textContent = 'Connected';
         } else {
           connectionStatus.className =
-            "flex items-center space-x-2 px-4 py-2 rounded-full text-sm bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-800";
-          connectionDot.className = "status-dot status-offline";
-          connectionText.textContent = "Disconnected";
+            'flex items-center space-x-2 px-4 py-2 rounded-full text-sm bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-800';
+          connectionDot.className = 'status-dot status-offline';
+          connectionText.textContent = 'Disconnected';
         }
       }
     } catch (error) {
-      console.error("Failed to update connection status:", error);
-      const connectionStatus = document.getElementById("connection-status");
-      const connectionDot = document.getElementById("connection-dot");
-      const connectionText = document.getElementById("connection-text");
+      console.error('Failed to update connection status:', error);
+      const connectionStatus = document.getElementById('connection-status');
+      const connectionDot = document.getElementById('connection-dot');
+      const connectionText = document.getElementById('connection-text');
 
       if (connectionStatus && connectionDot && connectionText) {
         connectionStatus.className =
-          "flex items-center space-x-2 px-4 py-2 rounded-full text-sm bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-800";
-        connectionDot.className = "status-dot status-offline";
-        connectionText.textContent = "Disconnected";
+          'flex items-center space-x-2 px-4 py-2 rounded-full text-sm bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200 border border-red-200 dark:border-red-800';
+        connectionDot.className = 'status-dot status-offline';
+        connectionText.textContent = 'Disconnected';
       }
     }
   }
 
   updateMemoryTierStatus() {
-    const tier = this.config?.activeTier || "smart";
+    const tier = this.config?.activeTier || 'smart';
     const statusMap = {
-      advanced: "online",
-      smart: "online",
-      basic: "warning",
+      advanced: 'online',
+      smart: 'online',
+      basic: 'warning',
     };
-    this.updateStatusDot("memory-tier-status", statusMap[tier] || "warning");
+    this.updateStatusDot('memory-tier-status', statusMap[tier] || 'warning');
   }
 
   updateDatabaseStatus() {
     // Simulate database status check
-    this.updateStatusDot("database-status", "offline"); // Default to offline for demo
+    this.updateStatusDot('database-status', 'offline'); // Default to offline for demo
   }
 
   updateStatusDot(elementId, status) {
@@ -1241,38 +1241,38 @@ class MemoraiDashboardEnhanced {
 
   // Quick actions
   async testConnection() {
-    this.showLoading("Testing connection...");
+    this.showLoading('Testing connection...');
 
     try {
       const response = await fetch(`${this.baseURL}/api/health`);
       const result = await response.json();
 
       if (response.ok) {
-        this.showToast("Connection test successful", "success");
+        this.showToast('Connection test successful', 'success');
         this.updateSystemStatus();
       } else {
         this.showToast(
-          `Connection test failed: ${result.message || "Unknown error"}`,
-          "error",
+          `Connection test failed: ${result.message || 'Unknown error'}`,
+          'error'
         );
       }
     } catch (error) {
-      this.showToast("Connection test failed", "error");
+      this.showToast('Connection test failed', 'error');
     } finally {
       this.hideLoading();
     }
   }
 
   async refreshConfig() {
-    this.showLoading("Refreshing configuration...");
+    this.showLoading('Refreshing configuration...');
 
     try {
       this.config = await this.fetchConfig();
       this.updateConfigDisplay();
       this.updateSystemStatus();
-      this.showToast("Configuration refreshed", "success");
+      this.showToast('Configuration refreshed', 'success');
     } catch (error) {
-      this.showToast("Failed to refresh configuration", "error");
+      this.showToast('Failed to refresh configuration', 'error');
     } finally {
       this.hideLoading();
     }
@@ -1280,33 +1280,33 @@ class MemoraiDashboardEnhanced {
 
   exportConfig() {
     if (!this.config) {
-      this.showToast("No configuration data available", "warning");
+      this.showToast('No configuration data available', 'warning');
       return;
     }
 
     const dataStr = JSON.stringify(this.config, null, 2);
-    const dataBlob = new Blob([dataStr], { type: "application/json" });
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
 
-    const link = document.createElement("a");
+    const link = document.createElement('a');
     link.href = URL.createObjectURL(dataBlob);
     link.download = `memorai-config-${new Date().toISOString().slice(0, 10)}.json`;
     link.click();
 
-    this.showToast("Configuration exported", "success");
+    this.showToast('Configuration exported', 'success');
   }
 
   showSystemLogs() {
     this.showModal(
-      "System Logs",
+      'System Logs',
       `
             <div class="space-y-4">
                 <div class="bg-gray-900 text-green-400 p-4 rounded-lg font-mono text-sm h-64 overflow-y-auto">
                     <div>[${new Date().toISOString()}] INFO: Dashboard initialized successfully</div>
-                    <div>[${new Date().toISOString()}] INFO: Memory engine status: ${this.config?.activeTier || "unknown"}</div>
+                    <div>[${new Date().toISOString()}] INFO: Memory engine status: ${this.config?.activeTier || 'unknown'}</div>
                     <div>[${new Date().toISOString()}] INFO: Total memories: ${this.stats?.totalMemories || 0}</div>
                     <div>[${new Date().toISOString()}] INFO: API calls made: ${this.performance.apiCalls}</div>
                     <div>[${new Date().toISOString()}] INFO: Performance: ${this.performance.loadTime.toFixed(2)}ms load time</div>
-                    ${this.performance.errors > 0 ? `<div>[${new Date().toISOString()}] WARN: ${this.performance.errors} errors encountered</div>` : ""}
+                    ${this.performance.errors > 0 ? `<div>[${new Date().toISOString()}] WARN: ${this.performance.errors} errors encountered</div>` : ''}
                 </div>
                 <div class="flex justify-end">
                     <button onclick="memoraiDashboard.exportLogs()" class="btn-secondary">
@@ -1315,14 +1315,14 @@ class MemoraiDashboardEnhanced {
                     </button>
                 </div>
             </div>
-        `,
+        `
     );
   }
 
   exportLogs() {
     const logs = [
       `[${new Date().toISOString()}] INFO: Dashboard initialized successfully`,
-      `[${new Date().toISOString()}] INFO: Memory engine status: ${this.config?.activeTier || "unknown"}`,
+      `[${new Date().toISOString()}] INFO: Memory engine status: ${this.config?.activeTier || 'unknown'}`,
       `[${new Date().toISOString()}] INFO: Total memories: ${this.stats?.totalMemories || 0}`,
       `[${new Date().toISOString()}] INFO: API calls made: ${this.performance.apiCalls}`,
       `[${new Date().toISOString()}] INFO: Performance: ${this.performance.loadTime.toFixed(2)}ms load time`,
@@ -1330,64 +1330,64 @@ class MemoraiDashboardEnhanced {
 
     if (this.performance.errors > 0) {
       logs.push(
-        `[${new Date().toISOString()}] WARN: ${this.performance.errors} errors encountered`,
+        `[${new Date().toISOString()}] WARN: ${this.performance.errors} errors encountered`
       );
     }
 
-    const logStr = logs.join("\n");
-    const logBlob = new Blob([logStr], { type: "text/plain" });
+    const logStr = logs.join('\n');
+    const logBlob = new Blob([logStr], { type: 'text/plain' });
 
-    const link = document.createElement("a");
+    const link = document.createElement('a');
     link.href = URL.createObjectURL(logBlob);
     link.download = `memorai-logs-${new Date().toISOString().slice(0, 10)}.txt`;
     link.click();
 
-    this.showToast("Logs exported", "success");
+    this.showToast('Logs exported', 'success');
   }
 
   // Real-time updates
   setupRealTimeUpdates() {
     // Try to establish WebSocket connection for real-time updates
     try {
-      const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+      const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
       this.wsConnection = new WebSocket(
-        `${wsProtocol}//${window.location.host}/ws`,
+        `${wsProtocol}//${window.location.host}/ws`
       );
 
       this.wsConnection.onopen = () => {
-        console.log("✅ WebSocket connected for real-time updates");
-        this.showToast("Real-time updates enabled", "success");
+        console.log('✅ WebSocket connected for real-time updates');
+        this.showToast('Real-time updates enabled', 'success');
       };
 
-      this.wsConnection.onmessage = (event) => {
+      this.wsConnection.onmessage = event => {
         try {
           const data = JSON.parse(event.data);
           this.handleRealTimeUpdate(data);
         } catch (error) {
-          console.error("Failed to parse WebSocket message:", error);
+          console.error('Failed to parse WebSocket message:', error);
         }
       };
 
       this.wsConnection.onerror = () => {
-        console.log("WebSocket connection failed, falling back to polling");
+        console.log('WebSocket connection failed, falling back to polling');
       };
     } catch (error) {
-      console.log("WebSocket not available, using polling for updates");
+      console.log('WebSocket not available, using polling for updates');
     }
   }
 
   handleRealTimeUpdate(data) {
     switch (data.type) {
-      case "memory_created":
+      case 'memory_created':
         this.memories.unshift(data.memory);
         this.updateMemoriesDisplay();
         this.updateStatsDisplay();
-        this.showToast("New memory added", "info");
+        this.showToast('New memory added', 'info');
         break;
 
-      case "memory_updated":
+      case 'memory_updated':
         const updateIndex = this.memories.findIndex(
-          (m) => m.id === data.memory.id,
+          m => m.id === data.memory.id
         );
         if (updateIndex !== -1) {
           this.memories[updateIndex] = data.memory;
@@ -1395,13 +1395,13 @@ class MemoraiDashboardEnhanced {
         }
         break;
 
-      case "memory_deleted":
-        this.memories = this.memories.filter((m) => m.id !== data.memoryId);
+      case 'memory_deleted':
+        this.memories = this.memories.filter(m => m.id !== data.memoryId);
         this.updateMemoriesDisplay();
         this.updateStatsDisplay();
         break;
 
-      case "stats_updated":
+      case 'stats_updated':
         this.stats = data.stats;
         this.updateStatsDisplay();
         break;
@@ -1415,7 +1415,7 @@ class MemoraiDashboardEnhanced {
         !this.wsConnection ||
         this.wsConnection.readyState !== WebSocket.OPEN
       ) {
-        this.fetchStats().then((stats) => {
+        this.fetchStats().then(stats => {
           this.stats = stats;
           this.updateStatsDisplay();
         });
@@ -1430,11 +1430,11 @@ class MemoraiDashboardEnhanced {
 
   // Keyboard shortcuts help
   showShortcuts() {
-    document.getElementById("shortcuts-help")?.classList.remove("hidden");
+    document.getElementById('shortcuts-help')?.classList.remove('hidden');
   }
 
   hideShortcuts() {
-    document.getElementById("shortcuts-help")?.classList.add("hidden");
+    document.getElementById('shortcuts-help')?.classList.add('hidden');
   }
 
   // Utility functions
@@ -1446,19 +1446,19 @@ class MemoraiDashboardEnhanced {
   }
   updateConfigDisplay() {
     // Update active tier display
-    const activeTierElement = document.getElementById("active-tier");
+    const activeTierElement = document.getElementById('active-tier');
     if (activeTierElement && this.config) {
-      activeTierElement.textContent = this.config.activeTier || "unknown";
+      activeTierElement.textContent = this.config.activeTier || 'unknown';
     }
 
     // Update tier badge in header
-    const tierBadge = document.getElementById("tier-badge");
+    const tierBadge = document.getElementById('tier-badge');
     if (tierBadge && this.config) {
-      const tier = this.config.activeTier || "smart";
+      const tier = this.config.activeTier || 'smart';
       const tierConfig = {
-        advanced: { label: "Advanced", class: "tier-advanced" },
-        smart: { label: "Smart", class: "tier-smart" },
-        basic: { label: "Basic", class: "tier-basic" },
+        advanced: { label: 'Advanced', class: 'tier-advanced' },
+        smart: { label: 'Smart', class: 'tier-smart' },
+        basic: { label: 'Basic', class: 'tier-basic' },
       };
 
       const config = tierConfig[tier] || tierConfig.smart;
@@ -1468,60 +1468,60 @@ class MemoraiDashboardEnhanced {
   }
 
   escapeHtml(text) {
-    const div = document.createElement("div");
+    const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
   }
 
   applyFilters() {
     // Get filter values
-    const typeFilter = document.getElementById("memory-type-filter")?.value;
-    const dateFilter = document.getElementById("date-range-filter")?.value;
-    const sortFilter = document.getElementById("sort-filter")?.value;
+    const typeFilter = document.getElementById('memory-type-filter')?.value;
+    const dateFilter = document.getElementById('date-range-filter')?.value;
+    const sortFilter = document.getElementById('sort-filter')?.value;
 
     let filteredMemories = [...this.memories];
 
     // Apply type filter
-    if (typeFilter && typeFilter !== "all") {
-      filteredMemories = filteredMemories.filter((m) => m.tier === typeFilter);
+    if (typeFilter && typeFilter !== 'all') {
+      filteredMemories = filteredMemories.filter(m => m.tier === typeFilter);
     }
 
     // Apply date filter
-    if (dateFilter && dateFilter !== "all") {
+    if (dateFilter && dateFilter !== 'all') {
       const now = new Date();
       const cutoffDate = new Date();
 
       switch (dateFilter) {
-        case "today":
+        case 'today':
           cutoffDate.setHours(0, 0, 0, 0);
           break;
-        case "week":
+        case 'week':
           cutoffDate.setDate(now.getDate() - 7);
           break;
-        case "month":
+        case 'month':
           cutoffDate.setMonth(now.getMonth() - 1);
           break;
       }
 
       filteredMemories = filteredMemories.filter(
-        (m) => new Date(m.timestamp || 0) >= cutoffDate,
+        m => new Date(m.timestamp || 0) >= cutoffDate
       );
     }
 
     // Apply sorting
     if (sortFilter) {
       switch (sortFilter) {
-        case "newest":
+        case 'newest':
           filteredMemories.sort(
-            (a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0),
+            (a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0)
           );
           break;
-        case "oldest":
+        case 'oldest':
           filteredMemories.sort(
-            (a, b) => new Date(a.timestamp || 0) - new Date(b.timestamp || 0),
+            (a, b) => new Date(a.timestamp || 0) - new Date(b.timestamp || 0)
           );
           break;
-        case "content":
+        case 'content':
           filteredMemories.sort((a, b) => a.content.localeCompare(b.content));
           break;
       }

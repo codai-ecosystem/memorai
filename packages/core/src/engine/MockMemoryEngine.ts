@@ -8,7 +8,7 @@ import type {
   MemoryQuery,
   MemoryResult,
   MemoryType,
-} from "../types/index.js";
+} from '../types/index.js';
 
 export interface MockMemoryConfig {
   simulateDelay?: boolean;
@@ -89,7 +89,7 @@ export class MockMemoryEngine {
   public async getContext(
     tenantId: string,
     agentId?: string,
-    limit = 10,
+    limit = 10
   ): Promise<MemoryMetadata[]> {
     await this.simulateDelay();
     this.simulateFailure();
@@ -97,7 +97,7 @@ export class MockMemoryEngine {
     this.callCount++;
 
     const memories = Array.from(this.mockMemories.values())
-      .filter((memory) => {
+      .filter(memory => {
         if (memory.tenant_id !== tenantId) return false;
         if (agentId && memory.agent_id !== agentId) return false;
         return true;
@@ -129,64 +129,64 @@ export class MockMemoryEngine {
       hello: [
         {
           memory: this.createMockMemory(
-            "test-1",
-            "personality",
-            "User prefers friendly greetings",
+            'test-1',
+            'personality',
+            'User prefers friendly greetings',
             query.tenant_id,
-            query.agent_id,
+            query.agent_id
           ),
           score: 0.9,
-          relevance_reason: "Matches greeting pattern",
+          relevance_reason: 'Matches greeting pattern',
         },
       ],
       test: [
         {
           memory: this.createMockMemory(
-            "test-2",
-            "fact",
-            "This is a test memory for validation",
+            'test-2',
+            'fact',
+            'This is a test memory for validation',
             query.tenant_id,
-            query.agent_id,
+            query.agent_id
           ),
           score: 0.85,
-          relevance_reason: "Direct test match",
+          relevance_reason: 'Direct test match',
         },
         {
           memory: this.createMockMemory(
-            "test-3",
-            "procedure",
-            "Testing procedure: run all tests",
+            'test-3',
+            'procedure',
+            'Testing procedure: run all tests',
             query.tenant_id,
-            query.agent_id,
+            query.agent_id
           ),
           score: 0.7,
-          relevance_reason: "Testing procedure",
+          relevance_reason: 'Testing procedure',
         },
       ],
       user: [
         {
           memory: this.createMockMemory(
-            "user-1",
-            "preference",
-            "User likes dark mode",
+            'user-1',
+            'preference',
+            'User likes dark mode',
             query.tenant_id,
-            query.agent_id,
+            query.agent_id
           ),
           score: 0.8,
-          relevance_reason: "User preference",
+          relevance_reason: 'User preference',
         },
       ],
       project: [
         {
           memory: this.createMockMemory(
-            "proj-1",
-            "task",
-            "Project deadline is next week",
+            'proj-1',
+            'task',
+            'Project deadline is next week',
             query.tenant_id,
-            query.agent_id,
+            query.agent_id
           ),
           score: 0.75,
-          relevance_reason: "Project information",
+          relevance_reason: 'Project information',
         },
       ],
     };
@@ -195,7 +195,7 @@ export class MockMemoryEngine {
     for (const [key, results] of Object.entries(testResponses)) {
       if (queryLower.includes(key)) {
         return results
-          .filter((result) => !query.type || result.memory.type === query.type)
+          .filter(result => !query.type || result.memory.type === query.type)
           .slice(0, query.limit);
       }
     }
@@ -212,7 +212,7 @@ export class MockMemoryEngine {
     type: MemoryType,
     content: string,
     tenantId: string,
-    agentId?: string,
+    agentId?: string
   ): MemoryMetadata {
     const now = new Date();
     return {
@@ -225,7 +225,7 @@ export class MockMemoryEngine {
       lastAccessedAt: now,
       accessCount: 1,
       importance: 0.5,
-      tags: ["mock", "test"],
+      tags: ['mock', 'test'],
       tenant_id: tenantId,
       agent_id: agentId,
     };
@@ -237,35 +237,35 @@ export class MockMemoryEngine {
   private initializeMockData(): void {
     const mockData = [
       {
-        id: "mock-personality-1",
-        type: "personality" as MemoryType,
+        id: 'mock-personality-1',
+        type: 'personality' as MemoryType,
         content:
-          "User is enthusiastic about technology and prefers detailed explanations",
-        tenant_id: "test-tenant",
-        agent_id: "test-agent",
+          'User is enthusiastic about technology and prefers detailed explanations',
+        tenant_id: 'test-tenant',
+        agent_id: 'test-agent',
       },
       {
-        id: "mock-procedure-1",
-        type: "procedure" as MemoryType,
+        id: 'mock-procedure-1',
+        type: 'procedure' as MemoryType,
         content:
-          "When debugging, always check logs first, then network requests",
-        tenant_id: "test-tenant",
-        agent_id: "test-agent",
+          'When debugging, always check logs first, then network requests',
+        tenant_id: 'test-tenant',
+        agent_id: 'test-agent',
       },
       {
-        id: "mock-fact-1",
-        type: "fact" as MemoryType,
+        id: 'mock-fact-1',
+        type: 'fact' as MemoryType,
         content:
-          "The project uses TypeScript and Node.js for backend development",
-        tenant_id: "test-tenant",
-        agent_id: "test-agent",
+          'The project uses TypeScript and Node.js for backend development',
+        tenant_id: 'test-tenant',
+        agent_id: 'test-agent',
       },
       {
-        id: "mock-preference-1",
-        type: "preference" as MemoryType,
-        content: "User prefers concise responses with code examples",
-        tenant_id: "test-tenant",
-        agent_id: "test-agent",
+        id: 'mock-preference-1',
+        type: 'preference' as MemoryType,
+        content: 'User prefers concise responses with code examples',
+        tenant_id: 'test-tenant',
+        agent_id: 'test-agent',
       },
     ];
 
@@ -275,7 +275,7 @@ export class MockMemoryEngine {
         data.type,
         data.content,
         data.tenant_id,
-        data.agent_id,
+        data.agent_id
       );
       this.mockMemories.set(memory.id, memory);
     }
@@ -286,14 +286,14 @@ export class MockMemoryEngine {
    */
   private calculateMockScore(
     memory: MemoryMetadata,
-    query: MemoryQuery,
+    query: MemoryQuery
   ): number {
     const queryWords = query.query.toLowerCase().split(/\s+/);
     const contentWords = memory.content.toLowerCase().split(/\s+/);
 
     let matches = 0;
     for (const word of queryWords) {
-      if (contentWords.some((cw) => cw.includes(word) || word.includes(cw))) {
+      if (contentWords.some(cw => cw.includes(word) || word.includes(cw))) {
         matches++;
       }
     }
@@ -310,7 +310,7 @@ export class MockMemoryEngine {
       this.config.delayMs &&
       this.config.delayMs > 0
     ) {
-      await new Promise((resolve) => setTimeout(resolve, this.config.delayMs));
+      await new Promise(resolve => setTimeout(resolve, this.config.delayMs));
     }
   }
 
@@ -320,7 +320,7 @@ export class MockMemoryEngine {
   private simulateFailure(): void {
     if (this.config.failureRate && this.config.failureRate > 0) {
       if (Math.random() < this.config.failureRate) {
-        throw new Error("Mock failure simulation");
+        throw new Error('Mock failure simulation');
       }
     }
   }

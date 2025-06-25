@@ -1,9 +1,9 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { AnalyticsDashboard } from "../../../src/components/dashboard/analytics";
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { AnalyticsDashboard } from '../../../src/components/dashboard/analytics';
 
 // Mock framer-motion
-vi.mock("framer-motion", () => ({
+vi.mock('framer-motion', () => ({
   motion: {
     div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
     h3: ({ children, ...props }: any) => <h3 {...props}>{children}</h3>,
@@ -14,27 +14,27 @@ vi.mock("framer-motion", () => ({
 // Mock data
 const mockMemories = [
   {
-    id: "1",
-    content: "Test memory 1",
+    id: '1',
+    content: 'Test memory 1',
     timestamp: new Date(),
     importance: 0.8,
-    agentId: "agent1",
+    agentId: 'agent1',
     metadata: {
-      agentId: "agent1",
+      agentId: 'agent1',
       timestamp: new Date().toISOString(),
-      tags: ["test"],
+      tags: ['test'],
     },
   },
   {
-    id: "2",
-    content: "Test memory 2",
+    id: '2',
+    content: 'Test memory 2',
     timestamp: new Date(),
     importance: 0.6,
-    agentId: "agent2",
+    agentId: 'agent2',
     metadata: {
-      agentId: "agent2",
+      agentId: 'agent2',
       timestamp: new Date().toISOString(),
-      tags: ["test"],
+      tags: ['test'],
     },
   },
 ];
@@ -50,7 +50,7 @@ const mockFetchStats = vi.fn();
 const mockFetchMemories = vi.fn();
 
 // Mock the memory store
-vi.mock("../../../src/stores/memory-store", () => ({
+vi.mock('../../../src/stores/memory-store', () => ({
   useMemoryStore: vi.fn(() => ({
     memories: mockMemories,
     stats: mockStats,
@@ -60,11 +60,11 @@ vi.mock("../../../src/stores/memory-store", () => ({
 }));
 
 // Mock utils
-vi.mock("../../../src/lib/utils", () => ({
-  cn: (...classes: (string | undefined)[]) => classes.filter(Boolean).join(" "),
+vi.mock('../../../src/lib/utils', () => ({
+  cn: (...classes: (string | undefined)[]) => classes.filter(Boolean).join(' '),
 }));
 
-describe("AnalyticsDashboard", () => {
+describe('AnalyticsDashboard', () => {
   beforeEach(() => {
     mockFetchStats.mockClear();
     mockFetchMemories.mockClear();
@@ -72,16 +72,16 @@ describe("AnalyticsDashboard", () => {
     console.error = vi.fn(); // Mock console.error
   });
 
-  it("should render correctly", () => {
+  it('should render correctly', () => {
     render(<AnalyticsDashboard />);
 
-    expect(screen.getByText("Analytics Dashboard")).toBeInTheDocument();
+    expect(screen.getByText('Analytics Dashboard')).toBeInTheDocument();
     expect(
-      screen.getByText("Monitor memory usage and performance metrics"),
+      screen.getByText('Monitor memory usage and performance metrics')
     ).toBeInTheDocument();
   });
 
-  it("should fetch data on mount", async () => {
+  it('should fetch data on mount', async () => {
     render(<AnalyticsDashboard />);
 
     await waitFor(() => {
@@ -90,46 +90,45 @@ describe("AnalyticsDashboard", () => {
     });
   });
 
-  it("should display memory metrics", () => {
+  it('should display memory metrics', () => {
     render(<AnalyticsDashboard />);
 
     // Should show total memories count - be more specific about the context
-    expect(screen.getByText("Total Memories")).toBeInTheDocument();
+    expect(screen.getByText('Total Memories')).toBeInTheDocument();
     // Look for the metrics value in a more specific context
     const totalMemoriesSection = screen
-      .getByText("Total Memories")
-      .closest(".bg-white, .dark\\:bg-gray-800");
-    expect(totalMemoriesSection).toContainHTML("2");
+      .getByText('Total Memories')
+      .closest('.bg-white, .dark\\:bg-gray-800');
+    expect(totalMemoriesSection).toContainHTML('2');
   });
 
-  it("should display agent metrics", () => {
+  it('should display agent metrics', () => {
     render(<AnalyticsDashboard />);
     // Should show active agents
-    expect(screen.getByText("Active Agents")).toBeInTheDocument();
+    expect(screen.getByText('Active Agents')).toBeInTheDocument();
   });
 
-  it("should display importance metrics", () => {
+  it('should display importance metrics', () => {
     render(<AnalyticsDashboard />);
 
     // Should show average similarity (not importance)
-    expect(screen.getByText("Avg Similarity")).toBeInTheDocument();
+    expect(screen.getByText('Avg Similarity')).toBeInTheDocument();
   });
 
-  it("should display activity metrics", () => {
+  it('should display activity metrics', () => {
     render(<AnalyticsDashboard />);
 
     // Should show recent activity
-    expect(screen.getByText("Recent Activity")).toBeInTheDocument();
+    expect(screen.getByText('Recent Activity')).toBeInTheDocument();
   });
 
-  it("should allow time range selection", () => {
+  it('should allow time range selection', () => {
     render(<AnalyticsDashboard />);
     // Should have time range selector
-    const timeRangeButtons = screen.getAllByRole("button");
+    const timeRangeButtons = screen.getAllByRole('button');
     const timeRangeButton = timeRangeButtons.find(
-      (btn) =>
-        btn.textContent?.includes("30 Days") ||
-        btn.textContent?.includes("30d"),
+      btn =>
+        btn.textContent?.includes('30 Days') || btn.textContent?.includes('30d')
     );
 
     if (timeRangeButton) {
@@ -138,53 +137,53 @@ describe("AnalyticsDashboard", () => {
     }
   });
 
-  it("should handle metric selection", () => {
+  it('should handle metric selection', () => {
     render(<AnalyticsDashboard />);
 
     // Should render dashboard without needing checkboxes (metrics are always shown)
-    expect(screen.getByTestId("analytics-dashboard")).toBeInTheDocument();
+    expect(screen.getByTestId('analytics-dashboard')).toBeInTheDocument();
   });
 
-  it("should render with custom className", () => {
-    const customClass = "custom-analytics-class";
+  it('should render with custom className', () => {
+    const customClass = 'custom-analytics-class';
     render(<AnalyticsDashboard className={customClass} />);
 
-    const container = screen.getByTestId("analytics-dashboard");
+    const container = screen.getByTestId('analytics-dashboard');
     expect(container).toHaveClass(customClass);
   });
 
-  it("should handle empty memories array", () => {
+  it('should handle empty memories array', () => {
     // Test with empty memories - the mock will handle this via the component logic
     render(<AnalyticsDashboard />);
 
-    expect(screen.getByText("Analytics Dashboard")).toBeInTheDocument();
+    expect(screen.getByText('Analytics Dashboard')).toBeInTheDocument();
   });
 
-  it("should handle null memories gracefully", () => {
+  it('should handle null memories gracefully', () => {
     // Test with null memories - the mock will handle this via the component logic
     render(<AnalyticsDashboard />);
 
-    expect(screen.getByText("Analytics Dashboard")).toBeInTheDocument();
+    expect(screen.getByText('Analytics Dashboard')).toBeInTheDocument();
   });
 
-  describe("Error Handling", () => {
-    it("should handle fetch errors gracefully", async () => {
-      mockFetchStats.mockRejectedValue(new Error("Fetch failed"));
+  describe('Error Handling', () => {
+    it('should handle fetch errors gracefully', async () => {
+      mockFetchStats.mockRejectedValue(new Error('Fetch failed'));
 
       render(<AnalyticsDashboard />);
 
       // The component should still render the normal dashboard
-      expect(screen.getByText("Analytics Dashboard")).toBeInTheDocument();
+      expect(screen.getByText('Analytics Dashboard')).toBeInTheDocument();
 
       await waitFor(() => {
         expect(mockFetchStats).toHaveBeenCalled();
       });
     });
 
-    it("should display error message when render fails", () => {
+    it('should display error message when render fails', () => {
       // Mock console.error to track calls
       const mockConsoleError = vi
-        .spyOn(console, "error")
+        .spyOn(console, 'error')
         .mockImplementation(() => {});
 
       // Mock a component that sets renderError internally
@@ -192,50 +191,50 @@ describe("AnalyticsDashboard", () => {
       render(<AnalyticsDashboard />);
 
       // Should render without crashing even if there are potential errors
-      expect(screen.getByTestId("analytics-dashboard")).toBeInTheDocument();
+      expect(screen.getByTestId('analytics-dashboard')).toBeInTheDocument();
 
       mockConsoleError.mockRestore();
     });
   });
 
-  describe("Data Visualization", () => {
-    it("should render chart components", () => {
+  describe('Data Visualization', () => {
+    it('should render chart components', () => {
       render(<AnalyticsDashboard />);
 
       // Should have chart sections with titles
-      expect(screen.getByText("Memory Creation Trend")).toBeInTheDocument();
-      expect(screen.getByText("Popular Tags")).toBeInTheDocument();
-      expect(screen.getByText("Recent Activity")).toBeInTheDocument();
+      expect(screen.getByText('Memory Creation Trend')).toBeInTheDocument();
+      expect(screen.getByText('Popular Tags')).toBeInTheDocument();
+      expect(screen.getByText('Recent Activity')).toBeInTheDocument();
     });
 
-    it("should display trend information", () => {
+    it('should display trend information', () => {
       render(<AnalyticsDashboard />);
 
       // Should show metric change indicators
-      expect(screen.getByText("+2 this week")).toBeInTheDocument();
-      expect(screen.getByText("+2 new this month")).toBeInTheDocument();
+      expect(screen.getByText('+2 this week')).toBeInTheDocument();
+      expect(screen.getByText('+2 new this month')).toBeInTheDocument();
     });
   });
 
-  describe("Filtering and Controls", () => {
-    it("should have filter controls", () => {
+  describe('Filtering and Controls', () => {
+    it('should have filter controls', () => {
       render(<AnalyticsDashboard />);
 
       // Should have filter buttons or controls
-      const filterButtons = screen.getAllByRole("button");
+      const filterButtons = screen.getAllByRole('button');
       expect(filterButtons.length > 0).toBe(true);
     });
 
-    it("should have export functionality", () => {
+    it('should have export functionality', () => {
       render(<AnalyticsDashboard />);
 
       // Look for export or download button
       const exportButton = screen
-        .getAllByRole("button")
+        .getAllByRole('button')
         .find(
-          (btn) =>
-            btn.textContent?.toLowerCase().includes("export") ||
-            btn.textContent?.toLowerCase().includes("download"),
+          btn =>
+            btn.textContent?.toLowerCase().includes('export') ||
+            btn.textContent?.toLowerCase().includes('download')
         );
 
       // Export functionality might be available
@@ -243,8 +242,8 @@ describe("AnalyticsDashboard", () => {
     });
   });
 
-  describe("Performance", () => {
-    it("should render without performance issues", () => {
+  describe('Performance', () => {
+    it('should render without performance issues', () => {
       const startTime = performance.now();
       render(<AnalyticsDashboard />);
       const endTime = performance.now();
@@ -254,12 +253,12 @@ describe("AnalyticsDashboard", () => {
     });
   });
 
-  describe("Responsive Design", () => {
-    it("should handle different screen sizes", () => {
+  describe('Responsive Design', () => {
+    it('should handle different screen sizes', () => {
       render(<AnalyticsDashboard />);
 
       // Should render without errors on any screen size
-      expect(screen.getByText("Analytics Dashboard")).toBeInTheDocument();
+      expect(screen.getByText('Analytics Dashboard')).toBeInTheDocument();
     });
   });
 });

@@ -24,10 +24,11 @@ interface ServiceHealthCheck {
 }
 
 export class InfrastructureManager {
-  private dockerComposeFile: string; private services: ServiceHealthCheck[] = [
+  private dockerComposeFile: string;
+  private services: ServiceHealthCheck[] = [
     { name: 'Qdrant', url: 'http://localhost:6333/', timeout: 45000 },
     { name: 'Redis', port: 6379, timeout: 30000 },
-    { name: 'PostgreSQL', port: 5432, timeout: 30000 }
+    { name: 'PostgreSQL', port: 5432, timeout: 30000 },
   ];
   constructor() {
     // Find Docker Compose file - try multiple locations
@@ -40,15 +41,26 @@ export class InfrastructureManager {
       // 2. In project root (when developing)
       path.join(process.cwd(), 'tools', 'docker', 'docker-compose.dev.yml'),
       // 3. Parent directories (when installed globally)
-      path.join(path.dirname(packageDir), 'tools', 'docker', 'docker-compose.dev.yml'),
-      path.join(path.dirname(path.dirname(packageDir)), 'tools', 'docker', 'docker-compose.dev.yml'),
+      path.join(
+        path.dirname(packageDir),
+        'tools',
+        'docker',
+        'docker-compose.dev.yml'
+      ),
+      path.join(
+        path.dirname(path.dirname(packageDir)),
+        'tools',
+        'docker',
+        'docker-compose.dev.yml'
+      ),
       // 4. Fallback to current directory
-      path.join(process.cwd(), 'docker-compose.dev.yml')
+      path.join(process.cwd(), 'docker-compose.dev.yml'),
     ];
 
     // Find the first existing file
-    this.dockerComposeFile = candidatePaths.find(filePath => fs.existsSync(filePath))
-      || candidatePaths[0]; // Default to first path if none found
+    this.dockerComposeFile =
+      candidatePaths.find(filePath => fs.existsSync(filePath)) ||
+      candidatePaths[0]; // Default to first path if none found
 
     console.log(`🔍 Using Docker Compose file: ${this.dockerComposeFile}`);
   }
@@ -56,18 +68,20 @@ export class InfrastructureManager {
   /**
    * Check if a service is healthy
    */
-  private async checkServiceHealth(service: ServiceHealthCheck): Promise<boolean> {
+  private async checkServiceHealth(
+    service: ServiceHealthCheck
+  ): Promise<boolean> {
     try {
       if (service.url) {
         // HTTP health check
         const response = await fetch(service.url, {
           method: 'GET',
-          signal: AbortSignal.timeout(2000)
+          signal: AbortSignal.timeout(2000),
         });
         return response.ok;
       } else if (service.port) {
         // TCP port check
-        return new Promise((resolve) => {
+        return new Promise(resolve => {
           const socket = new net.Socket();
 
           const timeout = setTimeout(() => {
@@ -137,32 +151,34 @@ export class InfrastructureManager {
    * Start Docker Compose services
    */
   private async startDockerServices(): Promise<boolean> {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       console.log('🐳 Starting Docker infrastructure services...');
 
       // First, try to stop any existing services
-      const downProcess = spawn('docker-compose', [
-        '-f', this.dockerComposeFile,
-        'down', '--remove-orphans'
-      ], { stdio: 'pipe' });
+      const downProcess = spawn(
+        'docker-compose',
+        ['-f', this.dockerComposeFile, 'down', '--remove-orphans'],
+        { stdio: 'pipe' }
+      );
 
       downProcess.on('close', () => {
         // Start services
-        const upProcess = spawn('docker-compose', [
-          '-f', this.dockerComposeFile,
-          'up', '-d'
-        ], { stdio: 'pipe' });
+        const upProcess = spawn(
+          'docker-compose',
+          ['-f', this.dockerComposeFile, 'up', '-d'],
+          { stdio: 'pipe' }
+        );
 
         let output = '';
-        upProcess.stdout?.on('data', (data) => {
+        upProcess.stdout?.on('data', data => {
           output += data.toString();
         });
 
-        upProcess.stderr?.on('data', (data) => {
+        upProcess.stderr?.on('data', data => {
           output += data.toString();
         });
 
-        upProcess.on('close', (code) => {
+        upProcess.on('close', code => {
           if (code === 0) {
             console.log('✅ Docker services started successfully');
             resolve(true);
@@ -173,7 +189,7 @@ export class InfrastructureManager {
           }
         });
 
-        upProcess.on('error', (error) => {
+        upProcess.on('error', error => {
           console.error('❌ Docker command failed:', error.message);
           resolve(false);
         });
@@ -181,12 +197,13 @@ export class InfrastructureManager {
 
       downProcess.on('error', () => {
         // Ignore down errors and continue with up
-        const upProcess = spawn('docker-compose', [
-          '-f', this.dockerComposeFile,
-          'up', '-d'
-        ], { stdio: 'pipe' });
+        const upProcess = spawn(
+          'docker-compose',
+          ['-f', this.dockerComposeFile, 'up', '-d'],
+          { stdio: 'pipe' }
+        );
 
-        upProcess.on('close', (code) => {
+        upProcess.on('close', code => {
           resolve(code === 0);
         });
       });
@@ -199,10 +216,12 @@ export class InfrastructureManager {
   public async startInfrastructure(force: boolean = false): Promise<boolean> {
     try {
       console.log('🚀 Starting Complete Memorai Infrastructure...');
-      console.log('============================================================');
+      console.log(
+        '============================================================'
+      );
 
       // Check if services are already running
-      if (!force && await this.areServicesRunning()) {
+      if (!force && (await this.areServicesRunning())) {
         return true;
       }
 
@@ -231,7 +250,6 @@ export class InfrastructureManager {
         console.error('\n❌ Some services failed to start properly');
         return false;
       }
-
     } catch (error) {
       console.error('❌ Infrastructure startup failed:', error);
       return false;
@@ -242,15 +260,16 @@ export class InfrastructureManager {
    * Stop all infrastructure services
    */
   public async stopInfrastructure(): Promise<boolean> {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       console.log('🛑 Stopping infrastructure services...');
 
-      const downProcess = spawn('docker-compose', [
-        '-f', this.dockerComposeFile,
-        'down'
-      ], { stdio: 'pipe' });
+      const downProcess = spawn(
+        'docker-compose',
+        ['-f', this.dockerComposeFile, 'down'],
+        { stdio: 'pipe' }
+      );
 
-      downProcess.on('close', (code) => {
+      downProcess.on('close', code => {
         if (code === 0) {
           console.log('✅ Infrastructure services stopped');
           resolve(true);
@@ -260,7 +279,7 @@ export class InfrastructureManager {
         }
       });
 
-      downProcess.on('error', (error) => {
+      downProcess.on('error', error => {
         console.error('❌ Failed to stop infrastructure:', error.message);
         resolve(false);
       });

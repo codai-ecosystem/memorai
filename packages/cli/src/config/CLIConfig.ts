@@ -2,9 +2,9 @@
  * @fileoverview CLI Configuration management
  */
 
-import { readFile, writeFile } from "fs/promises";
-import { homedir } from "os";
-import { join } from "path";
+import { readFile, writeFile } from 'fs/promises';
+import { homedir } from 'os';
+import { join } from 'path';
 
 /**
  * CLI configuration interface
@@ -14,7 +14,7 @@ export interface CLIConfigData {
   apiKey?: string;
   timeout?: number;
   defaultAgentId?: string;
-  outputFormat?: "text" | "json" | "table";
+  outputFormat?: 'text' | 'json' | 'table';
   verbose?: boolean;
   colors?: boolean;
 }
@@ -27,7 +27,7 @@ export class CLIConfig {
   private configPath: string;
 
   constructor(configPath?: string) {
-    this.configPath = configPath || join(homedir(), ".memorai", "config.json");
+    this.configPath = configPath || join(homedir(), '.memorai', 'config.json');
   }
 
   /**
@@ -36,7 +36,7 @@ export class CLIConfig {
     const filePath = path || this.configPath;
 
     try {
-      const content = await readFile(filePath, "utf-8");
+      const content = await readFile(filePath, 'utf-8');
       this.config = JSON.parse(content);
     } catch {
       // File doesn't exist or is invalid, use defaults
@@ -52,13 +52,13 @@ export class CLIConfig {
 
     try {
       // Ensure directory exists
-      const dir = filePath.substring(0, filePath.lastIndexOf("/"));
-      await writeFile(dir + "/.keepdir", "", { flag: "w" });
+      const dir = filePath.substring(0, filePath.lastIndexOf('/'));
+      await writeFile(dir + '/.keepdir', '', { flag: 'w' });
 
       await writeFile(filePath, JSON.stringify(this.config, null, 2));
     } catch (error: unknown) {
       throw new Error(
-        `Failed to save config: ${error instanceof Error ? error.message : "Unknown error"}`,
+        `Failed to save config: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
     }
   }
@@ -96,7 +96,7 @@ export class CLIConfig {
    */
   public getTimeout(): number {
     return (
-      this.config.timeout || parseInt(process.env.MEMORAI_TIMEOUT || "30000")
+      this.config.timeout || parseInt(process.env.MEMORAI_TIMEOUT || '30000')
     );
   }
 
@@ -124,14 +124,14 @@ export class CLIConfig {
   /**
    * Get output format
    */
-  public getOutputFormat(): "text" | "json" | "table" {
-    return this.config.outputFormat || "text";
+  public getOutputFormat(): 'text' | 'json' | 'table' {
+    return this.config.outputFormat || 'text';
   }
 
   /**
    * Set output format
    */
-  public setOutputFormat(format: "text" | "json" | "table"): void {
+  public setOutputFormat(format: 'text' | 'json' | 'table'): void {
     this.config.outputFormat = format;
   }
 
@@ -187,14 +187,14 @@ export class CLIConfig {
       this.config.serverUrl &&
       !/^https?:\/\/.+/.test(this.config.serverUrl)
     ) {
-      errors.push("Server URL must be a valid HTTP/HTTPS URL");
+      errors.push('Server URL must be a valid HTTP/HTTPS URL');
     }
 
     if (
       this.config.timeout &&
       (this.config.timeout < 1000 || this.config.timeout > 300000)
     ) {
-      errors.push("Timeout must be between 1 and 300 seconds");
+      errors.push('Timeout must be between 1 and 300 seconds');
     }
 
     return errors;

@@ -8,9 +8,9 @@ class VoiceSearchEngine {
     this.dashboard = dashboard;
     this.recognition = null;
     this.isListening = false;
-    this.supportedLanguages = ["en-US", "en-GB", "es-ES", "fr-FR", "de-DE"];
+    this.supportedLanguages = ['en-US', 'en-GB', 'es-ES', 'fr-FR', 'de-DE'];
     this.confidence = 0;
-    this.transcript = "";
+    this.transcript = '';
 
     this.initializeVoiceRecognition();
   }
@@ -20,10 +20,10 @@ class VoiceSearchEngine {
    */
   initializeVoiceRecognition() {
     if (
-      !("webkitSpeechRecognition" in window) &&
-      !("SpeechRecognition" in window)
+      !('webkitSpeechRecognition' in window) &&
+      !('SpeechRecognition' in window)
     ) {
-      console.warn("Voice search not supported in this browser");
+      console.warn('Voice search not supported in this browser');
       this.showFallbackUI();
       return;
     }
@@ -47,13 +47,13 @@ class VoiceSearchEngine {
   setupEventListeners() {
     this.recognition.onstart = () => {
       this.isListening = true;
-      this.updateVoiceUI("listening");
+      this.updateVoiceUI('listening');
       this.showTranscriptFeedback();
     };
 
-    this.recognition.onresult = (event) => {
-      let interimTranscript = "";
-      let finalTranscript = "";
+    this.recognition.onresult = event => {
+      let interimTranscript = '';
+      let finalTranscript = '';
 
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const result = event.results[i];
@@ -75,13 +75,13 @@ class VoiceSearchEngine {
       }
     };
 
-    this.recognition.onerror = (event) => {
+    this.recognition.onerror = event => {
       this.handleVoiceError(event.error);
     };
 
     this.recognition.onend = () => {
       this.isListening = false;
-      this.updateVoiceUI("idle");
+      this.updateVoiceUI('idle');
     };
   }
 
@@ -103,13 +103,13 @@ class VoiceSearchEngine {
       const intent = this.detectIntent(cleanQuery);
 
       switch (intent.type) {
-        case "search":
+        case 'search':
           await this.executeVoiceSearch(intent.query);
           break;
-        case "command":
+        case 'command':
           await this.executeVoiceCommand(intent.command, intent.parameters);
           break;
-        case "navigation":
+        case 'navigation':
           this.executeNavigation(intent.target);
           break;
         default:
@@ -118,8 +118,8 @@ class VoiceSearchEngine {
 
       this.logVoiceInteraction(transcript, intent, confidence);
     } catch (error) {
-      console.error("Voice query processing failed:", error);
-      this.showVoiceError("Processing failed. Please try again.");
+      console.error('Voice query processing failed:', error);
+      this.showVoiceError('Processing failed. Please try again.');
     }
   }
 
@@ -131,18 +131,18 @@ class VoiceSearchEngine {
 
     // Command patterns
     const commandPatterns = {
-      "add memory": /^(add|create|store|remember)\s+(memory|note)\s+(.+)/i,
-      "delete memory": /^(delete|remove|forget)\s+(memory|note)\s+(.+)/i,
-      "show analytics": /^(show|display|open)\s+(analytics|statistics|stats)/i,
-      "export data": /^(export|download|save)\s+(data|memories|all)/i,
-      "clear search": /^(clear|reset)\s+(search|filter)/i,
+      'add memory': /^(add|create|store|remember)\s+(memory|note)\s+(.+)/i,
+      'delete memory': /^(delete|remove|forget)\s+(memory|note)\s+(.+)/i,
+      'show analytics': /^(show|display|open)\s+(analytics|statistics|stats)/i,
+      'export data': /^(export|download|save)\s+(data|memories|all)/i,
+      'clear search': /^(clear|reset)\s+(search|filter)/i,
     };
 
     for (const [command, pattern] of Object.entries(commandPatterns)) {
       const match = lowerQuery.match(pattern);
       if (match) {
         return {
-          type: "command",
+          type: 'command',
           command: command,
           parameters: match[3] || null,
           confidence: 0.9,
@@ -152,16 +152,16 @@ class VoiceSearchEngine {
 
     // Navigation patterns
     const navigationPatterns = {
-      "go to analytics": /^(go\s+to|open|show)\s+(analytics|dashboard)/i,
-      "go to settings": /^(go\s+to|open|show)\s+(settings|configuration)/i,
-      "go to memories": /^(go\s+to|open|show)\s+(memories|memory\s+list)/i,
+      'go to analytics': /^(go\s+to|open|show)\s+(analytics|dashboard)/i,
+      'go to settings': /^(go\s+to|open|show)\s+(settings|configuration)/i,
+      'go to memories': /^(go\s+to|open|show)\s+(memories|memory\s+list)/i,
     };
 
     for (const [target, pattern] of Object.entries(navigationPatterns)) {
       if (lowerQuery.match(pattern)) {
         return {
-          type: "navigation",
-          target: target.split(" ")[2], // Extract target
+          type: 'navigation',
+          target: target.split(' ')[2], // Extract target
           confidence: 0.85,
         };
       }
@@ -169,7 +169,7 @@ class VoiceSearchEngine {
 
     // Default to search
     return {
-      type: "search",
+      type: 'search',
       query: query,
       confidence: 0.8,
     };
@@ -181,7 +181,7 @@ class VoiceSearchEngine {
   async executeVoiceSearch(query) {
     try {
       // Show voice search indicator
-      this.updateVoiceUI("searching");
+      this.updateVoiceUI('searching');
 
       // Enhanced query preprocessing
       const processedQuery = this.enhanceSearchQuery(query);
@@ -211,10 +211,10 @@ class VoiceSearchEngine {
       // Provide audio feedback
       this.announceSearchResults(results.length);
     } catch (error) {
-      console.error("Voice search failed:", error);
-      this.showVoiceError("Search failed. Please try again.");
+      console.error('Voice search failed:', error);
+      this.showVoiceError('Search failed. Please try again.');
     } finally {
-      this.updateVoiceUI("idle");
+      this.updateVoiceUI('idle');
     }
   }
 
@@ -222,42 +222,42 @@ class VoiceSearchEngine {
    * Execute voice commands with intelligent parameter extraction
    */
   async executeVoiceCommand(command, parameters) {
-    this.updateVoiceUI("processing");
+    this.updateVoiceUI('processing');
 
     try {
       switch (command) {
-        case "add memory":
+        case 'add memory':
           if (parameters) {
             await this.dashboard.addMemoryFromVoice(parameters);
-            this.announceSuccess("Memory added successfully");
+            this.announceSuccess('Memory added successfully');
           } else {
-            this.requestMoreInfo("What would you like to remember?");
+            this.requestMoreInfo('What would you like to remember?');
           }
           break;
 
-        case "show analytics":
+        case 'show analytics':
           this.dashboard.showAnalytics();
-          this.announceSuccess("Analytics opened");
+          this.announceSuccess('Analytics opened');
           break;
 
-        case "export data":
+        case 'export data':
           await this.dashboard.exportManager?.exportMemories();
-          this.announceSuccess("Export started");
+          this.announceSuccess('Export started');
           break;
 
-        case "clear search":
+        case 'clear search':
           this.dashboard.clearSearch();
-          this.announceSuccess("Search cleared");
+          this.announceSuccess('Search cleared');
           break;
 
         default:
-          this.showVoiceError("Command not recognized");
+          this.showVoiceError('Command not recognized');
       }
     } catch (error) {
-      console.error("Voice command failed:", error);
-      this.showVoiceError("Command failed. Please try again.");
+      console.error('Voice command failed:', error);
+      this.showVoiceError('Command failed. Please try again.');
     } finally {
-      this.updateVoiceUI("idle");
+      this.updateVoiceUI('idle');
     }
   }
 
@@ -267,22 +267,22 @@ class VoiceSearchEngine {
   enhanceSearchQuery(query) {
     // Remove filler words
     const fillerWords = [
-      "um",
-      "uh",
-      "like",
-      "you know",
-      "actually",
-      "basically",
+      'um',
+      'uh',
+      'like',
+      'you know',
+      'actually',
+      'basically',
     ];
     let enhanced = query;
 
-    fillerWords.forEach((word) => {
-      const regex = new RegExp(`\\b${word}\\b`, "gi");
-      enhanced = enhanced.replace(regex, "");
+    fillerWords.forEach(word => {
+      const regex = new RegExp(`\\b${word}\\b`, 'gi');
+      enhanced = enhanced.replace(regex, '');
     });
 
     // Normalize spacing
-    enhanced = enhanced.replace(/\s+/g, " ").trim();
+    enhanced = enhanced.replace(/\s+/g, ' ').trim();
 
     // Apply voice-specific enhancements
     enhanced = this.applyVoiceCorrections(enhanced);
@@ -295,19 +295,19 @@ class VoiceSearchEngine {
    */
   applyVoiceCorrections(query) {
     const corrections = {
-      "type script": "typescript",
-      "java script": "javascript",
-      "react j s": "reactjs",
-      "node j s": "nodejs",
-      "vs code": "vscode",
-      "git hub": "github",
-      "mem ori": "memory",
-      "ai agent": "AI agent",
+      'type script': 'typescript',
+      'java script': 'javascript',
+      'react j s': 'reactjs',
+      'node j s': 'nodejs',
+      'vs code': 'vscode',
+      'git hub': 'github',
+      'mem ori': 'memory',
+      'ai agent': 'AI agent',
     };
 
     let corrected = query;
     Object.entries(corrections).forEach(([wrong, right]) => {
-      const regex = new RegExp(wrong, "gi");
+      const regex = new RegExp(wrong, 'gi');
       corrected = corrected.replace(regex, right);
     });
 
@@ -322,9 +322,9 @@ class VoiceSearchEngine {
 
     let message;
     if (count === 0) {
-      message = "No memories found. Try a different search term.";
+      message = 'No memories found. Try a different search term.';
     } else if (count === 1) {
-      message = "Found 1 memory.";
+      message = 'Found 1 memory.';
     } else {
       message = `Found ${count} memories.`;
     }
@@ -336,7 +336,7 @@ class VoiceSearchEngine {
    * Text-to-speech feedback
    */
   speakMessage(message) {
-    if (!("speechSynthesis" in window)) return;
+    if (!('speechSynthesis' in window)) return;
 
     const utterance = new SpeechSynthesisUtterance(message);
     utterance.lang = this.getPreferredLanguage();
@@ -352,7 +352,7 @@ class VoiceSearchEngine {
    */
   getPreferredLanguage() {
     const userLang = navigator.language || navigator.userLanguage;
-    return this.supportedLanguages.includes(userLang) ? userLang : "en-US";
+    return this.supportedLanguages.includes(userLang) ? userLang : 'en-US';
   }
 
   /**
@@ -371,15 +371,15 @@ class VoiceSearchEngine {
    */
   startListening() {
     if (!this.recognition) {
-      this.showVoiceError("Voice search not supported");
+      this.showVoiceError('Voice search not supported');
       return;
     }
 
     try {
       this.recognition.start();
     } catch (error) {
-      console.error("Failed to start voice recognition:", error);
-      this.showVoiceError("Failed to start voice search");
+      console.error('Failed to start voice recognition:', error);
+      this.showVoiceError('Failed to start voice search');
     }
   }
 
@@ -396,36 +396,36 @@ class VoiceSearchEngine {
    * Update voice search UI with intelligent state management
    */
   updateVoiceUI(state) {
-    const voiceButton = document.getElementById("voice-search");
-    const voiceStatus = document.getElementById("voice-status");
+    const voiceButton = document.getElementById('voice-search');
+    const voiceStatus = document.getElementById('voice-status');
 
     if (!voiceButton) return;
 
     // Reset classes
-    voiceButton.className = "voice-search-btn";
+    voiceButton.className = 'voice-search-btn';
 
     switch (state) {
-      case "listening":
-        voiceButton.classList.add("listening");
-        voiceButton.setAttribute("aria-label", "Stop voice search");
-        this.updateVoiceStatus("Listening...", "listening");
+      case 'listening':
+        voiceButton.classList.add('listening');
+        voiceButton.setAttribute('aria-label', 'Stop voice search');
+        this.updateVoiceStatus('Listening...', 'listening');
         break;
 
-      case "processing":
-        voiceButton.classList.add("processing");
-        voiceButton.setAttribute("aria-label", "Processing voice input");
-        this.updateVoiceStatus("Processing...", "processing");
+      case 'processing':
+        voiceButton.classList.add('processing');
+        voiceButton.setAttribute('aria-label', 'Processing voice input');
+        this.updateVoiceStatus('Processing...', 'processing');
         break;
 
-      case "searching":
-        voiceButton.classList.add("searching");
-        this.updateVoiceStatus("Searching...", "searching");
+      case 'searching':
+        voiceButton.classList.add('searching');
+        this.updateVoiceStatus('Searching...', 'searching');
         break;
 
       default:
-        voiceButton.classList.add("idle");
-        voiceButton.setAttribute("aria-label", "Start voice search");
-        this.updateVoiceStatus("", "idle");
+        voiceButton.classList.add('idle');
+        voiceButton.setAttribute('aria-label', 'Start voice search');
+        this.updateVoiceStatus('', 'idle');
     }
   }
 
@@ -433,7 +433,7 @@ class VoiceSearchEngine {
    * Update voice status display
    */
   updateVoiceStatus(message, state) {
-    const voiceStatus = document.getElementById("voice-status");
+    const voiceStatus = document.getElementById('voice-status');
     if (voiceStatus) {
       voiceStatus.textContent = message;
       voiceStatus.className = `voice-status ${state}`;
@@ -444,19 +444,19 @@ class VoiceSearchEngine {
    * Enhanced error handling
    */
   handleVoiceError(error) {
-    console.error("Voice recognition error:", error);
+    console.error('Voice recognition error:', error);
 
     const errorMessages = {
-      network: "Network error. Please check your connection.",
-      "not-allowed":
-        "Microphone access denied. Please allow microphone access.",
-      "no-speech": "No speech detected. Please try again.",
-      "audio-capture": "Microphone not available.",
-      aborted: "Voice search was cancelled.",
+      network: 'Network error. Please check your connection.',
+      'not-allowed':
+        'Microphone access denied. Please allow microphone access.',
+      'no-speech': 'No speech detected. Please try again.',
+      'audio-capture': 'Microphone not available.',
+      aborted: 'Voice search was cancelled.',
     };
 
     const message =
-      errorMessages[error] || "Voice search error. Please try again.";
+      errorMessages[error] || 'Voice search error. Please try again.';
     this.showVoiceError(message);
   }
 
@@ -464,17 +464,17 @@ class VoiceSearchEngine {
    * Show voice error with user-friendly messaging
    */
   showVoiceError(message) {
-    this.dashboard.showToast(message, "error");
-    this.updateVoiceUI("idle");
+    this.dashboard.showToast(message, 'error');
+    this.updateVoiceUI('idle');
   }
 
   /**
    * Show fallback UI for unsupported browsers
    */
   showFallbackUI() {
-    const voiceButton = document.getElementById("voice-search");
+    const voiceButton = document.getElementById('voice-search');
     if (voiceButton) {
-      voiceButton.style.display = "none";
+      voiceButton.style.display = 'none';
     }
 
     // Show alternative input method
@@ -485,11 +485,11 @@ class VoiceSearchEngine {
    * Show keyboard shortcut hint as alternative
    */
   showKeyboardShortcutHint() {
-    const hint = document.createElement("div");
-    hint.className = "keyboard-hint";
-    hint.innerHTML = "💡 Tip: Press Ctrl+K for quick search";
+    const hint = document.createElement('div');
+    hint.className = 'keyboard-hint';
+    hint.innerHTML = '💡 Tip: Press Ctrl+K for quick search';
 
-    const searchContainer = document.querySelector(".search-container");
+    const searchContainer = document.querySelector('.search-container');
     if (searchContainer) {
       searchContainer.appendChild(hint);
     }
@@ -500,7 +500,7 @@ class VoiceSearchEngine {
    */
   shouldProvideAudioFeedback() {
     // Check user preferences and accessibility settings
-    return localStorage.getItem("voice-feedback") !== "disabled";
+    return localStorage.getItem('voice-feedback') !== 'disabled';
   }
 
   /**
@@ -508,7 +508,7 @@ class VoiceSearchEngine {
    */
   logVoiceInteraction(transcript, intent, confidence) {
     if (this.dashboard.analytics) {
-      this.dashboard.analytics.logEvent("voice_search", {
+      this.dashboard.analytics.logEvent('voice_search', {
         transcript: transcript,
         intent: intent.type,
         confidence: confidence,
@@ -519,22 +519,22 @@ class VoiceSearchEngine {
 }
 
 // Initialize voice search when dashboard is ready
-document.addEventListener("DOMContentLoaded", () => {
-  if (typeof MemoraiDashboard !== "undefined") {
+document.addEventListener('DOMContentLoaded', () => {
+  if (typeof MemoraiDashboard !== 'undefined') {
     MemoraiDashboard.prototype.initVoiceSearch = function () {
       this.voiceSearch = new VoiceSearchEngine(this);
 
       // Setup voice search button
-      const voiceButton = document.getElementById("voice-search");
+      const voiceButton = document.getElementById('voice-search');
       if (voiceButton) {
-        voiceButton.addEventListener("click", () => {
+        voiceButton.addEventListener('click', () => {
           this.voiceSearch.toggleVoiceSearch();
         });
       }
 
       // Setup keyboard shortcut (Ctrl+Shift+V)
-      document.addEventListener("keydown", (event) => {
-        if (event.ctrlKey && event.shiftKey && event.key === "V") {
+      document.addEventListener('keydown', event => {
+        if (event.ctrlKey && event.shiftKey && event.key === 'V') {
           event.preventDefault();
           this.voiceSearch.toggleVoiceSearch();
         }

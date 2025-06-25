@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import toast from "react-hot-toast";
-import { motion } from "framer-motion";
+import { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
+import { motion } from 'framer-motion';
 import {
   Save,
   RefreshCcw,
@@ -20,12 +20,10 @@ import {
   TestTube,
   Download,
   Upload,
-} from "lucide-react";
+} from 'lucide-react';
 
-import { useConfigStore, SystemConfig } from "../../stores/config-store";
-import { cn } from "../../lib/utils";
-
-
+import { useConfigStore, SystemConfig } from '../../stores/config-store';
+import { cn } from '../../lib/utils';
 
 interface SystemConfigurationProps {
   className?: string;
@@ -41,12 +39,14 @@ export function SystemConfiguration({ className }: SystemConfigurationProps) {
   const [hasChanges, setHasChanges] = useState(false);
 
   useEffect(() => {
-    void console.log("SystemConfiguration: Component mounted, fetching config...");
+    void console.log(
+      'SystemConfiguration: Component mounted, fetching config...'
+    );
     void fetchConfig();
   }, [fetchConfig]);
 
   useEffect(() => {
-    console.log("SystemConfiguration: Config updated:", config);
+    console.log('SystemConfiguration: Config updated:', config);
     setLocalConfig(config);
     setHasChanges(false);
   }, [config]);
@@ -54,9 +54,9 @@ export function SystemConfiguration({ className }: SystemConfigurationProps) {
   const handleConfigChange = (
     section: keyof SystemConfig,
     key: string,
-    value: any,
+    value: any
   ) => {
-    setLocalConfig((prev) => {
+    setLocalConfig(prev => {
       if (!prev) {
         return prev;
       }
@@ -80,9 +80,9 @@ export function SystemConfiguration({ className }: SystemConfigurationProps) {
     try {
       await updateConfig(localConfig);
       setHasChanges(false);
-      toast.success("Configuration saved successfully");
+      toast.success('Configuration saved successfully');
     } catch (error) {
-      toast.error("Failed to save configuration");
+      toast.error('Failed to save configuration');
     } finally {
       setSaving(false);
     }
@@ -93,12 +93,12 @@ export function SystemConfiguration({ className }: SystemConfigurationProps) {
     try {
       const result = await testConnection();
       if (result.success) {
-        toast.success("Connection test successful");
+        toast.success('Connection test successful');
       } else {
         toast.error(`Connection test failed: ${result.error}`);
       }
     } catch (error) {
-      toast.error("Connection test failed");
+      toast.error('Connection test failed');
     } finally {
       setTesting(false);
     }
@@ -107,7 +107,7 @@ export function SystemConfiguration({ className }: SystemConfigurationProps) {
   const handleReset = (): void => {
     setLocalConfig(config);
     setHasChanges(false);
-    toast.success("Configuration reset to saved values");
+    toast.success('Configuration reset to saved values');
   };
 
   const exportConfig = (): void => {
@@ -119,31 +119,31 @@ export function SystemConfiguration({ className }: SystemConfigurationProps) {
       // Remove sensitive data
       memory: {
         ...localConfig.memory,
-        openaiApiKey: "***REDACTED***",
+        openaiApiKey: '***REDACTED***',
       },
       ...(localConfig.database && {
         database: {
           ...localConfig.database,
-          password: "***REDACTED***",
+          password: '***REDACTED***',
         },
       }),
     };
 
     const blob = new Blob([JSON.stringify(configData, null, 2)], {
-      type: "application/json",
+      type: 'application/json',
     });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
+    const a = document.createElement('a');
     a.href = url;
-    a.download = "memorai-config.json";
+    a.download = 'memorai-config.json';
     a.click();
     URL.revokeObjectURL(url);
   };
 
   const importConfig = (): void => {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = ".json";
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
     input.onchange = (e): void => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (file) {
@@ -153,9 +153,9 @@ export function SystemConfiguration({ className }: SystemConfigurationProps) {
             const importedConfig = JSON.parse(e.target?.result as string);
             setLocalConfig(importedConfig);
             setHasChanges(true);
-            toast.success("Configuration imported successfully");
+            toast.success('Configuration imported successfully');
           } catch (error) {
-            toast.error("Failed to parse configuration file");
+            toast.error('Failed to parse configuration file');
           }
         };
         reader.readAsText(file);
@@ -166,7 +166,7 @@ export function SystemConfiguration({ className }: SystemConfigurationProps) {
 
   if (isLoading || !localConfig) {
     return (
-      <div className={cn("space-y-6", className)}>
+      <div className={cn('space-y-6', className)}>
         <div className="p-6 border rounded-lg">
           <div className="h-6 w-48 bg-gray-200 rounded animate-pulse mb-4" />
           <div className="space-y-3">
@@ -179,7 +179,7 @@ export function SystemConfiguration({ className }: SystemConfigurationProps) {
     );
   }
   return (
-    <div data-testid="system-config" className={cn("space-y-6", className)}>
+    <div data-testid="system-config" className={cn('space-y-6', className)}>
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -201,7 +201,7 @@ export function SystemConfiguration({ className }: SystemConfigurationProps) {
             ) : (
               <Eye className="h-4 w-4" />
             )}
-            {showSecrets ? "Hide" : "Show"} Secrets
+            {showSecrets ? 'Hide' : 'Show'} Secrets
           </button>
 
           <button
@@ -225,7 +225,7 @@ export function SystemConfiguration({ className }: SystemConfigurationProps) {
             disabled={testing}
             className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
           >
-            <TestTube className={cn("h-4 w-4", testing && "animate-pulse")} />
+            <TestTube className={cn('h-4 w-4', testing && 'animate-pulse')} />
             Test Connection
           </button>
         </div>
@@ -254,7 +254,7 @@ export function SystemConfiguration({ className }: SystemConfigurationProps) {
               disabled={saving}
               className="flex items-center gap-2 px-3 py-1 bg-amber-600 text-white rounded hover:bg-amber-700 transition-colors disabled:opacity-50"
             >
-              <Save className={cn("h-4 w-4", saving && "animate-pulse")} />
+              <Save className={cn('h-4 w-4', saving && 'animate-pulse')} />
               Save Changes
             </button>
           </div>
@@ -286,9 +286,9 @@ export function SystemConfiguration({ className }: SystemConfigurationProps) {
                 Provider
               </label>
               <select
-                value={localConfig.memory?.provider ?? "openai"}
-                onChange={(e) =>
-                  handleConfigChange("memory", "provider", e.target.value)
+                value={localConfig.memory?.provider ?? 'openai'}
+                onChange={e =>
+                  handleConfigChange('memory', 'provider', e.target.value)
                 }
                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
@@ -304,9 +304,9 @@ export function SystemConfiguration({ className }: SystemConfigurationProps) {
               </label>
               <input
                 type="text"
-                value={localConfig.memory?.model || "gpt-4"}
-                onChange={(e) =>
-                  handleConfigChange("memory", "model", e.target.value)
+                value={localConfig.memory?.model || 'gpt-4'}
+                onChange={e =>
+                  handleConfigChange('memory', 'model', e.target.value)
                 }
                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="e.g., gpt-4, gpt-3.5-turbo"
@@ -318,13 +318,13 @@ export function SystemConfiguration({ className }: SystemConfigurationProps) {
                 API Key
               </label>
               <input
-                type={showSecrets ? "text" : "password"}
-                value={localConfig.memory?.openaiApiKey || ""}
-                onChange={(e) =>
-                  handleConfigChange("memory", "openaiApiKey", e.target.value)
+                type={showSecrets ? 'text' : 'password'}
+                value={localConfig.memory?.openaiApiKey || ''}
+                onChange={e =>
+                  handleConfigChange('memory', 'openaiApiKey', e.target.value)
                 }
                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder={showSecrets ? "Enter API key" : "••••••••••••••••"}
+                placeholder={showSecrets ? 'Enter API key' : '••••••••••••••••'}
               />
             </div>
 
@@ -335,11 +335,11 @@ export function SystemConfiguration({ className }: SystemConfigurationProps) {
               <input
                 type="number"
                 value={localConfig.memory?.maxMemories || 10}
-                onChange={(e) =>
+                onChange={e =>
                   handleConfigChange(
-                    "memory",
-                    "maxMemories",
-                    parseInt(e.target.value),
+                    'memory',
+                    'maxMemories',
+                    parseInt(e.target.value)
                   )
                 }
                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -353,8 +353,8 @@ export function SystemConfiguration({ className }: SystemConfigurationProps) {
                 type="checkbox"
                 id="enableMemoryCache"
                 checked={localConfig.memory?.enableCache || false}
-                onChange={(e) =>
-                  handleConfigChange("memory", "enableCache", e.target.checked)
+                onChange={e =>
+                  handleConfigChange('memory', 'enableCache', e.target.checked)
                 }
                 className="rounded"
               />
@@ -393,9 +393,9 @@ export function SystemConfiguration({ className }: SystemConfigurationProps) {
                 Database Type
               </label>
               <select
-                value={localConfig.database?.type ?? "qdrant"}
-                onChange={(e) =>
-                  handleConfigChange("database", "type", e.target.value)
+                value={localConfig.database?.type ?? 'qdrant'}
+                onChange={e =>
+                  handleConfigChange('database', 'type', e.target.value)
                 }
                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
@@ -412,9 +412,9 @@ export function SystemConfiguration({ className }: SystemConfigurationProps) {
               </label>
               <input
                 type="text"
-                value={localConfig.database?.host || "http://localhost:6333"}
-                onChange={(e) =>
-                  handleConfigChange("database", "host", e.target.value)
+                value={localConfig.database?.host || 'http://localhost:6333'}
+                onChange={e =>
+                  handleConfigChange('database', 'host', e.target.value)
                 }
                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="e.g., http://localhost:6333"
@@ -427,9 +427,9 @@ export function SystemConfiguration({ className }: SystemConfigurationProps) {
               </label>
               <input
                 type="text"
-                value={localConfig.database?.collection ?? "memories"}
-                onChange={(e) =>
-                  handleConfigChange("database", "collection", e.target.value)
+                value={localConfig.database?.collection ?? 'memories'}
+                onChange={e =>
+                  handleConfigChange('database', 'collection', e.target.value)
                 }
                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="e.g., memories"
@@ -443,11 +443,11 @@ export function SystemConfiguration({ className }: SystemConfigurationProps) {
               <input
                 type="number"
                 value={localConfig.database?.dimensions || 1536}
-                onChange={(e) =>
+                onChange={e =>
                   handleConfigChange(
-                    "database",
-                    "dimensions",
-                    parseInt(e.target.value),
+                    'database',
+                    'dimensions',
+                    parseInt(e.target.value)
                   )
                 }
                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -483,11 +483,11 @@ export function SystemConfiguration({ className }: SystemConfigurationProps) {
                 type="checkbox"
                 id="enableEncryption"
                 checked={localConfig.security?.enableEncryption || false}
-                onChange={(e) =>
+                onChange={e =>
                   handleConfigChange(
-                    "security",
-                    "enableEncryption",
-                    e.target.checked,
+                    'security',
+                    'enableEncryption',
+                    e.target.checked
                   )
                 }
                 className="rounded"
@@ -505,20 +505,20 @@ export function SystemConfiguration({ className }: SystemConfigurationProps) {
                 Encryption Key
               </label>
               <input
-                type={showSecrets ? "text" : "password"}
-                value={localConfig.security?.encryptionKey || ""}
-                onChange={(e) =>
+                type={showSecrets ? 'text' : 'password'}
+                value={localConfig.security?.encryptionKey || ''}
+                onChange={e =>
                   handleConfigChange(
-                    "security",
-                    "encryptionKey",
-                    e.target.value,
+                    'security',
+                    'encryptionKey',
+                    e.target.value
                   )
                 }
                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder={
                   showSecrets
-                    ? "32-character encryption key"
-                    : "••••••••••••••••"
+                    ? '32-character encryption key'
+                    : '••••••••••••••••'
                 }
               />
             </div>
@@ -528,11 +528,11 @@ export function SystemConfiguration({ className }: SystemConfigurationProps) {
                 type="checkbox"
                 id="enableAuditLog"
                 checked={localConfig.security?.enableAuditLog || false}
-                onChange={(e) =>
+                onChange={e =>
                   handleConfigChange(
-                    "security",
-                    "enableAuditLog",
-                    e.target.checked,
+                    'security',
+                    'enableAuditLog',
+                    e.target.checked
                   )
                 }
                 className="rounded"
@@ -549,11 +549,11 @@ export function SystemConfiguration({ className }: SystemConfigurationProps) {
               <input
                 type="number"
                 value={localConfig.security?.sessionTimeout || 60}
-                onChange={(e) =>
+                onChange={e =>
                   handleConfigChange(
-                    "security",
-                    "sessionTimeout",
-                    parseInt(e.target.value),
+                    'security',
+                    'sessionTimeout',
+                    parseInt(e.target.value)
                   )
                 }
                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -589,11 +589,11 @@ export function SystemConfiguration({ className }: SystemConfigurationProps) {
               <input
                 type="number"
                 value={localConfig.performance?.queryTimeout || 30}
-                onChange={(e) =>
+                onChange={e =>
                   handleConfigChange(
-                    "performance",
-                    "queryTimeout",
-                    parseInt(e.target.value),
+                    'performance',
+                    'queryTimeout',
+                    parseInt(e.target.value)
                   )
                 }
                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -609,11 +609,11 @@ export function SystemConfiguration({ className }: SystemConfigurationProps) {
               <input
                 type="number"
                 value={localConfig.performance?.cacheSize || 100}
-                onChange={(e) =>
+                onChange={e =>
                   handleConfigChange(
-                    "performance",
-                    "cacheSize",
-                    parseInt(e.target.value),
+                    'performance',
+                    'cacheSize',
+                    parseInt(e.target.value)
                   )
                 }
                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -629,11 +629,11 @@ export function SystemConfiguration({ className }: SystemConfigurationProps) {
               <input
                 type="number"
                 value={localConfig.performance?.batchSize || 50}
-                onChange={(e) =>
+                onChange={e =>
                   handleConfigChange(
-                    "performance",
-                    "batchSize",
-                    parseInt(e.target.value),
+                    'performance',
+                    'batchSize',
+                    parseInt(e.target.value)
                   )
                 }
                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -647,11 +647,11 @@ export function SystemConfiguration({ className }: SystemConfigurationProps) {
                 type="checkbox"
                 id="enablePreloading"
                 checked={localConfig.performance?.enablePreloading || false}
-                onChange={(e) =>
+                onChange={e =>
                   handleConfigChange(
-                    "performance",
-                    "enablePreloading",
-                    e.target.checked,
+                    'performance',
+                    'enablePreloading',
+                    e.target.checked
                   )
                 }
                 className="rounded"

@@ -7,18 +7,18 @@ import {
   afterAll,
   beforeEach,
   afterEach,
-} from "vitest";
-import request from "supertest";
-import express from "express";
-import { UnifiedMemoryEngine } from "@codai/memorai-core";
+} from 'vitest';
+import request from 'supertest';
+import express from 'express';
+import { UnifiedMemoryEngine } from '@codai/memorai-core';
 import {
   generateTestMemory,
   generateTestMemories,
   setTestEnv,
-} from "../helpers/testHelpers";
+} from '../helpers/testHelpers';
 
 // Mock memory engine core completely
-vi.mock("@codai/memorai-core", () => ({
+vi.mock('@codai/memorai-core', () => ({
   UnifiedMemoryEngine: vi.fn().mockImplementation(() => ({
     initialize: vi.fn().mockResolvedValue(undefined),
     remember: vi
@@ -31,15 +31,15 @@ vi.mock("@codai/memorai-core", () => ({
           metadata: metadata || {},
           timestamp: new Date().toISOString(),
           similarity: 1.0,
-        }),
+        })
       ),
     recall: vi
       .fn()
       .mockImplementation(
         async (agentId: string, query: string, limit: number = 10) => {
           const memories = generateTestMemories(Math.min(limit, 5), agentId);
-          return memories.map((m) => ({ ...m, similarity: 0.9 }));
-        },
+          return memories.map(m => ({ ...m, similarity: 0.9 }));
+        }
       ),
     forget: vi.fn().mockResolvedValue(true),
     getContext: vi
@@ -50,12 +50,12 @@ vi.mock("@codai/memorai-core", () => ({
           memories: generateTestMemories(Math.min(contextSize, 3), agentId),
           contextSize: 3,
           summary: `Context for ${agentId}`,
-        }),
+        })
       ),
     getTierInfo: vi.fn().mockReturnValue({
-      level: "basic",
-      currentTier: "basic",
-      message: "Basic memory engine for integration testing",
+      level: 'basic',
+      currentTier: 'basic',
+      message: 'Basic memory engine for integration testing',
       capabilities: {
         embedding: true,
         similarity: true,
@@ -65,9 +65,9 @@ vi.mock("@codai/memorai-core", () => ({
     }),
     testTier: vi.fn().mockImplementation(async (tier: string) => {
       if (!tier) {
-        throw new Error("Tier not specified");
+        throw new Error('Tier not specified');
       }
-      if (["basic", "smart", "advanced"].includes(tier)) {
+      if (['basic', 'smart', 'advanced'].includes(tier)) {
         return {
           success: true,
           message: `Tier '${tier}' is available and working`,
@@ -81,26 +81,26 @@ vi.mock("@codai/memorai-core", () => ({
       memoryTypes: { semantic: 5, episodic: 3, procedural: 2, meta: 0 },
       avgConfidence: 0.9,
       recentActivity: 5,
-      currentTier: "basic",
+      currentTier: 'basic',
     }),
   })),
 }));
 
 // Import after mocking
-import { memoryRouter } from "../../src/routes/memory";
-import { configRouter } from "../../src/routes/config";
-import { statsRouter } from "../../src/routes/stats";
-import { errorHandler } from "../../src/middleware/errorHandler";
+import { memoryRouter } from '../../src/routes/memory';
+import { configRouter } from '../../src/routes/config';
+import { statsRouter } from '../../src/routes/stats';
+import { errorHandler } from '../../src/middleware/errorHandler';
 
-describe("API Integration Tests", () => {
+describe('API Integration Tests', () => {
   let app: express.Application;
   let restoreEnv: () => void;
   let mockMemoryEngine: any;
 
   beforeAll(() => {
     restoreEnv = setTestEnv({
-      NODE_ENV: "test",
-      CORS_ORIGIN: "http://localhost:3000",
+      NODE_ENV: 'test',
+      CORS_ORIGIN: 'http://localhost:3000',
     });
   });
 
@@ -123,54 +123,54 @@ describe("API Integration Tests", () => {
     });
 
     // Add routes
-    app.use("/api/memory", memoryRouter);
-    app.use("/api/config", configRouter);
-    app.use("/api/stats", statsRouter);
+    app.use('/api/memory', memoryRouter);
+    app.use('/api/config', configRouter);
+    app.use('/api/stats', statsRouter);
 
     // Health check
-    app.get("/health", (req, res) => {
+    app.get('/health', (req, res) => {
       res.json({
-        status: "healthy",
+        status: 'healthy',
         timestamp: new Date().toISOString(),
-        version: "1.0.0",
+        version: '1.0.0',
         memoryEngine: {
           initialized: !!mockMemoryEngine,
-          tier: mockMemoryEngine?.getTierInfo?.()?.currentTier || "none",
+          tier: mockMemoryEngine?.getTierInfo?.()?.currentTier || 'none',
         },
       });
     });
 
     // Error handling
     app.use(errorHandler);
-    app.use("*", (req, res) => {
-      res.status(404).json({ error: "Endpoint not found" });
+    app.use('*', (req, res) => {
+      res.status(404).json({ error: 'Endpoint not found' });
     });
   });
 
-  describe("Health Check", () => {
-    it("should return health status", async () => {
-      const response = await request(app).get("/health").expect(200);
+  describe('Health Check', () => {
+    it('should return health status', async () => {
+      const response = await request(app).get('/health').expect(200);
 
       expect(response.body).toMatchObject({
-        status: "healthy",
+        status: 'healthy',
         timestamp: expect.any(String),
         version: expect.any(String),
         memoryEngine: {
           initialized: true,
-          tier: "basic",
+          tier: 'basic',
         },
       });
     });
   });
 
-  describe("Memory Workflow Integration", () => {
-    const testAgent = "integration-test-agent";
+  describe('Memory Workflow Integration', () => {
+    const testAgent = 'integration-test-agent';
 
-    it("should complete full memory workflow", async () => {
+    it('should complete full memory workflow', async () => {
       // 1. Store a memory
       const memoryData = generateTestMemory({ agentId: testAgent });
       const storeResponse = await request(app)
-        .post("/api/memory/remember")
+        .post('/api/memory/remember')
         .send(memoryData)
         .expect(200);
 
@@ -179,10 +179,10 @@ describe("API Integration Tests", () => {
 
       // 2. Recall memories
       const recallResponse = await request(app)
-        .post("/api/memory/recall")
+        .post('/api/memory/recall')
         .send({
           agentId: testAgent,
-          query: "test",
+          query: 'test',
           limit: 10,
         })
         .expect(200);
@@ -192,7 +192,7 @@ describe("API Integration Tests", () => {
 
       // 3. Get context
       const contextResponse = await request(app)
-        .post("/api/memory/context")
+        .post('/api/memory/context')
         .send({
           agentId: testAgent,
           contextSize: 5,
@@ -220,7 +220,7 @@ describe("API Integration Tests", () => {
 
       // 6. Forget a memory (using the stored memory ID)
       const forgetResponse = await request(app)
-        .delete("/api/memory/forget")
+        .delete('/api/memory/forget')
         .send({
           agentId: testAgent,
           memoryId: storeResponse.body.memory.id,
@@ -231,14 +231,14 @@ describe("API Integration Tests", () => {
     });
   });
 
-  describe("Configuration Integration", () => {
-    it("should get and validate configuration", async () => {
-      const response = await request(app).get("/api/config").expect(200);
+  describe('Configuration Integration', () => {
+    it('should get and validate configuration', async () => {
+      const response = await request(app).get('/api/config').expect(200);
 
       expect(response.body.success).toBe(true);
       expect(response.body.config).toMatchObject({
         tier: {
-          level: "mock",
+          level: 'mock',
           capabilities: expect.any(Object),
         },
         environment: {
@@ -257,39 +257,39 @@ describe("API Integration Tests", () => {
       });
     });
 
-    it("should test tier switching", async () => {
+    it('should test tier switching', async () => {
       const response = await request(app)
-        .post("/api/config/test-tier")
-        .send({ tier: "basic" })
+        .post('/api/config/test-tier')
+        .send({ tier: 'basic' })
         .expect(200);
 
       expect(response.body).toBeDefined();
     });
   });
 
-  describe("Error Handling Integration", () => {
-    it("should handle 404 for unknown endpoints", async () => {
-      const response = await request(app).get("/api/unknown").expect(404);
+  describe('Error Handling Integration', () => {
+    it('should handle 404 for unknown endpoints', async () => {
+      const response = await request(app).get('/api/unknown').expect(404);
 
-      expect(response.body.error).toBe("Endpoint not found");
+      expect(response.body.error).toBe('Endpoint not found');
     });
 
-    it("should handle validation errors", async () => {
+    it('should handle validation errors', async () => {
       const response = await request(app)
-        .post("/api/memory/remember")
+        .post('/api/memory/remember')
         .send({
-          agentId: "", // invalid - empty string
-          content: "test",
+          agentId: '', // invalid - empty string
+          content: 'test',
         })
         .expect(400);
 
-      expect(response.body.error).toContain("agentId");
+      expect(response.body.error).toContain('agentId');
     });
   });
 
-  describe("Stats Integration", () => {
-    it("should get comprehensive statistics", async () => {
-      const response = await request(app).get("/api/stats").expect(200);
+  describe('Stats Integration', () => {
+    it('should get comprehensive statistics', async () => {
+      const response = await request(app).get('/api/stats').expect(200);
       expect(response.body.success).toBe(true);
       expect(response.body.data).toBeDefined();
     });

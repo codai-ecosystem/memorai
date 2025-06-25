@@ -1,12 +1,12 @@
-import React from "react";
-import "@testing-library/jest-dom";
-import { vi } from "vitest";
+import React from 'react';
+import '@testing-library/jest-dom';
+import { vi } from 'vitest';
 
 // Set NODE_ENV for tests using vi.stubEnv
 vi.stubEnv('NODE_ENV', 'test');
 
 // Mock Next.js router
-vi.mock("next/navigation", () => ({
+vi.mock('next/navigation', () => ({
   useRouter: () => ({
     push: vi.fn(),
     replace: vi.fn(),
@@ -16,29 +16,29 @@ vi.mock("next/navigation", () => ({
     refresh: vi.fn(),
   }),
   useSearchParams: () => new URLSearchParams(),
-  usePathname: () => "/",
+  usePathname: () => '/',
 }));
 
 // Mock next-themes
-vi.mock("next-themes", () => ({
+vi.mock('next-themes', () => ({
   useTheme: () => ({
-    theme: "light",
+    theme: 'light',
     setTheme: vi.fn(),
-    themes: ["light", "dark"],
+    themes: ['light', 'dark'],
   }),
   ThemeProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 
 // Mock framer-motion
-vi.mock("framer-motion", () => ({
+vi.mock('framer-motion', () => ({
   motion: {
-    div: "div",
-    span: "span",
-    button: "button",
-    h1: "h1",
-    h2: "h2",
-    h3: "h3",
-    p: "p",
+    div: 'div',
+    span: 'span',
+    button: 'button',
+    h1: 'h1',
+    h2: 'h2',
+    h3: 'h3',
+    p: 'p',
   },
   AnimatePresence: ({ children }: { children: React.ReactNode }) => children,
 }));
@@ -53,7 +53,7 @@ export const mockApiResponse = (data: any, ok = true) => {
     json: () => Promise.resolve(data),
     text: () => Promise.resolve(JSON.stringify(data)),
     status: ok ? 200 : 500,
-    statusText: ok ? "OK" : "Internal Server Error",
+    statusText: ok ? 'OK' : 'Internal Server Error',
   } as Response);
 };
 
@@ -61,25 +61,25 @@ export const mockApiResponse = (data: any, ok = true) => {
 export const mockMemoryData = {
   memories: [
     {
-      id: "mem-1",
-      content: "Test memory content",
-      type: "conversation" as const,
+      id: 'mem-1',
+      content: 'Test memory content',
+      type: 'conversation' as const,
       metadata: {
-        agentId: "test-agent",
-        timestamp: "2025-06-12T10:00:00Z",
-        tags: ["test", "example"],
+        agentId: 'test-agent',
+        timestamp: '2025-06-12T10:00:00Z',
+        tags: ['test', 'example'],
         importance: 8,
         similarity: 0.95,
       },
     },
     {
-      id: "mem-2",
-      content: "Another test memory",
-      type: "document" as const,
+      id: 'mem-2',
+      content: 'Another test memory',
+      type: 'document' as const,
       metadata: {
-        agentId: "test-agent-2",
-        timestamp: "2025-06-12T11:00:00Z",
-        tags: ["document", "important"],
+        agentId: 'test-agent-2',
+        timestamp: '2025-06-12T11:00:00Z',
+        tags: ['document', 'important'],
         importance: 9,
         similarity: 0.87,
       },
@@ -99,25 +99,25 @@ export const mockMemoryData = {
       emotion: 5,
     },
     recentActivity: [
-      { date: "2025-06-12", count: 12 },
-      { date: "2025-06-11", count: 8 },
-      { date: "2025-06-10", count: 15 },
+      { date: '2025-06-12', count: 12 },
+      { date: '2025-06-11', count: 8 },
+      { date: '2025-06-10', count: 15 },
     ],
     topAgents: [
-      { agentId: "agent-1", memoryCount: 45 },
-      { agentId: "agent-2", memoryCount: 32 },
-      { agentId: "agent-3", memoryCount: 28 },
+      { agentId: 'agent-1', memoryCount: 45 },
+      { agentId: 'agent-2', memoryCount: 32 },
+      { agentId: 'agent-3', memoryCount: 28 },
     ],
   },
 };
 
 export const mockConfigData = {
   api: {
-    baseUrl: "http://localhost:6367",
+    baseUrl: 'http://localhost:6367',
     timeout: 30000,
-    version: "v1",
+    version: 'v1',
   },
-  websocket: "ws://localhost:6367",
+  websocket: 'ws://localhost:6367',
   features: {
     analytics: true,
     export: true,
@@ -125,7 +125,7 @@ export const mockConfigData = {
     advanced: true,
   },
   ui: {
-    theme: "auto",
+    theme: 'auto',
     animations: true,
     soundEffects: false,
     compactMode: false,
@@ -133,9 +133,9 @@ export const mockConfigData = {
 };
 
 // Setup DOM environment
-Object.defineProperty(window, "matchMedia", {
+Object.defineProperty(window, 'matchMedia', {
   writable: true,
-  value: vi.fn().mockImplementation((query) => ({
+  value: vi.fn().mockImplementation(query => ({
     matches: false,
     media: query,
     onchange: null,
@@ -162,9 +162,9 @@ global.IntersectionObserver = vi.fn().mockImplementation(() => ({
 }));
 
 // Mock lucide-react icons
-vi.mock("lucide-react", () => {
+vi.mock('lucide-react', () => {
   const MockIcon = (props: unknown) =>
-    React.createElement("svg", { "data-testid": "mock-icon", ...props });
+    React.createElement('svg', { 'data-testid': 'mock-icon', ...props });
 
   return {
     Plus: MockIcon,
@@ -256,7 +256,7 @@ vi.mock("lucide-react", () => {
 });
 
 // Mock react-hot-toast
-vi.mock("react-hot-toast", () => {
+vi.mock('react-hot-toast', () => {
   const toastFn = vi.fn();
 
   const toast = Object.assign(toastFn, {
@@ -271,12 +271,12 @@ vi.mock("react-hot-toast", () => {
   return {
     default: toast,
     toast,
-    Toaster: () => "div",
+    Toaster: () => 'div',
   };
 });
 
 // Keep sonner mock in case it's used elsewhere
-vi.mock("sonner", () => {
+vi.mock('sonner', () => {
   const toastFn = vi.fn();
 
   const toast = Object.assign(toastFn, {
@@ -290,6 +290,6 @@ vi.mock("sonner", () => {
 
   return {
     toast,
-    Toaster: () => "div",
+    Toaster: () => 'div',
   };
 });

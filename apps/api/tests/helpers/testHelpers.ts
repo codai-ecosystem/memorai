@@ -1,4 +1,4 @@
-import { vi } from "vitest";
+import { vi } from 'vitest';
 
 // Mock memory engine for testing
 export const createMockMemoryEngine = (config: Partial<any> = {}) => {
@@ -14,7 +14,7 @@ export const createMockMemoryEngine = (config: Partial<any> = {}) => {
           content: string,
           tenantId: string,
           agentId?: string,
-          options?: any,
+          options?: any
         ) => {
           const memoryId = `memory-${idCounter++}`;
           const memory = {
@@ -28,7 +28,7 @@ export const createMockMemoryEngine = (config: Partial<any> = {}) => {
           };
           memories.set(memory.id, memory);
           return memoryId;
-        },
+        }
       ),
     recall: vi
       .fn()
@@ -37,10 +37,10 @@ export const createMockMemoryEngine = (config: Partial<any> = {}) => {
           query: string,
           tenantId: string,
           agentId?: string,
-          options?: any,
+          options?: any
         ) => {
           const agentMemories = Array.from(memories.values()).filter(
-            (m: any) => m.agentId === agentId,
+            (m: any) => m.agentId === agentId
           );
           return agentMemories
             .slice(0, options?.limit || 10)
@@ -48,7 +48,7 @@ export const createMockMemoryEngine = (config: Partial<any> = {}) => {
               memory,
               score: 0.9,
             }));
-        },
+        }
       ),
     forget: vi.fn().mockImplementation(async (memoryId: string) => {
       const memory = memories.get(memoryId);
@@ -62,7 +62,7 @@ export const createMockMemoryEngine = (config: Partial<any> = {}) => {
       const agentId = request.agent_id || request.agentId;
       const maxMemories = request.max_memories || request.contextSize || 10;
       const agentMemories = Array.from(memories.values()).filter(
-        (m: any) => m.agentId === agentId,
+        (m: any) => m.agentId === agentId
       );
       return {
         context: `Context for ${agentId} with ${agentMemories.length} memories`,
@@ -77,9 +77,9 @@ export const createMockMemoryEngine = (config: Partial<any> = {}) => {
       };
     }),
     getTierInfo: vi.fn().mockReturnValue({
-      level: "basic",
-      currentTier: "basic",
-      message: "Basic memory engine for testing",
+      level: 'basic',
+      currentTier: 'basic',
+      message: 'Basic memory engine for testing',
       capabilities: {
         embedding: true,
         similarity: true,
@@ -89,9 +89,9 @@ export const createMockMemoryEngine = (config: Partial<any> = {}) => {
     }),
     testTier: vi.fn().mockImplementation(async (tier: string) => {
       if (!tier) {
-        throw new Error("Tier not specified");
+        throw new Error('Tier not specified');
       }
-      if (["mock", "basic", "smart", "advanced"].includes(tier)) {
+      if (['mock', 'basic', 'smart', 'advanced'].includes(tier)) {
         return {
           success: true,
           message: `Tier '${tier}' is available and working`,
@@ -105,7 +105,7 @@ export const createMockMemoryEngine = (config: Partial<any> = {}) => {
       memoryTypes: { semantic: 0, episodic: 0, procedural: 0, meta: 0 },
       avgConfidence: 0.9,
       recentActivity: 0,
-      currentTier: "mock",
+      currentTier: 'mock',
     }),
     ...config,
   };
@@ -114,15 +114,15 @@ export const createMockMemoryEngine = (config: Partial<any> = {}) => {
 // Mock failing memory engine
 export const createFailingMemoryEngine = () => {
   return {
-    initialize: vi.fn().mockRejectedValue(new Error("Failed to initialize")),
-    remember: vi.fn().mockRejectedValue(new Error("Failed to remember")),
-    recall: vi.fn().mockRejectedValue(new Error("Failed to recall")),
-    forget: vi.fn().mockRejectedValue(new Error("Failed to forget")),
-    getContext: vi.fn().mockRejectedValue(new Error("Failed to get context")),
+    initialize: vi.fn().mockRejectedValue(new Error('Failed to initialize')),
+    remember: vi.fn().mockRejectedValue(new Error('Failed to remember')),
+    recall: vi.fn().mockRejectedValue(new Error('Failed to recall')),
+    forget: vi.fn().mockRejectedValue(new Error('Failed to forget')),
+    getContext: vi.fn().mockRejectedValue(new Error('Failed to get context')),
     getTierInfo: vi.fn().mockReturnValue({
-      level: "error",
-      currentTier: "error",
-      message: "Error state",
+      level: 'error',
+      currentTier: 'error',
+      message: 'Error state',
       capabilities: {
         embedding: false,
         similarity: false,
@@ -135,21 +135,21 @@ export const createFailingMemoryEngine = () => {
 
 // Test data generators
 export const generateTestMemory = (overrides: Partial<any> = {}) => ({
-  agentId: "test-agent",
-  content: "Test memory content",
-  metadata: { type: "test", priority: "low" },
+  agentId: 'test-agent',
+  content: 'Test memory content',
+  metadata: { type: 'test', priority: 'low' },
   ...overrides,
 });
 
 export const generateTestMemories = (
   count: number,
-  agentId: string = "test-agent",
+  agentId: string = 'test-agent'
 ) => {
   return Array.from({ length: count }, (_, i) => ({
     id: `memory-${i + 1}`,
     agentId,
     content: `Test memory content ${i + 1}`,
-    metadata: { index: i + 1, type: "test" },
+    metadata: { index: i + 1, type: 'test' },
     timestamp: new Date(Date.now() - i * 60000).toISOString(),
     similarity: 1.0 - i * 0.1,
   }));
@@ -160,15 +160,15 @@ export const setTestEnv = (env: Record<string, string> = {}) => {
   const originalEnv = { ...process.env };
 
   // Set test defaults (skip NODE_ENV due to readonly restrictions)
-  process.env.PORT = "0"; // Use random port for testing
-  process.env.CORS_ORIGIN = "http://localhost:3000";
+  process.env.PORT = '0'; // Use random port for testing
+  process.env.CORS_ORIGIN = 'http://localhost:3000';
 
   // Apply custom env vars
   Object.assign(process.env, env);
 
   return () => {
     // Restore original env
-    Object.keys(process.env).forEach((key) => {
+    Object.keys(process.env).forEach(key => {
       if (!(key in originalEnv)) {
         delete process.env[key];
       }

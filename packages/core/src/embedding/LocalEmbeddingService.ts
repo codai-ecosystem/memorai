@@ -3,11 +3,11 @@
  * Provides semantic embeddings without external dependencies
  */
 
-import { spawn, type ChildProcess } from "child_process";
-import { promises as fs } from "fs";
-import { join, dirname } from "path";
-import { fileURLToPath } from "url";
-import type { EmbeddingResult } from "./EmbeddingService.js";
+import { spawn, type ChildProcess } from 'child_process';
+import { promises as fs } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+import type { EmbeddingResult } from './EmbeddingService.js';
 // import { logger } from '../utils/logger.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -27,14 +27,14 @@ export class LocalEmbeddingService {
 
   constructor(config: Partial<LocalEmbeddingConfig> = {}) {
     this.config = {
-      model: "all-MiniLM-L6-v2",
+      model: 'all-MiniLM-L6-v2',
       maxLength: 512,
-      cachePath: join(__dirname, "..", "..", ".cache", "embeddings.json"),
-      pythonPath: "python",
+      cachePath: join(__dirname, '..', '..', '.cache', 'embeddings.json'),
+      pythonPath: 'python',
       ...config,
     };
 
-    this.pythonScriptPath = join(__dirname, "local_embeddings.py");
+    this.pythonScriptPath = join(__dirname, 'local_embeddings.py');
     this.loadCache();
   }
 
@@ -43,7 +43,7 @@ export class LocalEmbeddingService {
    */
   public async embed(text: string): Promise<EmbeddingResult> {
     if (!text || text.trim().length === 0) {
-      throw new Error("Text cannot be empty");
+      throw new Error('Text cannot be empty');
     }
 
     const normalizedText = text.trim().slice(0, this.config.maxLength);
@@ -72,7 +72,7 @@ export class LocalEmbeddingService {
       };
     } catch (error) {
       throw new Error(
-        `Local embedding generation failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+        `Local embedding generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
     }
   }
@@ -85,54 +85,54 @@ export class LocalEmbeddingService {
     return new Promise((resolve, reject) => {
       const python: ChildProcess = spawn(this.config.pythonPath!, [
         this.pythonScriptPath,
-        "--model",
+        '--model',
         this.config.model,
-        "--text",
+        '--text',
         text,
       ]);
 
-      let stdout = "";
-      let stderr = "";
+      let stdout = '';
+      let stderr = '';
 
-      python.stdout?.on("data", (data: Buffer) => {
+      python.stdout?.on('data', (data: Buffer) => {
         stdout += data.toString();
       });
 
-      python.stderr?.on("data", (data: Buffer) => {
+      python.stderr?.on('data', (data: Buffer) => {
         stderr += data.toString();
       });
 
-      python.on("close", (code: number | null) => {
+      python.on('close', (code: number | null) => {
         if (code === 0) {
           try {
             const result = JSON.parse(stdout.trim());
             if (result.embedding && Array.isArray(result.embedding)) {
               resolve(result.embedding);
             } else {
-              reject(new Error("Invalid embedding format from Python script"));
+              reject(new Error('Invalid embedding format from Python script'));
             }
           } catch (error) {
             reject(
               new Error(
-                `Failed to parse embedding result: ${error instanceof Error ? error.message : "Unknown error"}`,
-              ),
+                `Failed to parse embedding result: ${error instanceof Error ? error.message : 'Unknown error'}`
+              )
             );
           }
         } else {
           reject(
-            new Error(`Python script failed with code ${code}: ${stderr}`),
+            new Error(`Python script failed with code ${code}: ${stderr}`)
           );
         }
       });
 
-      python.on("error", (error: Error) => {
+      python.on('error', (error: Error) => {
         reject(new Error(`Failed to spawn Python process: ${error.message}`));
       });
 
       // Timeout after 30 seconds
       setTimeout(() => {
         python.kill();
-        reject(new Error("Embedding generation timeout"));
+        reject(new Error('Embedding generation timeout'));
       }, 30000);
     });
   }
@@ -200,7 +200,7 @@ if __name__ == '__main__':
     await fs.writeFile(this.pythonScriptPath, scriptContent);
 
     // Make script executable on Unix systems
-    if (process.platform !== "win32") {
+    if (process.platform !== 'win32') {
       await fs.chmod(this.pythonScriptPath, 0o755);
     }
   }
@@ -211,7 +211,7 @@ if __name__ == '__main__':
   private async loadCache(): Promise<void> {
     try {
       if (this.config.cachePath) {
-        const cacheData = await fs.readFile(this.config.cachePath, "utf-8");
+        const cacheData = await fs.readFile(this.config.cachePath, 'utf-8');
         const cacheObject = JSON.parse(cacheData);
         this.cache = new Map(Object.entries(cacheObject));
       }
@@ -231,7 +231,7 @@ if __name__ == '__main__':
         const cacheObject = Object.fromEntries(this.cache);
         await fs.writeFile(
           this.config.cachePath,
-          JSON.stringify(cacheObject, null, 2),
+          JSON.stringify(cacheObject, null, 2)
         );
       }
     } catch {
@@ -249,18 +249,18 @@ if __name__ == '__main__':
 
   /**
    * Check if local AI is available
-   */ public static async isAvailable(pythonPath = "python"): Promise<boolean> {
-    return new Promise((resolve) => {
+   */ public static async isAvailable(pythonPath = 'python'): Promise<boolean> {
+    return new Promise(resolve => {
       const python: ChildProcess = spawn(pythonPath, [
-        "-c",
+        '-c',
         'import sentence_transformers; print("OK")',
       ]);
 
-      python.on("close", (code: number | null) => {
+      python.on('close', (code: number | null) => {
         resolve(code === 0);
       });
 
-      python.on("error", () => {
+      python.on('error', () => {
         resolve(false);
       });
 
@@ -275,20 +275,20 @@ if __name__ == '__main__':
   /**
    * Install sentence-transformers if not available
    */
-  public static async install(pythonPath = "python"): Promise<boolean> {
-    return new Promise((resolve) => {
+  public static async install(pythonPath = 'python'): Promise<boolean> {
+    return new Promise(resolve => {
       const pip: ChildProcess = spawn(pythonPath, [
-        "-m",
-        "pip",
-        "install",
-        "sentence-transformers",
+        '-m',
+        'pip',
+        'install',
+        'sentence-transformers',
       ]);
 
-      pip.on("close", (code: number | null) => {
+      pip.on('close', (code: number | null) => {
         resolve(code === 0);
       });
 
-      pip.on("error", () => {
+      pip.on('error', () => {
         resolve(false);
       });
 

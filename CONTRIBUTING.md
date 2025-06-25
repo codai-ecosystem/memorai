@@ -126,14 +126,12 @@ test(sdk): add integration tests for client
 ### Pull Request Process
 
 1. **Ensure your code follows our standards**:
-
    - All tests pass
    - Code is properly formatted
    - No linting errors
    - Documentation is updated
 
 2. **Create a pull request** with:
-
    - Clear title following conventional commits
    - Detailed description of changes
    - Link to any related issues
@@ -172,12 +170,12 @@ pnpm --filter @codai/memorai-core test
 Example:
 
 ```typescript
-describe("MemoryEngine", () => {
-  describe("remember", () => {
-    it("should store memory with correct metadata", async () => {
+describe('MemoryEngine', () => {
+  describe('remember', () => {
+    it('should store memory with correct metadata', async () => {
       // Arrange
       const engine = new MemoryEngine(config);
-      const content = "Test memory content";
+      const content = 'Test memory content';
 
       // Act
       const result = await engine.remember(content);

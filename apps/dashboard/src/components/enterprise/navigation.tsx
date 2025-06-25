@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import { useTheme } from "next-themes";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect } from 'react';
+import { useTheme } from 'next-themes';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Brain,
   LayoutDashboard as Dashboard,
@@ -27,103 +27,98 @@ import {
   PieChart,
   FileText,
   Layers,
-} from "lucide-react";
+} from 'lucide-react';
 
-import { Button } from "../ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { Badge } from "../ui/badge";
-import { cn } from "../../lib/utils";
-
-
-
-
-
+import { Button } from '../ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
+import { Badge } from '../ui/badge';
+import { cn } from '../../lib/utils';
 
 interface SidebarProps {
   collapsed: boolean;
   onToggle: () => void;
   activeTab: string;
   onTabChange: (tab: string) => void;
-  "data-testid"?: string;
+  'data-testid'?: string;
 }
 
 const sidebarItems = [
   {
-    id: "overview",
-    label: "Overview",
+    id: 'overview',
+    label: 'Overview',
     icon: Dashboard,
     badge: null,
-    description: "Dashboard overview and key metrics",
+    description: 'Dashboard overview and key metrics',
   },
   {
-    id: "memories",
-    label: "Memory Bank",
+    id: 'memories',
+    label: 'Memory Bank',
     icon: Brain,
-    badge: "Live",
-    description: "AI memory storage and retrieval",
+    badge: 'Live',
+    description: 'AI memory storage and retrieval',
   },
   {
-    id: "search",
-    label: "Smart Search",
+    id: 'search',
+    label: 'Smart Search',
     icon: Search,
     badge: null,
-    description: "Advanced memory search and discovery",
+    description: 'Advanced memory search and discovery',
   },
   {
-    id: "analytics",
-    label: "Analytics",
+    id: 'analytics',
+    label: 'Analytics',
     icon: BarChart3,
-    badge: "Pro",
-    description: "Memory usage analytics and insights",
+    badge: 'Pro',
+    description: 'Memory usage analytics and insights',
   },
   {
-    id: "visualizer",
-    label: "Knowledge Graph",
+    id: 'visualizer',
+    label: 'Knowledge Graph',
     icon: Layers,
-    badge: "New",
-    description: "Visual memory network explorer",
+    badge: 'New',
+    description: 'Visual memory network explorer',
   },
   {
-    id: "agents",
-    label: "AI Agents",
+    id: 'agents',
+    label: 'AI Agents',
     icon: Users,
-    badge: "12",
-    description: "Connected AI agents and their memory",
+    badge: '12',
+    description: 'Connected AI agents and their memory',
   },
   {
-    id: "security",
-    label: "Security",
+    id: 'security',
+    label: 'Security',
     icon: Shield,
     badge: null,
-    description: "Memory security and access control",
+    description: 'Memory security and access control',
   },
   {
-    id: "performance",
-    label: "Performance",
+    id: 'performance',
+    label: 'Performance',
     icon: Zap,
     badge: null,
-    description: "System performance and optimization",
+    description: 'System performance and optimization',
   },
   {
-    id: "archive",
-    label: "Archive",
+    id: 'archive',
+    label: 'Archive',
     icon: Archive,
     badge: null,
-    description: "Archived memories and backups",
+    description: 'Archived memories and backups',
   },
   {
-    id: "reports",
-    label: "Reports",
+    id: 'reports',
+    label: 'Reports',
     icon: FileText,
     badge: null,
-    description: "Memory reports and exports",
+    description: 'Memory reports and exports',
   },
   {
-    id: "settings",
-    label: "Settings",
+    id: 'settings',
+    label: 'Settings',
     icon: Settings,
     badge: null,
-    description: "System configuration and settings",
+    description: 'System configuration and settings',
   },
 ];
 
@@ -132,7 +127,7 @@ export function EnterpriseNavigation({
   onToggle,
   activeTab,
   onTabChange,
-  "data-testid": dataTestId,
+  'data-testid': dataTestId,
 }: SidebarProps) {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -146,12 +141,12 @@ export function EnterpriseNavigation({
       return;
     }
 
-    if (theme === "light") {
-      setTheme("dark");
-    } else if (theme === "dark") {
-      setTheme("system");
+    if (theme === 'light') {
+      setTheme('dark');
+    } else if (theme === 'dark') {
+      setTheme('system');
     } else {
-      setTheme("light");
+      setTheme('light');
     }
   };
 
@@ -160,9 +155,9 @@ export function EnterpriseNavigation({
       return Monitor;
     }
     switch (theme) {
-      case "light":
+      case 'light':
         return Sun;
-      case "dark":
+      case 'dark':
         return Moon;
       default:
         return Monitor;
@@ -175,7 +170,7 @@ export function EnterpriseNavigation({
     <motion.aside
       initial={{ width: collapsed ? 80 : 280 }}
       animate={{ width: collapsed ? 80 : 280 }}
-      transition={{ duration: 0.3, ease: "easeInOut" }}
+      transition={{ duration: 0.3, ease: 'easeInOut' }}
       className="relative flex flex-col h-screen bg-card border-r border-border/50 shadow-lg"
       data-testid={dataTestId}
     >
@@ -192,9 +187,9 @@ export function EnterpriseNavigation({
             >
               <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 shadow-lg">
                 <Brain className="w-6 h-6 text-white" />
-              </div>{" "}
+              </div>{' '}
               <div>
-                {" "}
+                {' '}
                 <h2 className="text-lg font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                   Memorai Dashboard
                 </h2>
@@ -223,7 +218,7 @@ export function EnterpriseNavigation({
 
       {/* Navigation */}
       <nav className="flex-1 p-2 space-y-1 overflow-y-auto">
-        {sidebarItems.map((item) => {
+        {sidebarItems.map(item => {
           const Icon = item.icon;
           const isActive = activeTab === item.id;
 
@@ -233,15 +228,15 @@ export function EnterpriseNavigation({
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
-              {" "}
+              {' '}
               <Button
-                variant={isActive ? "secondary" : "ghost"}
+                variant={isActive ? 'secondary' : 'ghost'}
                 className={cn(
-                  "w-full justify-start gap-3 h-11 rounded-lg transition-all duration-200",
+                  'w-full justify-start gap-3 h-11 rounded-lg transition-all duration-200',
                   isActive &&
-                  "bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/50 dark:to-purple-950/50 border border-blue-200/50 dark:border-blue-800/50 shadow-sm",
-                  !collapsed && "px-3",
-                  collapsed && "px-0 justify-center",
+                    'bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/50 dark:to-purple-950/50 border border-blue-200/50 dark:border-blue-800/50 shadow-sm',
+                  !collapsed && 'px-3',
+                  collapsed && 'px-0 justify-center'
                 )}
                 onClick={() => onTabChange(item.id)}
                 title={collapsed ? item.label : undefined}
@@ -249,8 +244,8 @@ export function EnterpriseNavigation({
               >
                 <Icon
                   className={cn(
-                    "w-5 h-5 transition-colors",
-                    isActive && "text-blue-600 dark:text-blue-400",
+                    'w-5 h-5 transition-colors',
+                    isActive && 'text-blue-600 dark:text-blue-400'
                   )}
                 />
 
@@ -265,8 +260,8 @@ export function EnterpriseNavigation({
                     >
                       <span
                         className={cn(
-                          "font-medium text-sm",
-                          isActive && "text-blue-600 dark:text-blue-400",
+                          'font-medium text-sm',
+                          isActive && 'text-blue-600 dark:text-blue-400'
                         )}
                       >
                         {item.label}
@@ -275,16 +270,16 @@ export function EnterpriseNavigation({
                       {item.badge && (
                         <Badge
                           variant={
-                            item.badge === "Live" ? "default" : "secondary"
+                            item.badge === 'Live' ? 'default' : 'secondary'
                           }
                           className={cn(
-                            "text-xs px-2 py-0.5",
-                            item.badge === "Live" &&
-                            "bg-green-500 text-white animate-pulse",
-                            item.badge === "Pro" &&
-                            "bg-gradient-to-r from-orange-400 to-pink-400 text-white",
-                            item.badge === "New" &&
-                            "bg-gradient-to-r from-blue-400 to-purple-400 text-white",
+                            'text-xs px-2 py-0.5',
+                            item.badge === 'Live' &&
+                              'bg-green-500 text-white animate-pulse',
+                            item.badge === 'Pro' &&
+                              'bg-gradient-to-r from-orange-400 to-pink-400 text-white',
+                            item.badge === 'New' &&
+                              'bg-gradient-to-r from-blue-400 to-purple-400 text-white'
                           )}
                         >
                           {item.badge}
@@ -304,8 +299,8 @@ export function EnterpriseNavigation({
         {/* User Profile */}
         <div
           className={cn(
-            "flex items-center gap-3 p-2 rounded-lg hover:bg-accent transition-colors",
-            collapsed && "justify-center",
+            'flex items-center gap-3 p-2 rounded-lg hover:bg-accent transition-colors',
+            collapsed && 'justify-center'
           )}
         >
           <Avatar className="w-8 h-8">
@@ -334,7 +329,7 @@ export function EnterpriseNavigation({
         </div>
 
         {/* Action Buttons */}
-        <div className={cn("flex gap-1", collapsed ? "flex-col" : "flex-row")}>
+        <div className={cn('flex gap-1', collapsed ? 'flex-col' : 'flex-row')}>
           <Button
             variant="ghost"
             size="icon"
@@ -354,13 +349,13 @@ export function EnterpriseNavigation({
             <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full flex items-center justify-center">
               <div className="w-1.5 h-1.5 bg-white rounded-full" />
             </div>
-          </Button>{" "}
+          </Button>{' '}
           <Button
             variant="ghost"
             size="icon"
             className="w-8 h-8 rounded-lg"
             title="Settings"
-            onClick={() => onTabChange("settings")}
+            onClick={() => onTabChange('settings')}
           >
             <Settings className="w-4 h-4" />
           </Button>

@@ -3,9 +3,9 @@
  * Handles memory cleanup, compression, and performance optimization
  */
 
-import { logger } from "../utils/logger.js";
-import type { MemoryMetadata } from "../types/index.js";
-import type { VectorStore } from "../vector/VectorStore.js";
+import { logger } from '../utils/logger.js';
+import type { MemoryMetadata } from '../types/index.js';
+import type { VectorStore } from '../vector/VectorStore.js';
 
 export interface OptimizationConfig {
   // Data Retention Policies
@@ -41,7 +41,7 @@ export class MemoryOptimizer {
 
   constructor(
     vectorStore: VectorStore,
-    config: Partial<OptimizationConfig> = {},
+    config: Partial<OptimizationConfig> = {}
   ) {
     this.vectorStore = vectorStore;
     this.config = {
@@ -66,12 +66,12 @@ export class MemoryOptimizer {
    */
   public async optimize(tenantId: string): Promise<MemoryStats> {
     if (this.isOptimizing) {
-      logger.warn("Optimization already in progress, skipping");
+      logger.warn('Optimization already in progress, skipping');
       return this.getMemoryStats(tenantId);
     }
 
     this.isOptimizing = true;
-    logger.info("Starting comprehensive memory optimization");
+    logger.info('Starting comprehensive memory optimization');
 
     try {
       const initialStats = await this.getMemoryStats(tenantId);
@@ -92,12 +92,12 @@ export class MemoryOptimizer {
       // Step 4: Compress remaining data
       if (this.config.compressionEnabled) {
         await this.compressMemories(tenantId);
-        logger.info("Memory compression completed");
+        logger.info('Memory compression completed');
       }
 
       // Step 5: Optimize vector indices
       await this.optimizeIndices(tenantId);
-      logger.info("Vector indices optimized");
+      logger.info('Vector indices optimized');
 
       const finalStats = await this.getMemoryStats(tenantId);
       logger.info(`Final stats: ${JSON.stringify(finalStats)}`);
@@ -105,7 +105,7 @@ export class MemoryOptimizer {
       const sizeDiff = initialStats.totalSize - finalStats.totalSize;
       const sizeReduction = (sizeDiff / initialStats.totalSize) * 100;
       logger.info(
-        `Optimization complete: ${sizeReduction.toFixed(2)}% size reduction`,
+        `Optimization complete: ${sizeReduction.toFixed(2)}% size reduction`
       );
 
       return finalStats;
@@ -158,8 +158,8 @@ export class MemoryOptimizer {
 
     const memories = await this.getAllMemories(tenantId);
     const oldMemories = memories
-      .filter((m) => m.createdAt < cutoffDate)
-      .map((m) => m.id);
+      .filter(m => m.createdAt < cutoffDate)
+      .map(m => m.id);
 
     if (oldMemories.length > 0) {
       await this.vectorStore.delete(oldMemories);
@@ -178,12 +178,12 @@ export class MemoryOptimizer {
     const memories = await this.getAllMemories(tenantId);
     const lowAccessMemories = memories
       .filter(
-        (m) =>
+        m =>
           m.accessCount < this.config.lowAccessThreshold &&
           m.createdAt < cutoffDate &&
-          m.importance < 0.7, // Don't remove important memories
+          m.importance < 0.7 // Don't remove important memories
       )
-      .map((m) => m.id);
+      .map(m => m.id);
 
     if (lowAccessMemories.length > 0) {
       await this.vectorStore.delete(lowAccessMemories);
@@ -201,7 +201,7 @@ export class MemoryOptimizer {
     // - Dimensionality reduction for less important memories
     // - Metadata compression
     logger.info(
-      "Memory compression functionality placeholder - implement vector quantization",
+      'Memory compression functionality placeholder - implement vector quantization'
     );
   }
 
@@ -214,7 +214,7 @@ export class MemoryOptimizer {
     // - Optimize segment structure
     // - Clean up tombstones
     logger.info(
-      "Vector index optimization functionality placeholder - implement Qdrant optimization",
+      'Vector index optimization functionality placeholder - implement Qdrant optimization'
     );
   }
 
@@ -225,7 +225,7 @@ export class MemoryOptimizer {
     const memories = await this.getAllMemories(tenantId);
     const totalSize = memories.reduce(
       (sum, m) => sum + this.calculateMemorySize(m),
-      0,
+      0
     );
 
     return {
@@ -265,13 +265,13 @@ export class MemoryOptimizer {
 
     setInterval(async () => {
       try {
-        logger.info("Starting scheduled memory optimization"); // Get all tenants and optimize each
+        logger.info('Starting scheduled memory optimization'); // Get all tenants and optimize each
         // Implementation would get tenant list and optimize each
         logger.info(
-          "Scheduled optimization placeholder - implement tenant enumeration",
+          'Scheduled optimization placeholder - implement tenant enumeration'
         );
       } catch (error) {
-        logger.error("Scheduled optimization failed:", error);
+        logger.error('Scheduled optimization failed:', error);
       }
     }, interval);
   }
@@ -284,8 +284,8 @@ export class MemoryOptimizer {
   }
 
   private generateContentHash(content: string): string {
-    const crypto = require("crypto");
-    return crypto.createHash("sha256").update(content).digest("hex");
+    const crypto = require('crypto');
+    return crypto.createHash('sha256').update(content).digest('hex');
   }
 
   private calculateMemorySize(memory: MemoryMetadata): number {
@@ -315,18 +315,18 @@ export class MemoryOptimizer {
   private async countOldMemories(memories: MemoryMetadata[]): Promise<number> {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - this.config.maxMemoryAge);
-    return memories.filter((m) => m.createdAt < cutoffDate).length;
+    return memories.filter(m => m.createdAt < cutoffDate).length;
   }
 
   private async countLowAccessMemories(
-    memories: MemoryMetadata[],
+    memories: MemoryMetadata[]
   ): Promise<number> {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - this.config.lowAccessMaxAge);
     return memories.filter(
-      (m) =>
+      m =>
         m.accessCount < this.config.lowAccessThreshold &&
-        m.createdAt < cutoffDate,
+        m.createdAt < cutoffDate
     ).length;
   }
 }

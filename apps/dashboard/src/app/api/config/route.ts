@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server";
+import { NextResponse } from 'next/server';
 
-import { enterpriseDataSource } from "../../../lib/enterprise-data-source";
+import { enterpriseDataSource } from '../../../lib/enterprise-data-source';
 
 export async function GET() {
   try {
@@ -9,8 +9,8 @@ export async function GET() {
 
     // Transform to API response format
     const configResponse = {
-      version: "2.0.0",
-      environment: process.env.NODE_ENV ?? "development",
+      version: '2.0.0',
+      environment: process.env.NODE_ENV ?? 'development',
       features: {
         memoryStorage: true,
         vectorSearch: realConfig.memory.enableEmbeddings,
@@ -25,7 +25,7 @@ export async function GET() {
       },
       endpoints: {
         api: realConfig.api.baseUrl,
-        websocket: realConfig.api.baseUrl.replace("http", "ws"),
+        websocket: realConfig.api.baseUrl.replace('http', 'ws'),
       },
       security: {
         maxRequestsPerMinute: realConfig.api.rateLimit,
@@ -35,7 +35,7 @@ export async function GET() {
       },
       providers: {
         embedding: realConfig.memory.provider,
-        storage: realConfig.database?.type ?? "qdrant",
+        storage: realConfig.database?.type ?? 'qdrant',
       },
       performance: {
         queryTimeout: realConfig.performance?.queryTimeout ?? 30,
@@ -53,12 +53,12 @@ export async function GET() {
     });
   } catch (_error) {
     // Log error for debugging in development only
-    if (process.env.NODE_ENV === "development") {
-      console.error("Config API error:", _error);
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Config API error:', _error);
     }
     return NextResponse.json(
-      { error: "Failed to fetch configuration", success: false },
-      { status: 500 },
+      { error: 'Failed to fetch configuration', success: false },
+      { status: 500 }
     );
   }
 }

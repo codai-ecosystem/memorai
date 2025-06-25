@@ -1,17 +1,17 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from '@/components/ui/card';
 import {
   Activity,
   Database,
@@ -25,7 +25,7 @@ import {
   BarChart3,
   Eye,
   EyeOff,
-} from "lucide-react";
+} from 'lucide-react';
 
 interface PerformanceMetrics {
   totalMemories: number;
@@ -36,7 +36,7 @@ interface PerformanceMetrics {
   optimizationSavings: number;
   qdrantHealth: boolean;
   lastOptimization: string;
-  systemHealth: "healthy" | "warning" | "critical";
+  systemHealth: 'healthy' | 'warning' | 'critical';
 }
 
 export default function PerformanceMonitoringDashboard() {
@@ -48,8 +48,8 @@ export default function PerformanceMonitoringDashboard() {
     duplicatesFound: 0,
     optimizationSavings: 0,
     qdrantHealth: false,
-    lastOptimization: "",
-    systemHealth: "healthy",
+    lastOptimization: '',
+    systemHealth: 'healthy',
   });
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [autoRefresh, setAutoRefresh] = useState(true);
@@ -83,7 +83,7 @@ export default function PerformanceMonitoringDashboard() {
     transition: {
       duration: 2,
       repeat: Infinity,
-      ease: "easeInOut",
+      ease: 'easeInOut',
     },
   };
 
@@ -92,7 +92,7 @@ export default function PerformanceMonitoringDashboard() {
 
     // Announce initial load for screen readers
     void announceToScreenReader(
-      "Performance dashboard loaded. Current system status is being fetched.",
+      'Performance dashboard loaded. Current system status is being fetched.'
     );
 
     if (autoRefresh) {
@@ -101,44 +101,44 @@ export default function PerformanceMonitoringDashboard() {
     }
   }, [autoRefresh]);
   const announceToScreenReader = (message: string) => {
-    setAnnouncements((prev) => [...prev, message]);
+    setAnnouncements(prev => [...prev, message]);
     // Clear announcement after 5 seconds
     setTimeout(() => {
-      setAnnouncements((prev) => prev.slice(1));
+      setAnnouncements(prev => prev.slice(1));
     }, 5000);
   };
 
   const fetchMetrics = async () => {
     try {
-      const response = await fetch("/api/performance/metrics");
+      const response = await fetch('/api/performance/metrics');
       if (response.ok) {
         const data = await response.json();
         setMetrics(data);
       }
     } catch (error) {
-      void console.error("Failed to fetch performance metrics:", error);
+      void console.error('Failed to fetch performance metrics:', error);
     }
   };
 
   const runOptimization = async () => {
     setIsOptimizing(true);
     try {
-      const response = await fetch("/api/performance/optimize", {
-        method: "POST",
+      const response = await fetch('/api/performance/optimize', {
+        method: 'POST',
       });
 
       if (response.ok) {
         const result = await response.json();
         alert(
-          `Optimization completed! Removed ${result.removedMemories} memories, saved ${result.spaceSaved}GB`,
+          `Optimization completed! Removed ${result.removedMemories} memories, saved ${result.spaceSaved}GB`
         );
         fetchMetrics(); // Refresh metrics
       } else {
-        throw new Error("Optimization failed");
+        throw new Error('Optimization failed');
       }
     } catch (error) {
-      console.error("Optimization failed:", error);
-      alert("Optimization failed. Please check the logs.");
+      console.error('Optimization failed:', error);
+      alert('Optimization failed. Please check the logs.');
     } finally {
       setIsOptimizing(false);
     }
@@ -146,11 +146,11 @@ export default function PerformanceMonitoringDashboard() {
 
   const getHealthIcon = (health: string) => {
     switch (health) {
-      case "healthy":
+      case 'healthy':
         return <CheckCircle className="h-5 w-5 text-green-500" />;
-      case "warning":
+      case 'warning':
         return <AlertTriangle className="h-5 w-5 text-yellow-500" />;
-      case "critical":
+      case 'critical':
         return <AlertTriangle className="h-5 w-5 text-red-500" />;
       default:
         return <Activity className="h-5 w-5 text-gray-500" />;
@@ -159,13 +159,13 @@ export default function PerformanceMonitoringDashboard() {
 
   const getHealthBadge = (health: string) => {
     const variants = {
-      healthy: "default",
-      warning: "secondary",
-      critical: "destructive",
+      healthy: 'default',
+      warning: 'secondary',
+      critical: 'destructive',
     } as const;
 
     return (
-      <Badge variant={variants[health as keyof typeof variants] || "outline"}>
+      <Badge variant={variants[health as keyof typeof variants] || 'outline'}>
         {health.charAt(0).toUpperCase() + health.slice(1)}
       </Badge>
     );
@@ -173,16 +173,16 @@ export default function PerformanceMonitoringDashboard() {
 
   const formatBytes = (bytes: number) => {
     if (bytes === 0) {
-      return "0 Bytes";
+      return '0 Bytes';
     }
     const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
   return (
     <div
-      className={`space-y-6 ${highContrast ? "contrast-more" : ""}`}
+      className={`space-y-6 ${highContrast ? 'contrast-more' : ''}`}
       data-testid="performance-dashboard"
     >
       {/* Header */}
@@ -192,7 +192,7 @@ export default function PerformanceMonitoringDashboard() {
           <p className="text-muted-foreground">
             Real-time system performance and memory optimization
           </p>
-        </div>{" "}
+        </div>{' '}
         <div className="flex gap-2">
           <Button
             variant="outline"
@@ -205,7 +205,7 @@ export default function PerformanceMonitoringDashboard() {
             ) : (
               <Eye className="h-4 w-4" />
             )}
-            {highContrast ? "Normal" : "High Contrast"}
+            {highContrast ? 'Normal' : 'High Contrast'}
           </Button>
           <Button
             variant="outline"
@@ -214,10 +214,10 @@ export default function PerformanceMonitoringDashboard() {
             data-testid="auto-refresh-toggle"
           >
             <RefreshCw
-              className={`h-4 w-4 ${autoRefresh ? "animate-spin" : ""}`}
+              className={`h-4 w-4 ${autoRefresh ? 'animate-spin' : ''}`}
             />
-            Auto Refresh {autoRefresh ? "On" : "Off"}
-          </Button>{" "}
+            Auto Refresh {autoRefresh ? 'On' : 'Off'}
+          </Button>{' '}
           <Button
             onClick={runOptimization}
             disabled={isOptimizing}
@@ -225,8 +225,8 @@ export default function PerformanceMonitoringDashboard() {
             data-testid="optimize-button"
             aria-label={
               isOptimizing
-                ? "Optimizing system performance"
-                : "Start system optimization"
+                ? 'Optimizing system performance'
+                : 'Start system optimization'
             }
           >
             {isOptimizing ? (
@@ -234,10 +234,10 @@ export default function PerformanceMonitoringDashboard() {
             ) : (
               <Zap className="h-4 w-4" />
             )}
-            {isOptimizing ? "Optimizing..." : "Optimize Now"}
+            {isOptimizing ? 'Optimizing...' : 'Optimize Now'}
           </Button>
         </div>
-      </div>{" "}
+      </div>{' '}
       {/* System Health Overview */}
       <Card data-testid="system-health">
         <CardHeader>
@@ -257,13 +257,13 @@ export default function PerformanceMonitoringDashboard() {
             </div>
             <div className="space-y-1 text-right">
               <p className="text-sm font-medium">Qdrant Health</p>
-              <Badge variant={metrics.qdrantHealth ? "default" : "destructive"}>
-                {metrics.qdrantHealth ? "Connected" : "Disconnected"}
+              <Badge variant={metrics.qdrantHealth ? 'default' : 'destructive'}>
+                {metrics.qdrantHealth ? 'Connected' : 'Disconnected'}
               </Badge>
             </div>
           </div>
         </CardContent>
-      </Card>{" "}
+      </Card>{' '}
       {/* Performance Metrics Grid */}
       <div
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4"
@@ -284,7 +284,7 @@ export default function PerformanceMonitoringDashboard() {
               Active memory entries
             </p>
           </CardContent>
-        </Card>{" "}
+        </Card>{' '}
         <Card data-testid="cache-hit-rate">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
@@ -299,7 +299,7 @@ export default function PerformanceMonitoringDashboard() {
             <Progress value={metrics.cacheHitRate * 100} className="mt-2" />
             <p className="text-xs text-muted-foreground mt-1">Target: 85%+</p>
           </CardContent>
-        </Card>{" "}
+        </Card>{' '}
         <Card data-testid="query-time">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
@@ -313,13 +313,13 @@ export default function PerformanceMonitoringDashboard() {
             </div>
             <p className="text-xs text-muted-foreground">
               {metrics.averageQueryTime < 1000
-                ? "Excellent"
+                ? 'Excellent'
                 : metrics.averageQueryTime < 2000
-                  ? "Good"
-                  : "Needs optimization"}
+                  ? 'Good'
+                  : 'Needs optimization'}
             </p>
           </CardContent>
-        </Card>{" "}
+        </Card>{' '}
         <Card data-testid="memory-usage">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Memory Usage</CardTitle>
@@ -363,7 +363,7 @@ export default function PerformanceMonitoringDashboard() {
             <div className="flex justify-between items-center">
               <span className="text-sm font-medium">Last Optimization</span>
               <span className="text-sm text-muted-foreground">
-                {metrics.lastOptimization ?? "Never"}
+                {metrics.lastOptimization ?? 'Never'}
               </span>
             </div>
           </CardContent>
@@ -404,7 +404,7 @@ export default function PerformanceMonitoringDashboard() {
                 </span>
               </div>
             )}
-            {metrics.systemHealth === "healthy" && (
+            {metrics.systemHealth === 'healthy' && (
               <div className="flex items-center gap-2 p-2 bg-green-50 rounded">
                 <CheckCircle className="h-4 w-4 text-green-600" />
                 <span className="text-sm">System running optimally</span>
@@ -425,8 +425,8 @@ export default function PerformanceMonitoringDashboard() {
           <Button
             variant="destructive"
             onClick={() => {
-              if (confirm("This will clear all caches. Continue?")) {
-                void fetch("/api/performance/clear-cache", { method: "POST" });
+              if (confirm('This will clear all caches. Continue?')) {
+                void fetch('/api/performance/clear-cache', { method: 'POST' });
               }
             }}
           >
@@ -435,8 +435,8 @@ export default function PerformanceMonitoringDashboard() {
           <Button
             variant="outline"
             onClick={() => {
-              if (confirm("This will force garbage collection. Continue?")) {
-                void fetch("/api/performance/force-gc", { method: "POST" });
+              if (confirm('This will force garbage collection. Continue?')) {
+                void fetch('/api/performance/force-gc', { method: 'POST' });
               }
             }}
           >

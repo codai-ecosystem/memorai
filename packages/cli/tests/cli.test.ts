@@ -1,13 +1,13 @@
-import { describe, it, expect, beforeEach, vi } from "vitest";
-import { CLI } from "../src/cli/CLI";
-import { CLIConfig } from "../src/config/CLIConfig";
-import { Output } from "../src/utils/Output";
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { CLI } from '../src/cli/CLI';
+import { CLIConfig } from '../src/config/CLIConfig';
+import { Output } from '../src/utils/Output';
 
 // Mock the dependencies
-vi.mock("../src/config/CLIConfig");
-vi.mock("../src/utils/Output");
+vi.mock('../src/config/CLIConfig');
+vi.mock('../src/utils/Output');
 
-describe("CLI", () => {
+describe('CLI', () => {
   let cli: CLI;
   let mockConfig: any;
   let mockOutput: any;
@@ -36,21 +36,21 @@ describe("CLI", () => {
     cli = new CLI();
   });
 
-  describe("constructor", () => {
-    it("should create CLI instance with required dependencies", () => {
+  describe('constructor', () => {
+    it('should create CLI instance with required dependencies', () => {
       expect(cli).toBeDefined();
       expect(CLIConfig).toHaveBeenCalledOnce();
       expect(Output).toHaveBeenCalledOnce();
     });
   });
 
-  describe("run", () => {
-    it("should process command line arguments", async () => {
-      const argv = ["node", "memorai", "--version"];
+  describe('run', () => {
+    it('should process command line arguments', async () => {
+      const argv = ['node', 'memorai', '--version'];
 
       // Mock process.exit to prevent actual exit during tests
       const exitSpy = vi
-        .spyOn(process, "exit")
+        .spyOn(process, 'exit')
         .mockImplementation(() => undefined as never);
 
       try {
@@ -62,12 +62,12 @@ describe("CLI", () => {
       exitSpy.mockRestore();
     });
 
-    it("should handle help command", async () => {
-      const argv = ["node", "memorai", "--help"];
+    it('should handle help command', async () => {
+      const argv = ['node', 'memorai', '--help'];
 
       // Mock process.exit to prevent actual exit during tests
       const exitSpy = vi
-        .spyOn(process, "exit")
+        .spyOn(process, 'exit')
         .mockImplementation(() => undefined as never);
 
       try {
@@ -79,12 +79,12 @@ describe("CLI", () => {
       exitSpy.mockRestore();
     });
 
-    it("should handle invalid commands gracefully", async () => {
-      const argv = ["node", "memorai", "invalid-command"];
+    it('should handle invalid commands gracefully', async () => {
+      const argv = ['node', 'memorai', 'invalid-command'];
 
       // Mock process.exit to prevent actual exit during tests
       const exitSpy = vi
-        .spyOn(process, "exit")
+        .spyOn(process, 'exit')
         .mockImplementation(() => undefined as never);
 
       try {
@@ -96,12 +96,12 @@ describe("CLI", () => {
       exitSpy.mockRestore();
     });
 
-    it("should handle config options", async () => {
-      const argv = ["node", "memorai", "--config", "test.json", "--verbose"];
+    it('should handle config options', async () => {
+      const argv = ['node', 'memorai', '--config', 'test.json', '--verbose'];
 
       // Mock process.exit to prevent actual exit during tests
       const exitSpy = vi
-        .spyOn(process, "exit")
+        .spyOn(process, 'exit')
         .mockImplementation(() => undefined as never);
 
       try {
@@ -114,16 +114,16 @@ describe("CLI", () => {
     });
   });
 
-  describe("error handling", () => {
-    it("should handle command errors gracefully", async () => {
-      const argv = ["node", "memorai", "list"];
+  describe('error handling', () => {
+    it('should handle command errors gracefully', async () => {
+      const argv = ['node', 'memorai', 'list'];
 
       // Mock the command to throw an error
       const consoleSpy = vi
-        .spyOn(console, "error")
+        .spyOn(console, 'error')
         .mockImplementation(() => {});
       const exitSpy = vi
-        .spyOn(process, "exit")
+        .spyOn(process, 'exit')
         .mockImplementation(() => undefined as never);
 
       try {

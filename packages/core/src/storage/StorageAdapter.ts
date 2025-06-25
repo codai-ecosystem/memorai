@@ -2,9 +2,9 @@
  * @fileoverview Storage adapter for persistent memory storage
  */
 
-import { promises as fs } from "fs";
-import { join, dirname } from "path";
-import type { MemoryMetadata } from "../types/index.js";
+import { promises as fs } from 'fs';
+import { join, dirname } from 'path';
+import type { MemoryMetadata } from '../types/index.js';
 
 /**
  * Storage adapter interface for different storage backends
@@ -84,22 +84,22 @@ export class InMemoryStorageAdapter implements StorageAdapter {
 
     // Apply filters
     if (filters.tenantId) {
-      memories = memories.filter((m) => m.tenant_id === filters.tenantId);
+      memories = memories.filter(m => m.tenant_id === filters.tenantId);
     }
     if (filters.agentId) {
-      memories = memories.filter((m) => m.agent_id === filters.agentId);
+      memories = memories.filter(m => m.agent_id === filters.agentId);
     }
     if (filters.type) {
-      memories = memories.filter((m) => m.type === filters.type);
+      memories = memories.filter(m => m.type === filters.type);
     }
     if (filters.importance !== undefined) {
-      memories = memories.filter((m) => m.importance >= filters.importance!);
+      memories = memories.filter(m => m.importance >= filters.importance!);
     }
     if (filters.since) {
-      memories = memories.filter((m) => m.createdAt >= filters.since!);
+      memories = memories.filter(m => m.createdAt >= filters.since!);
     }
     if (filters.until) {
-      memories = memories.filter((m) => m.createdAt <= filters.until!);
+      memories = memories.filter(m => m.createdAt <= filters.until!);
     }
 
     // Sort by createdAt (newest first)
@@ -131,29 +131,29 @@ export class InMemoryStorageAdapter implements StorageAdapter {
  * PostgreSQL storage adapter (stub for future implementation)
  */
 export class PostgreSQLStorageAdapter implements StorageAdapter {
-  constructor(private connectionString: string) { }
+  constructor(private connectionString: string) {}
   async store(_memory: MemoryMetadata): Promise<void> {
-    throw new Error("PostgreSQL adapter not implemented yet");
+    throw new Error('PostgreSQL adapter not implemented yet');
   }
 
   async retrieve(_id: string): Promise<MemoryMetadata | null> {
-    throw new Error("PostgreSQL adapter not implemented yet");
+    throw new Error('PostgreSQL adapter not implemented yet');
   }
 
   async update(_id: string, _updates: Partial<MemoryMetadata>): Promise<void> {
-    throw new Error("PostgreSQL adapter not implemented yet");
+    throw new Error('PostgreSQL adapter not implemented yet');
   }
 
   async delete(_id: string): Promise<void> {
-    throw new Error("PostgreSQL adapter not implemented yet");
+    throw new Error('PostgreSQL adapter not implemented yet');
   }
 
   async list(_filters?: MemoryFilters): Promise<MemoryMetadata[]> {
-    throw new Error("PostgreSQL adapter not implemented yet");
+    throw new Error('PostgreSQL adapter not implemented yet');
   }
 
   async clear(_tenantId?: string): Promise<void> {
-    throw new Error("PostgreSQL adapter not implemented yet");
+    throw new Error('PostgreSQL adapter not implemented yet');
   }
 }
 
@@ -161,29 +161,29 @@ export class PostgreSQLStorageAdapter implements StorageAdapter {
  * Redis storage adapter (stub for future implementation)
  */
 export class RedisStorageAdapter implements StorageAdapter {
-  constructor(private redisUrl: string) { }
+  constructor(private redisUrl: string) {}
   async store(_memory: MemoryMetadata): Promise<void> {
-    throw new Error("Redis adapter not implemented yet");
+    throw new Error('Redis adapter not implemented yet');
   }
 
   async retrieve(_id: string): Promise<MemoryMetadata | null> {
-    throw new Error("Redis adapter not implemented yet");
+    throw new Error('Redis adapter not implemented yet');
   }
 
   async update(_id: string, _updates: Partial<MemoryMetadata>): Promise<void> {
-    throw new Error("Redis adapter not implemented yet");
+    throw new Error('Redis adapter not implemented yet');
   }
 
   async delete(_id: string): Promise<void> {
-    throw new Error("Redis adapter not implemented yet");
+    throw new Error('Redis adapter not implemented yet');
   }
 
   async list(_filters?: MemoryFilters): Promise<MemoryMetadata[]> {
-    throw new Error("Redis adapter not implemented yet");
+    throw new Error('Redis adapter not implemented yet');
   }
 
   async clear(_tenantId?: string): Promise<void> {
-    throw new Error("Redis adapter not implemented yet");
+    throw new Error('Redis adapter not implemented yet');
   }
 }
 
@@ -194,9 +194,9 @@ export class FileStorageAdapter implements StorageAdapter {
   private filePath: string;
   private lockPath: string;
 
-  constructor(dataDirectory: string = "./data/memory") {
-    this.filePath = join(dataDirectory, "memories.json");
-    this.lockPath = join(dataDirectory, "memories.lock");
+  constructor(dataDirectory: string = './data/memory') {
+    this.filePath = join(dataDirectory, 'memories.json');
+    this.lockPath = join(dataDirectory, 'memories.lock');
   }
 
   private async ensureDirectory(): Promise<void> {
@@ -215,7 +215,9 @@ export class FileStorageAdapter implements StorageAdapter {
 
     while (attempts < maxAttempts) {
       try {
-        await fs.writeFile(this.lockPath, process.pid.toString(), { flag: 'wx' });
+        await fs.writeFile(this.lockPath, process.pid.toString(), {
+          flag: 'wx',
+        });
         return;
       } catch (error: any) {
         if (error.code === 'EEXIST') {
@@ -278,10 +280,16 @@ export class FileStorageAdapter implements StorageAdapter {
     }
   }
 
-  private async writeMemories(memories: Map<string, MemoryMetadata>): Promise<void> {
+  private async writeMemories(
+    memories: Map<string, MemoryMetadata>
+  ): Promise<void> {
     await this.ensureDirectory();
     const memoriesArray = Array.from(memories.values());
-    await fs.writeFile(this.filePath, JSON.stringify(memoriesArray, null, 2), 'utf8');
+    await fs.writeFile(
+      this.filePath,
+      JSON.stringify(memoriesArray, null, 2),
+      'utf8'
+    );
   }
 
   async store(memory: MemoryMetadata): Promise<void> {
@@ -331,22 +339,26 @@ export class FileStorageAdapter implements StorageAdapter {
 
     // Apply filters
     if (filters.tenantId) {
-      memoriesArray = memoriesArray.filter((m) => m.tenant_id === filters.tenantId);
+      memoriesArray = memoriesArray.filter(
+        m => m.tenant_id === filters.tenantId
+      );
     }
     if (filters.agentId) {
-      memoriesArray = memoriesArray.filter((m) => m.agent_id === filters.agentId);
+      memoriesArray = memoriesArray.filter(m => m.agent_id === filters.agentId);
     }
     if (filters.type) {
-      memoriesArray = memoriesArray.filter((m) => m.type === filters.type);
+      memoriesArray = memoriesArray.filter(m => m.type === filters.type);
     }
     if (filters.importance !== undefined) {
-      memoriesArray = memoriesArray.filter((m) => m.importance >= filters.importance!);
+      memoriesArray = memoriesArray.filter(
+        m => m.importance >= filters.importance!
+      );
     }
     if (filters.since) {
-      memoriesArray = memoriesArray.filter((m) => m.createdAt >= filters.since!);
+      memoriesArray = memoriesArray.filter(m => m.createdAt >= filters.since!);
     }
     if (filters.until) {
-      memoriesArray = memoriesArray.filter((m) => m.createdAt <= filters.until!);
+      memoriesArray = memoriesArray.filter(m => m.createdAt <= filters.until!);
     }
 
     // Sort by createdAt (newest first)

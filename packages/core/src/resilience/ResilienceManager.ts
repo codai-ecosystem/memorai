@@ -3,7 +3,7 @@
  * Includes retry mechanisms, circuit breakers, and graceful degradation
  */
 
-import { logger } from "../utils/logger.js";
+import { logger } from '../utils/logger.js';
 
 export interface RetryOptions {
   maxAttempts: number;
@@ -22,9 +22,9 @@ export interface CircuitBreakerOptions {
 }
 
 export enum CircuitBreakerState {
-  CLOSED = "CLOSED",
-  OPEN = "OPEN",
-  HALF_OPEN = "HALF_OPEN",
+  CLOSED = 'CLOSED',
+  OPEN = 'OPEN',
+  HALF_OPEN = 'HALF_OPEN',
 }
 
 export class RetryManager {
@@ -42,7 +42,7 @@ export class RetryManager {
    */
   public async executeWithRetry<T>(
     operation: () => Promise<T>,
-    options: Partial<RetryOptions> = {},
+    options: Partial<RetryOptions> = {}
   ): Promise<T> {
     const opts = { ...this.defaultOptions, ...options };
     let lastError: Error;
@@ -68,7 +68,7 @@ export class RetryManager {
         // Log retry attempt
         logger.warn(
           `Attempt ${attempt} failed, retrying in ${delay}ms:`,
-          error,
+          error
         );
 
         await this.sleep(delay);
@@ -84,9 +84,9 @@ export class RetryManager {
     }
 
     return retryableErrors.some(
-      (retryableError) =>
+      retryableError =>
         error.message.includes(retryableError) ||
-        error.name.includes(retryableError),
+        error.name.includes(retryableError)
     );
   }
 
@@ -96,7 +96,7 @@ export class RetryManager {
     if (options.exponentialBackoff) {
       delay = Math.min(
         options.baseDelayMs * Math.pow(2, attempt - 1),
-        options.maxDelayMs,
+        options.maxDelayMs
       );
     }
 
@@ -109,7 +109,7 @@ export class RetryManager {
   }
 
   private sleep(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 }
 
@@ -122,7 +122,7 @@ export class CircuitBreaker {
 
   constructor(
     private name: string,
-    private options: CircuitBreakerOptions,
+    private options: CircuitBreakerOptions
   ) {}
 
   /**
@@ -131,7 +131,7 @@ export class CircuitBreaker {
   public async execute<T>(operation: () => Promise<T>): Promise<T> {
     if (this.shouldRejectCall()) {
       throw new Error(
-        `Circuit breaker '${this.name}' is OPEN - rejecting call`,
+        `Circuit breaker '${this.name}' is OPEN - rejecting call`
       );
     }
 
@@ -239,14 +239,14 @@ export class CircuitBreaker {
     // Clean up old calls outside the monitoring window
     const cutoff = now - this.options.monitoringWindowMs;
     this.recentCalls = this.recentCalls.filter(
-      (call) => call.timestamp >= cutoff,
+      call => call.timestamp >= cutoff
     );
   }
 
   private getRecentCallsCount(): number {
     const now = Date.now();
     const cutoff = now - this.options.monitoringWindowMs;
-    return this.recentCalls.filter((call) => call.timestamp >= cutoff).length;
+    return this.recentCalls.filter(call => call.timestamp >= cutoff).length;
   }
 
   private calculateSuccessRate(): number {
@@ -255,14 +255,14 @@ export class CircuitBreaker {
       return 1.0;
     }
 
-    const successfulCalls = recentCalls.filter((call) => call.success).length;
+    const successfulCalls = recentCalls.filter(call => call.success).length;
     return successfulCalls / recentCalls.length;
   }
 
   private getRecentCallsInWindow(): { timestamp: number; success: boolean }[] {
     const now = Date.now();
     const cutoff = now - this.options.monitoringWindowMs;
-    return this.recentCalls.filter((call) => call.timestamp >= cutoff);
+    return this.recentCalls.filter(call => call.timestamp >= cutoff);
   }
 }
 
@@ -279,12 +279,12 @@ export class ResilienceManager {
     options: {
       retry?: Partial<RetryOptions>;
       circuitBreaker?: CircuitBreakerOptions;
-    } = {},
+    } = {}
   ): Promise<T> {
     // Get or create circuit breaker
     const circuitBreaker = this.getOrCreateCircuitBreaker(
       operationName,
-      options.circuitBreaker,
+      options.circuitBreaker
     );
 
     // Execute with circuit breaker protection and retry logic
@@ -303,7 +303,7 @@ export class ResilienceManager {
     options?: {
       retry?: Partial<RetryOptions>;
       circuitBreaker?: CircuitBreakerOptions;
-    },
+    }
   ): Promise<T> {
     try {
       if (operationName && options) {
@@ -322,9 +322,9 @@ export class ResilienceManager {
    */
   public getAllCircuitBreakerStatus(): Record<
     string,
-    ReturnType<CircuitBreaker["getStatus"]>
+    ReturnType<CircuitBreaker['getStatus']>
   > {
-    const status: Record<string, ReturnType<CircuitBreaker["getStatus"]>> = {};
+    const status: Record<string, ReturnType<CircuitBreaker['getStatus']>> = {};
 
     for (const [name, circuitBreaker] of this.circuitBreakers) {
       status[name] = circuitBreaker.getStatus();
@@ -347,7 +347,7 @@ export class ResilienceManager {
 
   private getOrCreateCircuitBreaker(
     name: string,
-    options?: CircuitBreakerOptions,
+    options?: CircuitBreakerOptions
   ): CircuitBreaker {
     let circuitBreaker = this.circuitBreakers.get(name);
 

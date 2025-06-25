@@ -1,4 +1,4 @@
-import type { MemoryResult, ContextResponse } from "../types/index.js";
+import type { MemoryResult, ContextResponse } from '../types/index.js';
 
 export interface ContextSummaryOptions {
   maxLength?: number;
@@ -12,10 +12,10 @@ export class ContextEngine {
    */
   public generateContextSummary(
     memories: MemoryResult[],
-    options: ContextSummaryOptions = {},
+    options: ContextSummaryOptions = {}
   ): string {
     if (memories.length === 0) {
-      return "No relevant context available.";
+      return 'No relevant context available.';
     }
 
     const {
@@ -24,7 +24,7 @@ export class ContextEngine {
       includeTimestamp = false,
     } = options;
 
-    let summary = "";
+    let summary = '';
 
     // Group memories by type
     const groupedMemories = this.groupMemoriesByType(memories);
@@ -34,16 +34,16 @@ export class ContextEngine {
 
       for (const memory of typeMemories.slice(0, 5)) {
         // Limit per type
-        const prefix = includeScore ? `[${memory.score.toFixed(2)}] ` : "";
+        const prefix = includeScore ? `[${memory.score.toFixed(2)}] ` : '';
         const timestamp = includeTimestamp
           ? ` (${memory.memory.createdAt.toLocaleDateString()})`
-          : "";
+          : '';
 
         summary += `- ${prefix}${memory.memory.content}${timestamp}\n`;
 
         if (summary.length > maxLength) {
           summary =
-            summary.substring(0, maxLength) + "...\n[Context truncated]";
+            summary.substring(0, maxLength) + '...\n[Context truncated]';
           break;
         }
       }
@@ -106,17 +106,17 @@ export class ContextEngine {
    * Detect emotional context from memories
    */
   public analyzeEmotionalContext(memories: MemoryResult[]): {
-    overall_sentiment: "positive" | "neutral" | "negative";
+    overall_sentiment: 'positive' | 'neutral' | 'negative';
     emotional_weight: number;
     emotional_distribution: Record<string, number>;
   } {
     const emotionalWeights = memories
-      .map((m) => m.memory.emotional_weight)
+      .map(m => m.memory.emotional_weight)
       .filter((weight): weight is number => weight !== undefined);
 
     if (emotionalWeights.length === 0) {
       return {
-        overall_sentiment: "neutral",
+        overall_sentiment: 'neutral',
         emotional_weight: 0,
         emotional_distribution: {},
       };
@@ -125,20 +125,20 @@ export class ContextEngine {
     const avgWeight =
       emotionalWeights.reduce((sum, w) => sum + w, 0) / emotionalWeights.length;
 
-    let sentiment: "positive" | "neutral" | "negative";
+    let sentiment: 'positive' | 'neutral' | 'negative';
     if (avgWeight > 0.2) {
-      sentiment = "positive";
+      sentiment = 'positive';
     } else if (avgWeight < -0.2) {
-      sentiment = "negative";
+      sentiment = 'negative';
     } else {
-      sentiment = "neutral";
+      sentiment = 'neutral';
     }
 
     // Simple emotional distribution
     const distribution: Record<string, number> = {
-      positive: emotionalWeights.filter((w) => w > 0.2).length,
-      neutral: emotionalWeights.filter((w) => w >= -0.2 && w <= 0.2).length,
-      negative: emotionalWeights.filter((w) => w < -0.2).length,
+      positive: emotionalWeights.filter(w => w > 0.2).length,
+      neutral: emotionalWeights.filter(w => w >= -0.2 && w <= 0.2).length,
+      negative: emotionalWeights.filter(w => w < -0.2).length,
     };
 
     return {
@@ -178,7 +178,7 @@ export class ContextEngine {
         period,
         count: data.count,
         avg_importance: data.count > 0 ? data.importance / data.count : 0,
-      }),
+      })
     );
 
     const recencyDistribution: Record<string, number> = {};
@@ -198,11 +198,11 @@ export class ContextEngine {
   public filterContextualMemories(
     memories: MemoryResult[],
     maxMemories = 20,
-    importanceThreshold = 0.3,
+    importanceThreshold = 0.3
   ): MemoryResult[] {
     // Filter by importance threshold
     let filtered = memories.filter(
-      (m) => m.memory.importance >= importanceThreshold,
+      m => m.memory.importance >= importanceThreshold
     );
 
     // Sort by composite score (similarity + importance + recency)
@@ -238,7 +238,7 @@ export class ContextEngine {
   }
 
   private groupMemoriesByType(
-    memories: MemoryResult[],
+    memories: MemoryResult[]
   ): Record<string, MemoryResult[]> {
     return memories.reduce(
       (groups, memory) => {
@@ -249,29 +249,29 @@ export class ContextEngine {
         groups[type]!.push(memory);
         return groups;
       },
-      {} as Record<string, MemoryResult[]>,
+      {} as Record<string, MemoryResult[]>
     );
   }
 
   private formatMemoryType(type: string): string {
     const formatted = type.charAt(0).toUpperCase() + type.slice(1);
-    return formatted.replace(/_/g, " ");
+    return formatted.replace(/_/g, ' ');
   }
 
   private generateContextText(memories: MemoryResult[]): string {
     if (memories.length === 0) {
-      return "";
+      return '';
     }
 
     const filtered = this.filterContextualMemories(memories, 15);
 
     return filtered
-      .map((m) => {
+      .map(m => {
         const typeLabel = m.memory.type.toUpperCase();
         const confidence = (m.score * 100).toFixed(0);
         return `[${typeLabel}:${confidence}%] ${m.memory.content}`;
       })
-      .join("\n\n");
+      .join('\n\n');
   }
 
   private calculateContextConfidence(memories: MemoryResult[]): number {
@@ -287,7 +287,7 @@ export class ContextEngine {
 
     const totalWeight = memories.reduce(
       (sum, m) => sum + m.memory.importance,
-      0,
+      0
     );
 
     return totalWeight > 0 ? weightedSum / totalWeight : 0;
@@ -297,45 +297,45 @@ export class ContextEngine {
     // Simple keyword extraction
     const words = content
       .toLowerCase()
-      .replace(/[^\w\s]/g, "")
+      .replace(/[^\w\s]/g, '')
       .split(/\s+/)
-      .filter((word) => word.length > 3);
+      .filter(word => word.length > 3);
 
     // Filter out common stop words
     const stopWords = new Set([
-      "this",
-      "that",
-      "with",
-      "have",
-      "will",
-      "from",
-      "they",
-      "know",
-      "want",
-      "been",
-      "good",
-      "much",
-      "some",
-      "time",
-      "very",
-      "when",
-      "come",
-      "here",
-      "just",
-      "like",
-      "long",
-      "make",
-      "many",
-      "over",
-      "such",
-      "take",
-      "than",
-      "them",
-      "well",
-      "were",
+      'this',
+      'that',
+      'with',
+      'have',
+      'will',
+      'from',
+      'they',
+      'know',
+      'want',
+      'been',
+      'good',
+      'much',
+      'some',
+      'time',
+      'very',
+      'when',
+      'come',
+      'here',
+      'just',
+      'like',
+      'long',
+      'make',
+      'many',
+      'over',
+      'such',
+      'take',
+      'than',
+      'them',
+      'well',
+      'were',
     ]);
 
-    return words.filter((word) => !stopWords.has(word)).slice(0, 5); // Top 5 keywords
+    return words.filter(word => !stopWords.has(word)).slice(0, 5); // Top 5 keywords
   }
 
   private categorizeTimePeriod(ageMs: number): string {
@@ -344,12 +344,12 @@ export class ContextEngine {
     const days = hours / 24;
     const weeks = days / 7;
 
-    if (minutes < 60) return "last_hour";
-    if (hours < 24) return "today";
-    if (days < 7) return "this_week";
-    if (weeks < 4) return "this_month";
-    if (days < 365) return "this_year";
-    return "older";
+    if (minutes < 60) return 'last_hour';
+    if (hours < 24) return 'today';
+    if (days < 7) return 'this_week';
+    if (weeks < 4) return 'this_month';
+    if (days < 365) return 'this_year';
+    return 'older';
   }
 
   private calculateCompositeScore(memory: MemoryResult): number {

@@ -7,7 +7,15 @@ import { EventEmitter } from 'events';
 import { MemoryMetadata } from '../types/index';
 
 export interface MemoryLifecycleStage {
-  stage: 'creation' | 'encoding' | 'consolidation' | 'retrieval' | 'modification' | 'decay' | 'archival' | 'deletion';
+  stage:
+    | 'creation'
+    | 'encoding'
+    | 'consolidation'
+    | 'retrieval'
+    | 'modification'
+    | 'decay'
+    | 'archival'
+    | 'deletion';
   timestamp: Date;
   probability: number; // 0-1
   factors: LifecycleFactor[];
@@ -17,7 +25,13 @@ export interface MemoryLifecycleStage {
 }
 
 export interface LifecycleFactor {
-  type: 'temporal' | 'usage' | 'importance' | 'context' | 'user_behavior' | 'system_load';
+  type:
+    | 'temporal'
+    | 'usage'
+    | 'importance'
+    | 'context'
+    | 'user_behavior'
+    | 'system_load';
   name: string;
   value: number;
   weight: number;
@@ -27,7 +41,12 @@ export interface LifecycleFactor {
 
 export interface LifecycleTrigger {
   id: string;
-  type: 'time_based' | 'usage_based' | 'importance_based' | 'manual' | 'system_based';
+  type:
+    | 'time_based'
+    | 'usage_based'
+    | 'importance_based'
+    | 'manual'
+    | 'system_based';
   condition: string;
   threshold: number;
   action: LifecycleAction;
@@ -36,7 +55,14 @@ export interface LifecycleTrigger {
 }
 
 export interface LifecycleAction {
-  type: 'promote' | 'demote' | 'archive' | 'delete' | 'refresh' | 'consolidate' | 'replicate';
+  type:
+    | 'promote'
+    | 'demote'
+    | 'archive'
+    | 'delete'
+    | 'refresh'
+    | 'consolidate'
+    | 'replicate';
   target: string;
   parameters: Record<string, any>;
   automation: boolean;
@@ -57,7 +83,12 @@ export interface MemoryLifecyclePrediction {
 
 export interface LifecycleRecommendation {
   id: string;
-  type: 'optimization' | 'preservation' | 'consolidation' | 'archival' | 'deletion';
+  type:
+    | 'optimization'
+    | 'preservation'
+    | 'consolidation'
+    | 'archival'
+    | 'deletion';
   description: string;
   rationale: string;
   expectedBenefit: string;
@@ -72,7 +103,11 @@ export interface LifecycleRecommendation {
 
 export interface LifecycleRisk {
   id: string;
-  type: 'data_loss' | 'performance_degradation' | 'storage_overflow' | 'compliance_violation';
+  type:
+    | 'data_loss'
+    | 'performance_degradation'
+    | 'storage_overflow'
+    | 'compliance_violation';
   description: string;
   probability: number; // 0-1
   impact: number; // 0-1
@@ -115,7 +150,13 @@ export interface LifecycleOptimization {
 }
 
 export interface OptimizationAction {
-  type: 'compression' | 'indexing' | 'caching' | 'replication' | 'migration' | 'pruning';
+  type:
+    | 'compression'
+    | 'indexing'
+    | 'caching'
+    | 'replication'
+    | 'migration'
+    | 'pruning';
   description: string;
   impact: number; // 0-1
   effort: number; // 0-1
@@ -153,14 +194,14 @@ export class PredictiveMemoryLifecycleManager extends EventEmitter {
   private lifecycleOptimizations = new Map<string, LifecycleOptimization>();
   private lifecycleTriggers: LifecycleTrigger[] = [];
   private analytics: LifecycleAnalytics;
-  
+
   private predictionUpdateInterval: NodeJS.Timeout | null = null;
   private optimizationInterval: NodeJS.Timeout | null = null;
   private analyticsInterval: NodeJS.Timeout | null = null;
 
   constructor() {
     super();
-    
+
     this.analytics = this.initializeAnalytics();
     this.initializeDefaultTriggers();
     this.startLifecycleMonitoring();
@@ -169,31 +210,49 @@ export class PredictiveMemoryLifecycleManager extends EventEmitter {
   /**
    * Predict memory lifecycle for a specific memory
    */
-  async predictMemoryLifecycle(memory: MemoryMetadata): Promise<MemoryLifecyclePrediction> {
+  async predictMemoryLifecycle(
+    memory: MemoryMetadata
+  ): Promise<MemoryLifecyclePrediction> {
     // Analyze current state
     const currentStage = await this.analyzeCurrentStage(memory);
-    
+
     // Predict next stage using ML models
     const nextStage = await this.predictNextStage(memory, currentStage);
-    
+
     // Calculate time to next stage
-    const timeToNextStage = await this.calculateTimeToNextStage(memory, currentStage, nextStage);
-    
+    const timeToNextStage = await this.calculateTimeToNextStage(
+      memory,
+      currentStage,
+      nextStage
+    );
+
     // Generate alternative scenarios
-    const alternativeStages = await this.generateAlternativeStages(memory, currentStage);
-    
+    const alternativeStages = await this.generateAlternativeStages(
+      memory,
+      currentStage
+    );
+
     // Create recommendations
-    const recommendations = await this.generateLifecycleRecommendations(memory, nextStage);
-    
+    const recommendations = await this.generateLifecycleRecommendations(
+      memory,
+      nextStage
+    );
+
     // Identify risks
     const risks = await this.identifyLifecycleRisks(memory, nextStage);
-    
+
     // Find opportunities
-    const opportunities = await this.findLifecycleOpportunities(memory, nextStage);
-    
+    const opportunities = await this.findLifecycleOpportunities(
+      memory,
+      nextStage
+    );
+
     // Calculate overall confidence
     const confidence = await this.calculatePredictionConfidence(
-      memory, currentStage, nextStage, alternativeStages
+      memory,
+      currentStage,
+      nextStage,
+      alternativeStages
     );
 
     const prediction: MemoryLifecyclePrediction = {
@@ -205,7 +264,7 @@ export class PredictiveMemoryLifecycleManager extends EventEmitter {
       alternativeStages,
       recommendations,
       risks,
-      opportunities
+      opportunities,
     };
 
     this.lifecyclePredictions.set(memory.id, prediction);
@@ -217,7 +276,9 @@ export class PredictiveMemoryLifecycleManager extends EventEmitter {
   /**
    * Optimize memory lifecycle based on predictions
    */
-  async optimizeMemoryLifecycle(memoryId: string): Promise<LifecycleOptimization> {
+  async optimizeMemoryLifecycle(
+    memoryId: string
+  ): Promise<LifecycleOptimization> {
     const prediction = this.lifecyclePredictions.get(memoryId);
     if (!prediction) {
       throw new Error(`No lifecycle prediction found for memory ${memoryId}`);
@@ -225,25 +286,37 @@ export class PredictiveMemoryLifecycleManager extends EventEmitter {
 
     // Analyze current performance
     const currentPerformance = await this.analyzeCurrentPerformance(memoryId);
-    
+
     // Generate optimization actions
     const optimizations = await this.generateOptimizationActions(prediction);
-    
+
     // Simulate optimized performance
     const optimizedPerformance = await this.simulateOptimizedPerformance(
-      currentPerformance, optimizations
+      currentPerformance,
+      optimizations
     );
-    
+
     // Calculate improvements
     const improvement = {
-      accessTimeReduction: ((currentPerformance.accessTime - optimizedPerformance.accessTime) 
-        / currentPerformance.accessTime) * 100,
-      storageEfficiencyGain: ((optimizedPerformance.storageEfficiency - currentPerformance.storageEfficiency) 
-        / currentPerformance.storageEfficiency) * 100,
-      retrievalAccuracyGain: ((optimizedPerformance.retrievalAccuracy - currentPerformance.retrievalAccuracy) 
-        / currentPerformance.retrievalAccuracy) * 100,
-      maintenanceCostReduction: ((currentPerformance.maintenanceCost - optimizedPerformance.maintenanceCost) 
-        / currentPerformance.maintenanceCost) * 100
+      accessTimeReduction:
+        ((currentPerformance.accessTime - optimizedPerformance.accessTime) /
+          currentPerformance.accessTime) *
+        100,
+      storageEfficiencyGain:
+        ((optimizedPerformance.storageEfficiency -
+          currentPerformance.storageEfficiency) /
+          currentPerformance.storageEfficiency) *
+        100,
+      retrievalAccuracyGain:
+        ((optimizedPerformance.retrievalAccuracy -
+          currentPerformance.retrievalAccuracy) /
+          currentPerformance.retrievalAccuracy) *
+        100,
+      maintenanceCostReduction:
+        ((currentPerformance.maintenanceCost -
+          optimizedPerformance.maintenanceCost) /
+          currentPerformance.maintenanceCost) *
+        100,
     };
 
     const optimization: LifecycleOptimization = {
@@ -251,7 +324,7 @@ export class PredictiveMemoryLifecycleManager extends EventEmitter {
       currentPerformance,
       optimizedPerformance,
       improvement,
-      optimizations
+      optimizations,
     };
 
     this.lifecycleOptimizations.set(memoryId, optimization);
@@ -263,7 +336,10 @@ export class PredictiveMemoryLifecycleManager extends EventEmitter {
   /**
    * Execute lifecycle actions based on triggers
    */
-  async executeLifecycleActions(memoryId: string, actions: LifecycleAction[]): Promise<{
+  async executeLifecycleActions(
+    memoryId: string,
+    actions: LifecycleAction[]
+  ): Promise<{
     success: boolean;
     results: any[];
     errors: string[];
@@ -276,22 +352,23 @@ export class PredictiveMemoryLifecycleManager extends EventEmitter {
       try {
         const result = await this.executeAction(memoryId, action);
         results.push(result);
-        
+
         this.emit('lifecycleActionExecuted', {
           memoryId,
           action,
           result,
-          success: true
+          success: true,
         });
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        const errorMessage =
+          error instanceof Error ? error.message : 'Unknown error';
         errors.push(`Action ${action.type} failed: ${errorMessage}`);
         success = false;
-        
+
         this.emit('lifecycleActionFailed', {
           memoryId,
           action,
-          error: errorMessage
+          error: errorMessage,
         });
       }
     }
@@ -310,10 +387,12 @@ export class PredictiveMemoryLifecycleManager extends EventEmitter {
   /**
    * Create custom lifecycle trigger
    */
-  createLifecycleTrigger(trigger: Omit<LifecycleTrigger, 'id'>): LifecycleTrigger {
+  createLifecycleTrigger(
+    trigger: Omit<LifecycleTrigger, 'id'>
+  ): LifecycleTrigger {
     const lifecycleTrigger: LifecycleTrigger = {
       id: `trigger_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`,
-      ...trigger
+      ...trigger,
     };
 
     this.lifecycleTriggers.push(lifecycleTrigger);
@@ -325,7 +404,9 @@ export class PredictiveMemoryLifecycleManager extends EventEmitter {
   /**
    * Batch process lifecycle predictions for multiple memories
    */
-  async batchPredictLifecycles(memories: MemoryMetadata[]): Promise<MemoryLifecyclePrediction[]> {
+  async batchPredictLifecycles(
+    memories: MemoryMetadata[]
+  ): Promise<MemoryLifecyclePrediction[]> {
     const predictions: MemoryLifecyclePrediction[] = [];
     const batchSize = 10;
 
@@ -335,12 +416,12 @@ export class PredictiveMemoryLifecycleManager extends EventEmitter {
         batch.map(memory => this.predictMemoryLifecycle(memory))
       );
       predictions.push(...batchPredictions);
-      
+
       // Emit progress
       this.emit('batchPredictionProgress', {
         processed: Math.min(i + batchSize, memories.length),
         total: memories.length,
-        progress: Math.min(i + batchSize, memories.length) / memories.length
+        progress: Math.min(i + batchSize, memories.length) / memories.length,
       });
     }
 
@@ -350,11 +431,14 @@ export class PredictiveMemoryLifecycleManager extends EventEmitter {
 
   // Private methods for lifecycle analysis
 
-  private async analyzeCurrentStage(memory: MemoryMetadata): Promise<MemoryLifecycleStage> {
+  private async analyzeCurrentStage(
+    memory: MemoryMetadata
+  ): Promise<MemoryLifecycleStage> {
     const now = new Date();
     const age = now.getTime() - memory.createdAt.getTime();
     const daysSinceCreation = age / (1000 * 60 * 60 * 24);
-    const daysSinceUpdate = (now.getTime() - memory.updatedAt.getTime()) / (1000 * 60 * 60 * 24);
+    const daysSinceUpdate =
+      (now.getTime() - memory.updatedAt.getTime()) / (1000 * 60 * 60 * 24);
 
     // Determine stage based on age, usage, and importance
     let stage: MemoryLifecycleStage['stage'];
@@ -392,8 +476,8 @@ export class PredictiveMemoryLifecycleManager extends EventEmitter {
         daysSinceCreation,
         daysSinceUpdate,
         importance: memory.importance,
-        confidence: memory.confidence
-      }
+        confidence: memory.confidence,
+      },
     };
   }
 
@@ -403,10 +487,14 @@ export class PredictiveMemoryLifecycleManager extends EventEmitter {
   ): Promise<MemoryLifecycleStage> {
     // Predict next stage based on current stage and memory characteristics
     const transitions = this.getStageTransitions(currentStage.stage);
-    const probabilities = await this.calculateTransitionProbabilities(memory, transitions);
-    
+    const probabilities = await this.calculateTransitionProbabilities(
+      memory,
+      transitions
+    );
+
     // Select most likely transition
-    const nextStageType = transitions[probabilities.indexOf(Math.max(...probabilities))];
+    const nextStageType =
+      transitions[probabilities.indexOf(Math.max(...probabilities))];
     const probability = Math.max(...probabilities);
 
     const factors = await this.analyzeLifecycleFactors(memory, nextStageType);
@@ -414,15 +502,17 @@ export class PredictiveMemoryLifecycleManager extends EventEmitter {
 
     return {
       stage: nextStageType,
-      timestamp: new Date(Date.now() + this.getTypicalStageDuration(nextStageType)),
+      timestamp: new Date(
+        Date.now() + this.getTypicalStageDuration(nextStageType)
+      ),
       probability,
       factors,
       duration: this.getTypicalStageDuration(nextStageType),
       triggers,
       metadata: {
         transitionFrom: currentStage.stage,
-        predictionConfidence: probability
-      }
+        predictionConfidence: probability,
+      },
     };
   }
 
@@ -433,16 +523,17 @@ export class PredictiveMemoryLifecycleManager extends EventEmitter {
   ): Promise<number> {
     // Base time on stage duration and memory characteristics
     let baseTime = this.getTypicalStageDuration(currentStage.stage);
-    
+
     // Adjust based on memory importance
-    const importanceMultiplier = memory.importance > 0.7 ? 1.5 : 
-                                memory.importance > 0.4 ? 1.0 : 0.7;
-    
+    const importanceMultiplier =
+      memory.importance > 0.7 ? 1.5 : memory.importance > 0.4 ? 1.0 : 0.7;
+
     // Adjust based on recent activity
-    const daysSinceUpdate = (Date.now() - memory.updatedAt.getTime()) / (1000 * 60 * 60 * 24);
-    const activityMultiplier = daysSinceUpdate < 1 ? 0.5 : 
-                              daysSinceUpdate < 7 ? 0.8 : 1.2;
-    
+    const daysSinceUpdate =
+      (Date.now() - memory.updatedAt.getTime()) / (1000 * 60 * 60 * 24);
+    const activityMultiplier =
+      daysSinceUpdate < 1 ? 0.5 : daysSinceUpdate < 7 ? 0.8 : 1.2;
+
     return baseTime * importanceMultiplier * activityMultiplier;
   }
 
@@ -452,26 +543,30 @@ export class PredictiveMemoryLifecycleManager extends EventEmitter {
   ): Promise<MemoryLifecycleStage[]> {
     const alternatives: MemoryLifecycleStage[] = [];
     const transitions = this.getStageTransitions(currentStage.stage);
-    
-    for (const transition of transitions.slice(1, 4)) { // Get top 3 alternatives
+
+    for (const transition of transitions.slice(1, 4)) {
+      // Get top 3 alternatives
       const probability = 0.3 + Math.random() * 0.4; // Simulate alternative probabilities
       const factors = await this.analyzeLifecycleFactors(memory, transition);
       const triggers = this.getApplicableTriggers(transition);
-      
+
       alternatives.push({
         stage: transition,
-        timestamp: new Date(Date.now() + this.getTypicalStageDuration(transition) * (1 + Math.random())),
+        timestamp: new Date(
+          Date.now() +
+            this.getTypicalStageDuration(transition) * (1 + Math.random())
+        ),
         probability,
         factors,
         duration: this.getTypicalStageDuration(transition),
         triggers,
         metadata: {
           alternative: true,
-          rank: alternatives.length + 2
-        }
+          rank: alternatives.length + 2,
+        },
       });
     }
-    
+
     return alternatives;
   }
 
@@ -488,15 +583,16 @@ export class PredictiveMemoryLifecycleManager extends EventEmitter {
           id: `rec_${Date.now()}_consolidation`,
           type: 'consolidation',
           description: 'Consolidate memory with related content',
-          rationale: 'Memory is becoming stable and should be linked with related memories',
+          rationale:
+            'Memory is becoming stable and should be linked with related memories',
           expectedBenefit: 'Improved retrieval through associations',
           implementation: {
             difficulty: 'medium',
             resources: ['relationship_analyzer', 'content_similarity_engine'],
             timeline: '2-3 days',
-            cost: 'low'
+            cost: 'low',
           },
-          priority: 0.8
+          priority: 0.8,
         });
         break;
 
@@ -506,14 +602,15 @@ export class PredictiveMemoryLifecycleManager extends EventEmitter {
           type: 'archival',
           description: 'Move to long-term storage',
           rationale: 'Memory has low recent activity and importance',
-          expectedBenefit: 'Reduced storage costs and improved system performance',
+          expectedBenefit:
+            'Reduced storage costs and improved system performance',
           implementation: {
             difficulty: 'easy',
             resources: ['archival_storage'],
             timeline: '1 day',
-            cost: 'low'
+            cost: 'low',
           },
-          priority: 0.6
+          priority: 0.6,
         });
         break;
 
@@ -528,9 +625,9 @@ export class PredictiveMemoryLifecycleManager extends EventEmitter {
             difficulty: 'easy',
             resources: ['importance_booster'],
             timeline: 'immediate',
-            cost: 'low'
+            cost: 'low',
           },
-          priority: 0.7
+          priority: 0.7,
         });
         break;
     }
@@ -552,8 +649,12 @@ export class PredictiveMemoryLifecycleManager extends EventEmitter {
         probability: 0.4,
         impact: 0.8,
         severity: 'high',
-        mitigation: ['Increase importance score', 'Add to preservation list', 'Create backup'],
-        timeline: 'within 30 days'
+        mitigation: [
+          'Increase importance score',
+          'Add to preservation list',
+          'Create backup',
+        ],
+        timeline: 'within 30 days',
       });
     }
 
@@ -566,7 +667,7 @@ export class PredictiveMemoryLifecycleManager extends EventEmitter {
         impact: 0.5,
         severity: 'medium',
         mitigation: ['Validate content accuracy', 'Update confidence score'],
-        timeline: 'within 7 days'
+        timeline: 'within 7 days',
       });
     }
 
@@ -587,7 +688,7 @@ export class PredictiveMemoryLifecycleManager extends EventEmitter {
         potential: 0.8,
         effort: 0.3,
         timeline: '1-2 weeks',
-        expectedROI: 2.5
+        expectedROI: 2.5,
       });
     }
 
@@ -599,7 +700,7 @@ export class PredictiveMemoryLifecycleManager extends EventEmitter {
         potential: 0.9,
         effort: 0.6,
         timeline: '2-4 weeks',
-        expectedROI: 3.2
+        expectedROI: 3.2,
       });
     }
 
@@ -624,7 +725,9 @@ export class PredictiveMemoryLifecycleManager extends EventEmitter {
 
     // Adjust based on alternative scenarios
     if (alternatives.length > 0) {
-      const maxAltProbability = Math.max(...alternatives.map(a => a.probability));
+      const maxAltProbability = Math.max(
+        ...alternatives.map(a => a.probability)
+      );
       if (maxAltProbability > nextStage.probability * 0.8) {
         confidence -= 0.1;
       }
@@ -635,7 +738,9 @@ export class PredictiveMemoryLifecycleManager extends EventEmitter {
 
   // Helper methods
 
-  private getStageTransitions(stage: MemoryLifecycleStage['stage']): MemoryLifecycleStage['stage'][] {
+  private getStageTransitions(
+    stage: MemoryLifecycleStage['stage']
+  ): MemoryLifecycleStage['stage'][] {
     const transitions: Record<string, MemoryLifecycleStage['stage'][]> = {
       creation: ['encoding', 'deletion'],
       encoding: ['consolidation', 'decay', 'deletion'],
@@ -644,7 +749,7 @@ export class PredictiveMemoryLifecycleManager extends EventEmitter {
       modification: ['consolidation', 'retrieval', 'decay'],
       decay: ['archival', 'deletion', 'retrieval'],
       archival: ['deletion', 'retrieval'],
-      deletion: []
+      deletion: [],
     };
 
     return transitions[stage] || ['decay'];
@@ -679,7 +784,9 @@ export class PredictiveMemoryLifecycleManager extends EventEmitter {
     });
   }
 
-  private getTypicalStageDuration(stage: MemoryLifecycleStage['stage']): number {
+  private getTypicalStageDuration(
+    stage: MemoryLifecycleStage['stage']
+  ): number {
     const durations: Record<string, number> = {
       creation: 1000 * 60 * 60, // 1 hour
       encoding: 1000 * 60 * 60 * 24, // 1 day
@@ -688,7 +795,7 @@ export class PredictiveMemoryLifecycleManager extends EventEmitter {
       modification: 1000 * 60 * 60 * 24 * 2, // 2 days
       decay: 1000 * 60 * 60 * 24 * 30, // 30 days
       archival: 1000 * 60 * 60 * 24 * 365, // 1 year
-      deletion: 0 // immediate
+      deletion: 0, // immediate
     };
 
     return durations[stage] || 1000 * 60 * 60 * 24; // default 1 day
@@ -708,7 +815,7 @@ export class PredictiveMemoryLifecycleManager extends EventEmitter {
       value: age / (1000 * 60 * 60 * 24), // days
       weight: 0.3,
       impact: age > 30 * 24 * 60 * 60 * 1000 ? 'negative' : 'neutral',
-      confidence: 0.9
+      confidence: 0.9,
     });
 
     // Importance factor
@@ -717,8 +824,13 @@ export class PredictiveMemoryLifecycleManager extends EventEmitter {
       name: 'Memory Importance',
       value: memory.importance,
       weight: 0.4,
-      impact: memory.importance > 0.7 ? 'positive' : memory.importance < 0.3 ? 'negative' : 'neutral',
-      confidence: 0.8
+      impact:
+        memory.importance > 0.7
+          ? 'positive'
+          : memory.importance < 0.3
+            ? 'negative'
+            : 'neutral',
+      confidence: 0.8,
     });
 
     // Usage factor (simulated)
@@ -729,18 +841,22 @@ export class PredictiveMemoryLifecycleManager extends EventEmitter {
       value: usageScore,
       weight: 0.3,
       impact: usageScore > 0.5 ? 'positive' : 'negative',
-      confidence: 0.7
+      confidence: 0.7,
     });
 
     return factors;
   }
 
-  private getApplicableTriggers(stage: MemoryLifecycleStage['stage']): LifecycleTrigger[] {
+  private getApplicableTriggers(
+    stage: MemoryLifecycleStage['stage']
+  ): LifecycleTrigger[] {
     return this.lifecycleTriggers.filter(trigger => {
       // Simplified trigger matching
-      return trigger.enabled && (
-        trigger.type === 'time_based' ||
-        (trigger.type === 'importance_based' && ['consolidation', 'archival'].includes(stage))
+      return (
+        trigger.enabled &&
+        (trigger.type === 'time_based' ||
+          (trigger.type === 'importance_based' &&
+            ['consolidation', 'archival'].includes(stage)))
       );
     });
   }
@@ -750,7 +866,7 @@ export class PredictiveMemoryLifecycleManager extends EventEmitter {
       accessTime: 50 + Math.random() * 100, // ms
       storageEfficiency: 0.6 + Math.random() * 0.3,
       retrievalAccuracy: 0.8 + Math.random() * 0.2,
-      maintenanceCost: 0.05 + Math.random() * 0.1 // normalized cost
+      maintenanceCost: 0.05 + Math.random() * 0.1, // normalized cost
     };
   }
 
@@ -766,7 +882,7 @@ export class PredictiveMemoryLifecycleManager extends EventEmitter {
         impact: 0.7,
         effort: 0.3,
         automation: true,
-        prerequisites: []
+        prerequisites: [],
       });
     }
 
@@ -777,7 +893,7 @@ export class PredictiveMemoryLifecycleManager extends EventEmitter {
         impact: 0.6,
         effort: 0.2,
         automation: true,
-        prerequisites: []
+        prerequisites: [],
       });
     }
 
@@ -793,15 +909,15 @@ export class PredictiveMemoryLifecycleManager extends EventEmitter {
     for (const optimization of optimizations) {
       switch (optimization.type) {
         case 'compression':
-          optimized.storageEfficiency *= (1 + optimization.impact * 0.5);
-          optimized.maintenanceCost *= (1 - optimization.impact * 0.3);
+          optimized.storageEfficiency *= 1 + optimization.impact * 0.5;
+          optimized.maintenanceCost *= 1 - optimization.impact * 0.3;
           break;
         case 'indexing':
-          optimized.accessTime *= (1 - optimization.impact * 0.4);
-          optimized.retrievalAccuracy *= (1 + optimization.impact * 0.1);
+          optimized.accessTime *= 1 - optimization.impact * 0.4;
+          optimized.retrievalAccuracy *= 1 + optimization.impact * 0.1;
           break;
         case 'caching':
-          optimized.accessTime *= (1 - optimization.impact * 0.6);
+          optimized.accessTime *= 1 - optimization.impact * 0.6;
           break;
       }
     }
@@ -809,15 +925,18 @@ export class PredictiveMemoryLifecycleManager extends EventEmitter {
     return optimized;
   }
 
-  private async executeAction(memoryId: string, action: LifecycleAction): Promise<any> {
+  private async executeAction(
+    memoryId: string,
+    action: LifecycleAction
+  ): Promise<any> {
     // Simulate action execution
     await new Promise(resolve => setTimeout(resolve, 100));
-    
+
     return {
       action: action.type,
       success: true,
       timestamp: new Date(),
-      details: `Executed ${action.type} on memory ${memoryId}`
+      details: `Executed ${action.type} on memory ${memoryId}`,
     };
   }
 
@@ -832,19 +951,19 @@ export class PredictiveMemoryLifecycleManager extends EventEmitter {
         storage: 0,
         compute: 0,
         bandwidth: 0,
-        maintenance: 0
+        maintenance: 0,
       },
       performanceGains: {
         averageAccessTime: 0,
         retrievalAccuracy: 0,
-        storageEfficiency: 0
+        storageEfficiency: 0,
       },
       trends: {
         creationRate: 10,
         deletionRate: 2,
         archivalRate: 3,
-        averageImportance: 0.6
-      }
+        averageImportance: 0.6,
+      },
     };
   }
 
@@ -859,10 +978,10 @@ export class PredictiveMemoryLifecycleManager extends EventEmitter {
           target: 'long_term_storage',
           parameters: { compression: true },
           automation: true,
-          rollback: true
+          rollback: true,
         },
         priority: 'medium',
-        enabled: true
+        enabled: true,
       },
       {
         type: 'importance_based',
@@ -873,14 +992,14 @@ export class PredictiveMemoryLifecycleManager extends EventEmitter {
           target: 'permanent_deletion',
           parameters: { backup: true },
           automation: false,
-          rollback: false
+          rollback: false,
         },
         priority: 'high',
-        enabled: true
-      }
+        enabled: true,
+      },
     ];
 
-    this.lifecycleTriggers = defaultTriggers.map(trigger => 
+    this.lifecycleTriggers = defaultTriggers.map(trigger =>
       this.createLifecycleTrigger(trigger)
     );
   }
@@ -909,7 +1028,7 @@ export class PredictiveMemoryLifecycleManager extends EventEmitter {
   private updateAnalytics(): void {
     // Update analytics based on current state
     this.analytics.totalMemories = this.lifecyclePredictions.size;
-    
+
     // Update stage distribution
     const distribution: Record<string, number> = {};
     for (const prediction of this.lifecyclePredictions.values()) {
@@ -919,18 +1038,25 @@ export class PredictiveMemoryLifecycleManager extends EventEmitter {
     this.analytics.stageDistribution = distribution;
 
     // Update performance metrics (simplified)
-    this.analytics.predictiveAccuracy = Math.min(1, this.analytics.predictiveAccuracy + (Math.random() - 0.5) * 0.02);
-    this.analytics.optimizationSuccess = Math.min(1, this.analytics.optimizationSuccess + (Math.random() - 0.5) * 0.01);
+    this.analytics.predictiveAccuracy = Math.min(
+      1,
+      this.analytics.predictiveAccuracy + (Math.random() - 0.5) * 0.02
+    );
+    this.analytics.optimizationSuccess = Math.min(
+      1,
+      this.analytics.optimizationSuccess + (Math.random() - 0.5) * 0.01
+    );
   }
 
   /**
    * Cleanup on shutdown
    */
   shutdown(): void {
-    if (this.predictionUpdateInterval) clearInterval(this.predictionUpdateInterval);
+    if (this.predictionUpdateInterval)
+      clearInterval(this.predictionUpdateInterval);
     if (this.optimizationInterval) clearInterval(this.optimizationInterval);
     if (this.analyticsInterval) clearInterval(this.analyticsInterval);
-    
+
     console.log('🔄 Predictive Memory Lifecycle Manager shutdown completed');
   }
 }

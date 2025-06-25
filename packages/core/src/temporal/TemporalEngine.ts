@@ -2,7 +2,7 @@
  * @fileoverview Temporal memory management for time-based operations
  */
 
-import type { MemoryMetadata, MemoryType } from "../types/index.js";
+import type { MemoryMetadata, MemoryType } from '../types/index.js';
 
 /**
  * Time-based memory decay factors
@@ -75,7 +75,7 @@ export class TemporalEngine {
   constructor(
     customDecayParameters?: Partial<
       Record<MemoryType, Partial<DecayParameters>>
-    >,
+    >
   ) {
     this.decayParameters = { ...DEFAULT_DECAY_PARAMETERS };
 
@@ -97,7 +97,7 @@ export class TemporalEngine {
    */
   calculateTimeDecay(
     memory: MemoryMetadata,
-    currentTime: Date = new Date(),
+    currentTime: Date = new Date()
   ): number {
     const ageInDays =
       (currentTime.getTime() - memory.createdAt.getTime()) /
@@ -139,7 +139,7 @@ export class TemporalEngine {
   shouldArchive(
     memory: MemoryMetadata,
     archiveThreshold: number = 0.1,
-    currentTime: Date = new Date(),
+    currentTime: Date = new Date()
   ): boolean {
     const decayedConfidence = this.calculateTimeDecay(memory, currentTime);
     return decayedConfidence < archiveThreshold;
@@ -151,7 +151,7 @@ export class TemporalEngine {
   shouldForget(
     memory: MemoryMetadata,
     forgetThreshold: number = 0.05,
-    currentTime: Date = new Date(),
+    currentTime: Date = new Date()
   ): boolean {
     // Check TTL first
     if (memory.ttl && currentTime > memory.ttl) {
@@ -169,7 +169,7 @@ export class TemporalEngine {
   calculateTemporalRelevance(
     memory: MemoryMetadata,
     baseRelevance: number,
-    currentTime: Date = new Date(),
+    currentTime: Date = new Date()
   ): number {
     const timeDecay = this.calculateTimeDecay(memory, currentTime);
 
@@ -192,7 +192,7 @@ export class TemporalEngine {
    */
   updateAccess(
     memory: MemoryMetadata,
-    currentTime: Date = new Date(),
+    currentTime: Date = new Date()
   ): MemoryMetadata {
     return {
       ...memory,
@@ -209,7 +209,7 @@ export class TemporalEngine {
     memories: MemoryMetadata[],
     archiveThreshold: number = 0.1,
     forgetThreshold: number = 0.05,
-    currentTime: Date = new Date(),
+    currentTime: Date = new Date()
   ): {
     toArchive: MemoryMetadata[];
     toForget: MemoryMetadata[];
@@ -233,7 +233,7 @@ export class TemporalEngine {
    */
   setDecayParameters(
     type: MemoryType,
-    parameters: Partial<DecayParameters>,
+    parameters: Partial<DecayParameters>
   ): void {
     this.decayParameters[type] = {
       ...this.decayParameters[type],

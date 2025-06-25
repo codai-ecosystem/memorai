@@ -4,9 +4,9 @@
  * Comprehensive script to fix major ESLint issues for production readiness
  */
 
-const fs = require("fs");
-const path = require("path");
-const { execSync } = require("child_process");
+const fs = require('fs');
+const path = require('path');
+const { execSync } = require('child_process');
 
 // Common patterns to fix
 const fixes = [
@@ -30,23 +30,23 @@ const fixes = [
   // Fix nullish coalescing
   {
     pattern: /(\w+)\s*\|\|\s*(['"`]\w*['"`]|[0-9]+|true|false)/g,
-    replacement: "$1 ?? $2",
+    replacement: '$1 ?? $2',
   },
 
   // Add return types for simple functions
   {
     pattern: /export default function (\w+)\(/g,
-    replacement: "export default function $1(",
+    replacement: 'export default function $1(',
   },
 ];
 
 function fixFile(filePath) {
   try {
-    let content = fs.readFileSync(filePath, "utf8");
+    let content = fs.readFileSync(filePath, 'utf8');
     let modified = false;
 
     // Apply fixes
-    fixes.forEach((fix) => {
+    fixes.forEach(fix => {
       const newContent = content.replace(fix.pattern, fix.replacement);
       if (newContent !== content) {
         content = newContent;
@@ -62,8 +62,8 @@ function fixFile(filePath) {
       /import.*{\s*MoreHorizontal\s*}.*from.*;\s*\n/g,
     ];
 
-    unusedImportPatterns.forEach((pattern) => {
-      const newContent = content.replace(pattern, "");
+    unusedImportPatterns.forEach(pattern => {
+      const newContent = content.replace(pattern, '');
       if (newContent !== content) {
         content = newContent;
         modified = true;
@@ -95,13 +95,13 @@ function findTypeScriptFiles(dir) {
 
       if (
         stat.isDirectory() &&
-        !["node_modules", ".next", "dist", "build"].includes(item)
+        !['node_modules', '.next', 'dist', 'build'].includes(item)
       ) {
         scanDir(fullPath);
       } else if (
         stat.isFile() &&
         /\.(ts|tsx)$/.test(item) &&
-        !item.includes(".d.ts")
+        !item.includes('.d.ts')
       ) {
         files.push(fullPath);
       }
@@ -113,13 +113,13 @@ function findTypeScriptFiles(dir) {
 }
 
 // Main execution
-const srcDir = path.join(process.cwd(), "apps", "dashboard", "src");
+const srcDir = path.join(process.cwd(), 'apps', 'dashboard', 'src');
 const files = findTypeScriptFiles(srcDir);
 
 console.log(`Found ${files.length} TypeScript files to process...`);
 
 let fixedCount = 0;
-files.forEach((file) => {
+files.forEach(file => {
   if (fixFile(file)) {
     fixedCount++;
   }
@@ -129,9 +129,9 @@ console.log(`\nFixed ${fixedCount} files.`);
 
 // Run linting to see remaining issues
 try {
-  console.log("\nRunning eslint to check remaining issues...");
-  execSync("pnpm lint --fix", { stdio: "inherit", cwd: process.cwd() });
-  console.log("Lint fixes applied successfully!");
+  console.log('\nRunning eslint to check remaining issues...');
+  execSync('pnpm lint --fix', { stdio: 'inherit', cwd: process.cwd() });
+  console.log('Lint fixes applied successfully!');
 } catch (error) {
-  console.log("Some lint issues remain - check output above.");
+  console.log('Some lint issues remain - check output above.');
 }

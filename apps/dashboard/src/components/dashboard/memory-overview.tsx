@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { useEffect } from "react";
+import { useEffect } from 'react';
 import {
   Brain,
   Users,
@@ -8,9 +8,9 @@ import {
   Clock,
   AlertCircle,
   CheckCircle,
-} from "lucide-react";
-import { useMemoryStore } from "../../stores/memory-store";
-import { cn, formatRelativeTime } from "../../lib/utils";
+} from 'lucide-react';
+import { useMemoryStore } from '../../stores/memory-store';
+import { cn, formatRelativeTime } from '../../lib/utils';
 
 interface MemoryOverviewProps {
   className?: string;
@@ -27,7 +27,7 @@ export function MemoryOverview({ className }: MemoryOverviewProps) {
 
   if (error) {
     return (
-      <div className={cn("p-6", className)}>
+      <div className={cn('p-6', className)}>
         <div className="flex items-center space-x-2 text-red-600 dark:text-red-400">
           <AlertCircle className="h-5 w-5" />
           <span>Error loading overview: {error}</span>
@@ -39,7 +39,7 @@ export function MemoryOverview({ className }: MemoryOverviewProps) {
   return (
     <div
       data-testid="memory-overview"
-      className={cn("p-6 space-y-6", className)}
+      className={cn('p-6 space-y-6', className)}
     >
       {/* Header */}
       <div>
@@ -58,11 +58,11 @@ export function MemoryOverview({ className }: MemoryOverviewProps) {
             <div>
               <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
                 Total Memories
-              </p>{" "}
+              </p>{' '}
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {isLoading
-                  ? "---"
-                  : stats?.totalMemories?.toLocaleString("en-US") || "0"}
+                  ? '---'
+                  : stats?.totalMemories?.toLocaleString('en-US') || '0'}
               </p>
             </div>
             <Brain className="h-8 w-8 text-blue-600 dark:text-blue-400" />
@@ -82,7 +82,7 @@ export function MemoryOverview({ className }: MemoryOverviewProps) {
                 Active Agents
               </p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {isLoading ? "--" : stats?.totalAgents ?? "0"}
+                {isLoading ? '--' : (stats?.totalAgents ?? '0')}
               </p>
             </div>
             <Users className="h-8 w-8 text-green-600 dark:text-green-400" />
@@ -103,7 +103,7 @@ export function MemoryOverview({ className }: MemoryOverviewProps) {
               </p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
                 {isLoading
-                  ? "--"
+                  ? '--'
                   : `${Math.round((stats?.averageImportance || 0) * 100)}%`}
               </p>
             </div>
@@ -123,7 +123,7 @@ export function MemoryOverview({ className }: MemoryOverviewProps) {
                 Recent Activity
               </p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {isLoading ? "--" : stats?.recentActivity?.[0]?.count ?? "0"}
+                {isLoading ? '--' : (stats?.recentActivity?.[0]?.count ?? '0')}
               </p>
             </div>
             <Clock className="h-8 w-8 text-orange-600 dark:text-orange-400" />
@@ -171,7 +171,7 @@ export function MemoryOverview({ className }: MemoryOverviewProps) {
               ))}
             </div>
           ) : memories.length > 0 ? (
-            memories.slice(0, 5).map((memory) => (
+            memories.slice(0, 5).map(memory => (
               <div
                 key={memory.id}
                 className="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
@@ -183,17 +183,17 @@ export function MemoryOverview({ className }: MemoryOverviewProps) {
                   <div className="flex items-center space-x-2 mt-1">
                     <span
                       className={cn(
-                        "inline-flex items-center px-2 py-0.5 rounded text-xs font-medium",
-                        memory.type === "task"
-                          ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
-                          : "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
+                        'inline-flex items-center px-2 py-0.5 rounded text-xs font-medium',
+                        memory.type === 'task'
+                          ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
+                          : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'
                       )}
                     >
                       {memory.type}
                     </span>
                     <span className="text-xs text-gray-500 dark:text-gray-400">
                       {formatRelativeTime(
-                        memory.metadata.timestamp ?? new Date().toISOString(),
+                        memory.metadata.timestamp ?? new Date().toISOString()
                       )}
                     </span>
                   </div>

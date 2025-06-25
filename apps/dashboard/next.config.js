@@ -4,9 +4,9 @@ const nextConfig = {
     // Enable the latest features
     turbo: {
       rules: {
-        "*.svg": {
-          loaders: ["@svgr/webpack"],
-          as: "*.js",
+        '*.svg': {
+          loaders: ['@svgr/webpack'],
+          as: '*.js',
         },
       },
     },
@@ -22,14 +22,14 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    domains: ["localhost"],
+    domains: ['localhost'],
   },
   // Keep compatibility with existing Express server
   async rewrites() {
     return [
       {
-        source: "/api/:path*",
-        destination: "http://localhost:6366/api/:path*",
+        source: '/api/:path*',
+        destination: 'http://localhost:6366/api/:path*',
       },
     ];
   },

@@ -1,19 +1,19 @@
-import { create } from "zustand";
-import { devtools, persist } from "zustand/middleware";
+import { create } from 'zustand';
+import { devtools, persist } from 'zustand/middleware';
 
-import { mcpMemoryClient } from "../lib/mcp-memory-client";
+import { mcpMemoryClient } from '../lib/mcp-memory-client';
 
 export interface Memory {
   id: string;
   content: string;
   type:
-    | "conversation"
-    | "document"
-    | "note"
-    | "thread"
-    | "task"
-    | "personality"
-    | "emotion";
+    | 'conversation'
+    | 'document'
+    | 'note'
+    | 'thread'
+    | 'task'
+    | 'personality'
+    | 'emotion';
   metadata: {
     tags: string[];
     similarity?: number;
@@ -64,12 +64,12 @@ interface MemoryState {
       type?: string;
       agentId?: string;
       limit?: number;
-    },
+    }
   ) => Promise<void>;
 
   addMemory: (
     content: string,
-    metadata: Partial<Memory["metadata"]>,
+    metadata: Partial<Memory['metadata']>
   ) => Promise<void>;
 
   deleteMemory: (id: string) => Promise<void>;
@@ -90,7 +90,7 @@ const api = {
         agentId: params?.agentId,
       });
     } catch (error) {
-      void console.error("Failed to fetch memories from MCP:", error);
+      void console.error('Failed to fetch memories from MCP:', error);
       return [];
     }
   },
@@ -99,7 +99,7 @@ const api = {
     try {
       return await mcpMemoryClient.getStats();
     } catch (error) {
-      console.error("Failed to get stats from MCP:", error);
+      console.error('Failed to get stats from MCP:', error);
       return {
         totalMemories: 0,
         totalAgents: 0,
@@ -118,19 +118,19 @@ const api = {
         agentId: options?.agentId,
       });
     } catch (error) {
-      console.error("Failed to search memories in MCP:", error);
+      console.error('Failed to search memories in MCP:', error);
       return [];
     }
   },
 
   async addMemory(
     content: string,
-    metadata: Partial<Memory["metadata"]>,
+    metadata: Partial<Memory['metadata']>
   ): Promise<Memory> {
     try {
       return await mcpMemoryClient.addMemory(content, metadata);
     } catch (error) {
-      console.error("Failed to add memory to MCP:", error);
+      console.error('Failed to add memory to MCP:', error);
       throw error;
     }
   },
@@ -138,10 +138,10 @@ const api = {
   async deleteMemory(id: string): Promise<void> {
     try {
       // For now, we'll just log this since MCP doesn't have direct delete by memory ID
-      console.log("Delete memory request for ID:", id);
+      console.log('Delete memory request for ID:', id);
       // In a real implementation, we'd need to track entity names associated with memory IDs
     } catch (error) {
-      console.error("Failed to delete memory from MCP:", error);
+      console.error('Failed to delete memory from MCP:', error);
       throw error;
     }
   },
@@ -150,15 +150,15 @@ const api = {
     try {
       // For now, we'll recreate the memory since MCP doesn't have direct update
       console.log(
-        "Update memory request for ID:",
+        'Update memory request for ID:',
         id,
-        "with updates:",
-        updates,
+        'with updates:',
+        updates
       );
       // In a real implementation, we'd delete the old entity and create a new one
-      throw new Error("Memory updates not yet implemented with MCP backend");
+      throw new Error('Memory updates not yet implemented with MCP backend');
     } catch (error) {
-      console.error("Failed to update memory in MCP:", error);
+      console.error('Failed to update memory in MCP:', error);
       throw error;
     }
   },
@@ -174,7 +174,7 @@ export const useMemoryStore = create<MemoryState>()(
         isLoading: false,
         error: null,
 
-        fetchMemories: async (params) => {
+        fetchMemories: async params => {
           set({ isLoading: true, error: null });
           try {
             const memories = await api.getMemories(params);
@@ -184,7 +184,7 @@ export const useMemoryStore = create<MemoryState>()(
               error:
                 error instanceof Error
                   ? error.message
-                  : "Failed to fetch memories",
+                  : 'Failed to fetch memories',
               isLoading: false,
             });
           }
@@ -192,17 +192,17 @@ export const useMemoryStore = create<MemoryState>()(
         fetchStats: async () => {
           set({ isLoading: true, error: null });
           try {
-            console.log("Memory store: Fetching stats...");
+            console.log('Memory store: Fetching stats...');
             const stats = await api.getStats();
-            console.log("Memory store: Stats received:", stats);
+            console.log('Memory store: Stats received:', stats);
             set({ stats, isLoading: false });
           } catch (error) {
-            void console.error("Memory store: Failed to fetch stats:", error);
+            void console.error('Memory store: Failed to fetch stats:', error);
             void set({
               error:
                 error instanceof Error
                   ? error.message
-                  : "Failed to fetch stats",
+                  : 'Failed to fetch stats',
               isLoading: false,
             });
           }
@@ -218,7 +218,7 @@ export const useMemoryStore = create<MemoryState>()(
               error:
                 error instanceof Error
                   ? error.message
-                  : "Failed to search memories",
+                  : 'Failed to search memories',
               isLoading: false,
             });
           }
@@ -236,20 +236,20 @@ export const useMemoryStore = create<MemoryState>()(
           } catch (error) {
             set({
               error:
-                error instanceof Error ? error.message : "Failed to add memory",
+                error instanceof Error ? error.message : 'Failed to add memory',
               isLoading: false,
             });
             throw error;
           }
         },
 
-        deleteMemory: async (id) => {
+        deleteMemory: async id => {
           set({ isLoading: true, error: null });
           try {
             await api.deleteMemory(id);
             const currentMemories = get().memories;
             set({
-              memories: currentMemories.filter((memory) => memory.id !== id),
+              memories: currentMemories.filter(memory => memory.id !== id),
               isLoading: false,
             });
           } catch (error) {
@@ -257,7 +257,7 @@ export const useMemoryStore = create<MemoryState>()(
               error:
                 error instanceof Error
                   ? error.message
-                  : "Failed to delete memory",
+                  : 'Failed to delete memory',
               isLoading: false,
             });
             throw error;
@@ -270,8 +270,8 @@ export const useMemoryStore = create<MemoryState>()(
             const updatedMemory = await api.updateMemory(id, updates);
             const currentMemories = get().memories;
             set({
-              memories: currentMemories.map((memory) =>
-                memory.id === id ? updatedMemory : memory,
+              memories: currentMemories.map(memory =>
+                memory.id === id ? updatedMemory : memory
               ),
               isLoading: false,
             });
@@ -280,7 +280,7 @@ export const useMemoryStore = create<MemoryState>()(
               error:
                 error instanceof Error
                   ? error.message
-                  : "Failed to update memory",
+                  : 'Failed to update memory',
               isLoading: false,
             });
             throw error;
@@ -296,15 +296,15 @@ export const useMemoryStore = create<MemoryState>()(
         },
       }),
       {
-        name: "memory-store",
-        partialize: (state) => ({
+        name: 'memory-store',
+        partialize: state => ({
           memories: state.memories,
           stats: state.stats,
         }),
-      },
+      }
     ),
     {
-      name: "memory-store",
-    },
-  ),
+      name: 'memory-store',
+    }
+  )
 );

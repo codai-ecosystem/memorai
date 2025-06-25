@@ -2,15 +2,15 @@
  * @fileoverview MCP Protocol handler for Memorai operations
  */
 
-import type { FastifyReply } from "fastify";
+import type { FastifyReply } from 'fastify';
 import type {
   MCPRequest,
   MCPResponse,
   MemoryResponse,
   AuthenticatedRequest,
-} from "../types/index.js";
-import { MemoryEngine } from "@codai/memorai-core";
-import { Logger } from "../utils/Logger.js";
+} from '../types/index.js';
+import { MemoryEngine } from '@codai/memorai-core';
+import { Logger } from '../utils/Logger.js';
 
 /**
  * Handles Model Context Protocol requests for memory operations
@@ -27,7 +27,7 @@ export class MCPHandler {
    */
   public async handleRequest(
     request: AuthenticatedRequest,
-    reply: FastifyReply,
+    reply: FastifyReply
   ): Promise<void> {
     try {
       const mcpRequest = request.body as MCPRequest;
@@ -38,8 +38,8 @@ export class MCPHandler {
         await this.sendError(
           reply,
           -32600,
-          "Invalid Request",
-          requestId ?? undefined,
+          'Invalid Request',
+          requestId ?? undefined
         );
         return;
       }
@@ -49,19 +49,19 @@ export class MCPHandler {
 
       // Send successful response
       await reply.send({
-        jsonrpc: "2.0",
+        jsonrpc: '2.0',
         result: response,
         id: mcpRequest.id,
       } as MCPResponse);
     } catch (error: unknown) {
-      Logger.error("MCP request failed", {
+      Logger.error('MCP request failed', {
         error: error instanceof Error ? error.message : String(error),
       });
       await this.sendError(
         reply,
         -32603,
-        "Internal error",
-        (request.body as any)?.id,
+        'Internal error',
+        (request.body as any)?.id
       );
     }
   }
@@ -71,27 +71,27 @@ export class MCPHandler {
    */
   private async routeRequest(
     mcpRequest: MCPRequest,
-    request: AuthenticatedRequest,
+    request: AuthenticatedRequest
   ): Promise<unknown> {
     const { method, params } = mcpRequest;
 
     switch (method) {
-      case "memory/remember":
+      case 'memory/remember':
         return this.handleRemember(params, request);
 
-      case "memory/recall":
+      case 'memory/recall':
         return this.handleRecall(params, request);
 
-      case "memory/forget":
+      case 'memory/forget':
         return this.handleForget(params, request);
 
-      case "memory/context":
+      case 'memory/context':
         return this.handleContext(params, request);
 
-      case "server/health":
+      case 'server/health':
         return this.handleHealth();
 
-      case "server/capabilities":
+      case 'server/capabilities':
         return this.handleCapabilities();
 
       default:
@@ -104,12 +104,12 @@ export class MCPHandler {
    */
   private async handleRemember(
     params: unknown,
-    request: AuthenticatedRequest,
+    request: AuthenticatedRequest
   ): Promise<MemoryResponse> {
     const { content, context } = params as any;
 
     if (!content) {
-      throw new Error("Content is required for remember operation");
+      throw new Error('Content is required for remember operation');
     }
 
     const { result: memory, processingTime } = await this.withTiming(() =>
@@ -117,7 +117,7 @@ export class MCPHandler {
         userId: request.auth.userId,
         tenantId: request.auth.tenantId,
         ...context,
-      }),
+      })
     );
 
     return {
@@ -136,12 +136,12 @@ export class MCPHandler {
    */
   private async handleRecall(
     params: unknown,
-    request: AuthenticatedRequest,
+    request: AuthenticatedRequest
   ): Promise<MemoryResponse> {
     const { query, limit, threshold = 0.7 } = params as any;
 
     if (!query) {
-      throw new Error("Query is required for recall operation");
+      throw new Error('Query is required for recall operation');
     }
 
     // Intelligent limit management: default to 5, max 20 to prevent excessive output
@@ -155,22 +155,23 @@ export class MCPHandler {
         {
           limit: intelligentLimit,
           threshold,
-        },
-      ),
+        }
+      )
     );
 
     // Filter and format memories for clean output
     const filteredMemories = memories
-      .map((result) => result.memory)
-      .filter((memory) => memory !== undefined)
+      .map(result => result.memory)
+      .filter(memory => memory !== undefined)
       .slice(0, intelligentLimit); // Ensure we don't exceed the limit
 
     // Truncate long content for cleaner output
-    const processedMemories = filteredMemories.map((memory) => ({
+    const processedMemories = filteredMemories.map(memory => ({
       ...memory,
-      content: memory.content.length > 200
-        ? memory.content.substring(0, 200) + "..."
-        : memory.content,
+      content:
+        memory.content.length > 200
+          ? memory.content.substring(0, 200) + '...'
+          : memory.content,
     }));
 
     return {
@@ -189,13 +190,13 @@ export class MCPHandler {
    */
   private async handleForget(
     params: unknown,
-    request: AuthenticatedRequest,
+    request: AuthenticatedRequest
   ): Promise<MemoryResponse> {
     const { memoryId, query } = params as any;
 
     if (!memoryId && !query) {
       throw new Error(
-        "Either memoryId or query is required for forget operation",
+        'Either memoryId or query is required for forget operation'
       );
     }
 
@@ -203,8 +204,8 @@ export class MCPHandler {
       this.memoryEngine.forget(
         query || `id:${memoryId}`,
         request.auth.tenantId,
-        request.auth.userId,
-      ),
+        request.auth.userId
+      )
     );
 
     return {
@@ -223,7 +224,7 @@ export class MCPHandler {
    */
   private async handleContext(
     params: unknown,
-    request: AuthenticatedRequest,
+    request: AuthenticatedRequest
   ): Promise<MemoryResponse> {
     const { topic, timeframe, limit = 50 } = params as any;
 
@@ -234,7 +235,7 @@ export class MCPHandler {
         max_memories: limit,
         tenant_id: request.auth.tenantId,
         agent_id: request.auth.userId,
-      }),
+      })
     );
 
     return {
@@ -262,22 +263,22 @@ export class MCPHandler {
   private async handleCapabilities(): Promise<unknown> {
     return {
       methods: [
-        "memory/remember",
-        "memory/recall",
-        "memory/forget",
-        "memory/context",
-        "server/health",
-        "server/capabilities",
+        'memory/remember',
+        'memory/recall',
+        'memory/forget',
+        'memory/context',
+        'server/health',
+        'server/capabilities',
       ],
       features: [
-        "semantic_search",
-        "temporal_awareness",
-        "context_generation",
-        "multi_tenant",
-        "encryption",
-        "rate_limiting",
+        'semantic_search',
+        'temporal_awareness',
+        'context_generation',
+        'multi_tenant',
+        'encryption',
+        'rate_limiting',
       ],
-      version: "0.1.0",
+      version: '0.1.0',
     };
   }
 
@@ -287,8 +288,8 @@ export class MCPHandler {
   private isValidMCPRequest(request: unknown): request is MCPRequest {
     return (
       (request as any) &&
-      (request as any).jsonrpc === "2.0" &&
-      typeof (request as any).method === "string"
+      (request as any).jsonrpc === '2.0' &&
+      typeof (request as any).method === 'string'
     );
   }
 
@@ -299,10 +300,10 @@ export class MCPHandler {
     reply: FastifyReply,
     code: number,
     message: string,
-    id?: string | number,
+    id?: string | number
   ): Promise<void> {
     await reply.send({
-      jsonrpc: "2.0",
+      jsonrpc: '2.0',
       error: { code, message },
       id: id || null,
     } as MCPResponse);
@@ -319,7 +320,7 @@ export class MCPHandler {
    * Utility to measure execution time of async operations
    */
   private async withTiming<T>(
-    operation: () => Promise<T>,
+    operation: () => Promise<T>
   ): Promise<{ result: T; processingTime: number }> {
     const startTime = Date.now();
     const result = await operation();

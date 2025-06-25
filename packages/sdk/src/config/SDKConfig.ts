@@ -6,7 +6,7 @@ import type {
   ClientOptions,
   CacheOptions,
   ConnectionOptions,
-} from "../types/index.js";
+} from '../types/index.js';
 
 /**
  * SDK configuration manager
@@ -35,7 +35,7 @@ export class SDKConfig {
       ttl: options.cache?.ttl !== undefined ? options.cache.ttl : 300, // 5 minutes default
       maxSize:
         options.cache?.maxSize !== undefined ? options.cache.maxSize : 1000,
-      strategy: options.cache?.strategy || "lru",
+      strategy: options.cache?.strategy || 'lru',
     };
     this.cacheEnabled = this.cacheOptions.enabled;
   } /**
@@ -49,10 +49,10 @@ export class SDKConfig {
         this.apiKey && this.apiKey.length > 0
           ? {
               Authorization: `Bearer ${this.apiKey}`,
-              "Content-Type": "application/json",
+              'Content-Type': 'application/json',
             }
           : {
-              "Content-Type": "application/json",
+              'Content-Type': 'application/json',
             },
     };
 
@@ -68,30 +68,30 @@ export class SDKConfig {
    */
   public validate(): void {
     if (!this.serverUrl) {
-      throw new Error("Server URL is required");
+      throw new Error('Server URL is required');
     }
 
     if (!/^https?:\/\/.+/.test(this.serverUrl)) {
-      throw new Error("Server URL must be a valid HTTP/HTTPS URL");
+      throw new Error('Server URL must be a valid HTTP/HTTPS URL');
     }
 
     if (this.timeout < 1000 || this.timeout > 300000) {
-      throw new Error("Timeout must be between 1 and 300 seconds");
+      throw new Error('Timeout must be between 1 and 300 seconds');
     }
 
     if (this.retryAttempts < 0 || this.retryAttempts > 10) {
-      throw new Error("Retry attempts must be between 0 and 10");
+      throw new Error('Retry attempts must be between 0 and 10');
     }
 
     if (this.retryDelay < 100 || this.retryDelay > 10000) {
-      throw new Error("Retry delay must be between 100ms and 10 seconds");
+      throw new Error('Retry delay must be between 100ms and 10 seconds');
     }
     if (
       this.cacheOptions.enabled &&
       this.cacheOptions.maxSize !== undefined &&
       (this.cacheOptions.maxSize < 1 || this.cacheOptions.maxSize > 100000)
     ) {
-      throw new Error("Cache max size must be between 1 and 100,000");
+      throw new Error('Cache max size must be between 1 and 100,000');
     }
 
     if (
@@ -99,7 +99,7 @@ export class SDKConfig {
       this.cacheOptions.ttl !== undefined &&
       (this.cacheOptions.ttl < 1 || this.cacheOptions.ttl > 86400)
     ) {
-      throw new Error("Cache TTL must be between 1 second and 1 day");
+      throw new Error('Cache TTL must be between 1 second and 1 day');
     }
   }
   /**
@@ -110,7 +110,7 @@ export class SDKConfig {
       serverUrl: this.serverUrl,
       apiKey:
         this.apiKey !== undefined && this.apiKey.length > 0
-          ? "***REDACTED***"
+          ? '***REDACTED***'
           : undefined,
       timeout: this.timeout,
       retryAttempts: this.retryAttempts,

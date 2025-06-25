@@ -9,12 +9,12 @@ import {
   createCipheriv,
   createDecipheriv,
   timingSafeEqual,
-} from "crypto";
-import { logger } from "../utils/logger.js";
+} from 'crypto';
+import { logger } from '../utils/logger.js';
 
 export interface ValidationRule {
   field: string;
-  type: "string" | "number" | "boolean" | "object" | "array";
+  type: 'string' | 'number' | 'boolean' | 'object' | 'array';
   required?: boolean;
   minLength?: number;
   maxLength?: number;
@@ -34,12 +34,12 @@ export interface RateLimitConfig {
 export interface SecurityAuditEvent {
   timestamp: Date;
   eventType:
-    | "auth"
-    | "access"
-    | "modification"
-    | "error"
-    | "security_violation";
-  severity: "low" | "medium" | "high" | "critical";
+    | 'auth'
+    | 'access'
+    | 'modification'
+    | 'error'
+    | 'security_violation';
+  severity: 'low' | 'medium' | 'high' | 'critical';
   tenantId: string;
   agentId?: string;
   action: string;
@@ -57,7 +57,7 @@ export class InputValidator {
    */
   public static validate(
     input: Record<string, unknown>,
-    rules: ValidationRule[],
+    rules: ValidationRule[]
   ): {
     isValid: boolean;
     errors: string[];
@@ -85,16 +85,16 @@ export class InputValidator {
       }
 
       // String-specific validations
-      if (rule.type === "string" && typeof value === "string") {
+      if (rule.type === 'string' && typeof value === 'string') {
         if (rule.minLength && value.length < rule.minLength) {
           errors.push(
-            `Field '${rule.field}' must be at least ${rule.minLength} characters`,
+            `Field '${rule.field}' must be at least ${rule.minLength} characters`
           );
         }
 
         if (rule.maxLength && value.length > rule.maxLength) {
           errors.push(
-            `Field '${rule.field}' must be no more than ${rule.maxLength} characters`,
+            `Field '${rule.field}' must be no more than ${rule.maxLength} characters`
           );
         }
 
@@ -104,16 +104,16 @@ export class InputValidator {
       }
 
       // Array-specific validations
-      if (rule.type === "array" && Array.isArray(value)) {
+      if (rule.type === 'array' && Array.isArray(value)) {
         if (rule.minLength && value.length < rule.minLength) {
           errors.push(
-            `Field '${rule.field}' must have at least ${rule.minLength} items`,
+            `Field '${rule.field}' must have at least ${rule.minLength} items`
           );
         }
 
         if (rule.maxLength && value.length > rule.maxLength) {
           errors.push(
-            `Field '${rule.field}' must have no more than ${rule.maxLength} items`,
+            `Field '${rule.field}' must have no more than ${rule.maxLength} items`
           );
         }
       } // Allowed values validation
@@ -121,7 +121,7 @@ export class InputValidator {
         const allowedValues = rule.allowedValues as (string | number)[];
         if (!allowedValues.includes(value as string | number)) {
           errors.push(
-            `Field '${rule.field}' must be one of: ${rule.allowedValues.join(", ")}`,
+            `Field '${rule.field}' must be one of: ${rule.allowedValues.join(', ')}`
           );
         }
       }
@@ -131,9 +131,9 @@ export class InputValidator {
         const customResult = rule.customValidator(value);
         if (customResult !== true) {
           errors.push(
-            typeof customResult === "string"
+            typeof customResult === 'string'
               ? customResult
-              : `Field '${rule.field}' is invalid`,
+              : `Field '${rule.field}' is invalid`
           );
         }
       }
@@ -149,14 +149,14 @@ export class InputValidator {
    * Sanitize string input to prevent injection attacks
    */
   public static sanitizeString(input: string): string {
-    if (typeof input !== "string") {
-      return "";
+    if (typeof input !== 'string') {
+      return '';
     }
 
     return input
-      .replace(/[<>]/g, "") // Remove potential HTML tags
-      .replace(/['"]/g, "") // Remove quotes that could break SQL/JS
-      .replace(/[\\]/g, "") // Remove backslashes
+      .replace(/[<>]/g, '') // Remove potential HTML tags
+      .replace(/['"]/g, '') // Remove quotes that could break SQL/JS
+      .replace(/[\\]/g, '') // Remove backslashes
       .trim();
   }
 
@@ -170,17 +170,17 @@ export class InputValidator {
   } {
     const errors: string[] = [];
 
-    if (!content || typeof content !== "string") {
-      errors.push("Content must be a non-empty string");
-      return { isValid: false, sanitizedContent: "", errors };
+    if (!content || typeof content !== 'string') {
+      errors.push('Content must be a non-empty string');
+      return { isValid: false, sanitizedContent: '', errors };
     }
 
     if (content.length > 10000) {
-      errors.push("Content exceeds maximum length of 10,000 characters");
+      errors.push('Content exceeds maximum length of 10,000 characters');
     }
 
     if (content.length < 1) {
-      errors.push("Content cannot be empty");
+      errors.push('Content cannot be empty');
     }
 
     // Check for suspicious patterns
@@ -193,7 +193,7 @@ export class InputValidator {
 
     for (const pattern of suspiciousPatterns) {
       if (pattern.test(content)) {
-        errors.push("Content contains potentially malicious code");
+        errors.push('Content contains potentially malicious code');
         break;
       }
     }
@@ -209,17 +209,17 @@ export class InputValidator {
 
   private static validateType(value: unknown, expectedType: string): boolean {
     switch (expectedType) {
-      case "string":
-        return typeof value === "string";
-      case "number":
-        return typeof value === "number" && !isNaN(value);
-      case "boolean":
-        return typeof value === "boolean";
-      case "object":
+      case 'string':
+        return typeof value === 'string';
+      case 'number':
+        return typeof value === 'number' && !isNaN(value);
+      case 'boolean':
+        return typeof value === 'boolean';
+      case 'object':
         return (
-          typeof value === "object" && value !== null && !Array.isArray(value)
+          typeof value === 'object' && value !== null && !Array.isArray(value)
         );
-      case "array":
+      case 'array':
         return Array.isArray(value);
       default:
         return false;
@@ -237,7 +237,7 @@ export class RateLimiter {
    */
   public isAllowed(
     tenantId: string,
-    agentId?: string,
+    agentId?: string
   ): {
     allowed: boolean;
     remainingRequests: number;
@@ -245,7 +245,7 @@ export class RateLimiter {
   } {
     const key = this.config.keyGenerator
       ? this.config.keyGenerator(tenantId, agentId)
-      : `${tenantId}:${agentId || "default"}`;
+      : `${tenantId}:${agentId || 'default'}`;
 
     const now = Date.now();
     const windowStart =
@@ -269,7 +269,7 @@ export class RateLimiter {
       allowed,
       remainingRequests: Math.max(
         0,
-        this.config.maxRequests - requestData.count,
+        this.config.maxRequests - requestData.count
       ),
       resetTime: new Date(windowStart + this.config.windowMs),
     };
@@ -280,7 +280,7 @@ export class RateLimiter {
    */
   public getStatus(
     tenantId: string,
-    agentId?: string,
+    agentId?: string
   ): {
     requestCount: number;
     remainingRequests: number;
@@ -289,7 +289,7 @@ export class RateLimiter {
     const result = this.isAllowed(tenantId, agentId);
     const key = this.config.keyGenerator
       ? this.config.keyGenerator(tenantId, agentId)
-      : `${tenantId}:${agentId || "default"}`;
+      : `${tenantId}:${agentId || 'default'}`;
 
     const requestData = this.requests.get(key);
 
@@ -315,7 +315,7 @@ export class SecurityAuditor {
   /**
    * Log a security audit event
    */
-  public logEvent(event: Omit<SecurityAuditEvent, "timestamp">): void {
+  public logEvent(event: Omit<SecurityAuditEvent, 'timestamp'>): void {
     const auditEvent: SecurityAuditEvent = {
       timestamp: new Date(),
       ...event,
@@ -327,8 +327,8 @@ export class SecurityAuditor {
     if (this.auditLog.length > this.maxLogSize) {
       this.auditLog = this.auditLog.slice(-Math.floor(this.maxLogSize * 0.8));
     } // Log critical events immediately
-    if (event.severity === "critical") {
-      logger.error("CRITICAL SECURITY EVENT:", auditEvent);
+    if (event.severity === 'critical') {
+      logger.error('CRITICAL SECURITY EVENT:', auditEvent);
     }
   }
 
@@ -340,27 +340,27 @@ export class SecurityAuditor {
     options: {
       startDate?: Date;
       endDate?: Date;
-      eventType?: SecurityAuditEvent["eventType"];
-      severity?: SecurityAuditEvent["severity"];
+      eventType?: SecurityAuditEvent['eventType'];
+      severity?: SecurityAuditEvent['severity'];
       limit?: number;
-    } = {},
+    } = {}
   ): SecurityAuditEvent[] {
-    let events = this.auditLog.filter((event) => event.tenantId === tenantId);
+    let events = this.auditLog.filter(event => event.tenantId === tenantId);
 
     if (options.startDate) {
-      events = events.filter((event) => event.timestamp >= options.startDate!);
+      events = events.filter(event => event.timestamp >= options.startDate!);
     }
 
     if (options.endDate) {
-      events = events.filter((event) => event.timestamp <= options.endDate!);
+      events = events.filter(event => event.timestamp <= options.endDate!);
     }
 
     if (options.eventType) {
-      events = events.filter((event) => event.eventType === options.eventType);
+      events = events.filter(event => event.eventType === options.eventType);
     }
 
     if (options.severity) {
-      events = events.filter((event) => event.severity === options.severity);
+      events = events.filter(event => event.severity === options.severity);
     }
 
     // Sort by timestamp descending (newest first)
@@ -384,15 +384,15 @@ export class SecurityAuditor {
     recentCriticalEvents: number;
   } {
     const events = tenantId
-      ? this.auditLog.filter((event) => event.tenantId === tenantId)
+      ? this.auditLog.filter(event => event.tenantId === tenantId)
       : this.auditLog;
 
     const now = new Date();
     const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
-    const recentEvents = events.filter((event) => event.timestamp >= oneDayAgo);
+    const recentEvents = events.filter(event => event.timestamp >= oneDayAgo);
     const recentCriticalEvents = recentEvents.filter(
-      (event) => event.severity === "critical",
+      event => event.severity === 'critical'
     ).length;
 
     const eventsBySeverity = events.reduce(
@@ -400,7 +400,7 @@ export class SecurityAuditor {
         acc[event.severity] = (acc[event.severity] || 0) + 1;
         return acc;
       },
-      {} as Record<string, number>,
+      {} as Record<string, number>
     );
 
     const eventsByType = events.reduce(
@@ -408,10 +408,10 @@ export class SecurityAuditor {
         acc[event.eventType] = (acc[event.eventType] || 0) + 1;
         return acc;
       },
-      {} as Record<string, number>,
+      {} as Record<string, number>
     );
 
-    const failedEvents = events.filter((event) => !event.success).length;
+    const failedEvents = events.filter(event => !event.success).length;
     const failureRate = events.length > 0 ? failedEvents / events.length : 0;
 
     return {
@@ -426,33 +426,33 @@ export class SecurityAuditor {
   /**
    * Export audit log for external security systems
    */
-  public exportAuditLog(format: "json" | "csv" = "json"): string {
-    if (format === "csv") {
+  public exportAuditLog(format: 'json' | 'csv' = 'json'): string {
+    if (format === 'csv') {
       const headers = [
-        "timestamp",
-        "eventType",
-        "severity",
-        "tenantId",
-        "agentId",
-        "action",
-        "resource",
-        "success",
-        "errorMessage",
+        'timestamp',
+        'eventType',
+        'severity',
+        'tenantId',
+        'agentId',
+        'action',
+        'resource',
+        'success',
+        'errorMessage',
       ];
 
-      const rows = this.auditLog.map((event) => [
+      const rows = this.auditLog.map(event => [
         event.timestamp.toISOString(),
         event.eventType,
         event.severity,
         event.tenantId,
-        event.agentId || "",
+        event.agentId || '',
         event.action,
-        event.resource || "",
+        event.resource || '',
         event.success.toString(),
-        event.errorMessage || "",
+        event.errorMessage || '',
       ]);
 
-      return [headers, ...rows].map((row) => row.join(",")).join("\n");
+      return [headers, ...rows].map(row => row.join(',')).join('\n');
     }
 
     return JSON.stringify(this.auditLog, null, 2);
@@ -460,15 +460,15 @@ export class SecurityAuditor {
 }
 
 export class EncryptionManager {
-  private algorithm = "aes-256-cbc";
+  private algorithm = 'aes-256-cbc';
   private key: Buffer;
 
   constructor(private encryptionKey: string) {
     if (!encryptionKey || encryptionKey.length < 32) {
-      throw new Error("Encryption key must be at least 32 characters long");
+      throw new Error('Encryption key must be at least 32 characters long');
     }
     // Create a 32-byte key from the input string
-    this.key = createHash("sha256").update(encryptionKey).digest();
+    this.key = createHash('sha256').update(encryptionKey).digest();
   } /**
    * Encrypt sensitive data
    */
@@ -476,32 +476,32 @@ export class EncryptionManager {
     const iv = randomBytes(16);
     const cipher = createCipheriv(this.algorithm, this.key, iv);
 
-    let encrypted = cipher.update(text, "utf8", "hex");
-    encrypted += cipher.final("hex");
+    let encrypted = cipher.update(text, 'utf8', 'hex');
+    encrypted += cipher.final('hex');
 
-    return iv.toString("hex") + ":" + encrypted;
+    return iv.toString('hex') + ':' + encrypted;
   }
   /**
    * Decrypt sensitive data
    */
   public decrypt(encryptedText: string): string {
-    const parts = encryptedText.split(":");
+    const parts = encryptedText.split(':');
     if (parts.length !== 2) {
-      throw new Error("Invalid encrypted text format");
+      throw new Error('Invalid encrypted text format');
     }
 
     const ivPart = parts[0];
     const encryptedPart = parts[1];
 
     if (!ivPart || !encryptedPart) {
-      throw new Error("Invalid encrypted text format - missing parts");
+      throw new Error('Invalid encrypted text format - missing parts');
     }
-    const iv = Buffer.from(ivPart, "hex");
+    const iv = Buffer.from(ivPart, 'hex');
 
     const decipher = createDecipheriv(this.algorithm, this.key, iv);
 
-    let decrypted: string = decipher.update(encryptedPart, "hex", "utf8");
-    decrypted += decipher.final("utf8");
+    let decrypted: string = decipher.update(encryptedPart, 'hex', 'utf8');
+    decrypted += decipher.final('utf8');
 
     return decrypted;
   }
@@ -510,17 +510,17 @@ export class EncryptionManager {
    * Hash data for secure comparison
    */
   public hash(data: string, salt?: string): string {
-    const actualSalt = salt || randomBytes(16).toString("hex");
-    const hash = createHash("sha256");
+    const actualSalt = salt || randomBytes(16).toString('hex');
+    const hash = createHash('sha256');
     hash.update(data + actualSalt);
 
-    return actualSalt + ":" + hash.digest("hex");
+    return actualSalt + ':' + hash.digest('hex');
   }
   /**
    * Verify hashed data
    */
   public verifyHash(data: string, hashedData: string): boolean {
-    const parts = hashedData.split(":");
+    const parts = hashedData.split(':');
     if (parts.length !== 2) {
       return false;
     }
@@ -533,7 +533,7 @@ export class EncryptionManager {
     }
 
     const actualHashWithSalt = this.hash(data, salt);
-    const actualHashParts = actualHashWithSalt.split(":");
+    const actualHashParts = actualHashWithSalt.split(':');
 
     if (actualHashParts.length !== 2) {
       return false;
@@ -546,8 +546,8 @@ export class EncryptionManager {
     }
 
     return timingSafeEqual(
-      Buffer.from(expectedHash, "hex"),
-      Buffer.from(actualHash, "hex"),
+      Buffer.from(expectedHash, 'hex'),
+      Buffer.from(actualHash, 'hex')
     );
   }
 }
@@ -617,7 +617,7 @@ export class SecurityManager {
    */
   public validateInput(
     input: Record<string, unknown>,
-    rules: ValidationRule[],
+    rules: ValidationRule[]
   ): {
     isValid: boolean;
     errors: string[];
@@ -657,8 +657,8 @@ export class SecurityManager {
     const auditOptions: {
       startDate?: Date;
       endDate?: Date;
-      eventType?: SecurityAuditEvent["eventType"];
-      severity?: SecurityAuditEvent["severity"];
+      eventType?: SecurityAuditEvent['eventType'];
+      severity?: SecurityAuditEvent['severity'];
     } = {};
 
     if (filter.startDate) {
@@ -669,10 +669,10 @@ export class SecurityManager {
     }
     if (filter.eventType) {
       auditOptions.eventType =
-        filter.eventType as SecurityAuditEvent["eventType"];
+        filter.eventType as SecurityAuditEvent['eventType'];
     }
     if (filter.severity) {
-      auditOptions.severity = filter.severity as SecurityAuditEvent["severity"];
+      auditOptions.severity = filter.severity as SecurityAuditEvent['severity'];
     }
 
     return this.auditor.getTenantAuditLog(filter.tenantId, auditOptions);

@@ -20,7 +20,7 @@ npm run emergency-cleanup
 Replace your current memory engine initialization with:
 
 ```typescript
-import { HighPerformanceMemoryEngine } from "@codai/memorai-core";
+import { HighPerformanceMemoryEngine } from '@codai/memorai-core';
 
 const memoryEngine = new HighPerformanceMemoryEngine({
   // Optimized configuration for your 45GB issue

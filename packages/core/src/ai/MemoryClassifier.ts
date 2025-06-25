@@ -39,21 +39,25 @@ export class AIMemoryClassifier {
   /**
    * Classify a memory entry using AI-powered analysis
    */
-  async classifyMemory(content: string, existingMetadata?: MemoryMetadata): Promise<MemoryClassification> {
+  async classifyMemory(
+    content: string,
+    existingMetadata?: MemoryMetadata
+  ): Promise<MemoryClassification> {
     try {
       const prompt = this.buildClassificationPrompt(content, existingMetadata);
-      
+
       const response = await this.openai.chat.completions.create({
         model: 'gpt-4-turbo-preview',
         messages: [
           {
             role: 'system',
-            content: 'You are an expert memory classification system. Analyze the given content and provide structured classification data.'
+            content:
+              'You are an expert memory classification system. Analyze the given content and provide structured classification data.',
           },
           {
             role: 'user',
-            content: prompt
-          }
+            content: prompt,
+          },
         ],
         temperature: 0.2,
         max_tokens: 1000,
@@ -74,16 +78,18 @@ export class AIMemoryClassifier {
   /**
    * Batch classify multiple memories for efficiency
    */
-  async classifyMemoryBatch(memories: Array<{ content: string; metadata?: MemoryMetadata }>): Promise<MemoryClassification[]> {
+  async classifyMemoryBatch(
+    memories: Array<{ content: string; metadata?: MemoryMetadata }>
+  ): Promise<MemoryClassification[]> {
     const batchSize = 10;
     const results: MemoryClassification[] = [];
 
     for (let i = 0; i < memories.length; i += batchSize) {
       const batch = memories.slice(i, i + batchSize);
-      const batchPromises = batch.map(memory => 
+      const batchPromises = batch.map(memory =>
         this.classifyMemory(memory.content, memory.metadata)
       );
-      
+
       const batchResults = await Promise.all(batchPromises);
       results.push(...batchResults);
     }
@@ -94,14 +100,16 @@ export class AIMemoryClassifier {
   /**
    * Re-classify existing memories with improved AI models
    */
-  async reclassifyMemories(memories: MemoryMetadata[]): Promise<Array<{ id: string; classification: MemoryClassification }>> {
+  async reclassifyMemories(
+    memories: MemoryMetadata[]
+  ): Promise<Array<{ id: string; classification: MemoryClassification }>> {
     const results = [];
-    
+
     for (const memory of memories) {
       const classification = await this.classifyMemory(memory.content, memory);
       results.push({
         id: memory.id,
-        classification
+        classification,
       });
     }
 
@@ -111,7 +119,12 @@ export class AIMemoryClassifier {
   /**
    * Extract relationships between memories
    */
-  async extractRelationships(sourceMemory: string, relatedMemories: string[]): Promise<Array<{ target: string; relationship: string; confidence: number }>> {
+  async extractRelationships(
+    sourceMemory: string,
+    relatedMemories: string[]
+  ): Promise<
+    Array<{ target: string; relationship: string; confidence: number }>
+  > {
     const prompt = `
     Analyze the relationships between the source memory and related memories:
     
@@ -132,12 +145,13 @@ export class AIMemoryClassifier {
         messages: [
           {
             role: 'system',
-            content: 'You are an expert at identifying semantic relationships between pieces of information. Always return valid JSON.'
+            content:
+              'You are an expert at identifying semantic relationships between pieces of information. Always return valid JSON.',
           },
           {
             role: 'user',
-            content: prompt
-          }
+            content: prompt,
+          },
         ],
         temperature: 0.1,
         max_tokens: 800,
@@ -153,7 +167,10 @@ export class AIMemoryClassifier {
     }
   }
 
-  private buildClassificationPrompt(content: string, existingMetadata?: MemoryMetadata): string {
+  private buildClassificationPrompt(
+    content: string,
+    existingMetadata?: MemoryMetadata
+  ): string {
     return `
     Classify the following memory content and provide structured analysis:
 
@@ -189,8 +206,10 @@ export class AIMemoryClassifier {
         importance: Math.max(0, Math.min(1, parsed.importance || 0.5)),
         sentiment: parsed.sentiment || 'neutral',
         entityType: parsed.entityType || 'note',
-        relationships: Array.isArray(parsed.relationships) ? parsed.relationships : [],
-        confidence: Math.max(0, Math.min(1, parsed.confidence || 0.5))
+        relationships: Array.isArray(parsed.relationships)
+          ? parsed.relationships
+          : [],
+        confidence: Math.max(0, Math.min(1, parsed.confidence || 0.5)),
       };
     } catch (error) {
       console.error('Failed to parse classification result:', error);
@@ -201,20 +220,44 @@ export class AIMemoryClassifier {
   private getFallbackClassification(content: string): MemoryClassification {
     // Simple heuristic-based classification as fallback
     const categories = {
-      technical: ['code', 'bug', 'api', 'database', 'server', 'deployment', 'error', 'performance'],
-      business: ['meeting', 'decision', 'strategy', 'goal', 'revenue', 'customer', 'market'],
-      project: ['task', 'milestone', 'deadline', 'deliverable', 'requirement', 'progress'],
-      personal: ['note', 'reminder', 'idea', 'thought', 'reflection']
+      technical: [
+        'code',
+        'bug',
+        'api',
+        'database',
+        'server',
+        'deployment',
+        'error',
+        'performance',
+      ],
+      business: [
+        'meeting',
+        'decision',
+        'strategy',
+        'goal',
+        'revenue',
+        'customer',
+        'market',
+      ],
+      project: [
+        'task',
+        'milestone',
+        'deadline',
+        'deliverable',
+        'requirement',
+        'progress',
+      ],
+      personal: ['note', 'reminder', 'idea', 'thought', 'reflection'],
     };
 
     let category = 'general';
     let maxMatches = 0;
 
     for (const [cat, keywords] of Object.entries(categories)) {
-      const matches = keywords.filter(keyword => 
+      const matches = keywords.filter(keyword =>
         content.toLowerCase().includes(keyword)
       ).length;
-      
+
       if (matches > maxMatches) {
         maxMatches = matches;
         category = cat;
@@ -223,12 +266,15 @@ export class AIMemoryClassifier {
 
     return {
       category,
-      tags: content.split(' ').slice(0, 5).filter(word => word.length > 3),
+      tags: content
+        .split(' ')
+        .slice(0, 5)
+        .filter(word => word.length > 3),
       importance: 0.5,
       sentiment: 'neutral',
       entityType: 'note',
       relationships: [],
-      confidence: 0.3
+      confidence: 0.3,
     };
   }
 }

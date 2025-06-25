@@ -22,17 +22,17 @@ export interface AIMemoryRelationship {
   };
 }
 
-export type RelationshipType = 
-  | 'causal'           // A causes B
-  | 'temporal'         // A happens before/after B
-  | 'semantic'         // A is similar/related to B
-  | 'hierarchical'     // A is parent/child of B
-  | 'contradictory'    // A contradicts B
-  | 'supportive'       // A supports/reinforces B
-  | 'contextual'       // A provides context for B
-  | 'sequential'       // A follows B in sequence
-  | 'associative'      // A is associated with B
-  | 'comparative';     // A compares to B
+export type RelationshipType =
+  | 'causal' // A causes B
+  | 'temporal' // A happens before/after B
+  | 'semantic' // A is similar/related to B
+  | 'hierarchical' // A is parent/child of B
+  | 'contradictory' // A contradicts B
+  | 'supportive' // A supports/reinforces B
+  | 'contextual' // A provides context for B
+  | 'sequential' // A follows B in sequence
+  | 'associative' // A is associated with B
+  | 'comparative'; // A compares to B
 
 export interface RelationshipExtractionConfig {
   openaiApiKey?: string;
@@ -56,12 +56,12 @@ export class RelationshipExtractor {
       enableSemanticAnalysis: true,
       enableTemporalAnalysis: true,
       semanticThreshold: 0.7,
-      ...config
+      ...config,
     };
 
     if (this.config.openaiApiKey) {
       this.openai = new OpenAI({
-        apiKey: this.config.openaiApiKey
+        apiKey: this.config.openaiApiKey,
       });
     }
   }
@@ -69,17 +69,21 @@ export class RelationshipExtractor {
   /**
    * Extract relationships from a set of memories
    */
-  async extractRelationships(memories: MemoryMetadata[]): Promise<AIMemoryRelationship[]> {
+  async extractRelationships(
+    memories: MemoryMetadata[]
+  ): Promise<AIMemoryRelationship[]> {
     const relationships: AIMemoryRelationship[] = [];
 
     // Extract relationships using multiple methods
     if (this.config.enableSemanticAnalysis) {
-      const semanticRelationships = await this.extractSemanticRelationships(memories);
+      const semanticRelationships =
+        await this.extractSemanticRelationships(memories);
       relationships.push(...semanticRelationships);
     }
 
     if (this.config.enableTemporalAnalysis) {
-      const temporalRelationships = await this.extractTemporalRelationships(memories);
+      const temporalRelationships =
+        await this.extractTemporalRelationships(memories);
       relationships.push(...temporalRelationships);
     }
 
@@ -91,7 +95,7 @@ export class RelationshipExtractor {
 
     // Deduplicate and filter by confidence
     const uniqueRelationships = this.deduplicateRelationships(relationships);
-    
+
     return uniqueRelationships
       .filter(rel => rel.confidence >= this.config.minConfidence)
       .sort((a, b) => b.confidence - a.confidence);
@@ -100,7 +104,9 @@ export class RelationshipExtractor {
   /**
    * Extract semantic relationships based on content similarity and tags
    */
-  private async extractSemanticRelationships(memories: MemoryMetadata[]): Promise<AIMemoryRelationship[]> {
+  private async extractSemanticRelationships(
+    memories: MemoryMetadata[]
+  ): Promise<AIMemoryRelationship[]> {
     const relationships: AIMemoryRelationship[] = [];
 
     for (let i = 0; i < memories.length; i++) {
@@ -114,7 +120,8 @@ export class RelationshipExtractor {
         // Tag-based relationships
         const sharedTags = memA.tags.filter(tag => memB.tags.includes(tag));
         if (sharedTags.length > 0) {
-          const strength = sharedTags.length / Math.max(memA.tags.length, memB.tags.length);
+          const strength =
+            sharedTags.length / Math.max(memA.tags.length, memB.tags.length);
           const confidence = Math.min(0.9, strength + 0.2);
 
           if (confidence >= this.config.semanticThreshold) {
@@ -129,14 +136,17 @@ export class RelationshipExtractor {
               extractedAt: new Date(),
               metadata: {
                 keywords: sharedTags,
-                evidence: [`Shared tags: ${sharedTags.join(', ')}`]
-              }
+                evidence: [`Shared tags: ${sharedTags.join(', ')}`],
+              },
             });
           }
         }
 
         // Content similarity (basic keyword matching)
-        const contentSimilarity = this.calculateContentSimilarity(memA.content, memB.content);
+        const contentSimilarity = this.calculateContentSimilarity(
+          memA.content,
+          memB.content
+        );
         if (contentSimilarity > this.config.semanticThreshold) {
           relationships.push({
             id: `content_${memA.id}_${memB.id}`,
@@ -148,8 +158,10 @@ export class RelationshipExtractor {
             description: `Similar content patterns detected`,
             extractedAt: new Date(),
             metadata: {
-              evidence: [`Content similarity score: ${contentSimilarity.toFixed(2)}`]
-            }
+              evidence: [
+                `Content similarity score: ${contentSimilarity.toFixed(2)}`,
+              ],
+            },
           });
         }
 
@@ -166,8 +178,8 @@ export class RelationshipExtractor {
             extractedAt: new Date(),
             metadata: {
               keywords: [memA.type],
-              evidence: [`Same memory type: ${memA.type}`]
-            }
+              evidence: [`Same memory type: ${memA.type}`],
+            },
           });
         }
       }
@@ -184,22 +196,27 @@ export class RelationshipExtractor {
   /**
    * Extract temporal relationships based on timestamps
    */
-  private async extractTemporalRelationships(memories: MemoryMetadata[]): Promise<AIMemoryRelationship[]> {
+  private async extractTemporalRelationships(
+    memories: MemoryMetadata[]
+  ): Promise<AIMemoryRelationship[]> {
     const relationships: AIMemoryRelationship[] = [];
 
     // Sort memories by creation time
-    const sortedMemories = [...memories].sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+    const sortedMemories = [...memories].sort(
+      (a, b) => a.createdAt.getTime() - b.createdAt.getTime()
+    );
 
     for (let i = 0; i < sortedMemories.length - 1; i++) {
       const currentMemory = sortedMemories[i];
       const nextMemory = sortedMemories[i + 1];
 
-      const timeDiff = nextMemory.createdAt.getTime() - currentMemory.createdAt.getTime();
+      const timeDiff =
+        nextMemory.createdAt.getTime() - currentMemory.createdAt.getTime();
       const hoursDiff = timeDiff / (1000 * 60 * 60);
 
       // Close temporal proximity (within 4 hours)
       if (hoursDiff <= 4) {
-        const strength = 1 - (hoursDiff / 4); // Closer = stronger
+        const strength = 1 - hoursDiff / 4; // Closer = stronger
         const confidence = 0.8;
 
         relationships.push({
@@ -213,17 +230,21 @@ export class RelationshipExtractor {
           extractedAt: new Date(),
           metadata: {
             context: `Temporal sequence with ${hoursDiff.toFixed(1)} hour gap`,
-            evidence: [`Created at ${currentMemory.createdAt.toISOString()}`, `Followed by ${nextMemory.createdAt.toISOString()}`]
-          }
+            evidence: [
+              `Created at ${currentMemory.createdAt.toISOString()}`,
+              `Followed by ${nextMemory.createdAt.toISOString()}`,
+            ],
+          },
         });
       }
 
       // Sequential patterns (same agent, close timing, similar types)
-      if (currentMemory.agent_id === nextMemory.agent_id && 
-          currentMemory.agent_id && 
-          hoursDiff <= 1 && 
-          this.areTypesRelated(currentMemory.type, nextMemory.type)) {
-        
+      if (
+        currentMemory.agent_id === nextMemory.agent_id &&
+        currentMemory.agent_id &&
+        hoursDiff <= 1 &&
+        this.areTypesRelated(currentMemory.type, nextMemory.type)
+      ) {
         relationships.push({
           id: `sequential_${currentMemory.id}_${nextMemory.id}`,
           sourceMemoryId: currentMemory.id,
@@ -236,8 +257,11 @@ export class RelationshipExtractor {
           metadata: {
             context: `Agent workflow sequence`,
             keywords: [currentMemory.agent_id],
-            evidence: [`Same agent: ${currentMemory.agent_id}`, `Close timing: ${hoursDiff.toFixed(1)} hours`]
-          }
+            evidence: [
+              `Same agent: ${currentMemory.agent_id}`,
+              `Close timing: ${hoursDiff.toFixed(1)} hours`,
+            ],
+          },
         });
       }
     }
@@ -248,7 +272,9 @@ export class RelationshipExtractor {
   /**
    * Extract relationships using AI analysis
    */
-  private async extractAIRelationships(memories: MemoryMetadata[]): Promise<AIMemoryRelationship[]> {
+  private async extractAIRelationships(
+    memories: MemoryMetadata[]
+  ): Promise<AIMemoryRelationship[]> {
     if (!this.openai) return [];
 
     const relationships: AIMemoryRelationship[] = [];
@@ -257,7 +283,7 @@ export class RelationshipExtractor {
     const batchSize = 5;
     for (let i = 0; i < memories.length; i += batchSize) {
       const batch = memories.slice(i, i + batchSize);
-      
+
       try {
         const prompt = this.buildRelationshipPrompt(batch);
         const response = await this.openai.chat.completions.create({
@@ -265,20 +291,24 @@ export class RelationshipExtractor {
           messages: [
             {
               role: 'system',
-              content: 'You are an expert at analyzing relationships between pieces of information. Identify meaningful relationships between memory entries.'
+              content:
+                'You are an expert at analyzing relationships between pieces of information. Identify meaningful relationships between memory entries.',
             },
             {
               role: 'user',
-              content: prompt
-            }
+              content: prompt,
+            },
           ],
           temperature: 0.3,
-          max_tokens: 1500
+          max_tokens: 1500,
         });
 
         const aiAnalysis = response.choices[0]?.message?.content;
         if (aiAnalysis) {
-          const extractedRelationships = this.parseAIRelationships(aiAnalysis, batch);
+          const extractedRelationships = this.parseAIRelationships(
+            aiAnalysis,
+            batch
+          );
           relationships.push(...extractedRelationships);
         }
       } catch (error) {
@@ -293,14 +323,17 @@ export class RelationshipExtractor {
    * Build prompt for AI relationship extraction
    */
   private buildRelationshipPrompt(memories: MemoryMetadata[]): string {
-    const memoryDescriptions = memories.map((memory, index) => 
-      `Memory ${index + 1} (ID: ${memory.id}):\n` +
-      `Type: ${memory.type}\n` +
-      `Content: ${memory.content}\n` +
-      `Tags: ${memory.tags.join(', ')}\n` +
-      `Created: ${memory.createdAt.toISOString()}\n` +
-      `Importance: ${memory.importance}\n`
-    ).join('\n---\n');
+    const memoryDescriptions = memories
+      .map(
+        (memory, index) =>
+          `Memory ${index + 1} (ID: ${memory.id}):\n` +
+          `Type: ${memory.type}\n` +
+          `Content: ${memory.content}\n` +
+          `Tags: ${memory.tags.join(', ')}\n` +
+          `Created: ${memory.createdAt.toISOString()}\n` +
+          `Importance: ${memory.importance}\n`
+      )
+      .join('\n---\n');
 
     return `Analyze the following memories and identify meaningful relationships between them:
 
@@ -331,7 +364,10 @@ Only include relationships with confidence >= 0.6.`;
   /**
    * Parse AI response into relationships
    */
-  private parseAIRelationships(aiResponse: string, memories: MemoryMetadata[]): AIMemoryRelationship[] {
+  private parseAIRelationships(
+    aiResponse: string,
+    memories: MemoryMetadata[]
+  ): AIMemoryRelationship[] {
     const relationships: AIMemoryRelationship[] = [];
 
     try {
@@ -354,8 +390,8 @@ Only include relationships with confidence >= 0.6.`;
             extractedAt: new Date(),
             metadata: {
               evidence: ['AI-identified relationship'],
-              context: 'Generated by AI analysis'
-            }
+              context: 'Generated by AI analysis',
+            },
           });
         }
       }
@@ -369,9 +405,18 @@ Only include relationships with confidence >= 0.6.`;
   /**
    * Calculate basic content similarity using keyword overlap
    */
-  private calculateContentSimilarity(content1: string, content2: string): number {
-    const words1 = content1.toLowerCase().split(/\W+/).filter(word => word.length > 3);
-    const words2 = content2.toLowerCase().split(/\W+/).filter(word => word.length > 3);
+  private calculateContentSimilarity(
+    content1: string,
+    content2: string
+  ): number {
+    const words1 = content1
+      .toLowerCase()
+      .split(/\W+/)
+      .filter(word => word.length > 3);
+    const words2 = content2
+      .toLowerCase()
+      .split(/\W+/)
+      .filter(word => word.length > 3);
 
     if (words1.length === 0 || words2.length === 0) return 0;
 
@@ -387,18 +432,20 @@ Only include relationships with confidence >= 0.6.`;
       ['task', 'procedure'],
       ['fact', 'preference'],
       ['personality', 'emotion'],
-      ['thread', 'task']
+      ['thread', 'task'],
     ];
 
-    return relatedPairs.some(([a, b]) => 
-      (type1 === a && type2 === b) || (type1 === b && type2 === a)
+    return relatedPairs.some(
+      ([a, b]) => (type1 === a && type2 === b) || (type1 === b && type2 === a)
     );
   }
 
   /**
    * Remove duplicate relationships
    */
-  private deduplicateRelationships(relationships: AIMemoryRelationship[]): AIMemoryRelationship[] {
+  private deduplicateRelationships(
+    relationships: AIMemoryRelationship[]
+  ): AIMemoryRelationship[] {
     const seen = new Set<string>();
     const unique: AIMemoryRelationship[] = [];
 
@@ -419,18 +466,25 @@ Only include relationships with confidence >= 0.6.`;
   /**
    * Get relationships for a specific memory
    */
-  async getRelationshipsForMemory(memoryId: string, allRelationships: AIMemoryRelationship[]): Promise<{
+  async getRelationshipsForMemory(
+    memoryId: string,
+    allRelationships: AIMemoryRelationship[]
+  ): Promise<{
     outgoing: AIMemoryRelationship[];
     incoming: AIMemoryRelationship[];
     total: number;
   }> {
-    const outgoing = allRelationships.filter(rel => rel.sourceMemoryId === memoryId);
-    const incoming = allRelationships.filter(rel => rel.targetMemoryId === memoryId);
+    const outgoing = allRelationships.filter(
+      rel => rel.sourceMemoryId === memoryId
+    );
+    const incoming = allRelationships.filter(
+      rel => rel.targetMemoryId === memoryId
+    );
 
     return {
       outgoing,
       incoming,
-      total: outgoing.length + incoming.length
+      total: outgoing.length + incoming.length,
     };
   }
 
@@ -450,26 +504,39 @@ Only include relationships with confidence >= 0.6.`;
     relationships.forEach(rel => {
       memoryIds.add(rel.sourceMemoryId);
       memoryIds.add(rel.targetMemoryId);
-      relationshipTypes.set(rel.relationshipType, (relationshipTypes.get(rel.relationshipType) || 0) + 1);
+      relationshipTypes.set(
+        rel.relationshipType,
+        (relationshipTypes.get(rel.relationshipType) || 0) + 1
+      );
     });
 
     const totalMemories = memoryIds.size;
     const totalRelationships = relationships.length;
-    const averageRelationshipsPerMemory = totalMemories > 0 ? totalRelationships / totalMemories : 0;
+    const averageRelationshipsPerMemory =
+      totalMemories > 0 ? totalRelationships / totalMemories : 0;
 
     // Calculate network density (actual connections / possible connections)
-    const possibleConnections = totalMemories * (totalMemories - 1) / 2;
-    const networkDensity = possibleConnections > 0 ? totalRelationships / possibleConnections : 0;
+    const possibleConnections = (totalMemories * (totalMemories - 1)) / 2;
+    const networkDensity =
+      possibleConnections > 0 ? totalRelationships / possibleConnections : 0;
 
     // Find strongest relationship type
-    const strongestRelationshipType = Array.from(relationshipTypes.entries())
-      .sort(([, a], [, b]) => b - a)[0]?.[0] || 'semantic';
+    const strongestRelationshipType =
+      Array.from(relationshipTypes.entries()).sort(
+        ([, a], [, b]) => b - a
+      )[0]?.[0] || 'semantic';
 
     // Find central memories (most connected)
     const connectionCounts = new Map<string, number>();
     relationships.forEach(rel => {
-      connectionCounts.set(rel.sourceMemoryId, (connectionCounts.get(rel.sourceMemoryId) || 0) + 1);
-      connectionCounts.set(rel.targetMemoryId, (connectionCounts.get(rel.targetMemoryId) || 0) + 1);
+      connectionCounts.set(
+        rel.sourceMemoryId,
+        (connectionCounts.get(rel.sourceMemoryId) || 0) + 1
+      );
+      connectionCounts.set(
+        rel.targetMemoryId,
+        (connectionCounts.get(rel.targetMemoryId) || 0) + 1
+      );
     });
 
     const centralMemories = Array.from(connectionCounts.entries())
@@ -482,7 +549,7 @@ Only include relationships with confidence >= 0.6.`;
       averageRelationshipsPerMemory,
       strongestRelationshipType,
       networkDensity,
-      centralMemories
+      centralMemories,
     };
   }
 }

@@ -1,4 +1,4 @@
-import type { MemoryType } from "../types/index.js";
+import type { MemoryType } from '../types/index.js';
 
 export interface ClassificationResult {
   type: MemoryType;
@@ -18,13 +18,13 @@ export class MemoryClassifier {
     personality: [
       {
         keywords: [
-          "personality",
-          "behavior",
-          "style",
-          "approach",
-          "manner",
-          "character",
-          "trait",
+          'personality',
+          'behavior',
+          'style',
+          'approach',
+          'manner',
+          'character',
+          'trait',
         ],
         patterns: [
           /\b(personality|character|behavior|style|manner|approach|trait)\b/i,
@@ -35,12 +35,12 @@ export class MemoryClassifier {
       },
       {
         keywords: [
-          "cheerful",
-          "reliable",
-          "thoughtful",
-          "direct",
-          "friendly",
-          "professional",
+          'cheerful',
+          'reliable',
+          'thoughtful',
+          'direct',
+          'friendly',
+          'professional',
         ],
         patterns: [
           /\b(cheerful|reliable|thoughtful|direct|friendly|professional|consistent)\b/i,
@@ -51,14 +51,14 @@ export class MemoryClassifier {
     procedure: [
       {
         keywords: [
-          "how",
-          "step",
-          "process",
-          "procedure",
-          "method",
-          "workflow",
-          "instructions",
-          "algorithm",
+          'how',
+          'step',
+          'process',
+          'procedure',
+          'method',
+          'workflow',
+          'instructions',
+          'algorithm',
         ],
         patterns: [
           /\bhow\s+to\b/i,
@@ -70,14 +70,14 @@ export class MemoryClassifier {
       },
       {
         keywords: [
-          "deploy",
-          "build",
-          "install",
-          "setup",
-          "configure",
-          "run",
-          "execute",
-          "follow",
+          'deploy',
+          'build',
+          'install',
+          'setup',
+          'configure',
+          'run',
+          'execute',
+          'follow',
         ],
         patterns: [
           /\b(deploy|build|install|setup|configure|run|execute|follow)\s+\w+/i,
@@ -88,7 +88,7 @@ export class MemoryClassifier {
     ],
     preference: [
       {
-        keywords: ["prefer", "like", "dislike", "enjoy", "avoid", "favorite"],
+        keywords: ['prefer', 'like', 'dislike', 'enjoy', 'avoid', 'favorite'],
         patterns: [
           /\b(prefer|like|dislike|enjoy|avoid)s?\b/i,
           /\bfavorite\s+\w+\b/i,
@@ -96,7 +96,7 @@ export class MemoryClassifier {
         weight: 0.9,
       },
       {
-        keywords: ["better", "worse", "best", "worst", "choice", "instead"],
+        keywords: ['better', 'worse', 'best', 'worst', 'choice', 'instead'],
         patterns: [
           /\b(better|worse|best|worst)\s+(than|to|for)\b/i,
           /\binstead\s+of\b/i,
@@ -108,12 +108,12 @@ export class MemoryClassifier {
     fact: [
       {
         keywords: [
-          "definition",
-          "means",
-          "defined",
-          "explanation",
-          "describes",
-          "information",
+          'definition',
+          'means',
+          'defined',
+          'explanation',
+          'describes',
+          'information',
         ],
         patterns: [
           /\b(means?|defined?|explanation|describes?|information)\b/i,
@@ -123,26 +123,26 @@ export class MemoryClassifier {
       },
       {
         keywords: [
-          "language",
-          "library",
-          "framework",
-          "server",
-          "database",
-          "api",
-          "endpoint",
-          "function",
-          "returns",
-          "boolean",
-          "value",
-          "application",
-          "built",
-          "file",
-          "contains",
-          "configuration",
-          "settings",
-          "static",
-          "type",
-          "checking",
+          'language',
+          'library',
+          'framework',
+          'server',
+          'database',
+          'api',
+          'endpoint',
+          'function',
+          'returns',
+          'boolean',
+          'value',
+          'application',
+          'built',
+          'file',
+          'contains',
+          'configuration',
+          'settings',
+          'static',
+          'type',
+          'checking',
         ],
         patterns: [
           /\b(language|library|framework|server|database|api|endpoint)\b/i,
@@ -158,13 +158,13 @@ export class MemoryClassifier {
     thread: [
       {
         keywords: [
-          "said",
-          "mentioned",
-          "discussed",
-          "talked",
-          "conversation",
-          "chat",
-          "meeting",
+          'said',
+          'mentioned',
+          'discussed',
+          'talked',
+          'conversation',
+          'chat',
+          'meeting',
         ],
         patterns: [
           /\b(said|mentioned|discussed|talked|conversation|chat|meeting)\b/i,
@@ -174,12 +174,12 @@ export class MemoryClassifier {
       },
       {
         keywords: [
-          "question",
-          "answer",
-          "asked",
-          "replied",
-          "response",
-          "user",
+          'question',
+          'answer',
+          'asked',
+          'replied',
+          'response',
+          'user',
         ],
         patterns: [
           /\b(question|answer|asked|replied|response)\b/i,
@@ -191,14 +191,14 @@ export class MemoryClassifier {
     task: [
       {
         keywords: [
-          "task",
-          "todo",
-          "need",
-          "should",
-          "must",
-          "action",
-          "complete",
-          "finish",
+          'task',
+          'todo',
+          'need',
+          'should',
+          'must',
+          'action',
+          'complete',
+          'finish',
         ],
         patterns: [
           /\b(need\s+to|should|must|have\s+to|task|todo)\b/i,
@@ -208,12 +208,12 @@ export class MemoryClassifier {
       },
       {
         keywords: [
-          "deadline",
-          "due",
-          "schedule",
-          "appointment",
-          "meeting",
-          "urgent",
+          'deadline',
+          'due',
+          'schedule',
+          'appointment',
+          'meeting',
+          'urgent',
         ],
         patterns: [
           /\b(deadline|due|schedule|appointment|meeting|urgent)\b/i,
@@ -225,17 +225,17 @@ export class MemoryClassifier {
     emotion: [
       {
         keywords: [
-          "feel",
-          "emotion",
-          "happy",
-          "sad",
-          "angry",
-          "excited",
-          "worried",
-          "anxious",
-          "love",
-          "hate",
-          "enjoyed",
+          'feel',
+          'emotion',
+          'happy',
+          'sad',
+          'angry',
+          'excited',
+          'worried',
+          'anxious',
+          'love',
+          'hate',
+          'enjoyed',
         ],
         patterns: [
           /\b(feel|feeling|felt|emotions?)\b/i,
@@ -247,12 +247,12 @@ export class MemoryClassifier {
       },
       {
         keywords: [
-          "mood",
-          "emotional",
-          "stressed",
-          "relaxed",
-          "nervous",
-          "confident",
+          'mood',
+          'emotional',
+          'stressed',
+          'relaxed',
+          'nervous',
+          'confident',
         ],
         patterns: [
           /\b(mood|emotional|stressed|relaxed|nervous|confident)\b/i,
@@ -288,18 +288,18 @@ export class MemoryClassifier {
         let groupScore = 0;
 
         // Check keywords with weighted scoring
-        const keywordMatches = group.keywords.filter((keyword) =>
-          this.hasKeywordMatch(lowerContent, keyword),
+        const keywordMatches = group.keywords.filter(keyword =>
+          this.hasKeywordMatch(lowerContent, keyword)
         );
         if (keywordMatches.length > 0) {
           // Use exponential scoring for multiple matches
           groupScore += Math.pow(keywordMatches.length, 1.5) * 0.5;
-          typeReasoning.push(`contains keywords: ${keywordMatches.join(", ")}`);
+          typeReasoning.push(`contains keywords: ${keywordMatches.join(', ')}`);
         }
 
         // Check patterns with higher weight for exact matches
-        const patternMatches = group.patterns.filter((pattern) =>
-          pattern.test(content),
+        const patternMatches = group.patterns.filter(pattern =>
+          pattern.test(content)
         );
         if (patternMatches.length > 0) {
           groupScore += patternMatches.length * 0.7;
@@ -311,7 +311,7 @@ export class MemoryClassifier {
 
       scores[type as MemoryType] = typeScore;
       if (typeReasoning.length > 0) {
-        reasoning.push(`${type}: ${typeReasoning.join(", ")}`);
+        reasoning.push(`${type}: ${typeReasoning.join(', ')}`);
       }
     }
 
@@ -324,16 +324,16 @@ export class MemoryClassifier {
     const bestType = Object.entries(scores).reduce(
       (best, [type, score]) =>
         score > best.score ? { type: type as MemoryType, score } : best,
-      { type: "thread" as MemoryType, score: 0 },
+      { type: 'thread' as MemoryType, score: 0 }
     ); // Improved confidence calculation
     const totalScore = Object.values(scores).reduce(
       (sum, score) => sum + score,
-      0,
+      0
     );
     const maxPossibleScore = this.calculateMaxPossibleScore(content);
     const normalizedScore = Math.min(
       bestType.score / Math.max(maxPossibleScore, 1),
-      1.0,
+      1.0
     );
 
     // Calculate confidence with higher base and better distribution
@@ -356,7 +356,7 @@ export class MemoryClassifier {
     return {
       type: bestType.type,
       confidence: confidence,
-      reasoning: reasoning.join("; ") || "No specific patterns detected",
+      reasoning: reasoning.join('; ') || 'No specific patterns detected',
     };
   }
 
@@ -364,7 +364,7 @@ export class MemoryClassifier {
    * Batch classify multiple memories
    */
   public classifyBatch(contents: string[]): ClassificationResult[] {
-    return contents.map((content) => this.classify(content));
+    return contents.map(content => this.classify(content));
   }
 
   /**
@@ -394,20 +394,20 @@ export class MemoryClassifier {
 
     // Check if type is valid
     const validTypes: MemoryType[] = [
-      "personality",
-      "procedure",
-      "preference",
-      "fact",
-      "thread",
-      "task",
-      "emotion",
+      'personality',
+      'procedure',
+      'preference',
+      'fact',
+      'thread',
+      'task',
+      'emotion',
     ];
     if (!validTypes.includes(result.type)) {
       return false;
     }
 
     // Check if reasoning is provided
-    if (!result.reasoning || result.reasoning.trim() === "") {
+    if (!result.reasoning || result.reasoning.trim() === '') {
       return false;
     }
 
@@ -415,7 +415,7 @@ export class MemoryClassifier {
   }
   private applyLengthHeuristic(
     content: string,
-    scores: Record<MemoryType, number>,
+    scores: Record<MemoryType, number>
   ): void {
     const length = content.length; // Longer content might be procedures or facts
     if (length > 200) {
@@ -435,7 +435,7 @@ export class MemoryClassifier {
   }
   private applyStructureHeuristic(
     content: string,
-    scores: Record<MemoryType, number>,
+    scores: Record<MemoryType, number>
   ): void {
     // Check for numbered lists (procedures)
     if (/\b\d+\.\s/.test(content)) {
@@ -475,24 +475,24 @@ export class MemoryClassifier {
   private hasKeywordMatch(content: string, keyword: string): boolean {
     // More precise keyword matching with word boundaries
     const regex = new RegExp(
-      `\\b${keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`,
-      "i",
+      `\\b${keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`,
+      'i'
     );
     return regex.test(content);
   }
   private applySpecificHeuristics(
     content: string,
     scores: Record<MemoryType, number>,
-    reasoning?: string[],
+    reasoning?: string[]
   ): void {
     // Check for strong preference indicators first
     const preferenceIndicators =
       /\b(prefer|like|dislike|enjoy|avoid|better|worse|best|worst|favorite|rather|instead)\b/i.test(
-        content,
+        content
       );
     const evaluativeWords =
       /\b(best|better|worst|worse|preferred|favorite|good|great|excellent|terrible|awful)\s+(approach|style|way|method|solution|choice|option)\b/i.test(
-        content,
+        content
       );
 
     // Strong boost for "best/better X" patterns and preference language
@@ -500,7 +500,7 @@ export class MemoryClassifier {
       evaluativeWords ||
       (preferenceIndicators &&
         /\bfor\s+(our|my|your|their)\s+(use\s+case|needs?|purpose|project)\b/i.test(
-          content,
+          content
         ))
     ) {
       scores.preference = (scores.preference || 0) + 0.8; // Increased boost
@@ -542,7 +542,7 @@ export class MemoryClassifier {
     // Procedure-specific signals
     if (
       /\b(step|process|how|procedure|method|workflow|instructions|algorithm|first|then|next|finally)\b/i.test(
-        content,
+        content
       )
     ) {
       scores.procedure = (scores.procedure || 0) + 0.4;
@@ -552,7 +552,7 @@ export class MemoryClassifier {
     if (/\bshould\b/i.test(content)) {
       if (
         /\b(use|choose|implement|instead\s+of|rather\s+than|better\s+to)\b/i.test(
-          content,
+          content
         )
       ) {
         // This is a preference statement
@@ -566,14 +566,14 @@ export class MemoryClassifier {
     // Task-specific signals (excluding preference "should")
     if (
       /\b(task|todo|need\s+to|must|complete|finish|deadline|due)\b/i.test(
-        content,
+        content
       )
     ) {
       scores.task = (scores.task || 0) + 0.4;
     } // Emotion-specific signals
     if (
       /\b(feel|emotion|happy|sad|angry|excited|worried|anxious)\b/i.test(
-        content,
+        content
       )
     ) {
       scores.emotion = (scores.emotion || 0) + 0.4;
@@ -588,7 +588,7 @@ export class MemoryClassifier {
     } // Thread-specific signals
     if (
       /\b(said|mentioned|discussed|talked|conversation|chat|question|answer|asked|replied)\b/i.test(
-        content,
+        content
       )
     ) {
       scores.thread = (scores.thread || 0) + 0.3;
@@ -596,7 +596,7 @@ export class MemoryClassifier {
     if (/\buser\b/i.test(content)) {
       const hasPersonalityContext =
         /\b(behaves?|personality|character|behavior|style|manner|trait|acts?|tends?\s+to|always|usually|calmly|friendly|outgoing|analytical|creative|cheerful|reliable|thoughtful|direct)\b/i.test(
-          content,
+          content
         );
       if (!hasPersonalityContext) {
         scores.thread = (scores.thread || 0) + 0.4;
@@ -605,15 +605,13 @@ export class MemoryClassifier {
         scores.personality = (scores.personality || 0) + 0.8;
         // Update reasoning to reflect personality classification
         if (reasoning) {
-          const threadIndex = reasoning.findIndex((r) =>
-            r.startsWith("thread:"),
-          );
+          const threadIndex = reasoning.findIndex(r => r.startsWith('thread:'));
           if (threadIndex !== -1) {
             reasoning[threadIndex] =
               `personality: user mentioned with personality traits`;
           } else {
             reasoning.push(
-              `personality: user mentioned with personality traits`,
+              `personality: user mentioned with personality traits`
             );
           }
         }
@@ -624,7 +622,7 @@ export class MemoryClassifier {
     if (/\b(is|are|was|were|has|have|contains|includes)\b/i.test(content)) {
       const hasStrongSignal =
         /\b(personality|character|prefer|like|step|process|how|feel|emotion|said|mentioned|task|todo)\b/i.test(
-          content,
+          content
         );
       if (!hasStrongSignal) {
         scores.fact = (scores.fact || 0) + 0.3;
@@ -634,7 +632,7 @@ export class MemoryClassifier {
     // Technical/programming facts
     if (
       /\b(function|returns?|boolean|value|programming|language|server|database|api|library|framework)\b/i.test(
-        content,
+        content
       )
     ) {
       scores.fact = (scores.fact || 0) + 0.4;

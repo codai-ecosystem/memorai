@@ -11,18 +11,19 @@
   "scripts": {
     "build": "turbo build",
     "build:all": "turbo build",
-    "dev": "turbo dev",
     "test": "jest --passWithNoTests",
     "test:watch": "jest --watch --passWithNoTests",
     "lint": "turbo lint",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "clean": "turbo clean && rm -rf node_modules",
-    "start:dashboard": "cd apps/dashboard && npm run dev",
-    "start:api": "cd apps/api && npm run dev",
-    "start:mcp": "node packages/mcp/dist/server.js",
+    "publish-packages": "node scripts/publish-packages.js",
     "test:ui": "npx vitest ui",
     "test:run": "vitest run",
-    "test:coverage": "vitest --coverage"
+    "test:coverage": "vitest --coverage",
+    "_DEPRECATED_dev": "echo 'FORBIDDEN: Use published packages via MCP server only' && exit 1",
+    "_DEPRECATED_start:dashboard": "echo 'FORBIDDEN: Use MCP server published packages only' && exit 1",
+    "_DEPRECATED_start:api": "echo 'FORBIDDEN: Use MCP server published packages only' && exit 1",
+    "_DEPRECATED_start:mcp": "echo 'FORBIDDEN: Use MCP server published packages only' && exit 1"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^8.18.1",

@@ -1,28 +1,28 @@
-import { defineConfig } from "vitest/config";
-import { resolve } from "path";
-import react from "@vitejs/plugin-react";
+import { defineConfig } from 'vitest/config';
+import { resolve } from 'path';
+import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()] as any,
   test: {
     globals: true,
-    environment: "jsdom",
-    setupFiles: ["./src/test/setup.ts"],
+    environment: 'jsdom',
+    setupFiles: ['./src/test/setup.ts'],
     css: true,
-    exclude: ["tests/e2e/**", "**/node_modules/**"],
+    exclude: ['tests/e2e/**', '**/node_modules/**'],
     env: {
-      NODE_ENV: 'test'
+      NODE_ENV: 'test',
     },
     coverage: {
-      provider: "v8",
-      reporter: ["text", "json", "html"],
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
       exclude: [
-        "node_modules/**",
-        "src/test/**",
-        "tests/e2e/**",
-        "**/*.d.ts",
-        "**/*.config.*",
-        "dist/**",
+        'node_modules/**',
+        'src/test/**',
+        'tests/e2e/**',
+        '**/*.d.ts',
+        '**/*.config.*',
+        'dist/**',
       ],
       thresholds: {
         global: {
@@ -36,14 +36,14 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      "@": resolve(__dirname, "./src"),
-      "@/components": resolve(__dirname, "./src/components"),
-      "@/lib": resolve(__dirname, "./src/lib"),
-      "@/hooks": resolve(__dirname, "./src/hooks"),
-      "@/types": resolve(__dirname, "./src/types"),
-      "@/utils": resolve(__dirname, "./src/utils"),
-      "@/stores": resolve(__dirname, "./src/stores"),
-      "@/app": resolve(__dirname, "./src/app"),
+      '@': resolve(__dirname, './src'),
+      '@/components': resolve(__dirname, './src/components'),
+      '@/lib': resolve(__dirname, './src/lib'),
+      '@/hooks': resolve(__dirname, './src/hooks'),
+      '@/types': resolve(__dirname, './src/types'),
+      '@/utils': resolve(__dirname, './src/utils'),
+      '@/stores': resolve(__dirname, './src/stores'),
+      '@/app': resolve(__dirname, './src/app'),
     },
   },
 });

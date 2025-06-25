@@ -1,5 +1,5 @@
-import { render, screen, fireEvent } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // Create a simple mock component
 const SystemConfig = () => {
@@ -48,37 +48,37 @@ const SystemConfig = () => {
   );
 };
 
-describe("SystemConfig", () => {
+describe('SystemConfig', () => {
   const mockFn = vi.fn();
 
   beforeEach(() => {
     mockFn.mockClear();
   });
 
-  it("should render correctly", () => {
+  it('should render correctly', () => {
     render(<SystemConfig />);
 
-    expect(screen.getByTestId("system-config-container")).toBeInTheDocument();
-    expect(screen.getByText("System Configuration")).toBeInTheDocument();
+    expect(screen.getByTestId('system-config-container')).toBeInTheDocument();
+    expect(screen.getByText('System Configuration')).toBeInTheDocument();
   });
 
-  it("should render API endpoint configuration", () => {
+  it('should render API endpoint configuration', () => {
     render(<SystemConfig />);
 
-    const apiEndpointInput = screen.getByLabelText("API Endpoint");
+    const apiEndpointInput = screen.getByLabelText('API Endpoint');
     expect(apiEndpointInput).toBeInTheDocument();
-    expect(apiEndpointInput).toHaveValue("http://localhost:3001");
+    expect(apiEndpointInput).toHaveValue('http://localhost:3001');
   });
 
-  it("should render memory limit configuration", () => {
+  it('should render memory limit configuration', () => {
     render(<SystemConfig />);
 
-    const memoryLimitInput = screen.getByLabelText("Memory Limit");
+    const memoryLimitInput = screen.getByLabelText('Memory Limit');
     expect(memoryLimitInput).toBeInTheDocument();
     expect(memoryLimitInput).toHaveValue(1000);
   });
 
-  it("should render notification settings", () => {
+  it('should render notification settings', () => {
     render(<SystemConfig />);
 
     const notificationCheckbox = screen.getByLabelText(/Enable Notifications/i);
@@ -86,26 +86,26 @@ describe("SystemConfig", () => {
     expect(notificationCheckbox).toBeChecked();
   });
 
-  it("should render theme selector", () => {
+  it('should render theme selector', () => {
     render(<SystemConfig />);
 
-    const themeSelect = screen.getByLabelText("Theme");
+    const themeSelect = screen.getByLabelText('Theme');
     expect(themeSelect).toBeInTheDocument();
-    expect(themeSelect).toHaveValue("light");
+    expect(themeSelect).toHaveValue('light');
   });
 
-  it("should handle input changes", () => {
+  it('should handle input changes', () => {
     render(<SystemConfig />);
 
-    const apiEndpointInput = screen.getByLabelText("API Endpoint");
+    const apiEndpointInput = screen.getByLabelText('API Endpoint');
     fireEvent.change(apiEndpointInput, {
-      target: { value: "http://localhost:3002" },
+      target: { value: 'http://localhost:3002' },
     });
 
-    expect(apiEndpointInput).toHaveValue("http://localhost:3002");
+    expect(apiEndpointInput).toHaveValue('http://localhost:3002');
   });
 
-  it("should handle checkbox toggle", () => {
+  it('should handle checkbox toggle', () => {
     render(<SystemConfig />);
 
     const notificationCheckbox = screen.getByLabelText(/Enable Notifications/i);
@@ -114,19 +114,19 @@ describe("SystemConfig", () => {
     expect(notificationCheckbox).not.toBeChecked();
   });
 
-  it("should handle theme selection", () => {
+  it('should handle theme selection', () => {
     render(<SystemConfig />);
 
-    const themeSelect = screen.getByLabelText("Theme");
-    fireEvent.change(themeSelect, { target: { value: "dark" } });
+    const themeSelect = screen.getByLabelText('Theme');
+    fireEvent.change(themeSelect, { target: { value: 'dark' } });
 
-    expect(themeSelect).toHaveValue("dark");
+    expect(themeSelect).toHaveValue('dark');
   });
 
-  it("should handle save configuration", () => {
+  it('should handle save configuration', () => {
     render(<SystemConfig />);
 
-    const saveButton = screen.getByRole("button", {
+    const saveButton = screen.getByRole('button', {
       name: /save configuration/i,
     });
     fireEvent.click(saveButton);
@@ -134,10 +134,10 @@ describe("SystemConfig", () => {
     expect(saveButton).toBeInTheDocument();
   });
 
-  it("should handle reset to defaults", () => {
+  it('should handle reset to defaults', () => {
     render(<SystemConfig />);
 
-    const resetButton = screen.getByRole("button", {
+    const resetButton = screen.getByRole('button', {
       name: /reset to defaults/i,
     });
     fireEvent.click(resetButton);
@@ -145,99 +145,99 @@ describe("SystemConfig", () => {
     expect(resetButton).toBeInTheDocument();
   });
 
-  it("should handle export configuration", () => {
+  it('should handle export configuration', () => {
     render(<SystemConfig />);
 
-    const exportButton = screen.getByRole("button", { name: /export config/i });
+    const exportButton = screen.getByRole('button', { name: /export config/i });
     fireEvent.click(exportButton);
 
     expect(exportButton).toBeInTheDocument();
   });
 
-  it("should handle import configuration", () => {
+  it('should handle import configuration', () => {
     render(<SystemConfig />);
 
-    const importButton = screen.getByRole("button", { name: /import config/i });
+    const importButton = screen.getByRole('button', { name: /import config/i });
     fireEvent.click(importButton);
 
     expect(importButton).toBeInTheDocument();
   });
 
-  it("should display system status", () => {
+  it('should display system status', () => {
     render(<SystemConfig />);
 
-    expect(screen.getByText("System Status")).toBeInTheDocument();
-    expect(screen.getByText("API Connection: Connected")).toBeInTheDocument();
-    expect(screen.getByText("Memory Usage: 45%")).toBeInTheDocument();
-    expect(screen.getByText("Last Backup: 2 hours ago")).toBeInTheDocument();
+    expect(screen.getByText('System Status')).toBeInTheDocument();
+    expect(screen.getByText('API Connection: Connected')).toBeInTheDocument();
+    expect(screen.getByText('Memory Usage: 45%')).toBeInTheDocument();
+    expect(screen.getByText('Last Backup: 2 hours ago')).toBeInTheDocument();
   });
 
-  describe("Form Validation", () => {
-    it("should validate API endpoint format", () => {
+  describe('Form Validation', () => {
+    it('should validate API endpoint format', () => {
       render(<SystemConfig />);
 
-      const apiEndpointInput = screen.getByLabelText("API Endpoint");
-      fireEvent.change(apiEndpointInput, { target: { value: "invalid-url" } });
+      const apiEndpointInput = screen.getByLabelText('API Endpoint');
+      fireEvent.change(apiEndpointInput, { target: { value: 'invalid-url' } });
 
       // Should handle invalid URL gracefully
-      expect(apiEndpointInput).toHaveValue("invalid-url");
+      expect(apiEndpointInput).toHaveValue('invalid-url');
     });
 
-    it("should validate memory limit range", () => {
+    it('should validate memory limit range', () => {
       render(<SystemConfig />);
 
-      const memoryLimitInput = screen.getByLabelText("Memory Limit");
-      fireEvent.change(memoryLimitInput, { target: { value: "-100" } });
+      const memoryLimitInput = screen.getByLabelText('Memory Limit');
+      fireEvent.change(memoryLimitInput, { target: { value: '-100' } });
 
       // Should handle negative values
       expect(memoryLimitInput).toHaveValue(-100);
     });
   });
 
-  describe("Accessibility", () => {
-    it("should have proper labels for all inputs", () => {
+  describe('Accessibility', () => {
+    it('should have proper labels for all inputs', () => {
       render(<SystemConfig />);
 
-      expect(screen.getByLabelText("API Endpoint")).toBeInTheDocument();
-      expect(screen.getByLabelText("Memory Limit")).toBeInTheDocument();
+      expect(screen.getByLabelText('API Endpoint')).toBeInTheDocument();
+      expect(screen.getByLabelText('Memory Limit')).toBeInTheDocument();
       expect(
-        screen.getByLabelText(/Enable Notifications/i),
+        screen.getByLabelText(/Enable Notifications/i)
       ).toBeInTheDocument();
-      expect(screen.getByLabelText("Theme")).toBeInTheDocument();
+      expect(screen.getByLabelText('Theme')).toBeInTheDocument();
     });
 
-    it("should support keyboard navigation", () => {
+    it('should support keyboard navigation', () => {
       render(<SystemConfig />);
 
-      const apiEndpointInput = screen.getByLabelText("API Endpoint");
+      const apiEndpointInput = screen.getByLabelText('API Endpoint');
       apiEndpointInput.focus();
 
       expect(apiEndpointInput).toHaveFocus();
     });
 
-    it("should have proper button labels", () => {
+    it('should have proper button labels', () => {
       render(<SystemConfig />);
 
       expect(
-        screen.getByRole("button", { name: /save configuration/i }),
+        screen.getByRole('button', { name: /save configuration/i })
       ).toBeInTheDocument();
       expect(
-        screen.getByRole("button", { name: /reset to defaults/i }),
+        screen.getByRole('button', { name: /reset to defaults/i })
       ).toBeInTheDocument();
       expect(
-        screen.getByRole("button", { name: /export config/i }),
+        screen.getByRole('button', { name: /export config/i })
       ).toBeInTheDocument();
       expect(
-        screen.getByRole("button", { name: /import config/i }),
+        screen.getByRole('button', { name: /import config/i })
       ).toBeInTheDocument();
     });
   });
 
-  describe("Configuration Persistence", () => {
-    it("should save configuration to local storage", () => {
+  describe('Configuration Persistence', () => {
+    it('should save configuration to local storage', () => {
       render(<SystemConfig />);
 
-      const saveButton = screen.getByRole("button", {
+      const saveButton = screen.getByRole('button', {
         name: /save configuration/i,
       });
       fireEvent.click(saveButton);
@@ -246,16 +246,16 @@ describe("SystemConfig", () => {
       expect(saveButton).toBeInTheDocument();
     });
 
-    it("should load configuration from local storage", () => {
+    it('should load configuration from local storage', () => {
       render(<SystemConfig />);
 
       // Should load saved configuration
-      expect(screen.getByTestId("system-config-container")).toBeInTheDocument();
+      expect(screen.getByTestId('system-config-container')).toBeInTheDocument();
     });
   });
 
-  describe("System Monitoring", () => {
-    it("should update system status periodically", () => {
+  describe('System Monitoring', () => {
+    it('should update system status periodically', () => {
       render(<SystemConfig />);
 
       // Should show current system status
@@ -263,7 +263,7 @@ describe("SystemConfig", () => {
       expect(screen.getByText(/Memory Usage:/)).toBeInTheDocument();
     });
 
-    it("should handle connection status changes", () => {
+    it('should handle connection status changes', () => {
       render(<SystemConfig />);
 
       // Should display connection status
@@ -271,11 +271,11 @@ describe("SystemConfig", () => {
     });
   });
 
-  describe("Error Handling", () => {
-    it("should handle configuration save errors", () => {
+  describe('Error Handling', () => {
+    it('should handle configuration save errors', () => {
       render(<SystemConfig />);
 
-      const saveButton = screen.getByRole("button", {
+      const saveButton = screen.getByRole('button', {
         name: /save configuration/i,
       });
       fireEvent.click(saveButton);
@@ -284,11 +284,11 @@ describe("SystemConfig", () => {
       expect(saveButton).toBeInTheDocument();
     });
 
-    it("should handle configuration load errors", () => {
+    it('should handle configuration load errors', () => {
       render(<SystemConfig />);
 
       // Should handle load errors gracefully
-      expect(screen.getByTestId("system-config-container")).toBeInTheDocument();
+      expect(screen.getByTestId('system-config-container')).toBeInTheDocument();
     });
   });
 });

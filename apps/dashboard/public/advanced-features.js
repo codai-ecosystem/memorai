@@ -17,53 +17,53 @@ class AdvancedSearch {
   }
 
   showAdvancedSearch() {
-    const modal = document.getElementById("advanced-search-modal");
+    const modal = document.getElementById('advanced-search-modal');
     if (modal) {
-      modal.classList.remove("hidden");
+      modal.classList.remove('hidden');
       this.populateFilters();
     }
   }
 
   hideAdvancedSearch() {
-    const modal = document.getElementById("advanced-search-modal");
+    const modal = document.getElementById('advanced-search-modal');
     if (modal) {
-      modal.classList.add("hidden");
+      modal.classList.add('hidden');
     }
   }
 
   populateFilters() {
     // Populate date range
-    const today = new Date().toISOString().split("T")[0];
+    const today = new Date().toISOString().split('T')[0];
     const lastWeek = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
       .toISOString()
-      .split("T")[0];
+      .split('T')[0];
 
-    document.getElementById("date-start").value = lastWeek;
-    document.getElementById("date-end").value = today;
+    document.getElementById('date-start').value = lastWeek;
+    document.getElementById('date-end').value = today;
 
     // Populate similarity range
-    document.getElementById("similarity-min").value =
+    document.getElementById('similarity-min').value =
       this.filters.similarity.min;
-    document.getElementById("similarity-max").value =
+    document.getElementById('similarity-max').value =
       this.filters.similarity.max;
   }
 
   applyFilters() {
     const filters = {
       dateRange: {
-        start: document.getElementById("date-start").value,
-        end: document.getElementById("date-end").value,
+        start: document.getElementById('date-start').value,
+        end: document.getElementById('date-end').value,
       },
       similarity: {
-        min: parseFloat(document.getElementById("similarity-min").value),
-        max: parseFloat(document.getElementById("similarity-max").value),
+        min: parseFloat(document.getElementById('similarity-min').value),
+        max: parseFloat(document.getElementById('similarity-max').value),
       },
       tags: document
-        .getElementById("filter-tags")
-        .value.split(",")
-        .map((t) => t.trim())
-        .filter((t) => t),
-      agentId: document.getElementById("filter-agent").value || null,
+        .getElementById('filter-tags')
+        .value.split(',')
+        .map(t => t.trim())
+        .filter(t => t),
+      agentId: document.getElementById('filter-agent').value || null,
     };
 
     this.filters = filters;
@@ -99,13 +99,13 @@ class MemoryAnalytics {
 
   async generateAnalytics() {
     try {
-      const response = await fetch("/api/analytics/insights");
+      const response = await fetch('/api/analytics/insights');
       if (response.ok) {
         this.analytics = await response.json();
         this.updateAnalyticsDisplay();
       }
     } catch (error) {
-      console.error("Failed to generate analytics:", error);
+      console.error('Failed to generate analytics:', error);
       // Generate mock analytics
       this.generateMockAnalytics();
     }
@@ -116,19 +116,19 @@ class MemoryAnalytics {
       totalMemories: Math.floor(Math.random() * 1000) + 100,
       averageSimilarity: 0.7 + Math.random() * 0.3,
       topTags: [
-        "ai",
-        "development",
-        "research",
-        "automation",
-        "machine-learning",
+        'ai',
+        'development',
+        'research',
+        'automation',
+        'machine-learning',
       ],
       agentActivity: {
-        "agent-1": Math.floor(Math.random() * 50) + 10,
-        "agent-2": Math.floor(Math.random() * 30) + 5,
-        "agent-3": Math.floor(Math.random() * 20) + 3,
+        'agent-1': Math.floor(Math.random() * 50) + 10,
+        'agent-2': Math.floor(Math.random() * 30) + 5,
+        'agent-3': Math.floor(Math.random() * 20) + 3,
       },
       memoryGrowth: this.generateGrowthData(),
-      searchPatterns: ["natural language", "technical docs", "code examples"],
+      searchPatterns: ['natural language', 'technical docs', 'code examples'],
     };
     this.updateAnalyticsDisplay();
   }
@@ -139,7 +139,7 @@ class MemoryAnalytics {
     for (let i = 30; i >= 0; i--) {
       const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
       data.push({
-        date: date.toISOString().split("T")[0],
+        date: date.toISOString().split('T')[0],
         count: Math.floor(Math.random() * 20) + (30 - i) * 2,
       });
     }
@@ -148,20 +148,20 @@ class MemoryAnalytics {
 
   updateAnalyticsDisplay() {
     // Update analytics cards
-    document.getElementById("total-memories-count").textContent =
+    document.getElementById('total-memories-count').textContent =
       this.analytics.totalMemories.toLocaleString();
-    document.getElementById("avg-similarity-score").textContent =
+    document.getElementById('avg-similarity-score').textContent =
       this.analytics.averageSimilarity.toFixed(3);
 
     // Update top tags
-    const tagsContainer = document.getElementById("top-tags-list");
+    const tagsContainer = document.getElementById('top-tags-list');
     if (tagsContainer) {
       tagsContainer.innerHTML = this.analytics.topTags
         .map(
-          (tag) =>
-            `<span class="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-xs">${tag}</span>`,
+          tag =>
+            `<span class="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 rounded-full text-xs">${tag}</span>`
         )
-        .join("");
+        .join('');
     }
 
     // Update growth chart
@@ -169,7 +169,7 @@ class MemoryAnalytics {
   }
 
   updateGrowthChart() {
-    const ctx = document.getElementById("memory-growth-chart");
+    const ctx = document.getElementById('memory-growth-chart');
     if (!ctx || !this.analytics.memoryGrowth) return;
 
     if (this.dashboard.charts.growthChart) {
@@ -177,15 +177,15 @@ class MemoryAnalytics {
     }
 
     this.dashboard.charts.growthChart = new Chart(ctx, {
-      type: "line",
+      type: 'line',
       data: {
-        labels: this.analytics.memoryGrowth.map((d) => d.date),
+        labels: this.analytics.memoryGrowth.map(d => d.date),
         datasets: [
           {
-            label: "Memories Added",
-            data: this.analytics.memoryGrowth.map((d) => d.count),
-            borderColor: "rgb(59, 130, 246)",
-            backgroundColor: "rgba(59, 130, 246, 0.1)",
+            label: 'Memories Added',
+            data: this.analytics.memoryGrowth.map(d => d.count),
+            borderColor: 'rgb(59, 130, 246)',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
             tension: 0.1,
             fill: true,
           },
@@ -203,12 +203,12 @@ class MemoryAnalytics {
           y: {
             beginAtZero: true,
             grid: {
-              color: "rgba(255, 255, 255, 0.1)",
+              color: 'rgba(255, 255, 255, 0.1)',
             },
           },
           x: {
             grid: {
-              color: "rgba(255, 255, 255, 0.1)",
+              color: 'rgba(255, 255, 255, 0.1)',
             },
           },
         },
@@ -222,7 +222,7 @@ class SystemDiagnostics {
   constructor(dashboard) {
     this.dashboard = dashboard;
     this.diagnostics = {
-      memoryTier: "unknown",
+      memoryTier: 'unknown',
       apiStatus: {},
       performance: {},
       errors: [],
@@ -231,7 +231,7 @@ class SystemDiagnostics {
   }
 
   async runDiagnostics() {
-    console.log("🔍 Running system diagnostics...");
+    console.log('🔍 Running system diagnostics...');
 
     try {
       // Test API endpoints
@@ -246,18 +246,18 @@ class SystemDiagnostics {
       // Update diagnostics display
       this.updateDiagnosticsDisplay();
 
-      console.log("✅ Diagnostics completed");
+      console.log('✅ Diagnostics completed');
     } catch (error) {
-      console.error("❌ Diagnostics failed:", error);
+      console.error('❌ Diagnostics failed:', error);
       this.diagnostics.errors.push(`Diagnostics failed: ${error.message}`);
     }
   }
 
   async testApiEndpoints() {
     const endpoints = [
-      { name: "Health", path: "/api/health" },
-      { name: "Config", path: "/api/config" },
-      { name: "Stats", path: "/api/stats" },
+      { name: 'Health', path: '/api/health' },
+      { name: 'Config', path: '/api/config' },
+      { name: 'Stats', path: '/api/stats' },
     ];
 
     for (const endpoint of endpoints) {
@@ -267,13 +267,13 @@ class SystemDiagnostics {
         const end = performance.now();
 
         this.diagnostics.apiStatus[endpoint.name] = {
-          status: response.ok ? "healthy" : "unhealthy",
+          status: response.ok ? 'healthy' : 'unhealthy',
           responseTime: Math.round(end - start),
           statusCode: response.status,
         };
       } catch (error) {
         this.diagnostics.apiStatus[endpoint.name] = {
-          status: "error",
+          status: 'error',
           error: error.message,
         };
       }
@@ -282,14 +282,14 @@ class SystemDiagnostics {
 
   async checkMemoryTier() {
     try {
-      const response = await fetch("/api/config");
+      const response = await fetch('/api/config');
       if (response.ok) {
         const config = await response.json();
-        this.diagnostics.memoryTier = config.tier || "unknown";
+        this.diagnostics.memoryTier = config.tier || 'unknown';
       }
     } catch (error) {
       this.diagnostics.warnings.push(
-        `Failed to check memory tier: ${error.message}`,
+        `Failed to check memory tier: ${error.message}`
       );
     }
   }
@@ -299,13 +299,13 @@ class SystemDiagnostics {
     if (performance.memory) {
       this.diagnostics.performance = {
         usedJSHeapSize: Math.round(
-          performance.memory.usedJSHeapSize / 1024 / 1024,
+          performance.memory.usedJSHeapSize / 1024 / 1024
         ),
         totalJSHeapSize: Math.round(
-          performance.memory.totalJSHeapSize / 1024 / 1024,
+          performance.memory.totalJSHeapSize / 1024 / 1024
         ),
         jsHeapSizeLimit: Math.round(
-          performance.memory.jsHeapSizeLimit / 1024 / 1024,
+          performance.memory.jsHeapSizeLimit / 1024 / 1024
         ),
       };
     }
@@ -313,8 +313,8 @@ class SystemDiagnostics {
     // Check WebSocket connection
     if (this.dashboard.socket) {
       this.diagnostics.websocketStatus = this.dashboard.socket.connected
-        ? "connected"
-        : "disconnected";
+        ? 'connected'
+        : 'disconnected';
     }
   }
 
@@ -322,29 +322,29 @@ class SystemDiagnostics {
     // Update API status indicators
     Object.entries(this.diagnostics.apiStatus).forEach(([name, status]) => {
       const indicator = document.getElementById(
-        `api-${name.toLowerCase()}-status`,
+        `api-${name.toLowerCase()}-status`
       );
       if (indicator) {
         indicator.className = `w-3 h-3 rounded-full ${
-          status.status === "healthy"
-            ? "bg-green-500"
-            : status.status === "unhealthy"
-              ? "bg-yellow-500"
-              : "bg-red-500"
+          status.status === 'healthy'
+            ? 'bg-green-500'
+            : status.status === 'unhealthy'
+              ? 'bg-yellow-500'
+              : 'bg-red-500'
         }`;
-        indicator.title = `${name}: ${status.status} (${status.responseTime || "N/A"}ms)`;
+        indicator.title = `${name}: ${status.status} (${status.responseTime || 'N/A'}ms)`;
       }
     });
 
     // Update memory tier display
-    const tierDisplay = document.getElementById("current-tier-display");
+    const tierDisplay = document.getElementById('current-tier-display');
     if (tierDisplay) {
       tierDisplay.textContent = this.diagnostics.memoryTier;
     }
 
     // Update performance metrics
     if (this.diagnostics.performance.usedJSHeapSize) {
-      const perfDisplay = document.getElementById("performance-metrics");
+      const perfDisplay = document.getElementById('performance-metrics');
       if (perfDisplay) {
         perfDisplay.innerHTML = `
                     <div class="text-sm text-gray-600 dark:text-gray-400">
@@ -359,39 +359,39 @@ class SystemDiagnostics {
   }
 
   displayNotifications() {
-    const container = document.getElementById("diagnostics-notifications");
+    const container = document.getElementById('diagnostics-notifications');
     if (!container) return;
 
     const notifications = [
-      ...this.diagnostics.errors.map((error) => ({
-        type: "error",
+      ...this.diagnostics.errors.map(error => ({
+        type: 'error',
         message: error,
       })),
-      ...this.diagnostics.warnings.map((warning) => ({
-        type: "warning",
+      ...this.diagnostics.warnings.map(warning => ({
+        type: 'warning',
         message: warning,
       })),
     ];
 
     container.innerHTML = notifications
       .map(
-        (notif) => `
+        notif => `
             <div class="p-3 rounded-lg ${
-              notif.type === "error"
-                ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"
-                : "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+              notif.type === 'error'
+                ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
             }">
                 <div class="flex items-center">
-                    <i data-lucide="${notif.type === "error" ? "alert-circle" : "alert-triangle"}" class="w-5 h-5 mr-2"></i>
+                    <i data-lucide="${notif.type === 'error' ? 'alert-circle' : 'alert-triangle'}" class="w-5 h-5 mr-2"></i>
                     <span class="text-sm">${notif.message}</span>
                 </div>
             </div>
-        `,
+        `
       )
-      .join("");
+      .join('');
 
     // Recreate icons
-    if (typeof lucide !== "undefined") {
+    if (typeof lucide !== 'undefined') {
       lucide.createIcons();
     }
   }
@@ -403,21 +403,21 @@ class ExportManager {
     this.dashboard = dashboard;
   }
 
-  async exportMemories(format = "json") {
+  async exportMemories(format = 'json') {
     try {
       const response = await fetch(`/api/memory/export?format=${format}`);
-      if (!response.ok) throw new Error("Export failed");
+      if (!response.ok) throw new Error('Export failed');
 
       const data = await response.json();
       this.downloadFile(
         data,
-        `memorai-export-${new Date().toISOString().split("T")[0]}.${format}`,
+        `memorai-export-${new Date().toISOString().split('T')[0]}.${format}`
       );
 
-      this.dashboard.showToast("Memories exported successfully", "success");
+      this.dashboard.showToast('Memories exported successfully', 'success');
     } catch (error) {
-      console.error("Export failed:", error);
-      this.dashboard.showToast("Export failed: " + error.message, "error");
+      console.error('Export failed:', error);
+      this.dashboard.showToast('Export failed: ' + error.message, 'error');
     }
   }
 
@@ -427,33 +427,33 @@ class ExportManager {
       const exportData = {
         config,
         timestamp: new Date().toISOString(),
-        version: "1.0.0",
+        version: '1.0.0',
       };
 
       this.downloadFile(
         exportData,
-        `memorai-config-${new Date().toISOString().split("T")[0]}.json`,
+        `memorai-config-${new Date().toISOString().split('T')[0]}.json`
       );
       this.dashboard.showToast(
-        "Configuration exported successfully",
-        "success",
+        'Configuration exported successfully',
+        'success'
       );
     } catch (error) {
-      console.error("Config export failed:", error);
+      console.error('Config export failed:', error);
       this.dashboard.showToast(
-        "Config export failed: " + error.message,
-        "error",
+        'Config export failed: ' + error.message,
+        'error'
       );
     }
   }
 
   downloadFile(data, filename) {
     const blob = new Blob([JSON.stringify(data, null, 2)], {
-      type: "application/json",
+      type: 'application/json',
     });
     const url = URL.createObjectURL(blob);
 
-    const a = document.createElement("a");
+    const a = document.createElement('a');
     a.href = url;
     a.download = filename;
     document.body.appendChild(a);
@@ -469,7 +469,7 @@ class ExportManager {
       const data = JSON.parse(text);
 
       if (!Array.isArray(data.memories)) {
-        throw new Error("Invalid import format");
+        throw new Error('Invalid import format');
       }
 
       let imported = 0;
@@ -478,24 +478,24 @@ class ExportManager {
           await this.dashboard.addMemoryDirect(memory);
           imported++;
         } catch (error) {
-          console.warn("Failed to import memory:", memory, error);
+          console.warn('Failed to import memory:', memory, error);
         }
       }
 
       this.dashboard.showToast(
         `Imported ${imported} memories successfully`,
-        "success",
+        'success'
       );
       this.dashboard.refreshMemoryResults();
     } catch (error) {
-      console.error("Import failed:", error);
-      this.dashboard.showToast("Import failed: " + error.message, "error");
+      console.error('Import failed:', error);
+      this.dashboard.showToast('Import failed: ' + error.message, 'error');
     }
   }
 }
 
 // Add these enhanced features to the main dashboard
-if (typeof MemoraiDashboard !== "undefined") {
+if (typeof MemoraiDashboard !== 'undefined') {
   // Extend dashboard with advanced features
   MemoraiDashboard.prototype.initAdvancedFeatures = function () {
     this.advancedSearch = new AdvancedSearch(this);
@@ -509,42 +509,42 @@ if (typeof MemoraiDashboard !== "undefined") {
 
   MemoraiDashboard.prototype.initAdvancedEventListeners = function () {
     // Advanced search
-    const advancedSearchBtn = document.getElementById("advanced-search-btn");
+    const advancedSearchBtn = document.getElementById('advanced-search-btn');
     if (advancedSearchBtn) {
-      advancedSearchBtn.addEventListener("click", () =>
-        this.advancedSearch.showAdvancedSearch(),
+      advancedSearchBtn.addEventListener('click', () =>
+        this.advancedSearch.showAdvancedSearch()
       );
     }
 
     // Analytics refresh
-    const analyticsRefreshBtn = document.getElementById("analytics-refresh");
+    const analyticsRefreshBtn = document.getElementById('analytics-refresh');
     if (analyticsRefreshBtn) {
-      analyticsRefreshBtn.addEventListener("click", () =>
-        this.analytics.generateAnalytics(),
+      analyticsRefreshBtn.addEventListener('click', () =>
+        this.analytics.generateAnalytics()
       );
     }
 
     // Diagnostics
-    const diagnosticsBtn = document.getElementById("run-diagnostics");
+    const diagnosticsBtn = document.getElementById('run-diagnostics');
     if (diagnosticsBtn) {
-      diagnosticsBtn.addEventListener("click", () =>
-        this.diagnostics.runDiagnostics(),
+      diagnosticsBtn.addEventListener('click', () =>
+        this.diagnostics.runDiagnostics()
       );
     }
 
     // Export/Import
-    const exportBtn = document.getElementById("export-all-memories");
+    const exportBtn = document.getElementById('export-all-memories');
     if (exportBtn) {
-      exportBtn.addEventListener("click", () =>
-        this.exportManager.exportMemories(),
+      exportBtn.addEventListener('click', () =>
+        this.exportManager.exportMemories()
       );
     }
 
-    const importBtn = document.getElementById("import-memories-btn");
-    const importFile = document.getElementById("import-memories-file");
+    const importBtn = document.getElementById('import-memories-btn');
+    const importFile = document.getElementById('import-memories-file');
     if (importBtn && importFile) {
-      importBtn.addEventListener("click", () => importFile.click());
-      importFile.addEventListener("change", (e) => {
+      importBtn.addEventListener('click', () => importFile.click());
+      importFile.addEventListener('change', e => {
         if (e.target.files[0]) {
           this.exportManager.importMemories(e.target.files[0]);
         }
@@ -554,7 +554,7 @@ if (typeof MemoraiDashboard !== "undefined") {
 
   MemoraiDashboard.prototype.searchWithFilters = function (filters) {
     // Enhanced search with filters
-    const query = document.getElementById("search-input").value;
+    const query = document.getElementById('search-input').value;
 
     const searchData = {
       query,
@@ -566,9 +566,9 @@ if (typeof MemoraiDashboard !== "undefined") {
   };
 
   MemoraiDashboard.prototype.addMemoryDirect = async function (memoryData) {
-    const response = await fetch("/api/memory/remember", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+    const response = await fetch('/api/memory/remember', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(memoryData),
     });
 

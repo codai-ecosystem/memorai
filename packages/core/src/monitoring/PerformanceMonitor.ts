@@ -37,7 +37,7 @@ export interface PerformanceMetrics {
 }
 
 export interface QueryMetrics {
-  operation: "remember" | "recall" | "forget" | "context";
+  operation: 'remember' | 'recall' | 'forget' | 'context';
   startTime: number;
   endTime: number;
   duration: number;
@@ -76,15 +76,15 @@ export class PerformanceMonitor {
    * Start timing a query operation
    */
   public startQuery(
-    operation: QueryMetrics["operation"],
+    operation: QueryMetrics['operation'],
     tenantId: string,
-    agentId?: string,
+    agentId?: string
   ): {
     finish: (
       success: boolean,
       error?: string,
       resultCount?: number,
-      cacheHit?: boolean,
+      cacheHit?: boolean
     ) => void;
   } {
     const startTime = Date.now();
@@ -94,7 +94,7 @@ export class PerformanceMonitor {
         success: boolean,
         error?: string,
         resultCount?: number,
-        cacheHit?: boolean,
+        cacheHit?: boolean
       ) => {
         const endTime = Date.now();
         const queryMetrics: QueryMetrics = {
@@ -134,11 +134,11 @@ export class PerformanceMonitor {
 
     // Filter metrics to current window
     const windowMetrics = this.metrics.filter(
-      (m) => m.endTime >= now - this.windowSizeMs,
+      m => m.endTime >= now - this.windowSizeMs
     );
 
     const totalQueries = windowMetrics.length;
-    const successfulQueries = windowMetrics.filter((m) => m.success).length;
+    const successfulQueries = windowMetrics.filter(m => m.success).length;
     const queryErrors = totalQueries - successfulQueries;
 
     // Calculate averages
@@ -148,10 +148,10 @@ export class PerformanceMonitor {
         : 0;
 
     // Operation-specific metrics
-    const rememberOps = windowMetrics.filter((m) => m.operation === "remember");
-    const recallOps = windowMetrics.filter((m) => m.operation === "recall");
-    const forgetOps = windowMetrics.filter((m) => m.operation === "forget");
-    const contextOps = windowMetrics.filter((m) => m.operation === "context");
+    const rememberOps = windowMetrics.filter(m => m.operation === 'remember');
+    const recallOps = windowMetrics.filter(m => m.operation === 'recall');
+    const forgetOps = windowMetrics.filter(m => m.operation === 'forget');
+    const contextOps = windowMetrics.filter(m => m.operation === 'context');
 
     const avgTime = (ops: QueryMetrics[]) =>
       ops.length > 0
@@ -159,9 +159,9 @@ export class PerformanceMonitor {
         : 0;
 
     // Cache metrics
-    const cacheableOps = windowMetrics.filter((m) => m.cacheHit !== undefined);
-    const cacheHits = cacheableOps.filter((m) => m.cacheHit === true).length;
-    const cacheMisses = cacheableOps.filter((m) => m.cacheHit === false).length;
+    const cacheableOps = windowMetrics.filter(m => m.cacheHit !== undefined);
+    const cacheHits = cacheableOps.filter(m => m.cacheHit === true).length;
+    const cacheMisses = cacheableOps.filter(m => m.cacheHit === false).length;
     const cacheHitRate =
       cacheableOps.length > 0 ? cacheHits / cacheableOps.length : 0;
 
@@ -203,12 +203,12 @@ export class PerformanceMonitor {
    * Get metrics for a specific tenant
    */
   public getTenantMetrics(tenantId: string): PerformanceMetrics {
-    const tenantMetrics = this.metrics.filter((m) => m.tenantId === tenantId);
+    const tenantMetrics = this.metrics.filter(m => m.tenantId === tenantId);
 
     // Create a temporary monitor with only tenant metrics
     const tempMonitor = new PerformanceMonitor(
       this.windowSizeMs,
-      this.maxHistorySize,
+      this.maxHistorySize
     );
     tempMonitor.metrics = tenantMetrics;
 
@@ -220,10 +220,10 @@ export class PerformanceMonitor {
    */
   public getSlowQueries(
     thresholdMs: number = 1000,
-    count: number = 10,
+    count: number = 10
   ): QueryMetrics[] {
     return this.metrics
-      .filter((m) => m.duration > thresholdMs)
+      .filter(m => m.duration > thresholdMs)
       .sort((a, b) => b.duration - a.duration)
       .slice(0, count);
   }
@@ -242,8 +242,8 @@ export class PerformanceMonitor {
     >();
 
     this.metrics
-      .filter((m) => !m.success && m.error)
-      .forEach((m) => {
+      .filter(m => !m.success && m.error)
+      .forEach(m => {
         const existing = errorCounts.get(m.error!) || {
           count: 0,
           lastOccurrence: 0,
@@ -272,15 +272,15 @@ export class PerformanceMonitor {
   /**
    * Track a new connection
    */
-  public recordConnection(type: "open" | "close"): void {
-    if (type === "open") {
+  public recordConnection(type: 'open' | 'close'): void {
+    if (type === 'open') {
       this.activeConnections++;
       this.totalConnections++;
       this.maxConcurrentConnections = Math.max(
         this.maxConcurrentConnections,
-        this.activeConnections,
+        this.activeConnections
       );
-    } else if (type === "close") {
+    } else if (type === 'close') {
       this.activeConnections = Math.max(0, this.activeConnections - 1);
     }
   }
@@ -340,18 +340,18 @@ export class PerformanceMonitor {
       `# HELP memorai_memory_usage_mb Memory usage in megabytes`,
       `# TYPE memorai_memory_usage_mb gauge`,
       `memorai_memory_usage_mb ${metrics.memoryUsage}`,
-    ].join("\n");
+    ].join('\n');
 
     // CSV format
     const csv = [
-      "metric,value,timestamp",
+      'metric,value,timestamp',
       `query_count,${metrics.queryCount},${metrics.windowEnd.toISOString()}`,
       `avg_query_time,${metrics.avgQueryTime},${metrics.windowEnd.toISOString()}`,
       `query_errors,${metrics.queryErrors},${metrics.windowEnd.toISOString()}`,
       `success_rate,${metrics.querySuccessRate},${metrics.windowEnd.toISOString()}`,
       `cache_hit_rate,${metrics.cacheHitRate},${metrics.windowEnd.toISOString()}`,
       `memory_usage_mb,${metrics.memoryUsage},${metrics.windowEnd.toISOString()}`,
-    ].join("\n");
+    ].join('\n');
 
     return {
       prometheus,

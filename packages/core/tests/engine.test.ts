@@ -2,29 +2,29 @@
  * @fileoverview Basic test to verify core functionality
  */
 
-import { describe, it, expect } from "vitest";
-import { MemoryEngine } from "../src/engine/MemoryEngine.js";
-import { MemoryConfigFactory } from "../src/config/MemoryConfig.js";
+import { describe, it, expect } from 'vitest';
+import { MemoryEngine } from '../src/engine/MemoryEngine.js';
+import { MemoryConfigFactory } from '../src/config/MemoryConfig.js';
 
-describe("MemoryEngine", () => {
+describe('MemoryEngine', () => {
   const testConfig = {
     embedding: {
-      provider: "azure" as const, // Changed to azure for testing
-      model: "text-embedding-3-small",
-      api_key: "test-api-key",
+      provider: 'azure' as const, // Changed to azure for testing
+      model: 'text-embedding-3-small',
+      api_key: 'test-api-key',
     },
     security: {
-      encryption_key: "test-encryption-key-32-characters-long",
+      encryption_key: 'test-encryption-key-32-characters-long',
       tenant_isolation: true,
       audit_logs: false,
     },
   };
 
-  it("should create a memory engine instance", () => {
+  it('should create a memory engine instance', () => {
     const engine = new MemoryEngine(testConfig);
     expect(engine).toBeDefined();
   });
-  it("should initialize successfully", async () => {
+  it('should initialize successfully', async () => {
     const engine = new MemoryEngine(testConfig);
 
     // This would normally fail without a real Qdrant instance

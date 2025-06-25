@@ -1,11 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import request from "supertest";
-import express from "express";
-import { memoryRouter } from "../../src/routes/memory";
-import { errorHandler } from "../../src/middleware/errorHandler";
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import request from 'supertest';
+import express from 'express';
+import { memoryRouter } from '../../src/routes/memory';
+import { errorHandler } from '../../src/middleware/errorHandler';
 
 // Mock logger
-vi.mock("../../src/utils/logger", () => ({
+vi.mock('../../src/utils/logger', () => ({
   logger: {
     error: vi.fn(),
     info: vi.fn(),
@@ -14,7 +14,7 @@ vi.mock("../../src/utils/logger", () => ({
   },
 }));
 
-describe("DEBUG: Route existence check", () => {
+describe('DEBUG: Route existence check', () => {
   let app: express.Application;
 
   beforeEach(() => {
@@ -29,18 +29,18 @@ describe("DEBUG: Route existence check", () => {
       next();
     });
 
-    app.use("/api/memory", memoryRouter);
+    app.use('/api/memory', memoryRouter);
     app.use(errorHandler);
   });
 
-  it("should respond to DELETE /api/memory/forget", async () => {
-    const response = await request(app).delete("/api/memory/forget").send({
-      agentId: "test",
-      memoryId: "memory-1",
+  it('should respond to DELETE /api/memory/forget', async () => {
+    const response = await request(app).delete('/api/memory/forget').send({
+      agentId: 'test',
+      memoryId: 'memory-1',
     });
 
-    console.log("Status:", response.status);
-    console.log("Body:", response.body);
-    console.log("Headers:", response.headers);
+    console.log('Status:', response.status);
+    console.log('Body:', response.body);
+    console.log('Headers:', response.headers);
   });
 });

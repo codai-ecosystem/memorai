@@ -48,7 +48,7 @@ export class PatternRecognitionEngine {
       timeWindowDays: 30,
       semanticThreshold: 0.8,
       enablePrediction: true,
-      ...config
+      ...config,
     };
   }
 
@@ -71,7 +71,8 @@ export class PatternRecognitionEngine {
     patterns.push(...behavioralPatterns);
 
     // Relationship pattern analysis
-    const relationshipPatterns = await this.detectRelationshipPatterns(memories);
+    const relationshipPatterns =
+      await this.detectRelationshipPatterns(memories);
     patterns.push(...relationshipPatterns);
 
     // Frequency pattern analysis
@@ -88,15 +89,19 @@ export class PatternRecognitionEngine {
   /**
    * Detect temporal patterns in memory access and creation
    */
-  private async detectTemporalPatterns(memories: MemoryMetadata[]): Promise<MemoryPattern[]> {
+  private async detectTemporalPatterns(
+    memories: MemoryMetadata[]
+  ): Promise<MemoryPattern[]> {
     const patterns: MemoryPattern[] = [];
     const now = new Date();
-    const timeWindow = new Date(now.getTime() - this.config.timeWindowDays * 24 * 60 * 60 * 1000);
+    const timeWindow = new Date(
+      now.getTime() - this.config.timeWindowDays * 24 * 60 * 60 * 1000
+    );
 
     // Group memories by time periods
     const hourlyActivity = new Map<number, MemoryMetadata[]>();
     const dailyActivity = new Map<string, MemoryMetadata[]>();
-    
+
     memories
       .filter(memory => memory.createdAt >= timeWindow)
       .forEach(memory => {
@@ -131,18 +136,20 @@ export class PatternRecognitionEngine {
           frequency: mems.length,
           timeRange: {
             start: timeWindow,
-            end: now
-          }
+            end: now,
+          },
         },
         insights: [
           `Users are most active around ${hour}:00`,
           `Consider optimizing system performance for this time`,
-          `Memory creation peaks during ${hour}:00-${hour + 1}:00`
+          `Memory creation peaks during ${hour}:00-${hour + 1}:00`,
         ],
-        predictedOutcomes: this.config.enablePrediction ? [
-          `Next peak activity expected around ${hour}:00 tomorrow`,
-          `System load will increase by ~${Math.round(mems.length * 1.1)} memories`
-        ] : undefined
+        predictedOutcomes: this.config.enablePrediction
+          ? [
+              `Next peak activity expected around ${hour}:00 tomorrow`,
+              `System load will increase by ~${Math.round(mems.length * 1.1)} memories`,
+            ]
+          : undefined,
       });
     }
 
@@ -152,9 +159,11 @@ export class PatternRecognitionEngine {
   /**
    * Detect semantic patterns in memory content
    */
-  private async detectSemanticPatterns(memories: MemoryMetadata[]): Promise<MemoryPattern[]> {
+  private async detectSemanticPatterns(
+    memories: MemoryMetadata[]
+  ): Promise<MemoryPattern[]> {
     const patterns: MemoryPattern[] = [];
-    
+
     // Group by content similarity and tags
     const tagGroups = new Map<string, MemoryMetadata[]>();
     const typeGroups = new Map<string, MemoryMetadata[]>();
@@ -178,8 +187,9 @@ export class PatternRecognitionEngine {
     // Analyze tag patterns
     for (const [tag, mems] of tagGroups.entries()) {
       if (mems.length >= 3) {
-        const avgImportance = mems.reduce((sum, m) => sum + m.importance, 0) / mems.length;
-        
+        const avgImportance =
+          mems.reduce((sum, m) => sum + m.importance, 0) / mems.length;
+
         patterns.push({
           id: `semantic_tag_${tag}`,
           type: 'semantic',
@@ -188,17 +198,19 @@ export class PatternRecognitionEngine {
           memories: mems.map(m => m.id),
           metadata: {
             keywords: [tag],
-            frequency: mems.length
+            frequency: mems.length,
           },
           insights: [
             `Strong semantic clustering around "${tag}"`,
             `Average importance: ${avgImportance.toFixed(2)}`,
-            `Related memories often accessed together`
+            `Related memories often accessed together`,
           ],
-          predictedOutcomes: this.config.enablePrediction ? [
-            `Future memories likely to be tagged with "${tag}"`,
-            `Consider creating automated workflows for "${tag}" memories`
-          ] : undefined
+          predictedOutcomes: this.config.enablePrediction
+            ? [
+                `Future memories likely to be tagged with "${tag}"`,
+                `Consider creating automated workflows for "${tag}" memories`,
+              ]
+            : undefined,
         });
       }
     }
@@ -209,7 +221,9 @@ export class PatternRecognitionEngine {
   /**
    * Detect behavioral patterns in memory usage
    */
-  private async detectBehavioralPatterns(memories: MemoryMetadata[]): Promise<MemoryPattern[]> {
+  private async detectBehavioralPatterns(
+    memories: MemoryMetadata[]
+  ): Promise<MemoryPattern[]> {
     const patterns: MemoryPattern[] = [];
 
     // Analyze access patterns
@@ -225,17 +239,22 @@ export class PatternRecognitionEngine {
         confidence: 0.85,
         memories: highAccessMemories.slice(0, 10).map(m => m.id),
         metadata: {
-          frequency: highAccessMemories.reduce((sum, m) => sum + m.accessCount, 0)
+          frequency: highAccessMemories.reduce(
+            (sum, m) => sum + m.accessCount,
+            0
+          ),
         },
         insights: [
           'Certain memories are accessed significantly more than others',
           'Consider caching these high-access memories',
-          'Users show consistent preference for specific information'
+          'Users show consistent preference for specific information',
         ],
-        predictedOutcomes: this.config.enablePrediction ? [
-          'These memories will continue to be accessed frequently',
-          'System should prioritize quick access to these memories'
-        ] : undefined
+        predictedOutcomes: this.config.enablePrediction
+          ? [
+              'These memories will continue to be accessed frequently',
+              'System should prioritize quick access to these memories',
+            ]
+          : undefined,
       });
     }
 
@@ -245,7 +264,9 @@ export class PatternRecognitionEngine {
   /**
    * Detect relationship patterns between memories
    */
-  private async detectRelationshipPatterns(memories: MemoryMetadata[]): Promise<MemoryPattern[]> {
+  private async detectRelationshipPatterns(
+    memories: MemoryMetadata[]
+  ): Promise<MemoryPattern[]> {
     const patterns: MemoryPattern[] = [];
 
     // Analyze co-occurrence of memories by agent_id
@@ -263,7 +284,7 @@ export class PatternRecognitionEngine {
     for (const [agentId, mems] of agentGroups.entries()) {
       if (mems.length >= 5) {
         const relationships = this.analyzeMemoryRelationships(mems);
-        
+
         patterns.push({
           id: `relationship_agent_${agentId}`,
           type: 'relationship',
@@ -272,17 +293,19 @@ export class PatternRecognitionEngine {
           memories: mems.map(m => m.id),
           metadata: {
             relationships,
-            entities: [agentId]
+            entities: [agentId],
           },
           insights: [
             `Agent ${agentId} has strong memory interconnections`,
             `Memory types show consistent patterns`,
-            `Cross-referenced memories indicate complex workflows`
+            `Cross-referenced memories indicate complex workflows`,
           ],
-          predictedOutcomes: this.config.enablePrediction ? [
-            `Agent ${agentId} will continue similar memory patterns`,
-            'Related memories should be pre-loaded together'
-          ] : undefined
+          predictedOutcomes: this.config.enablePrediction
+            ? [
+                `Agent ${agentId} will continue similar memory patterns`,
+                'Related memories should be pre-loaded together',
+              ]
+            : undefined,
         });
       }
     }
@@ -293,7 +316,9 @@ export class PatternRecognitionEngine {
   /**
    * Detect frequency patterns in memory creation and access
    */
-  private async detectFrequencyPatterns(memories: MemoryMetadata[]): Promise<MemoryPattern[]> {
+  private async detectFrequencyPatterns(
+    memories: MemoryMetadata[]
+  ): Promise<MemoryPattern[]> {
     const patterns: MemoryPattern[] = [];
 
     // Analyze creation frequency by type
@@ -308,7 +333,7 @@ export class PatternRecognitionEngine {
 
     for (const [type, count] of dominantTypes) {
       const typeMemories = memories.filter(m => m.type === type);
-      
+
       patterns.push({
         id: `frequency_type_${type}`,
         type: 'frequency',
@@ -317,17 +342,19 @@ export class PatternRecognitionEngine {
         memories: typeMemories.slice(0, 10).map(m => m.id),
         metadata: {
           frequency: count,
-          keywords: [type]
+          keywords: [type],
         },
         insights: [
           `"${type}" is the most common memory type`,
           `System optimized for ${type} memory handling`,
-          `Users heavily rely on ${type} information`
+          `Users heavily rely on ${type} information`,
         ],
-        predictedOutcomes: this.config.enablePrediction ? [
-          `Continue expecting high volume of "${type}" memories`,
-          `Consider specialized handling for "${type}" memories`
-        ] : undefined
+        predictedOutcomes: this.config.enablePrediction
+          ? [
+              `Continue expecting high volume of "${type}" memories`,
+              `Consider specialized handling for "${type}" memories`,
+            ]
+          : undefined,
       });
     }
 
@@ -363,7 +390,8 @@ export class PatternRecognitionEngine {
             source: memA.id,
             target: memB.id,
             type: 'shared_tags',
-            strength: sharedTags.length / Math.max(memA.tags.length, memB.tags.length)
+            strength:
+              sharedTags.length / Math.max(memA.tags.length, memB.tags.length),
           });
         }
 
@@ -373,18 +401,21 @@ export class PatternRecognitionEngine {
             source: memA.id,
             target: memB.id,
             type: 'same_type',
-            strength: 0.6
+            strength: 0.6,
           });
         }
 
         // Temporal proximity (created within 1 hour)
-        const timeDiff = Math.abs(memA.createdAt.getTime() - memB.createdAt.getTime());
-        if (timeDiff < 60 * 60 * 1000) { // 1 hour
+        const timeDiff = Math.abs(
+          memA.createdAt.getTime() - memB.createdAt.getTime()
+        );
+        if (timeDiff < 60 * 60 * 1000) {
+          // 1 hour
           relationships.push({
             source: memA.id,
             target: memB.id,
             type: 'temporal_proximity',
-            strength: 1 - (timeDiff / (60 * 60 * 1000))
+            strength: 1 - timeDiff / (60 * 60 * 1000),
           });
         }
       }
@@ -406,7 +437,7 @@ export class PatternRecognitionEngine {
       summary: '',
       recommendations: [],
       trends: [],
-      predictions: []
+      predictions: [],
     } as {
       summary: string;
       recommendations: string[];
@@ -415,18 +446,26 @@ export class PatternRecognitionEngine {
     };
 
     if (patterns.length === 0) {
-      insights.summary = 'No significant patterns detected in the current memory dataset.';
+      insights.summary =
+        'No significant patterns detected in the current memory dataset.';
       return insights;
     }
 
     // Generate summary
-    const patternTypes = patterns.reduce((acc, pattern) => {
-      acc[pattern.type] = (acc[pattern.type] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+    const patternTypes = patterns.reduce(
+      (acc, pattern) => {
+        acc[pattern.type] = (acc[pattern.type] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
 
-    insights.summary = `Detected ${patterns.length} patterns across ${Object.keys(patternTypes).length} categories. ` +
-      `Strongest patterns: ${patterns.slice(0, 3).map(p => p.type).join(', ')}.`;
+    insights.summary =
+      `Detected ${patterns.length} patterns across ${Object.keys(patternTypes).length} categories. ` +
+      `Strongest patterns: ${patterns
+        .slice(0, 3)
+        .map(p => p.type)
+        .join(', ')}.`;
 
     // Extract unique insights
     const allInsights = patterns.flatMap(p => p.insights);

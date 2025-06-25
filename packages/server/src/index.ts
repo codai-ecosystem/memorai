@@ -3,13 +3,13 @@
  * Implements Model Context Protocol for seamless agent integration
  */
 
-export { MemoraiServer } from "./server/MemoraiServer.js";
-export { MCPHandler } from "./handlers/MCPHandler.js";
-export { AuthMiddleware } from "./middleware/AuthMiddleware.js";
-export { RateLimitMiddleware } from "./middleware/RateLimitMiddleware.js";
-export { TenantMiddleware } from "./middleware/TenantMiddleware.js";
-export { ServerConfig } from "./config/ServerConfig.js";
-export { Logger } from "./utils/Logger.js";
+export { MemoraiServer } from './server/MemoraiServer.js';
+export { MCPHandler } from './handlers/MCPHandler.js';
+export { AuthMiddleware } from './middleware/AuthMiddleware.js';
+export { RateLimitMiddleware } from './middleware/RateLimitMiddleware.js';
+export { TenantMiddleware } from './middleware/TenantMiddleware.js';
+export { ServerConfig } from './config/ServerConfig.js';
+export { Logger } from './utils/Logger.js';
 
 export type {
   ServerOptions,
@@ -20,4 +20,4 @@ export type {
   MemoryRequest,
   MemoryResponse,
   HealthStatus,
-} from "./types/index.js";
+} from './types/index.js';

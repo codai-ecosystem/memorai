@@ -1,16 +1,16 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { DashboardHeader } from "../../../src/components/dashboard/header";
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { DashboardHeader } from '../../../src/components/dashboard/header';
 
 // Mock window.matchMedia for system theme tests
 const mockMatchMedia = vi.fn();
-Object.defineProperty(window, "matchMedia", {
+Object.defineProperty(window, 'matchMedia', {
   writable: true,
   value: mockMatchMedia,
 });
 
-describe("DashboardHeader - Comprehensive Testing", () => {
+describe('DashboardHeader - Comprehensive Testing', () => {
   const mockOnSearch = vi.fn();
   let user: ReturnType<typeof userEvent.setup>;
 
@@ -19,10 +19,10 @@ describe("DashboardHeader - Comprehensive Testing", () => {
     user = userEvent.setup();
 
     // Reset DOM classes
-    document.documentElement.classList.remove("dark");
+    document.documentElement.classList.remove('dark');
 
     // Mock matchMedia to return false by default (light mode)
-    mockMatchMedia.mockImplementation((query) => ({
+    mockMatchMedia.mockImplementation(query => ({
       matches: false,
       media: query,
       onchange: null,
@@ -36,165 +36,165 @@ describe("DashboardHeader - Comprehensive Testing", () => {
 
   afterEach(() => {
     // Clean up DOM classes
-    document.documentElement.classList.remove("dark");
+    document.documentElement.classList.remove('dark');
   });
 
-  describe("Rendering and Structure", () => {
-    it("should render all header elements correctly", () => {
+  describe('Rendering and Structure', () => {
+    it('should render all header elements correctly', () => {
       render(<DashboardHeader />);
 
       // Logo and title
-      expect(screen.getByText("Memorai Dashboard")).toBeInTheDocument();
+      expect(screen.getByText('Memorai Dashboard')).toBeInTheDocument();
       expect(
-        screen.getByText("AI Memory Management System"),
+        screen.getByText('AI Memory Management System')
       ).toBeInTheDocument();
-      expect(screen.getByText("M")).toBeInTheDocument();
+      expect(screen.getByText('M')).toBeInTheDocument();
 
       // Search bar
       expect(
-        screen.getByPlaceholderText("Search memories, agents, or tags..."),
+        screen.getByPlaceholderText('Search memories, agents, or tags...')
       ).toBeInTheDocument();
 
       // Action buttons - use proper accessibility labels
       expect(
-        screen.getByRole("button", { name: /switch to/i }),
+        screen.getByRole('button', { name: /switch to/i })
       ).toBeInTheDocument();
       expect(
-        screen.getByRole("button", { name: /view notifications/i }),
+        screen.getByRole('button', { name: /view notifications/i })
       ).toBeInTheDocument();
       expect(
-        screen.getByRole("button", { name: /open settings/i }),
+        screen.getByRole('button', { name: /open settings/i })
       ).toBeInTheDocument();
       expect(
-        screen.getByRole("button", { name: /user profile menu/i }),
+        screen.getByRole('button', { name: /user profile menu/i })
       ).toBeInTheDocument();
-      expect(screen.getByText("Admin")).toBeInTheDocument();
+      expect(screen.getByText('Admin')).toBeInTheDocument();
     });
 
-    it("should render with custom className", () => {
+    it('should render with custom className', () => {
       const { container } = render(
-        <DashboardHeader className="custom-class" />,
+        <DashboardHeader className="custom-class" />
       );
-      expect(container.firstChild).toHaveClass("custom-class");
+      expect(container.firstChild).toHaveClass('custom-class');
     });
 
-    it("should have proper accessibility attributes", () => {
+    it('should have proper accessibility attributes', () => {
       render(<DashboardHeader />);
 
       // Search input should have proper type
       const searchInput = screen.getByPlaceholderText(
-        "Search memories, agents, or tags...",
+        'Search memories, agents, or tags...'
       );
-      expect(searchInput).toHaveAttribute("type", "text");
+      expect(searchInput).toHaveAttribute('type', 'text');
 
       // Theme toggle should have title attribute
-      const themeToggle = screen.getByRole("button", { name: /switch to/i });
-      expect(themeToggle).toHaveAttribute("title");
+      const themeToggle = screen.getByRole('button', { name: /switch to/i });
+      expect(themeToggle).toHaveAttribute('title');
     });
   });
 
-  describe("Search Functionality", () => {
-    it("should handle search input changes", async () => {
+  describe('Search Functionality', () => {
+    it('should handle search input changes', async () => {
       render(<DashboardHeader onSearch={mockOnSearch} />);
 
       const searchInput = screen.getByPlaceholderText(
-        "Search memories, agents, or tags...",
+        'Search memories, agents, or tags...'
       );
 
-      await user.type(searchInput, "test query");
+      await user.type(searchInput, 'test query');
 
-      expect(searchInput).toHaveValue("test query");
+      expect(searchInput).toHaveValue('test query');
     });
 
-    it("should call onSearch when form is submitted", async () => {
+    it('should call onSearch when form is submitted', async () => {
       render(<DashboardHeader onSearch={mockOnSearch} />);
 
       const searchInput = screen.getByPlaceholderText(
-        "Search memories, agents, or tags...",
+        'Search memories, agents, or tags...'
       );
 
-      await user.type(searchInput, "test search");
-      await user.keyboard("{Enter}");
+      await user.type(searchInput, 'test search');
+      await user.keyboard('{Enter}');
 
-      expect(mockOnSearch).toHaveBeenCalledWith("test search");
+      expect(mockOnSearch).toHaveBeenCalledWith('test search');
     });
 
-    it("should call onSearch when search form is submitted via button click", async () => {
+    it('should call onSearch when search form is submitted via button click', async () => {
       render(<DashboardHeader onSearch={mockOnSearch} />);
 
       const searchInput = screen.getByPlaceholderText(
-        "Search memories, agents, or tags...",
+        'Search memories, agents, or tags...'
       );
-      await user.type(searchInput, "button search");
+      await user.type(searchInput, 'button search');
 
       // Find the form and submit it
-      const form = searchInput.closest("form");
+      const form = searchInput.closest('form');
       expect(form).toBeInTheDocument();
 
       if (form) {
         fireEvent.submit(form);
       }
 
-      expect(mockOnSearch).toHaveBeenCalledWith("button search");
+      expect(mockOnSearch).toHaveBeenCalledWith('button search');
     });
 
-    it("should clear search on form reset", async () => {
+    it('should clear search on form reset', async () => {
       render(<DashboardHeader onSearch={mockOnSearch} />);
 
       const searchInput = screen.getByPlaceholderText(
-        "Search memories, agents, or tags...",
+        'Search memories, agents, or tags...'
       );
 
-      await user.type(searchInput, "test query");
-      expect(searchInput).toHaveValue("test query");
+      await user.type(searchInput, 'test query');
+      expect(searchInput).toHaveValue('test query');
 
       // Reset the form
-      const form = searchInput.closest("form");
+      const form = searchInput.closest('form');
       if (form) {
         fireEvent.reset(form);
       }
 
       await waitFor(() => {
-        expect(searchInput).toHaveValue("");
+        expect(searchInput).toHaveValue('');
       });
     });
 
-    it("should handle rapid typing without errors", async () => {
+    it('should handle rapid typing without errors', async () => {
       render(<DashboardHeader onSearch={mockOnSearch} />);
 
       const searchInput = screen.getByPlaceholderText(
-        "Search memories, agents, or tags...",
+        'Search memories, agents, or tags...'
       );
 
       // Rapid typing simulation
-      await user.type(searchInput, "rapid");
+      await user.type(searchInput, 'rapid');
       await user.clear(searchInput);
-      await user.type(searchInput, "typing");
+      await user.type(searchInput, 'typing');
       await user.clear(searchInput);
-      await user.type(searchInput, "test");
+      await user.type(searchInput, 'test');
 
-      expect(searchInput).toHaveValue("test");
+      expect(searchInput).toHaveValue('test');
     });
   });
 
-  describe("Theme Toggle Functionality", () => {
-    it("should cycle through themes: system -> light -> dark -> system", async () => {
+  describe('Theme Toggle Functionality', () => {
+    it('should cycle through themes: system -> light -> dark -> system', async () => {
       render(<DashboardHeader />);
 
-      const themeToggle = screen.getByRole("button", { name: /switch to/i });
+      const themeToggle = screen.getByRole('button', { name: /switch to/i });
 
       // Initial state: system theme
       expect(themeToggle).toHaveAttribute(
-        "aria-label",
-        expect.stringContaining("Switch to light theme"),
+        'aria-label',
+        expect.stringContaining('Switch to light theme')
       );
 
       // Click to switch to light theme
       await user.click(themeToggle);
       await waitFor(() => {
         expect(themeToggle).toHaveAttribute(
-          "aria-label",
-          expect.stringContaining("Switch to dark theme"),
+          'aria-label',
+          expect.stringContaining('Switch to dark theme')
         );
       });
 
@@ -202,8 +202,8 @@ describe("DashboardHeader - Comprehensive Testing", () => {
       await user.click(themeToggle);
       await waitFor(() => {
         expect(themeToggle).toHaveAttribute(
-          "aria-label",
-          expect.stringContaining("Switch to system theme"),
+          'aria-label',
+          expect.stringContaining('Switch to system theme')
         );
       });
 
@@ -211,16 +211,16 @@ describe("DashboardHeader - Comprehensive Testing", () => {
       await user.click(themeToggle);
       await waitFor(() => {
         expect(themeToggle).toHaveAttribute(
-          "aria-label",
-          expect.stringContaining("Switch to light theme"),
+          'aria-label',
+          expect.stringContaining('Switch to light theme')
         );
       });
     });
 
-    it("should apply dark theme when system preference is dark", async () => {
+    it('should apply dark theme when system preference is dark', async () => {
       // Mock system preference for dark mode
-      mockMatchMedia.mockImplementation((query) => ({
-        matches: query === "(prefers-color-scheme: dark)",
+      mockMatchMedia.mockImplementation(query => ({
+        matches: query === '(prefers-color-scheme: dark)',
         media: query,
         onchange: null,
         addListener: vi.fn(),
@@ -232,41 +232,41 @@ describe("DashboardHeader - Comprehensive Testing", () => {
 
       render(<DashboardHeader />);
 
-      const themeToggle = screen.getByRole("button", { name: /switch to/i });
+      const themeToggle = screen.getByRole('button', { name: /switch to/i });
 
       // Should start with system theme that respects dark preference
       expect(themeToggle).toBeInTheDocument();
     });
 
-    it("should display correct theme icons", async () => {
+    it('should display correct theme icons', async () => {
       render(<DashboardHeader />);
 
-      const themeToggle = screen.getByRole("button", { name: /switch to/i });
+      const themeToggle = screen.getByRole('button', { name: /switch to/i });
 
       // Initial: system theme - should have an icon
-      const initialIcon = themeToggle.querySelector("svg");
+      const initialIcon = themeToggle.querySelector('svg');
       expect(initialIcon).toBeTruthy();
 
       // Change to light theme - should have sun icon
       await user.click(themeToggle);
-      const lightIcon = themeToggle.querySelector("svg");
+      const lightIcon = themeToggle.querySelector('svg');
       expect(lightIcon).toBeTruthy();
 
       // Change to dark theme - should have moon icon
       await user.click(themeToggle);
-      const darkIcon = themeToggle.querySelector("svg");
+      const darkIcon = themeToggle.querySelector('svg');
       expect(darkIcon).toBeTruthy();
     });
   });
 
-  describe("Interactive Elements", () => {
-    it("should have clickable notification button", async () => {
+  describe('Interactive Elements', () => {
+    it('should have clickable notification button', async () => {
       render(<DashboardHeader />);
 
-      const notificationBtn = screen.getByRole("button", {
+      const notificationBtn = screen.getByRole('button', {
         name: /view notifications/i,
       });
-      const bellIcon = notificationBtn.querySelector("svg");
+      const bellIcon = notificationBtn.querySelector('svg');
 
       expect(notificationBtn).toBeInTheDocument();
       expect(bellIcon).toBeTruthy();
@@ -275,10 +275,10 @@ describe("DashboardHeader - Comprehensive Testing", () => {
       await user.click(notificationBtn);
     });
 
-    it("should have clickable settings button", async () => {
+    it('should have clickable settings button', async () => {
       render(<DashboardHeader />);
 
-      const settingsBtn = screen.getByRole("button", {
+      const settingsBtn = screen.getByRole('button', {
         name: /open settings/i,
       });
 
@@ -288,10 +288,10 @@ describe("DashboardHeader - Comprehensive Testing", () => {
       await user.click(settingsBtn);
     });
 
-    it("should have clickable profile button", async () => {
+    it('should have clickable profile button', async () => {
       render(<DashboardHeader />);
 
-      const profileBtn = screen.getByRole("button", {
+      const profileBtn = screen.getByRole('button', {
         name: /user profile menu/i,
       });
 
@@ -302,79 +302,79 @@ describe("DashboardHeader - Comprehensive Testing", () => {
     });
   });
 
-  describe("Responsive Design and Styling", () => {
-    it("should apply correct CSS classes for layout", () => {
+  describe('Responsive Design and Styling', () => {
+    it('should apply correct CSS classes for layout', () => {
       const { container } = render(<DashboardHeader />);
       const header = container.firstChild as HTMLElement;
 
-      expect(header).toHaveClass("bg-white", "dark:bg-gray-900", "border-b");
+      expect(header).toHaveClass('bg-white', 'dark:bg-gray-900', 'border-b');
     });
 
-    it("should have proper flex layout structure", () => {
+    it('should have proper flex layout structure', () => {
       render(<DashboardHeader />);
 
       // Find the main flex container
-      const header = screen.getByRole("banner");
+      const header = screen.getByRole('banner');
       const flexContainer = header.querySelector(
-        ".flex.items-center.justify-between",
+        '.flex.items-center.justify-between'
       );
       expect(flexContainer).toBeInTheDocument();
     });
 
-    it("should have responsive search bar", () => {
+    it('should have responsive search bar', () => {
       render(<DashboardHeader />);
 
       const searchContainer = screen
-        .getByPlaceholderText("Search memories, agents, or tags...")
-        .closest("div");
-      expect(searchContainer).toHaveClass("flex-1", "max-w-2xl");
+        .getByPlaceholderText('Search memories, agents, or tags...')
+        .closest('div');
+      expect(searchContainer).toHaveClass('flex-1', 'max-w-2xl');
     });
   });
 
-  describe("Edge Cases and Error Handling", () => {
-    it("should handle empty search submission", async () => {
+  describe('Edge Cases and Error Handling', () => {
+    it('should handle empty search submission', async () => {
       render(<DashboardHeader onSearch={mockOnSearch} />);
 
       const searchInput = screen.getByPlaceholderText(
-        "Search memories, agents, or tags...",
+        'Search memories, agents, or tags...'
       );
 
       // Focus on input and submit empty search
       await user.click(searchInput);
-      await user.keyboard("{Enter}");
+      await user.keyboard('{Enter}');
 
       // Should call onSearch with empty string
-      expect(mockOnSearch).toHaveBeenCalledWith("");
+      expect(mockOnSearch).toHaveBeenCalledWith('');
     });
 
-    it("should handle special characters in search", async () => {
+    it('should handle special characters in search', async () => {
       render(<DashboardHeader onSearch={mockOnSearch} />);
 
       const searchInput = screen.getByPlaceholderText(
-        "Search memories, agents, or tags...",
+        'Search memories, agents, or tags...'
       ); // Use simpler special characters that testing library can handle
-      const specialQuery = "!@#$%^&*()_+-=./<>";
+      const specialQuery = '!@#$%^&*()_+-=./<>';
       await user.type(searchInput, specialQuery);
-      await user.keyboard("{Enter}");
+      await user.keyboard('{Enter}');
 
       expect(mockOnSearch).toHaveBeenCalledWith(specialQuery);
     });
 
-    it("should handle very long search queries", async () => {
+    it('should handle very long search queries', async () => {
       render(<DashboardHeader onSearch={mockOnSearch} />);
 
       const searchInput = screen.getByPlaceholderText(
-        "Search memories, agents, or tags...",
+        'Search memories, agents, or tags...'
       );
 
       // Use shorter but still long query for testing
-      const longQuery = "a".repeat(100);
+      const longQuery = 'a'.repeat(100);
 
       // Use fireEvent for faster input simulation
       fireEvent.change(searchInput, { target: { value: longQuery } });
 
       // Find and submit the form instead of using keyDown
-      const form = searchInput.closest("form");
+      const form = searchInput.closest('form');
       if (form) {
         fireEvent.submit(form);
       }
@@ -382,10 +382,10 @@ describe("DashboardHeader - Comprehensive Testing", () => {
       expect(mockOnSearch).toHaveBeenCalledWith(longQuery);
     }, 15000);
 
-    it("should handle rapid theme switching", async () => {
+    it('should handle rapid theme switching', async () => {
       render(<DashboardHeader />);
 
-      const themeToggle = screen.getByRole("button", { name: /switch to/i });
+      const themeToggle = screen.getByRole('button', { name: /switch to/i });
 
       // Rapid clicking should not cause errors
       for (let i = 0; i < 5; i++) {
@@ -397,13 +397,13 @@ describe("DashboardHeader - Comprehensive Testing", () => {
     });
   });
 
-  describe("Accessibility Compliance", () => {
-    it("should support keyboard navigation", async () => {
+  describe('Accessibility Compliance', () => {
+    it('should support keyboard navigation', async () => {
       render(<DashboardHeader onSearch={mockOnSearch} />);
 
       // Start from search input
       const searchInput = screen.getByPlaceholderText(
-        "Search memories, agents, or tags...",
+        'Search memories, agents, or tags...'
       );
       await user.click(searchInput);
 
@@ -414,71 +414,71 @@ describe("DashboardHeader - Comprehensive Testing", () => {
       await user.tab();
 
       // Should be able to interact with focused element
-      await user.keyboard("{Enter}");
+      await user.keyboard('{Enter}');
 
       // No errors should occur
       expect(searchInput).toBeInTheDocument();
     });
 
-    it("should have proper ARIA labels", () => {
+    it('should have proper ARIA labels', () => {
       render(<DashboardHeader />);
 
       // Check all interactive elements have proper labels
       expect(
-        screen.getByRole("button", { name: /switch to/i }),
-      ).toHaveAttribute("aria-label");
+        screen.getByRole('button', { name: /switch to/i })
+      ).toHaveAttribute('aria-label');
       expect(
-        screen.getByRole("button", { name: /view notifications/i }),
-      ).toHaveAttribute("aria-label");
+        screen.getByRole('button', { name: /view notifications/i })
+      ).toHaveAttribute('aria-label');
       expect(
-        screen.getByRole("button", { name: /open settings/i }),
-      ).toHaveAttribute("aria-label");
+        screen.getByRole('button', { name: /open settings/i })
+      ).toHaveAttribute('aria-label');
       expect(
-        screen.getByRole("button", { name: /user profile menu/i }),
-      ).toHaveAttribute("aria-label");
+        screen.getByRole('button', { name: /user profile menu/i })
+      ).toHaveAttribute('aria-label');
     });
 
-    it("should be screen reader friendly", () => {
+    it('should be screen reader friendly', () => {
       render(<DashboardHeader />);
 
       // Header should be in a banner landmark
-      expect(screen.getByRole("banner")).toBeInTheDocument();
+      expect(screen.getByRole('banner')).toBeInTheDocument();
 
       // All interactive elements should be accessible
-      const buttons = screen.getAllByRole("button");
+      const buttons = screen.getAllByRole('button');
       expect(buttons.length).toBeGreaterThan(0);
 
       // Search input should be accessible
-      const searchInput = screen.getByRole("textbox");
+      const searchInput = screen.getByRole('textbox');
       expect(searchInput).toBeInTheDocument();
     });
   });
 
-  describe("Performance and Optimization", () => {
-    it("should handle frequent search updates efficiently", async () => {
+  describe('Performance and Optimization', () => {
+    it('should handle frequent search updates efficiently', async () => {
       render(<DashboardHeader onSearch={mockOnSearch} />);
 
       const searchInput = screen.getByPlaceholderText(
-        "Search memories, agents, or tags...",
+        'Search memories, agents, or tags...'
       );
 
       // Clear any existing value first
-      fireEvent.change(searchInput, { target: { value: "" } });
+      fireEvent.change(searchInput, { target: { value: '' } });
 
       // Simulate rapid typing and backspacing using fireEvent for speed
       for (let i = 0; i < 10; i++) {
-        fireEvent.change(searchInput, { target: { value: "a" } });
-        fireEvent.change(searchInput, { target: { value: "" } });
+        fireEvent.change(searchInput, { target: { value: 'a' } });
+        fireEvent.change(searchInput, { target: { value: '' } });
       }
 
       // Should remain responsive and be empty
-      expect(searchInput).toHaveValue("");
+      expect(searchInput).toHaveValue('');
     });
 
-    it("should not cause memory leaks with theme switching", async () => {
+    it('should not cause memory leaks with theme switching', async () => {
       render(<DashboardHeader />);
 
-      const themeToggle = screen.getByRole("button", { name: /switch to/i });
+      const themeToggle = screen.getByRole('button', { name: /switch to/i });
 
       // Multiple theme switches
       for (let i = 0; i < 10; i++) {

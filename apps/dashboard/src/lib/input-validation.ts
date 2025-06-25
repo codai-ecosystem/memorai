@@ -3,19 +3,19 @@
  * Provides secure input handling for user data
  */
 
-import { z } from "zod";
-import DOMPurify from "isomorphic-dompurify";
+import { z } from 'zod';
+import DOMPurify from 'isomorphic-dompurify';
 
 // Common validation schemas
 export const validationSchemas = {
   // Memory-related validations
   memoryContent: z
     .string()
-    .min(1, "Memory content is required")
-    .max(10000, "Memory content must be less than 10,000 characters")
+    .min(1, 'Memory content is required')
+    .max(10000, 'Memory content must be less than 10,000 characters')
     .refine(
-      (val) => val.trim().length > 0,
-      "Memory content cannot be only whitespace",
+      val => val.trim().length > 0,
+      'Memory content cannot be only whitespace'
     ),
 
   memoryMetadata: z.object({
@@ -24,24 +24,24 @@ export const validationSchemas = {
     category: z.string().max(100).optional(),
     agentId: z
       .string()
-      .regex(/^[a-zA-Z0-9_-]+$/, "Invalid agent ID format")
+      .regex(/^[a-zA-Z0-9_-]+$/, 'Invalid agent ID format')
       .optional(),
   }),
 
   // Search validations
   searchQuery: z
     .string()
-    .min(1, "Search query is required")
-    .max(1000, "Search query must be less than 1,000 characters")
+    .min(1, 'Search query is required')
+    .max(1000, 'Search query must be less than 1,000 characters')
     .refine(
-      (val) => !/<script|javascript:|data:|vbscript:/i.test(val),
-      "Search query contains potentially dangerous content",
+      val => !/<script|javascript:|data:|vbscript:/i.test(val),
+      'Search query contains potentially dangerous content'
     ),
 
   searchFilters: z.object({
     agentId: z
       .string()
-      .regex(/^[a-zA-Z0-9_-]*$/, "Invalid agent ID format")
+      .regex(/^[a-zA-Z0-9_-]*$/, 'Invalid agent ID format')
       .optional(),
     tags: z.array(z.string().max(50)).max(10).optional(),
     dateFrom: z.string().datetime().optional(),
@@ -55,10 +55,10 @@ export const validationSchemas = {
     .string()
     .regex(
       /^[a-zA-Z0-9_-]+$/,
-      "Agent ID can only contain letters, numbers, hyphens, and underscores",
+      'Agent ID can only contain letters, numbers, hyphens, and underscores'
     )
-    .min(1, "Agent ID is required")
-    .max(50, "Agent ID must be less than 50 characters"),
+    .min(1, 'Agent ID is required')
+    .max(50, 'Agent ID must be less than 50 characters'),
 
   // API parameter validations
   paginationParams: z.object({
@@ -91,10 +91,10 @@ export function sanitizeHtml(input: string): string {
  */
 export function sanitizeText(input: string): string {
   return input
-    .replace(/[<>]/g, "") // Remove angle brackets
-    .replace(/javascript:/gi, "") // Remove javascript: protocols
-    .replace(/data:/gi, "") // Remove data: protocols
-    .replace(/vbscript:/gi, "") // Remove vbscript: protocols
+    .replace(/[<>]/g, '') // Remove angle brackets
+    .replace(/javascript:/gi, '') // Remove javascript: protocols
+    .replace(/data:/gi, '') // Remove data: protocols
+    .replace(/vbscript:/gi, '') // Remove vbscript: protocols
     .trim();
 }
 
@@ -148,7 +148,7 @@ export function validateMemoryMetadata(metadata: unknown): {
   }
 
   if (validated.tags) {
-    validated.tags = validated.tags.map((tag) => sanitizeText(tag));
+    validated.tags = validated.tags.map(tag => sanitizeText(tag));
   }
 
   return validated;
@@ -169,7 +169,7 @@ export function validateSearchFilters(filters: unknown): {
 
   // Sanitize text fields
   if (validated.tags) {
-    validated.tags = validated.tags.map((tag) => sanitizeText(tag));
+    validated.tags = validated.tags.map(tag => sanitizeText(tag));
   }
 
   return validated;
@@ -180,15 +180,15 @@ export function validateSearchFilters(filters: unknown): {
  */
 export function validateRequestBody<T>(
   body: unknown,
-  schema: z.ZodSchema<T>,
+  schema: z.ZodSchema<T>
 ): T {
   try {
     return schema.parse(body);
   } catch (error) {
     if (error instanceof z.ZodError) {
       const errorMessage = error.errors
-        .map((err) => `${err.path.join(".")}: ${err.message}`)
-        .join(", ");
+        .map(err => `${err.path.join('.')}: ${err.message}`)
+        .join(', ');
       throw new Error(`Validation failed: ${errorMessage}`);
     }
     throw error;
@@ -201,7 +201,7 @@ export function validateRequestBody<T>(
 export function validateRateLimit(
   identifier: string,
   maxRequests: number = 100,
-  windowMs: number = 60000, // 1 minute
+  windowMs: number = 60000 // 1 minute
 ): boolean {
   // In production, this would use Redis or a proper rate limiting service
   // For now, we'll use a simple in-memory store
@@ -216,9 +216,7 @@ export function validateRateLimit(
   const requests = rateLimitStore.get(identifier)!;
 
   // Remove old requests outside the window
-  const recentRequests = requests.filter(
-    (timestamp) => timestamp > windowStart,
-  );
+  const recentRequests = requests.filter(timestamp => timestamp > windowStart);
 
   // Check if limit exceeded
   if (recentRequests.length >= maxRequests) {
@@ -242,13 +240,13 @@ export const fileUploadSchema = z.object({
   filename: z
     .string()
     .max(255)
-    .regex(/^[a-zA-Z0-9._-]+$/, "Invalid filename"),
+    .regex(/^[a-zA-Z0-9._-]+$/, 'Invalid filename'),
   size: z.number().max(10 * 1024 * 1024), // 10MB max
   mimetype: z.enum([
-    "application/json",
-    "text/plain",
-    "text/csv",
-    "application/csv",
+    'application/json',
+    'text/plain',
+    'text/csv',
+    'application/csv',
   ]),
 });
 
@@ -268,14 +266,14 @@ export function validateFileUpload(file: unknown): {
  */
 export function sanitizeForDatabase(input: string): string {
   return input
-    .replace(/[';]/g, "") // Remove semicolons
-    .replace(/--/g, "") // Remove SQL comments
-    .replace(/\/\*/g, "") // Remove SQL block comments start
-    .replace(/\*\//g, "") // Remove SQL block comments end
-    .replace(/\bDROP\b/gi, "") // Remove DROP statements
-    .replace(/\bDELETE\b/gi, "") // Remove DELETE statements
-    .replace(/\bUPDATE\b/gi, "") // Remove UPDATE statements
-    .replace(/\bINSERT\b/gi, "") // Remove INSERT statements
+    .replace(/[';]/g, '') // Remove semicolons
+    .replace(/--/g, '') // Remove SQL comments
+    .replace(/\/\*/g, '') // Remove SQL block comments start
+    .replace(/\*\//g, '') // Remove SQL block comments end
+    .replace(/\bDROP\b/gi, '') // Remove DROP statements
+    .replace(/\bDELETE\b/gi, '') // Remove DELETE statements
+    .replace(/\bUPDATE\b/gi, '') // Remove UPDATE statements
+    .replace(/\bINSERT\b/gi, '') // Remove INSERT statements
     .trim();
 }
 
@@ -285,16 +283,16 @@ export function sanitizeForDatabase(input: string): string {
 export class ValidationError extends Error {
   constructor(
     message: string,
-    public field?: string,
+    public field?: string
   ) {
     super(message);
-    this.name = "ValidationError";
+    this.name = 'ValidationError';
   }
 }
 
 export class RateLimitError extends Error {
-  constructor(message: string = "Rate limit exceeded") {
+  constructor(message: string = 'Rate limit exceeded') {
     super(message);
-    this.name = "RateLimitError";
+    this.name = 'RateLimitError';
   }
 }

@@ -8,8 +8,8 @@ import type {
   MemoryQuery,
   MemoryResult,
   MemoryType,
-} from "../types/index.js";
-import { FileStorageAdapter } from "../storage/StorageAdapter.js";
+} from '../types/index.js';
+import { FileStorageAdapter } from '../storage/StorageAdapter.js';
 
 export interface KeywordIndex {
   [keyword: string]: Set<string>; // Set of memory IDs
@@ -79,7 +79,7 @@ export class BasicMemoryEngine {
     for (const term of searchTerms) {
       const matchingIds = this.keywordIndex[term.toLowerCase()];
       if (matchingIds) {
-        matchingIds.forEach((id) => candidateIds.add(id));
+        matchingIds.forEach(id => candidateIds.add(id));
       }
     }
 
@@ -88,7 +88,7 @@ export class BasicMemoryEngine {
       const typeIds = this.typeIndex.get(query.type);
       if (typeIds) {
         // Keep only memories that match both keywords and type
-        candidateIds.forEach((id) => {
+        candidateIds.forEach(id => {
           if (!typeIds.has(id)) {
             candidateIds.delete(id);
           }
@@ -134,7 +134,7 @@ export class BasicMemoryEngine {
   public async list(
     limit: number = 50,
     tenantId?: string,
-    agentId?: string,
+    agentId?: string
   ): Promise<MemoryMetadata[]> {
     if (!this.initialized) {
       await this.initialize();
@@ -266,10 +266,10 @@ export class BasicMemoryEngine {
     // Simple keyword extraction
     return text
       .toLowerCase()
-      .replace(/[^\w\s]/g, " ") // Replace punctuation with spaces
+      .replace(/[^\w\s]/g, ' ') // Replace punctuation with spaces
       .split(/\s+/) // Split on whitespace
-      .filter((word) => word.length > 2) // Filter out short words
-      .filter((word) => !this.isStopWord(word)); // Filter out stop words
+      .filter(word => word.length > 2) // Filter out short words
+      .filter(word => !this.isStopWord(word)); // Filter out stop words
   }
 
   /**
@@ -277,55 +277,55 @@ export class BasicMemoryEngine {
    */
   private isStopWord(word: string): boolean {
     const stopWords = new Set([
-      "the",
-      "a",
-      "an",
-      "and",
-      "or",
-      "but",
-      "in",
-      "on",
-      "at",
-      "to",
-      "for",
-      "of",
-      "with",
-      "by",
-      "is",
-      "are",
-      "was",
-      "were",
-      "be",
-      "been",
-      "have",
-      "has",
-      "had",
-      "do",
-      "does",
-      "did",
-      "will",
-      "would",
-      "could",
-      "should",
-      "may",
-      "might",
-      "can",
-      "this",
-      "that",
-      "these",
-      "those",
-      "i",
-      "you",
-      "he",
-      "she",
-      "it",
-      "we",
-      "they",
-      "me",
-      "him",
-      "her",
-      "us",
-      "them",
+      'the',
+      'a',
+      'an',
+      'and',
+      'or',
+      'but',
+      'in',
+      'on',
+      'at',
+      'to',
+      'for',
+      'of',
+      'with',
+      'by',
+      'is',
+      'are',
+      'was',
+      'were',
+      'be',
+      'been',
+      'have',
+      'has',
+      'had',
+      'do',
+      'does',
+      'did',
+      'will',
+      'would',
+      'could',
+      'should',
+      'may',
+      'might',
+      'can',
+      'this',
+      'that',
+      'these',
+      'those',
+      'i',
+      'you',
+      'he',
+      'she',
+      'it',
+      'we',
+      'they',
+      'me',
+      'him',
+      'her',
+      'us',
+      'them',
     ]);
     return stopWords.has(word);
   }
@@ -335,7 +335,7 @@ export class BasicMemoryEngine {
    */
   private calculateKeywordScore(
     memory: MemoryMetadata,
-    searchTerms: string[],
+    searchTerms: string[]
   ): number {
     const contentWords = this.extractKeywords(memory.content);
     const titleWords = memory.tags || [];
@@ -352,7 +352,7 @@ export class BasicMemoryEngine {
       }
 
       // Check for exact matches in tags
-      if (titleWords.some((tag) => tag.toLowerCase().includes(term))) {
+      if (titleWords.some(tag => tag.toLowerCase().includes(term))) {
         termScore += 0.3;
       }
 
@@ -373,7 +373,7 @@ export class BasicMemoryEngine {
    */
   private getRelevanceReason(
     memory: MemoryMetadata,
-    searchTerms: string[],
+    searchTerms: string[]
   ): string {
     const reasons: string[] = [];
 
@@ -385,15 +385,13 @@ export class BasicMemoryEngine {
 
     if (memory.tags.length > 0) {
       for (const term of searchTerms) {
-        if (memory.tags.some((tag) => tag.toLowerCase().includes(term))) {
+        if (memory.tags.some(tag => tag.toLowerCase().includes(term))) {
           reasons.push(`tagged with "${term}"`);
         }
       }
     }
 
-    return reasons.length > 0
-      ? reasons.join(", ")
-      : "keyword match in content";
+    return reasons.length > 0 ? reasons.join(', ') : 'keyword match in content';
   }
 
   /**

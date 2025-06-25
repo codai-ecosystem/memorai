@@ -1,16 +1,16 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect } from 'vitest';
 
 describe('memorai Service', () => {
   it('should be properly configured', () => {
-    expect(true).toBe(true)
-  })
+    expect(true).toBe(true);
+  });
 
   it('should have correct environment', () => {
-    expect(process.env.NODE_ENV).toBeDefined()
-  })
+    expect(process.env.NODE_ENV).toBeDefined();
+  });
 
   it('should handle basic operations', () => {
-    const result = 1 + 1
-    expect(result).toBe(2)
-  })
-})
+    const result = 1 + 1;
+    expect(result).toBe(2);
+  });
+});

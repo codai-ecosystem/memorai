@@ -22,7 +22,7 @@ export class Output {
   }
 
   setFormat(format: string): void {
-    if (format === "json") {
+    if (format === 'json') {
       this.setJsonMode(true);
     }
   }

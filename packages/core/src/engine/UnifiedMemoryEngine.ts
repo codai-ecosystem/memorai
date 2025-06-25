@@ -301,13 +301,22 @@ export class UnifiedMemoryEngine {
       const contextResponse = await this.activeEngine.context(_request);
 
       return {
-        context: contextResponse.context || contextResponse.context_summary || 'No context available',
+        context:
+          contextResponse.context ||
+          contextResponse.context_summary ||
+          'No context available',
         memories: contextResponse.memories || [],
-        summary: contextResponse.summary || contextResponse.context_summary || 'No context available',
+        summary:
+          contextResponse.summary ||
+          contextResponse.context_summary ||
+          'No context available',
         confidence: contextResponse.confidence || 0.9,
         generated_at: contextResponse.generated_at || new Date(),
         total_count: contextResponse.total_count || 0,
-        context_summary: contextResponse.context_summary || contextResponse.summary || 'No context available',
+        context_summary:
+          contextResponse.context_summary ||
+          contextResponse.summary ||
+          'No context available',
       };
     } catch (error) {
       if (this.config.enableFallback) {

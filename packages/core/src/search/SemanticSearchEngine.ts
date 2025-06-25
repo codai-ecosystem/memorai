@@ -3,8 +3,8 @@
  * Provides fuzzy matching, semantic similarity, and intelligent query understanding
  */
 
-import type { MemoryMetadata, MemoryResult } from "../types/index.js";
-import { EmbeddingService } from "../embedding/EmbeddingService.js";
+import type { MemoryMetadata, MemoryResult } from '../types/index.js';
+import { EmbeddingService } from '../embedding/EmbeddingService.js';
 
 export interface SemanticSearchOptions {
   enableFuzzyMatching?: boolean;
@@ -28,7 +28,7 @@ export interface SearchContext {
   userPreferences: Record<string, unknown>;
   sessionContext: string[];
   timeContext: {
-    timeOfDay: "morning" | "afternoon" | "evening" | "night";
+    timeOfDay: 'morning' | 'afternoon' | 'evening' | 'night';
     dayOfWeek: string;
     season: string;
   };
@@ -64,7 +64,7 @@ export class SemanticSearchEngine {
     query: string,
     memories: MemoryMetadata[],
     options: SemanticSearchOptions = {},
-    context?: SearchContext,
+    context?: SearchContext
   ): Promise<EnhancedMemoryResult[]> {
     const {
       enableFuzzyMatching = true,
@@ -87,7 +87,7 @@ export class SemanticSearchEngine {
     const processedQuery = await this.preprocessQuery(
       query,
       enableTypoTolerance,
-      context,
+      context
     );
 
     // Step 2: Generate query embedding
@@ -113,7 +113,7 @@ export class SemanticSearchEngine {
           fuzzyThreshold,
           contextWindow,
         },
-        context,
+        context
       );
 
       if (result.searchScore > 0.1) {
@@ -123,11 +123,11 @@ export class SemanticSearchEngine {
     } // Step 5: Apply diversity factor and rank results
     const rankedResults = await this.applyDiversityRanking(
       scoredResults,
-      diversityFactor,
+      diversityFactor
     ); // Step 6: Sort by final score and apply limit
     const sortedResults = rankedResults.sort(
       (a: EnhancedMemoryResult, b: EnhancedMemoryResult) =>
-        b.searchScore - a.searchScore,
+        b.searchScore - a.searchScore
     );
 
     // Apply limit if specified
@@ -140,12 +140,12 @@ export class SemanticSearchEngine {
   private async preprocessQuery(
     query: string,
     enableTypoTolerance: boolean,
-    context?: SearchContext,
+    context?: SearchContext
   ): Promise<string> {
     let processed = query.toLowerCase().trim();
 
     // Basic normalization
-    processed = processed.replace(/[^\w\s]/g, " ").replace(/\s+/g, " ");
+    processed = processed.replace(/[^\w\s]/g, ' ').replace(/\s+/g, ' ');
 
     // Typo correction (simplified implementation)
     if (enableTypoTolerance) {
@@ -182,7 +182,7 @@ export class SemanticSearchEngine {
    */
   private async expandQuery(
     query: string,
-    context?: SearchContext,
+    context?: SearchContext
   ): Promise<string[]> {
     const expansions = [query];
 
@@ -209,24 +209,24 @@ export class SemanticSearchEngine {
     query: string,
     expandedQueries: string[],
     queryEmbedding: number[],
-    weightFactors: Required<SemanticSearchOptions>["weightFactors"],
+    weightFactors: Required<SemanticSearchOptions>['weightFactors'],
     searchOptions: {
       enableFuzzyMatching: boolean;
       fuzzyThreshold: number;
       contextWindow: number;
     },
-    context?: SearchContext,
+    context?: SearchContext
   ): Promise<EnhancedMemoryResult> {
     // Calculate individual scores
     const semanticScore = await this.calculateSemanticScore(
       memory,
-      queryEmbedding,
+      queryEmbedding
     );
     const fuzzyScore = searchOptions.enableFuzzyMatching
       ? this.calculateFuzzyScore(
           memory.content,
           expandedQueries,
-          searchOptions.fuzzyThreshold,
+          searchOptions.fuzzyThreshold
         )
       : 0;
     const recencyScore = this.calculateRecencyScore(memory);
@@ -236,7 +236,7 @@ export class SemanticSearchEngine {
       ? this.calculateContextRelevance(
           memory,
           context,
-          searchOptions.contextWindow,
+          searchOptions.contextWindow
         )
       : 0;
 
@@ -256,7 +256,7 @@ export class SemanticSearchEngine {
       recencyScore,
       frequencyScore,
       importanceScore,
-      contextRelevance,
+      contextRelevance
     );
 
     // Extract related concepts
@@ -280,7 +280,7 @@ export class SemanticSearchEngine {
    */
   private async calculateSemanticScore(
     memory: MemoryMetadata,
-    queryEmbedding: number[],
+    queryEmbedding: number[]
   ): Promise<number> {
     if (!memory.embedding) {
       // Generate embedding if not available
@@ -297,7 +297,7 @@ export class SemanticSearchEngine {
   private calculateFuzzyScore(
     content: string,
     queries: string[],
-    threshold: number,
+    threshold: number
   ): number {
     let maxScore = 0;
 
@@ -317,7 +317,7 @@ export class SemanticSearchEngine {
     const memoryTime = Math.max(
       memory.updatedAt.getTime(),
       memory.lastAccessedAt.getTime(),
-      memory.createdAt.getTime(),
+      memory.createdAt.getTime()
     );
 
     const daysSince = (now - memoryTime) / (1000 * 60 * 60 * 24);
@@ -343,7 +343,7 @@ export class SemanticSearchEngine {
   private calculateContextRelevance(
     memory: MemoryMetadata,
     context: SearchContext,
-    contextWindow: number,
+    contextWindow: number
   ): number {
     let relevanceScore = 0;
     let factors = 0;
@@ -359,7 +359,7 @@ export class SemanticSearchEngine {
               this.fuzzyMatch(
                 memory.content.toLowerCase(),
                 recentQuery.toLowerCase(),
-                0.6,
+                0.6
               )
             );
           }, 0) / Math.min(context.recentQueries.length, contextWindow);
@@ -372,7 +372,7 @@ export class SemanticSearchEngine {
     if (Object.keys(context.userPreferences).length > 0) {
       const preferenceMatch = this.checkPreferenceMatch(
         memory,
-        context.userPreferences,
+        context.userPreferences
       );
       relevanceScore += preferenceMatch;
       factors++;
@@ -381,7 +381,7 @@ export class SemanticSearchEngine {
     // Time context relevance
     const timeRelevance = this.calculateTimeRelevance(
       memory,
-      context.timeContext,
+      context.timeContext
     );
     relevanceScore += timeRelevance;
     factors++;
@@ -393,7 +393,7 @@ export class SemanticSearchEngine {
    */
   private async applyDiversityRanking(
     results: EnhancedMemoryResult[],
-    diversityFactor: number,
+    diversityFactor: number
   ): Promise<EnhancedMemoryResult[]> {
     if (diversityFactor === 0 || results.length <= 1) {
       return results;
@@ -415,7 +415,7 @@ export class SemanticSearchEngine {
         for (const selected of diversifiedResults) {
           const similarity = await this.calculateContentSimilarity(
             candidate.memory.content,
-            selected.memory.content,
+            selected.memory.content
           );
           diversityPenalty += similarity * diversityFactor;
         }
@@ -474,7 +474,7 @@ export class SemanticSearchEngine {
         // Word-level match is good but not perfect unless it's exact
         maxScore = Math.max(
           maxScore,
-          word.toLowerCase() === pattern.toLowerCase() ? 1.0 : 0.95,
+          word.toLowerCase() === pattern.toLowerCase() ? 1.0 : 0.95
         );
       } else {
         const distance = this.jaroWinklerDistance(word, pattern);
@@ -551,21 +551,21 @@ export class SemanticSearchEngine {
 
   private async correctTypos(
     text: string,
-    _context?: SearchContext,
+    _context?: SearchContext
   ): Promise<string> {
     // Simplified typo correction - in production, use a proper spell checker
     const corrections: Record<string, string> = {
-      remmber: "remember",
-      remembr: "remember",
-      recal: "recall",
-      retreive: "retrieve",
-      serach: "search",
-      searh: "search",
+      remmber: 'remember',
+      remembr: 'remember',
+      recal: 'recall',
+      retreive: 'retrieve',
+      serach: 'search',
+      searh: 'search',
     };
 
     let corrected = text;
     for (const [typo, correction] of Object.entries(corrections)) {
-      corrected = corrected.replace(new RegExp(typo, "gi"), correction);
+      corrected = corrected.replace(new RegExp(typo, 'gi'), correction);
     }
 
     return corrected;
@@ -573,19 +573,19 @@ export class SemanticSearchEngine {
 
   private async generateRelatedConcepts(
     query: string,
-    _context?: SearchContext,
+    _context?: SearchContext
   ): Promise<string[]> {
     // Simplified concept expansion - in production, use a knowledge base or LLM
     const conceptMap: Record<string, string[]> = {
-      code: ["programming", "development", "software", "function", "method"],
-      bug: ["error", "issue", "problem", "defect", "glitch"],
-      test: ["testing", "verification", "validation", "check", "assertion"],
-      user: ["customer", "client", "person", "account", "profile"],
-      data: ["information", "content", "record", "database", "storage"],
+      code: ['programming', 'development', 'software', 'function', 'method'],
+      bug: ['error', 'issue', 'problem', 'defect', 'glitch'],
+      test: ['testing', 'verification', 'validation', 'check', 'assertion'],
+      user: ['customer', 'client', 'person', 'account', 'profile'],
+      data: ['information', 'content', 'record', 'database', 'storage'],
     };
 
     const concepts: string[] = [];
-    const queryWords = query.toLowerCase().split(" ");
+    const queryWords = query.toLowerCase().split(' ');
 
     for (const word of queryWords) {
       if (conceptMap[word]) {
@@ -602,37 +602,37 @@ export class SemanticSearchEngine {
     recencyScore: number,
     frequencyScore: number,
     importanceScore: number,
-    contextRelevance: number,
+    contextRelevance: number
   ): string {
     const factors: string[] = [];
 
-    if (semanticScore > 0.8) factors.push("high semantic similarity");
-    else if (semanticScore > 0.6) factors.push("moderate semantic similarity");
+    if (semanticScore > 0.8) factors.push('high semantic similarity');
+    else if (semanticScore > 0.6) factors.push('moderate semantic similarity');
 
-    if (fuzzyScore > 0.8) factors.push("exact text match");
-    else if (fuzzyScore > 0.6) factors.push("partial text match");
+    if (fuzzyScore > 0.8) factors.push('exact text match');
+    else if (fuzzyScore > 0.6) factors.push('partial text match');
 
-    if (recencyScore > 0.8) factors.push("recently accessed");
-    if (frequencyScore > 0.8) factors.push("frequently accessed");
-    if (importanceScore > 0.8) factors.push("marked as important");
-    if (contextRelevance > 0.7) factors.push("contextually relevant");
+    if (recencyScore > 0.8) factors.push('recently accessed');
+    if (frequencyScore > 0.8) factors.push('frequently accessed');
+    if (importanceScore > 0.8) factors.push('marked as important');
+    if (contextRelevance > 0.7) factors.push('contextually relevant');
 
     return factors.length > 0
-      ? `Relevant due to: ${factors.join(", ")}`
-      : "Basic relevance match";
+      ? `Relevant due to: ${factors.join(', ')}`
+      : 'Basic relevance match';
   }
 
   private async extractRelatedConcepts(content: string): Promise<string[]> {
     // Extract key concepts from content (simplified)
     const words = content
       .toLowerCase()
-      .replace(/[^\w\s]/g, " ")
-      .split(" ")
-      .filter((word) => word.length > 3);
+      .replace(/[^\w\s]/g, ' ')
+      .split(' ')
+      .filter(word => word.length > 3);
 
     // Return most frequent words as concepts
     const wordCount = new Map<string, number>();
-    words.forEach((word) => {
+    words.forEach(word => {
       wordCount.set(word, (wordCount.get(word) || 0) + 1);
     });
 
@@ -644,14 +644,14 @@ export class SemanticSearchEngine {
 
   private checkPreferenceMatch(
     memory: MemoryMetadata,
-    preferences: Record<string, unknown>,
+    preferences: Record<string, unknown>
   ): number {
     let matchScore = 0;
     let totalPreferences = 0;
     for (const [key, value] of Object.entries(preferences)) {
       totalPreferences++;
 
-      const valueStr = typeof value === "string" ? value : String(value);
+      const valueStr = typeof value === 'string' ? value : String(value);
       if (memory.tags.includes(key) || memory.tags.includes(valueStr)) {
         matchScore++;
       } else if (
@@ -666,13 +666,13 @@ export class SemanticSearchEngine {
 
   private calculateTimeRelevance(
     memory: MemoryMetadata,
-    timeContext: SearchContext["timeContext"],
+    timeContext: SearchContext['timeContext']
   ): number {
     // Simple time-based relevance (can be expanded)
     const memoryHour = memory.createdAt.getHours();
     const currentTimeScore = this.getTimeOfDayScore(
       memoryHour,
-      timeContext.timeOfDay,
+      timeContext.timeOfDay
     );
 
     return currentTimeScore;
@@ -691,7 +691,7 @@ export class SemanticSearchEngine {
     const [start, end] = range;
     if (start === undefined || end === undefined) return 0.5;
 
-    if (timeOfDay === "night") {
+    if (timeOfDay === 'night') {
       return hour >= start || hour < end ? 1 : 0.5;
     } else {
       return hour >= start && hour < end ? 1 : 0.5;
@@ -700,13 +700,13 @@ export class SemanticSearchEngine {
 
   private async calculateContentSimilarity(
     content1: string,
-    content2: string,
+    content2: string
   ): Promise<number> {
     // Quick similarity check using word overlap
-    const words1 = new Set(content1.toLowerCase().split(" "));
-    const words2 = new Set(content2.toLowerCase().split(" "));
+    const words1 = new Set(content1.toLowerCase().split(' '));
+    const words2 = new Set(content2.toLowerCase().split(' '));
 
-    const intersection = new Set([...words1].filter((x) => words2.has(x)));
+    const intersection = new Set([...words1].filter(x => words2.has(x)));
     const union = new Set([...words1, ...words2]);
 
     return intersection.size / union.size; // Jaccard similarity

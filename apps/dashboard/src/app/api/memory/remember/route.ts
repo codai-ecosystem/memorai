@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse } from 'next/server';
 
 export async function POST(request: NextRequest) {
   try {
@@ -7,21 +7,20 @@ export async function POST(request: NextRequest) {
     // Mock response for memory creation
     const mockMemory = {
       id: Date.now().toString(),
-      agentId: body.agentId ?? "default",
-      content: body.content || "",
+      agentId: body.agentId ?? 'default',
+      content: body.content || '',
       metadata: body.metadata || {},
       timestamp: new Date().toISOString(),
     };
 
     return NextResponse.json(mockMemory);
   } catch (error) {
-    if (process.env.NODE_ENV === "development")
-      {
-        console.error("Memory remember API error:", error);
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Memory remember API error:', error);
     }
     return NextResponse.json(
-      { error: "Failed to remember memory" },
-      { status: 500 },
+      { error: 'Failed to remember memory' },
+      { status: 500 }
     );
   }
 }

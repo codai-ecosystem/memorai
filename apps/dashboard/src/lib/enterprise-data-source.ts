@@ -4,14 +4,14 @@
  * World-class performance and reliability
  */
 
-import { SystemConfig } from "../stores/config-store";
+import { SystemConfig } from '../stores/config-store';
 
 export interface RealTimeStats {
   totalMemories: number;
   activeAgents: number;
   memoryOperations: number;
   uptime: number;
-  systemHealth: "healthy" | "warning" | "critical";
+  systemHealth: 'healthy' | 'warning' | 'critical';
   memoryUsage: {
     used: number;
     total: number;
@@ -84,15 +84,15 @@ class EnterpriseDataSourceManager {
     try {
       // Initialize memory engine with optimized configuration
       // Note: Using API calls instead of direct engine access for better separation
-      console.log("Initializing enterprise data source...");
+      console.log('Initializing enterprise data source...');
       await this.loadSystemConfiguration();
       this.startMetricsCollection();
 
-      console.log("✅ Enterprise Data Source Manager initialized successfully");
+      console.log('✅ Enterprise Data Source Manager initialized successfully');
     } catch (error) {
       console.error(
-        "❌ Failed to initialize Enterprise Data Source Manager:",
-        error,
+        '❌ Failed to initialize Enterprise Data Source Manager:',
+        error
       );
       throw error;
     }
@@ -118,7 +118,7 @@ class EnterpriseDataSourceManager {
   }
 
   async getRealTimeStats(): Promise<RealTimeStats> {
-    const cacheKey = "realtime_stats";
+    const cacheKey = 'realtime_stats';
     const cached = this.getCachedData<RealTimeStats>(cacheKey);
     if (cached) {
       return cached;
@@ -158,16 +158,16 @@ class EnterpriseDataSourceManager {
         return stats;
       }
 
-      throw new Error("Not implemented for server side");
+      throw new Error('Not implemented for server side');
     } catch (error) {
-      console.error("Error getting real-time stats:", error);
+      console.error('Error getting real-time stats:', error);
       // Return cached or minimal stats on error
       return this.getFallbackStats();
     }
   }
 
   async getSystemConfiguration(): Promise<SystemConfig> {
-    const cacheKey = "system_config";
+    const cacheKey = 'system_config';
     const cached = this.getCachedData<SystemConfig>(cacheKey);
     if (cached) {
       return cached;
@@ -177,49 +177,49 @@ class EnterpriseDataSourceManager {
       // Load from environment variables and system settings
       const config: SystemConfig = {
         memory: {
-          maxMemories: parseInt(process.env.MAX_MEMORIES ?? "10000"),
-          retentionDays: parseInt(process.env.RETENTION_DAYS ?? "365"),
-          enableEmbeddings: process.env.ENABLE_EMBEDDINGS !== "false",
-          provider: (process.env.MEMORAI_EMBEDDING_PROVIDER as any) || "openai",
+          maxMemories: parseInt(process.env.MAX_MEMORIES ?? '10000'),
+          retentionDays: parseInt(process.env.RETENTION_DAYS ?? '365'),
+          enableEmbeddings: process.env.ENABLE_EMBEDDINGS !== 'false',
+          provider: (process.env.MEMORAI_EMBEDDING_PROVIDER as any) || 'openai',
           model:
-            process.env.MEMORAI_EMBEDDING_MODEL || "text-embedding-3-small",
+            process.env.MEMORAI_EMBEDDING_MODEL || 'text-embedding-3-small',
           openaiApiKey: process.env.MEMORAI_OPENAI_API_KEY,
-          enableCache: process.env.ENABLE_CACHE !== "false",
+          enableCache: process.env.ENABLE_CACHE !== 'false',
         },
         api: {
           baseUrl:
             process.env.API_BASE_URL ||
-            (typeof window !== "undefined"
+            (typeof window !== 'undefined'
               ? `${window.location.protocol}//${window.location.host}/api`
-              : "http://localhost:3000/api"),
-          timeout: parseInt(process.env.API_TIMEOUT ?? "30000"),
-          retryAttempts: parseInt(process.env.API_RETRY_ATTEMPTS ?? "3"),
-          rateLimit: parseInt(process.env.API_RATE_LIMIT ?? "100"),
+              : 'http://localhost:3000/api'),
+          timeout: parseInt(process.env.API_TIMEOUT ?? '30000'),
+          retryAttempts: parseInt(process.env.API_RETRY_ATTEMPTS ?? '3'),
+          rateLimit: parseInt(process.env.API_RATE_LIMIT ?? '100'),
         },
         ui: {
-          theme: (process.env.UI_THEME as any) || "system",
-          compactMode: process.env.UI_COMPACT_MODE === "true",
-          showAdvancedFeatures: process.env.UI_SHOW_ADVANCED === "true",
-          enableAnimations: process.env.UI_ENABLE_ANIMATIONS !== "false",
+          theme: (process.env.UI_THEME as any) || 'system',
+          compactMode: process.env.UI_COMPACT_MODE === 'true',
+          showAdvancedFeatures: process.env.UI_SHOW_ADVANCED === 'true',
+          enableAnimations: process.env.UI_ENABLE_ANIMATIONS !== 'false',
         },
         security: {
-          encryptionEnabled: process.env.ENCRYPTION_ENABLED !== "false",
-          sessionTimeout: parseInt(process.env.SESSION_TIMEOUT ?? "3600"),
-          enableAuditLog: process.env.ENABLE_AUDIT_LOG !== "false",
-          enableEncryption: process.env.ENCRYPTION_ENABLED !== "false",
+          encryptionEnabled: process.env.ENCRYPTION_ENABLED !== 'false',
+          sessionTimeout: parseInt(process.env.SESSION_TIMEOUT ?? '3600'),
+          enableAuditLog: process.env.ENABLE_AUDIT_LOG !== 'false',
+          enableEncryption: process.env.ENCRYPTION_ENABLED !== 'false',
           encryptionKey: process.env.ENCRYPTION_KEY,
         },
         database: {
-          type: process.env.DATABASE_TYPE ?? "qdrant",
-          host: process.env.QDRANT_URL || "http://localhost:6333",
-          collection: process.env.QDRANT_COLLECTION ?? "memories",
-          dimensions: parseInt(process.env.EMBEDDING_DIMENSIONS ?? "1536"),
+          type: process.env.DATABASE_TYPE ?? 'qdrant',
+          host: process.env.QDRANT_URL || 'http://localhost:6333',
+          collection: process.env.QDRANT_COLLECTION ?? 'memories',
+          dimensions: parseInt(process.env.EMBEDDING_DIMENSIONS ?? '1536'),
         },
         performance: {
-          queryTimeout: parseInt(process.env.QUERY_TIMEOUT ?? "30"),
-          cacheSize: parseInt(process.env.CACHE_SIZE ?? "100"),
-          batchSize: parseInt(process.env.BATCH_SIZE ?? "50"),
-          enablePreloading: process.env.ENABLE_PRELOADING !== "false",
+          queryTimeout: parseInt(process.env.QUERY_TIMEOUT ?? '30'),
+          cacheSize: parseInt(process.env.CACHE_SIZE ?? '100'),
+          batchSize: parseInt(process.env.BATCH_SIZE ?? '50'),
+          enablePreloading: process.env.ENABLE_PRELOADING !== 'false',
         },
       };
 
@@ -227,13 +227,13 @@ class EnterpriseDataSourceManager {
       this.systemConfig = config;
       return config;
     } catch (error) {
-      console.error("Error loading system configuration:", error);
+      console.error('Error loading system configuration:', error);
       throw error;
     }
   }
 
   async getSystemMetrics(): Promise<SystemMetrics> {
-    const cacheKey = "system_metrics";
+    const cacheKey = 'system_metrics';
     const cached = this.getCachedData<SystemMetrics>(cacheKey);
     if (cached) {
       return cached;
@@ -254,7 +254,7 @@ class EnterpriseDataSourceManager {
       this.setCachedData(cacheKey, metrics, this.CACHE_TTL.metrics);
       return metrics;
     } catch (error) {
-      console.error("Error getting system metrics:", error);
+      console.error('Error getting system metrics:', error);
       return {
         cpu: 0,
         memory: 0,
@@ -291,12 +291,10 @@ class EnterpriseDataSourceManager {
     }
 
     const recent = this.performanceBuffer.filter(
-      (m) => Date.now() - m.timestamp < 300000,
+      m => Date.now() - m.timestamp < 300000
     ); // Last 5 minutes
-    const responseTimes = recent
-      .map((m) => m.responseTime)
-      .sort((a, b) => a - b);
-    const successCount = recent.filter((m) => m.success).length;
+    const responseTimes = recent.map(m => m.responseTime).sort((a, b) => a - b);
+    const successCount = recent.filter(m => m.success).length;
 
     return {
       averageResponseTime:
@@ -316,12 +314,12 @@ class EnterpriseDataSourceManager {
     const uptime = process.uptime();
 
     const memoryPercentage = (memUsage.heapUsed / memUsage.heapTotal) * 100;
-    let status: "healthy" | "warning" | "critical" = "healthy";
+    let status: 'healthy' | 'warning' | 'critical' = 'healthy';
 
     if (memoryPercentage > 90 || uptime < 60) {
-      status = "critical";
+      status = 'critical';
     } else if (memoryPercentage > 75) {
-      status = "warning";
+      status = 'warning';
     }
 
     return {
@@ -340,24 +338,24 @@ class EnterpriseDataSourceManager {
       return [
         {
           id: `activity_${now.getTime()}_1`,
-          type: "memory_created",
+          type: 'memory_created',
           timestamp: new Date(now.getTime() - 300000).toISOString(), // 5 minutes ago
-          agent: "test_agent_1",
-          content: "Created memory about system configuration",
+          agent: 'test_agent_1',
+          content: 'Created memory about system configuration',
         },
         {
           id: `activity_${now.getTime()}_2`,
-          type: "query_executed",
+          type: 'query_executed',
           timestamp: new Date(now.getTime() - 180000).toISOString(), // 3 minutes ago
-          agent: "test_agent_2",
-          content: "Executed semantic search query",
+          agent: 'test_agent_2',
+          content: 'Executed semantic search query',
         },
         {
           id: `activity_${now.getTime()}_3`,
-          type: "memory_updated",
+          type: 'memory_updated',
           timestamp: new Date(now.getTime() - 60000).toISOString(), // 1 minute ago
-          agent: "test_agent_1",
-          content: "Updated memory importance score",
+          agent: 'test_agent_1',
+          content: 'Updated memory importance score',
         },
       ];
     }
@@ -367,27 +365,27 @@ class EnterpriseDataSourceManager {
       const activities = await this.memoryEngine.getRecentActivities(10);
       return activities.map((activity: any) => ({
         id: activity.id ?? Date.now().toString(),
-        type: activity.type ?? "memory_operation",
+        type: activity.type ?? 'memory_operation',
         timestamp: activity.timestamp ?? new Date().toISOString(),
-        agent: activity.agentId ?? "system",
-        content: activity.content || "Memory operation performed",
+        agent: activity.agentId ?? 'system',
+        content: activity.content || 'Memory operation performed',
         metadata: activity.metadata,
       }));
     } catch (error) {
-      console.error("Error getting recent activities:", error);
+      console.error('Error getting recent activities:', error);
       return [];
     }
   }
   private calculateMemoryDistribution(
-    memories: unknown[],
+    memories: unknown[]
   ): Array<{ type: string; count: number; percentage: number }> {
     const distribution = memories.reduce(
       (acc, memory) => {
-        const type = memory.metadata?.type ?? "general";
+        const type = memory.metadata?.type ?? 'general';
         acc[type] = (acc[type] || 0) + 1;
         return acc;
       },
-      {} as Record<string, number>,
+      {} as Record<string, number>
     );
 
     const total = memories.length;
@@ -401,8 +399,8 @@ class EnterpriseDataSourceManager {
   private calculateAgentMetrics(memories: unknown[], activities: unknown[]) {
     const agentStats = new Map<string, any>();
 
-    memories.forEach((memory) => {
-      const agentId = memory.metadata?.agentId ?? "unknown";
+    memories.forEach(memory => {
+      const agentId = memory.metadata?.agentId ?? 'unknown';
       if (!agentStats.has(agentId)) {
         agentStats.set(agentId, {
           agentId,
@@ -415,8 +413,8 @@ class EnterpriseDataSourceManager {
       agentStats.get(agentId).memoriesCreated++;
     });
 
-    activities.forEach((activity) => {
-      const agentId = activity.agent ?? "unknown";
+    activities.forEach(activity => {
+      const agentId = activity.agent ?? 'unknown';
       if (agentStats.has(agentId)) {
         agentStats.get(agentId).queriesExecuted++;
         agentStats.get(agentId).lastActivity = activity.timestamp;
@@ -436,7 +434,7 @@ class EnterpriseDataSourceManager {
       activeAgents: 0,
       memoryOperations: 0,
       uptime: process.uptime(),
-      systemHealth: "warning",
+      systemHealth: 'warning',
       memoryUsage: { used: 0, total: 0, percentage: 0 },
       performanceMetrics: {
         averageResponseTime: 0,
@@ -460,7 +458,7 @@ class EnterpriseDataSourceManager {
   private async getDiskUsage(): Promise<number> {
     // Simplified disk usage calculation
     try {
-      await import("fs").then((fs) => fs.promises.stat("."));
+      await import('fs').then(fs => fs.promises.stat('.'));
       return 50; // Placeholder - implement actual disk usage calculation
     } catch {
       return 0;
@@ -482,7 +480,7 @@ class EnterpriseDataSourceManager {
       try {
         await this.getSystemMetrics();
       } catch (error) {
-        console.error("Error collecting metrics:", error);
+        console.error('Error collecting metrics:', error);
       }
     }, 5000);
   }
@@ -490,12 +488,12 @@ class EnterpriseDataSourceManager {
   private async fetchMemoriesFromAPI() {
     try {
       // Use internal API calls for real data
-      const response = await fetch("/api/mcp/recall", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('/api/mcp/recall', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          agentId: "system",
-          query: "recent memories",
+          agentId: 'system',
+          query: 'recent memories',
           limit: 100,
         }),
       });
@@ -508,7 +506,7 @@ class EnterpriseDataSourceManager {
       // Fallback to basic system data
       return this.getSystemBasedMemories();
     } catch (error) {
-      void console.error("Error fetching memories from API:", error);
+      void console.error('Error fetching memories from API:', error);
       return this.getSystemBasedMemories();
     }
   }
@@ -524,11 +522,11 @@ class EnterpriseDataSourceManager {
       id: `sys_mem_${now.getTime()}`,
       content: `System memory usage: ${Math.round(memUsage.heapUsed / 1024 / 1024)}MB / ${Math.round(memUsage.heapTotal / 1024 / 1024)}MB`,
       metadata: {
-        type: "system_metrics",
-        agentId: "system_monitor",
+        type: 'system_metrics',
+        agentId: 'system_monitor',
         timestamp: now.toISOString(),
         importance: 0.7,
-        tags: ["memory", "performance"],
+        tags: ['memory', 'performance'],
       },
     });
 
@@ -536,11 +534,11 @@ class EnterpriseDataSourceManager {
       id: `sys_uptime_${now.getTime()}`,
       content: `System uptime: ${Math.floor(process.uptime())} seconds`,
       metadata: {
-        type: "system_status",
-        agentId: "system_monitor",
+        type: 'system_status',
+        agentId: 'system_monitor',
         timestamp: now.toISOString(),
         importance: 0.6,
-        tags: ["uptime", "status"],
+        tags: ['uptime', 'status'],
       },
     });
 

@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useMemo } from "react";
-import { motion } from "framer-motion";
+import { useState, useEffect, useMemo } from 'react';
+import { motion } from 'framer-motion';
 import {
   BarChart3,
   TrendingUp,
@@ -13,64 +13,64 @@ import {
   Calendar,
   Filter,
   Download,
-} from "lucide-react";
-import { useMemoryStore } from "../../stores/memory-store";
-import { cn } from "../../lib/utils";
+} from 'lucide-react';
+import { useMemoryStore } from '../../stores/memory-store';
+import { cn } from '../../lib/utils';
 
 interface AnalyticsDashboardProps {
   className?: string;
 }
 
 export function AnalyticsDashboard({ className }: AnalyticsDashboardProps) {
-  const [timeRange, setTimeRange] = useState<"7d" | "30d" | "90d" | "1y">(
-    "30d",
+  const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d' | '1y'>(
+    '30d'
   );
   const [selectedMetrics, setSelectedMetrics] = useState<string[]>([
-    "memories",
-    "interactions",
-    "agents",
+    'memories',
+    'interactions',
+    'agents',
   ]);
   const [renderError, setRenderError] = useState<string | null>(null);
 
   const { memories, stats, fetchStats, fetchMemories } = useMemoryStore();
 
   useEffect(() => {
-    void console.log("AnalyticsDashboard: Component mounted, fetching data...");
+    void console.log('AnalyticsDashboard: Component mounted, fetching data...');
     try {
       void fetchStats();
       void fetchMemories();
     } catch (_error) {
-      void console.error("Error fetching analytics data:", error);
-      setRenderError("Failed to load analytics data");
+      void console.error('Error fetching analytics data:', error);
+      setRenderError('Failed to load analytics data');
     }
   }, [fetchStats, fetchMemories]);
 
   // Add safety checks for memories
   const safeMemories = memories || [];
-  console.log("AnalyticsDashboard: memories count:", safeMemories.length);
+  console.log('AnalyticsDashboard: memories count:', safeMemories.length);
 
   // Calculate analytics data from memories with safety checks
   const analyticsData = {
     totalMemories: safeMemories.length,
-    memoriesThisWeek: safeMemories.filter((m) => {
+    memoriesThisWeek: safeMemories.filter(m => {
       try {
         const date = new Date(m.metadata?.timestamp || Date.now());
         const weekAgo = new Date();
         weekAgo.setDate(weekAgo.getDate() - 7);
         return date > weekAgo;
       } catch (_error) {
-        console.warn("Error processing memory date:", error);
+        console.warn('Error processing memory date:', error);
         return false;
       }
     }).length,
-    memoriesThisMonth: safeMemories.filter((m) => {
+    memoriesThisMonth: safeMemories.filter(m => {
       try {
         const date = new Date(m.metadata?.timestamp || Date.now());
         const monthAgo = new Date();
         monthAgo.setMonth(monthAgo.getMonth() - 1);
         return date > monthAgo;
       } catch (_error) {
-        console.warn("Error processing memory date:", error);
+        console.warn('Error processing memory date:', error);
         return false;
       }
     }).length,
@@ -78,11 +78,11 @@ export function AnalyticsDashboard({ className }: AnalyticsDashboardProps) {
       safeMemories.length > 0
         ? safeMemories.reduce(
             (sum, m) => sum + (m.metadata?.similarity || 0),
-            0,
+            0
           ) / safeMemories.length
         : 0,
     uniqueAgents: [
-      ...new Set(safeMemories.map((m) => m.metadata?.agentId).filter(Boolean)),
+      ...new Set(safeMemories.map(m => m.metadata?.agentId).filter(Boolean)),
     ].length,
     topTags: safeMemories.reduce(
       (tags, memory) => {
@@ -91,7 +91,7 @@ export function AnalyticsDashboard({ className }: AnalyticsDashboardProps) {
         });
         return tags;
       },
-      {} as Record<string, number>,
+      {} as Record<string, number>
     ),
   }; // Calculate real chart data from memories with safety checks
   const chartData = useMemo(() => {
@@ -101,11 +101,11 @@ export function AnalyticsDashboard({ className }: AnalyticsDashboardProps) {
     for (let i = 6; i >= 0; i--) {
       const date = new Date(now);
       date.setDate(date.getDate() - i);
-      const dayName = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][
+      const dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][
         date.getDay()
       ];
 
-      const dayMemories = safeMemories.filter((m) => {
+      const dayMemories = safeMemories.filter(m => {
         try {
           const memoryDate = new Date(m.metadata?.timestamp || Date.now());
           return memoryDate.toDateString() === date.toDateString();
@@ -129,19 +129,19 @@ export function AnalyticsDashboard({ className }: AnalyticsDashboardProps) {
     value,
     change,
     icon: Icon,
-    color = "blue",
+    color = 'blue',
   }: {
     title: string;
     value: string | number;
     change?: string;
     icon: any;
-    color?: "blue" | "green" | "purple" | "orange";
+    color?: 'blue' | 'green' | 'purple' | 'orange';
   }) => {
     const colorClasses = {
-      blue: "bg-blue-500 text-blue-50",
-      green: "bg-green-500 text-green-50",
-      purple: "bg-purple-500 text-purple-50",
-      orange: "bg-orange-500 text-orange-50",
+      blue: 'bg-blue-500 text-blue-50',
+      green: 'bg-green-500 text-green-50',
+      purple: 'bg-purple-500 text-purple-50',
+      orange: 'bg-orange-500 text-orange-50',
     };
 
     return (
@@ -165,10 +165,10 @@ export function AnalyticsDashboard({ className }: AnalyticsDashboardProps) {
               </p>
             )}
           </div>
-          <div className={cn("p-3 rounded-lg", colorClasses[color])}>
+          <div className={cn('p-3 rounded-lg', colorClasses[color])}>
             <Icon className="h-6 w-6" />
           </div>
-        </div>{" "}
+        </div>{' '}
       </motion.div>
     );
   };
@@ -177,7 +177,7 @@ export function AnalyticsDashboard({ className }: AnalyticsDashboardProps) {
     return (
       <div
         data-testid="analytics-dashboard"
-        className={cn("space-y-6", className)}
+        className={cn('space-y-6', className)}
       >
         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
           <p className="text-red-800 dark:text-red-200">Error: {renderError}</p>
@@ -195,7 +195,7 @@ export function AnalyticsDashboard({ className }: AnalyticsDashboardProps) {
   return (
     <div
       data-testid="analytics-dashboard"
-      className={cn("space-y-6", className)}
+      className={cn('space-y-6', className)}
     >
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -211,7 +211,7 @@ export function AnalyticsDashboard({ className }: AnalyticsDashboardProps) {
         <div className="flex items-center gap-3">
           <select
             value={timeRange}
-            onChange={(e) => setTimeRange(e.target.value as any)}
+            onChange={e => setTimeRange(e.target.value as any)}
             className="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm focus:ring-2 focus:ring-blue-500"
           >
             <option value="7d">Last 7 days</option>
@@ -235,7 +235,7 @@ export function AnalyticsDashboard({ className }: AnalyticsDashboardProps) {
           change={`+${analyticsData.memoriesThisWeek} this week`}
           icon={Brain}
           color="blue"
-        />{" "}
+        />{' '}
         <MetricCard
           title="Active Agents"
           value={analyticsData.uniqueAgents}
@@ -248,8 +248,8 @@ export function AnalyticsDashboard({ className }: AnalyticsDashboardProps) {
           value={`${(analyticsData.avgSimilarity * 100).toFixed(1)}%`}
           change={
             analyticsData.avgSimilarity > 0.5
-              ? "+5.2% from last month"
-              : "Improving quality"
+              ? '+5.2% from last month'
+              : 'Improving quality'
           }
           icon={TrendingUp}
           color="purple"
@@ -326,12 +326,12 @@ export function AnalyticsDashboard({ className }: AnalyticsDashboardProps) {
                       className="w-3 h-3 rounded-full"
                       style={{
                         backgroundColor: [
-                          "#3B82F6",
-                          "#10B981",
-                          "#8B5CF6",
-                          "#F59E0B",
-                          "#EF4444",
-                          "#6B7280",
+                          '#3B82F6',
+                          '#10B981',
+                          '#8B5CF6',
+                          '#F59E0B',
+                          '#EF4444',
+                          '#6B7280',
                         ][index],
                       }}
                     />
@@ -360,19 +360,19 @@ export function AnalyticsDashboard({ className }: AnalyticsDashboardProps) {
             Recent Activity
           </h3>
           <Activity className="h-5 w-5 text-gray-400" />
-        </div>{" "}
+        </div>{' '}
         <div className="space-y-4">
           {safeMemories.slice(0, 5).map((memory, index) => (
             <div key={memory.id} className="flex items-start gap-4">
               <div className="w-2 h-2 bg-blue-500 rounded-full mt-2" />
               <div className="flex-1">
-                {" "}
+                {' '}
                 <p className="text-sm text-gray-900 dark:text-white font-medium">
-                  Memory created by {memory.metadata?.agentId ?? "Unknown"}
+                  Memory created by {memory.metadata?.agentId ?? 'Unknown'}
                 </p>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                   {new Date(
-                    memory.metadata?.timestamp || Date.now(),
+                    memory.metadata?.timestamp || Date.now()
                   ).toLocaleString()}
                 </p>
                 <p className="text-sm text-gray-600 dark:text-gray-300 mt-1 line-clamp-2">

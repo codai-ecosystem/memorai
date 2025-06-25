@@ -16,6 +16,7 @@ import { config } from 'dotenv';
 import { readFileSync } from 'fs';
 import { dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
+import { spawn } from 'child_process';
 
 import {
   MemoryTierLevel,
@@ -624,6 +625,68 @@ server.setRequestHandler(CallToolRequestSchema, async request => {
   }
 });
 
+/**
+ * Start web services (dashboard and API) using published packages
+ */
+async function startWebServices(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    let servicesStarted = 0;
+    const totalServices = 2;
+    
+    // Start API server
+    console.log('🔄 Starting API server on port 6367...');
+    const apiProcess = spawn('npx', ['@codai/memorai-api@1.0.2'], {
+      stdio: 'pipe',
+      shell: true,
+      env: { ...process.env, PORT: '6367' }
+    });
+    
+    apiProcess.stdout?.on('data', (data) => {
+      console.log(`[API] ${data.toString().trim()}`);
+      if (data.toString().includes('6367') || data.toString().includes('listening')) {
+        servicesStarted++;
+        if (servicesStarted === totalServices) {
+          resolve();
+        }
+      }
+    });
+    
+    apiProcess.stderr?.on('data', (data) => {
+      console.error(`[API ERROR] ${data.toString().trim()}`);
+    });
+    
+    // Start Dashboard
+    console.log('🔄 Starting dashboard on port 6366...');
+    const dashboardProcess = spawn('npx', ['@codai/memorai-dashboard@2.0.3'], {
+      stdio: 'pipe', 
+      shell: true,
+      env: { ...process.env, PORT: '6366' }
+    });
+    
+    dashboardProcess.stdout?.on('data', (data) => {
+      console.log(`[DASHBOARD] ${data.toString().trim()}`);
+      if (data.toString().includes('6366') || data.toString().includes('ready')) {
+        servicesStarted++;
+        if (servicesStarted === totalServices) {
+          resolve();
+        }
+      }
+    });
+    
+    dashboardProcess.stderr?.on('data', (data) => {
+      console.error(`[DASHBOARD ERROR] ${data.toString().trim()}`);
+    });
+    
+    // Timeout after 30 seconds
+    setTimeout(() => {
+      if (servicesStarted < totalServices) {
+        console.log(`⚠️  Only ${servicesStarted}/${totalServices} services started, continuing anyway...`);
+        resolve();
+      }
+    }, 30000);
+  });
+}
+
 // Start enterprise server
 async function main() {
   try {
@@ -642,6 +705,10 @@ async function main() {
       console.error('💡 Please ensure Docker is installed and running');
       process.exit(1);
     }
+
+    // Start dashboard and API services
+    console.log('🌐 Starting dashboard and API services...');
+    await startWebServices();
 
     console.log('🧠 Initializing memory engine...');
     await enterpriseEngine.initialize();

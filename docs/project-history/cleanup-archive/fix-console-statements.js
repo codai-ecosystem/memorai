@@ -1,22 +1,22 @@
 #!/usr/bin/env node
 
-const fs = require("fs");
-const path = require("path");
+const fs = require('fs');
+const path = require('path');
 
-console.log("🔧 Fixing console statements for production readiness...\n");
+console.log('🔧 Fixing console statements for production readiness...\n');
 
 // API routes to fix
 const apiFiles = [
-  "src/app/api/config/route.ts",
-  "src/app/api/mcp/create-entities/route.ts",
-  "src/app/api/mcp/read-graph/route.ts",
-  "src/app/api/mcp/search-nodes/route.ts",
-  "src/app/api/memory/context/route.ts",
-  "src/app/api/memory/remember/route.ts",
-  "src/app/api/performance/clear-cache/route.ts",
-  "src/app/api/performance/metrics/route.ts",
-  "src/app/api/performance/optimize/route.ts",
-  "src/app/api/stats/route.ts",
+  'src/app/api/config/route.ts',
+  'src/app/api/mcp/create-entities/route.ts',
+  'src/app/api/mcp/read-graph/route.ts',
+  'src/app/api/mcp/search-nodes/route.ts',
+  'src/app/api/memory/context/route.ts',
+  'src/app/api/memory/remember/route.ts',
+  'src/app/api/performance/clear-cache/route.ts',
+  'src/app/api/performance/metrics/route.ts',
+  'src/app/api/performance/optimize/route.ts',
+  'src/app/api/stats/route.ts',
 ];
 
 function fixConsoleInApiRoute(filePath) {
@@ -30,29 +30,29 @@ function fixConsoleInApiRoute(filePath) {
   }
 
   try {
-    let content = fs.readFileSync(fullPath, "utf-8");
+    let content = fs.readFileSync(fullPath, 'utf-8');
     const originalContent = content;
 
     // Only fix console statements in API routes - be very conservative
     // Replace console.log, console.error, console.warn with conditional logging
     content = content.replace(
       /(\s+)console\.log\(/g,
-      '$1if (process.env.NODE_ENV === "development") console.log(',
+      '$1if (process.env.NODE_ENV === "development") console.log('
     );
 
     content = content.replace(
       /(\s+)console\.error\(/g,
-      '$1if (process.env.NODE_ENV === "development") console.error(',
+      '$1if (process.env.NODE_ENV === "development") console.error('
     );
 
     content = content.replace(
       /(\s+)console\.warn\(/g,
-      '$1if (process.env.NODE_ENV === "development") console.warn(',
+      '$1if (process.env.NODE_ENV === "development") console.warn('
     );
 
     if (content !== originalContent) {
       // Create backup
-      fs.writeFileSync(fullPath + ".console-backup", originalContent);
+      fs.writeFileSync(fullPath + '.console-backup', originalContent);
 
       // Write fixed content
       fs.writeFileSync(fullPath, content);
@@ -66,10 +66,10 @@ function fixConsoleInApiRoute(filePath) {
 }
 
 // Process all API files
-console.log("Starting console statement fixes...\n");
+console.log('Starting console statement fixes...\n');
 
 apiFiles.forEach(fixConsoleInApiRoute);
 
-console.log("\n🎉 Console statement fixes completed!");
-console.log("📝 This addresses critical production readiness for API routes.");
-console.log("💾 Backups created with .console-backup extension.");
+console.log('\n🎉 Console statement fixes completed!');
+console.log('📝 This addresses critical production readiness for API routes.');
+console.log('💾 Backups created with .console-backup extension.');

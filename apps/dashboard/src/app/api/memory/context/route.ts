@@ -1,4 +1,4 @@
-import { NextResponse, NextRequest } from "next/server";
+import { NextResponse, NextRequest } from 'next/server';
 
 export async function GET() {
   try {
@@ -8,42 +8,42 @@ export async function GET() {
         success: true,
         data: [
           {
-            id: "memory-1",
-            content: "This is a sample memory content for testing",
-            agentId: "test-agent",
-            timestamp: "2025-06-23T13:00:00.000Z",
+            id: 'memory-1',
+            content: 'This is a sample memory content for testing',
+            agentId: 'test-agent',
+            timestamp: '2025-06-23T13:00:00.000Z',
             metadata: {
-              type: "note",
-              tags: ["test", "sample"],
-              priority: "medium",
-              importance: "high",
-              source: "test-source",
-              confidence: 0.95
-            }
+              type: 'note',
+              tags: ['test', 'sample'],
+              priority: 'medium',
+              importance: 'high',
+              source: 'test-source',
+              confidence: 0.95,
+            },
           },
           {
-            id: "memory-2",
-            content: "Another test memory for conversation context",
-            agentId: "conversation-agent",
-            timestamp: "2025-06-23T12:30:00.000Z",
+            id: 'memory-2',
+            content: 'Another test memory for conversation context',
+            agentId: 'conversation-agent',
+            timestamp: '2025-06-23T12:30:00.000Z',
             metadata: {
-              type: "conversation",
-              tags: ["chat", "context"],
-              priority: "high",
-              importance: "medium",
-              source: "conversation-log",
-              confidence: 0.87
-            }
-          }
+              type: 'conversation',
+              tags: ['chat', 'context'],
+              priority: 'high',
+              importance: 'medium',
+              source: 'conversation-log',
+              confidence: 0.87,
+            },
+          },
         ],
       });
     }
 
     // Connect to actual MCP server instead of using mock data
-    const response = await fetch("http://localhost:6367/api/memory/context", {
-      method: "GET",
+    const response = await fetch('http://localhost:6367/api/memory/context', {
+      method: 'GET',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
     });
 
@@ -58,12 +58,12 @@ export async function GET() {
       data: mcpData,
     });
   } catch (error) {
-    console.error("Error fetching memory context:", error);
+    console.error('Error fetching memory context:', error);
 
     // Fallback to empty state if MCP server is not available
     return NextResponse.json({
       success: false,
-      error: "Unable to connect to MCP server",
+      error: 'Unable to connect to MCP server',
       data: {
         memories: [],
         totalCount: 0,
@@ -79,34 +79,39 @@ export async function POST(request: NextRequest) {
 
     // In test environment, return mock data based on request
     if (process.env.NODE_ENV === 'test') {
-      const { query = "", agentId = "test-agent", tags = [], limit = 10 } = body;
+      const {
+        query = '',
+        agentId = 'test-agent',
+        tags = [],
+        limit = 10,
+      } = body;
 
       return NextResponse.json({
         success: true,
         data: [
           {
-            id: "memory-1",
+            id: 'memory-1',
             content: `Mock result for query: ${query}`,
             agentId: agentId,
-            timestamp: "2025-06-23T13:00:00.000Z",
+            timestamp: '2025-06-23T13:00:00.000Z',
             metadata: {
-              type: "note",
-              tags: tags.length > 0 ? tags : ["mock", "test"],
-              priority: "medium",
-              importance: "high",
-              source: "mock-source",
-              confidence: 0.92
-            }
-          }
+              type: 'note',
+              tags: tags.length > 0 ? tags : ['mock', 'test'],
+              priority: 'medium',
+              importance: 'high',
+              source: 'mock-source',
+              confidence: 0.92,
+            },
+          },
         ].slice(0, limit),
       });
     }
 
     // Forward request to actual MCP server
-    const response = await fetch("http://localhost:6367/api/memory/context", {
-      method: "POST",
+    const response = await fetch('http://localhost:6367/api/memory/context', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify(body),
     });
@@ -122,11 +127,14 @@ export async function POST(request: NextRequest) {
       data: mcpData,
     });
   } catch (error) {
-    console.error("Error posting memory context:", error);
+    console.error('Error posting memory context:', error);
 
-    return NextResponse.json({
-      success: false,
-      error: "Unable to connect to MCP server",
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Unable to connect to MCP server',
+      },
+      { status: 500 }
+    );
   }
 }

@@ -3,7 +3,7 @@
  * Addresses 45GB memory issue and performance problems
  */
 
-import { randomUUID, createHash } from "crypto";
+import { randomUUID, createHash } from 'crypto';
 
 import type {
   MemoryMetadata,
@@ -13,19 +13,19 @@ import type {
   ContextResponse,
   MemoryType,
   MemoryConfig,
-} from "../types/index.js";
-import { MemoryError } from "../types/index.js";
-import { EmbeddingService } from "../embedding/EmbeddingService.js";
-import { MemoryVectorStore } from "../vector/VectorStore.js";
-import { OptimizedQdrantVectorStore } from "../vector/OptimizedQdrantVectorStore.js";
-import { MemoryConfigManager } from "../config/MemoryConfig.js";
-import { InputValidator } from "../security/SecurityManager.js";
-import { MemoryOptimizer } from "../optimization/MemoryOptimizer.js";
+} from '../types/index.js';
+import { MemoryError } from '../types/index.js';
+import { EmbeddingService } from '../embedding/EmbeddingService.js';
+import { MemoryVectorStore } from '../vector/VectorStore.js';
+import { OptimizedQdrantVectorStore } from '../vector/OptimizedQdrantVectorStore.js';
+import { MemoryConfigManager } from '../config/MemoryConfig.js';
+import { InputValidator } from '../security/SecurityManager.js';
+import { MemoryOptimizer } from '../optimization/MemoryOptimizer.js';
 import {
   HighPerformanceCache,
   memoryCache,
-} from "../cache/HighPerformanceCache.js";
-import { logger } from "../utils/logger.js";
+} from '../cache/HighPerformanceCache.js';
+import { logger } from '../utils/logger.js';
 
 export interface RememberOptions {
   type?: MemoryType;
@@ -124,19 +124,19 @@ export class HighPerformanceMemoryEngine {
       await this.vectorStore.initialize();
 
       // Run initial optimization to clean up existing data
-      logger.info("Running initial memory optimization...");
-      await this.optimizer.optimize("_global_"); // Global optimization
+      logger.info('Running initial memory optimization...');
+      await this.optimizer.optimize('_global_'); // Global optimization
 
       this.isInitialized = true;
-      logger.info("High-performance memory engine initialized successfully");
+      logger.info('High-performance memory engine initialized successfully');
     } catch (error: unknown) {
       if (error instanceof Error) {
         throw new MemoryError(
           `Failed to initialize memory engine: ${error.message}`,
-          "INIT_ERROR",
+          'INIT_ERROR'
         );
       }
-      throw new MemoryError("Unknown initialization error", "INIT_ERROR");
+      throw new MemoryError('Unknown initialization error', 'INIT_ERROR');
     }
   }
 
@@ -147,29 +147,29 @@ export class HighPerformanceMemoryEngine {
     content: string,
     tenantId: string,
     agentId?: string,
-    options: RememberOptions = {},
+    options: RememberOptions = {}
   ): Promise<string> {
     const startTime = Date.now();
 
     if (!this.isInitialized) {
       throw new MemoryError(
-        "Memory engine not initialized. Call initialize() first.",
-        "NOT_INITIALIZED",
+        'Memory engine not initialized. Call initialize() first.',
+        'NOT_INITIALIZED'
       );
     }
 
     // Ensure content is a string
     const contentStr = String(content || '');
     if (!contentStr || contentStr.trim().length === 0) {
-      throw new MemoryError("Content cannot be empty", "INVALID_CONTENT");
+      throw new MemoryError('Content cannot be empty', 'INVALID_CONTENT');
     }
 
     // Enhanced content validation and sanitization
     const validation = InputValidator.validateMemoryContent(contentStr);
     if (!validation.isValid) {
       throw new MemoryError(
-        `Invalid content: ${validation.errors.join(", ")}`,
-        "INVALID_CONTENT",
+        `Invalid content: ${validation.errors.join(', ')}`,
+        'INVALID_CONTENT'
       );
     }
 
@@ -180,12 +180,12 @@ export class HighPerformanceMemoryEngine {
       if (!options.skipDuplicateCheck) {
         const contentHash = this.generateContentHash(
           sanitizedContent,
-          tenantId,
+          tenantId
         );
         const existingMemory = await this.checkForDuplicate(
           contentHash,
           tenantId,
-          agentId,
+          agentId
         );
         if (existingMemory) {
           await this.updateMemoryAccess(existingMemory);
@@ -195,7 +195,7 @@ export class HighPerformanceMemoryEngine {
           this.cache.invalidateTenant(tenantId);
 
           logger.debug(
-            `Duplicate memory found, updated access for: ${existingMemory}`,
+            `Duplicate memory found, updated access for: ${existingMemory}`
           );
           return existingMemory;
         }
@@ -235,17 +235,17 @@ export class HighPerformanceMemoryEngine {
       this.updatePerformanceMetrics(Date.now() - startTime);
 
       logger.debug(
-        `Memory stored in ${Date.now() - startTime}ms: ${memory.id}`,
+        `Memory stored in ${Date.now() - startTime}ms: ${memory.id}`
       );
       return memory.id;
     } catch (error: unknown) {
       if (error instanceof Error) {
         throw new MemoryError(
           `Failed to remember: ${error.message}`,
-          "REMEMBER_ERROR",
+          'REMEMBER_ERROR'
         );
       }
-      throw new MemoryError("Unknown remember error", "REMEMBER_ERROR");
+      throw new MemoryError('Unknown remember error', 'REMEMBER_ERROR');
     }
   }
 
@@ -256,21 +256,21 @@ export class HighPerformanceMemoryEngine {
     query: string,
     tenantId: string,
     agentId?: string,
-    options: RecallOptions = {},
+    options: RecallOptions = {}
   ): Promise<MemoryResult[]> {
     const startTime = Date.now();
 
     if (!this.isInitialized) {
       throw new MemoryError(
-        "Memory engine not initialized. Call initialize() first.",
-        "NOT_INITIALIZED",
+        'Memory engine not initialized. Call initialize() first.',
+        'NOT_INITIALIZED'
       );
     }
 
     // Ensure query is a string
     const queryStr = String(query || '');
     if (!queryStr || queryStr.trim().length === 0) {
-      throw new MemoryError("Query cannot be empty", "INVALID_QUERY");
+      throw new MemoryError('Query cannot be empty', 'INVALID_QUERY');
     }
 
     try {
@@ -280,7 +280,7 @@ export class HighPerformanceMemoryEngine {
           queryStr,
           tenantId,
           agentId,
-          options,
+          options
         );
         if (cachedResults) {
           this.updateCacheHitRate(true);
@@ -308,7 +308,7 @@ export class HighPerformanceMemoryEngine {
       // Search memories with performance optimization
       const results = await this.vectorStore.searchMemories(
         embeddingResult.embedding,
-        memoryQuery,
+        memoryQuery
       );
 
       // Apply time decay if enabled
@@ -324,7 +324,7 @@ export class HighPerformanceMemoryEngine {
           tenantId,
           finalResults,
           agentId,
-          options,
+          options
         );
       }
 
@@ -332,17 +332,17 @@ export class HighPerformanceMemoryEngine {
       this.updatePerformanceMetrics(Date.now() - startTime);
 
       logger.debug(
-        `Recall completed in ${Date.now() - startTime}ms, found ${finalResults.length} results`,
+        `Recall completed in ${Date.now() - startTime}ms, found ${finalResults.length} results`
       );
       return finalResults;
     } catch (error: unknown) {
       if (error instanceof Error) {
         throw new MemoryError(
           `Failed to recall: ${error.message}`,
-          "RECALL_ERROR",
+          'RECALL_ERROR'
         );
       }
-      throw new MemoryError("Unknown recall error", "RECALL_ERROR");
+      throw new MemoryError('Unknown recall error', 'RECALL_ERROR');
     }
   }
   /**
@@ -350,14 +350,14 @@ export class HighPerformanceMemoryEngine {
    */
   public async getContext(
     request: ContextRequest,
-    useCache: boolean = true,
+    useCache: boolean = true
   ): Promise<ContextResponse> {
     const startTime = Date.now();
 
     if (!this.isInitialized) {
       throw new MemoryError(
-        "Memory engine not initialized. Call initialize() first.",
-        "NOT_INITIALIZED",
+        'Memory engine not initialized. Call initialize() first.',
+        'NOT_INITIALIZED'
       );
     }
 
@@ -373,7 +373,7 @@ export class HighPerformanceMemoryEngine {
       if (useCache) {
         const cached = this.cache.get(cacheKey) as ContextResponse | null;
         if (cached) {
-          logger.debug("Context cache hit");
+          logger.debug('Context cache hit');
           return cached;
         }
       }
@@ -383,10 +383,10 @@ export class HighPerformanceMemoryEngine {
         await this.getRecentMemoriesOptimized(optimizedRequest);
 
       // Convert to MemoryResult format
-      const memoryResults: MemoryResult[] = recentMemories.map((memory) => ({
+      const memoryResults: MemoryResult[] = recentMemories.map(memory => ({
         memory,
         score: 0.8, // Default score for recent memories
-        relevance_reason: "Recent memory",
+        relevance_reason: 'Recent memory',
       }));
 
       const response: ContextResponse = {
@@ -410,10 +410,10 @@ export class HighPerformanceMemoryEngine {
       if (error instanceof Error) {
         throw new MemoryError(
           `Failed to get context: ${error.message}`,
-          "CONTEXT_ERROR",
+          'CONTEXT_ERROR'
         );
       }
-      throw new MemoryError("Unknown context error", "CONTEXT_ERROR");
+      throw new MemoryError('Unknown context error', 'CONTEXT_ERROR');
     }
   }
 
@@ -425,7 +425,7 @@ export class HighPerformanceMemoryEngine {
     const stats = await this.optimizer.optimize(tenantId);
     this.performanceMetrics.optimizationSavings += stats.totalSize;
     logger.info(
-      `Memory optimization completed. Stats: ${JSON.stringify(stats)}`,
+      `Memory optimization completed. Stats: ${JSON.stringify(stats)}`
     );
   }
 
@@ -446,7 +446,7 @@ export class HighPerformanceMemoryEngine {
    */
   public clearCaches(): void {
     this.cache.clear();
-    logger.info("All caches cleared");
+    logger.info('All caches cleared');
   } /**
    * Get memory statistics for a tenant
    */
@@ -459,12 +459,12 @@ export class HighPerformanceMemoryEngine {
 
   private generateContentHash(content: string, tenantId: string): string {
     const data = `${content}:${tenantId}`;
-    return createHash("sha256").update(data).digest("hex");
+    return createHash('sha256').update(data).digest('hex');
   }
   private async checkForDuplicate(
     _contentHash: string,
     _tenantId: string,
-    _agentId?: string,
+    _agentId?: string
   ): Promise<string | null> {
     // TODO: Implement checkDuplicateByHash in vector store
     return null;
@@ -478,36 +478,36 @@ export class HighPerformanceMemoryEngine {
     // Quick classification logic
     const lower = content.toLowerCase();
     if (
-      lower.includes("prefer") ||
-      lower.includes("like") ||
-      lower.includes("dislike")
+      lower.includes('prefer') ||
+      lower.includes('like') ||
+      lower.includes('dislike')
     ) {
-      return "preference";
+      return 'preference';
     }
     if (
-      lower.includes("feel") ||
-      lower.includes("emotion") ||
-      lower.includes("happy") ||
-      lower.includes("sad")
+      lower.includes('feel') ||
+      lower.includes('emotion') ||
+      lower.includes('happy') ||
+      lower.includes('sad')
     ) {
-      return "emotion";
+      return 'emotion';
     }
     if (
-      lower.includes("task") ||
-      lower.includes("todo") ||
-      lower.includes("complete") ||
-      lower.includes("finish")
+      lower.includes('task') ||
+      lower.includes('todo') ||
+      lower.includes('complete') ||
+      lower.includes('finish')
     ) {
-      return "task";
+      return 'task';
     }
     if (
-      lower.includes("how to") ||
-      lower.includes("step") ||
-      lower.includes("process")
+      lower.includes('how to') ||
+      lower.includes('step') ||
+      lower.includes('process')
     ) {
-      return "procedure";
+      return 'procedure';
     }
-    return "fact";
+    return 'fact';
   }
 
   private calculateImportance(content: string): number {
@@ -515,12 +515,12 @@ export class HighPerformanceMemoryEngine {
     let importance = 0.5;
 
     const priorityWords = [
-      "important",
-      "critical",
-      "urgent",
-      "remember",
-      "key",
-      "essential",
+      'important',
+      'critical',
+      'urgent',
+      'remember',
+      'key',
+      'essential',
     ];
     const lower = content.toLowerCase();
 
@@ -537,7 +537,7 @@ export class HighPerformanceMemoryEngine {
     const now = Date.now();
 
     return results
-      .map((result) => {
+      .map(result => {
         const ageInDays =
           (now - result.memory.createdAt.getTime()) / (1000 * 60 * 60 * 24);
         const decayFactor = Math.exp(-ageInDays / 30); // 30-day half-life
@@ -550,12 +550,12 @@ export class HighPerformanceMemoryEngine {
       .sort((a, b) => b.score - a.score);
   }
   private async getRecentMemoriesOptimized(
-    _request: ContextRequest,
+    _request: ContextRequest
   ): Promise<MemoryMetadata[]> {
     // Implement optimized recent memory retrieval
     // This is a placeholder - implement actual optimized retrieval
     const memoryQuery: MemoryQuery = {
-      query: "recent memories",
+      query: 'recent memories',
       limit: _request.max_memories || 15,
       threshold: 0.3, // Lower threshold for recent memories
       tenant_id: _request.tenant_id,
@@ -567,26 +567,26 @@ export class HighPerformanceMemoryEngine {
     const dummyEmbedding = new Array(this.embedding.getDimension()).fill(0);
     const results = await this.vectorStore.searchMemories(
       dummyEmbedding,
-      memoryQuery,
+      memoryQuery
     );
 
-    return results.map((r) => r.memory);
+    return results.map(r => r.memory);
   }
 
   private generateContextSummary(memories: MemoryMetadata[]): string {
-    if (memories.length === 0) return "No recent memories available.";
+    if (memories.length === 0) return 'No recent memories available.';
 
     const typeCount = memories.reduce(
       (acc, m) => {
         acc[m.type] = (acc[m.type] || 0) + 1;
         return acc;
       },
-      {} as Record<string, number>,
+      {} as Record<string, number>
     );
 
     const summary = Object.entries(typeCount)
       .map(([type, count]) => `${count} ${type}`)
-      .join(", ");
+      .join(', ');
 
     return `Recent context includes: ${summary}`;
   }
@@ -615,14 +615,14 @@ export class HighPerformanceMemoryEngine {
     setInterval(
       async () => {
         try {
-          logger.info("Starting scheduled memory optimization");
-          await this.optimizer.optimize("_global_");
-          logger.info("Scheduled optimization completed");
+          logger.info('Starting scheduled memory optimization');
+          await this.optimizer.optimize('_global_');
+          logger.info('Scheduled optimization completed');
         } catch (error) {
-          logger.error("Scheduled optimization failed:", error);
+          logger.error('Scheduled optimization failed:', error);
         }
       },
-      6 * 60 * 60 * 1000,
+      6 * 60 * 60 * 1000
     ); // 6 hours
   }
 }

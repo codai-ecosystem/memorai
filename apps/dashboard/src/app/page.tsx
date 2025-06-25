@@ -1,20 +1,20 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from "react";
-import { DashboardHeader } from "../components/dashboard/header";
-import { DashboardSidebar } from "../components/dashboard/sidebar";
-import { MemoryOverview } from "../components/dashboard/memory-overview";
-import { MemoryActions } from "../components/dashboard/memory-actions";
-import { MemorySearch } from "../components/dashboard/memory-search";
-import { MemoryResults } from "../components/dashboard/memory-results";
-import { AnalyticsDashboard } from "../components/dashboard/analytics";
-import { SystemConfiguration } from "../components/dashboard/system-config";
-import { useMemoryStore } from "../stores/memory-store";
-import { useConfigStore } from "../stores/config-store";
-import { TailwindTest } from "../components/tailwind-test";
+import React, { useState, useEffect } from 'react';
+import { DashboardHeader } from '../components/dashboard/header';
+import { DashboardSidebar } from '../components/dashboard/sidebar';
+import { MemoryOverview } from '../components/dashboard/memory-overview';
+import { MemoryActions } from '../components/dashboard/memory-actions';
+import { MemorySearch } from '../components/dashboard/memory-search';
+import { MemoryResults } from '../components/dashboard/memory-results';
+import { AnalyticsDashboard } from '../components/dashboard/analytics';
+import { SystemConfiguration } from '../components/dashboard/system-config';
+import { useMemoryStore } from '../stores/memory-store';
+import { useConfigStore } from '../stores/config-store';
+import { TailwindTest } from '../components/tailwind-test';
 
 export default function DashboardPage() {
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState('overview');
   const [isLoading, setIsLoading] = useState(false);
 
   const handleTabChange = (newTab: string) => {
@@ -38,7 +38,7 @@ export default function DashboardPage() {
 
         // Set a maximum loading timeout to ensure UI shows
         const loadingTimeout = setTimeout(() => {
-          console.warn("Dashboard loading timeout, showing UI anyway");
+          console.warn('Dashboard loading timeout, showing UI anyway');
           setIsLoading(false);
         }, 2000); // 2 second max loading time
 
@@ -51,7 +51,7 @@ export default function DashboardPage() {
 
         clearTimeout(loadingTimeout);
       } catch (_error) {
-        console.error("Failed to initialize dashboard:", _error);
+        console.error('Failed to initialize dashboard:', _error);
       } finally {
         setIsLoading(false);
       }
@@ -76,9 +76,9 @@ export default function DashboardPage() {
     );
   }
 
-  const renderTabContent = () : void => {
+  const renderTabContent = (): void => {
     switch (activeTab) {
-      case "overview":
+      case 'overview':
         return (
           <div className="space-y-6">
             <div className="relative z-0">
@@ -97,20 +97,20 @@ export default function DashboardPage() {
             </div>
           </div>
         );
-      case "analytics":
+      case 'analytics':
         return <AnalyticsDashboard />;
-      case "memories":
+      case 'memories':
         return (
           <div className="space-y-6">
             <MemorySearch />
             <MemoryResults />
           </div>
         );
-      case "create":
+      case 'create':
         return <MemoryActions />;
-      case "settings":
+      case 'settings':
         return <SystemConfiguration />;
-      case "tailwind-test":
+      case 'tailwind-test':
         return <TailwindTest />;
       default:
         return (

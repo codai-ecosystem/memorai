@@ -9,13 +9,13 @@ export interface Memory {
   content: string;
   timestamp: string;
   type:
-  | "conversation"
-  | "document"
-  | "note"
-  | "thread"
-  | "task"
-  | "personality"
-  | "emotion";
+    | 'conversation'
+    | 'document'
+    | 'note'
+    | 'thread'
+    | 'task'
+    | 'personality'
+    | 'emotion';
   metadata: {
     tags: string[];
     similarity?: number;
@@ -62,7 +62,7 @@ export interface MCPRelation {
 class MCPMemoryClient {
   private readonly agentId: string;
 
-  constructor(agentId = "memorai-dashboard") {
+  constructor(agentId = 'memorai-dashboard') {
     this.agentId = agentId;
   }
 
@@ -82,30 +82,30 @@ class MCPMemoryClient {
         (entity: MCPEntity, index: number) => ({
           id: `entity-${index}-${Date.now()}`,
           agentId: params?.agentId || this.agentId,
-          content: entity.observations.join(" | "),
+          content: entity.observations.join(' | '),
           timestamp: new Date().toISOString(),
           type: this.mapEntityTypeToMemoryType(
-            entity.entityType,
-          ) as Memory["type"],
+            entity.entityType
+          ) as Memory['type'],
           metadata: {
             tags: [entity.entityType, entity.name],
             importance: this.calculateImportance(entity),
-            source: "mcp-memory-server",
+            source: 'mcp-memory-server',
             entities: [entity.name],
             confidence: 0.95,
           },
-        }),
+        })
       ); // Apply query filter if provided
       if (params?.query) {
         return memories.filter(
-          (memory) =>
+          memory =>
             memory.content
               .toLowerCase()
               .includes(params.query!.toLowerCase()) ||
             (memory.metadata.tags &&
-              memory.metadata.tags.some((tag) =>
-                tag.toLowerCase().includes(params.query!.toLowerCase()),
-              )),
+              memory.metadata.tags.some(tag =>
+                tag.toLowerCase().includes(params.query!.toLowerCase())
+              ))
         );
       }
 
@@ -116,7 +116,7 @@ class MCPMemoryClient {
 
       return memories;
     } catch (error) {
-      void console.error("Failed to fetch memories from MCP:", error);
+      void console.error('Failed to fetch memories from MCP:', error);
       return [];
     }
   }
@@ -126,7 +126,7 @@ class MCPMemoryClient {
     options?: {
       limit?: number;
       agentId?: string;
-    },
+    }
   ): Promise<Memory[]> {
     try {
       // Use mcp_standardmemor_search_nodes for semantic search
@@ -139,19 +139,19 @@ class MCPMemoryClient {
         (entity: MCPEntity, index: number) => ({
           id: `search-${index}-${Date.now()}`,
           agentId: options?.agentId || this.agentId,
-          content: entity.observations.join(" | "),
+          content: entity.observations.join(' | '),
           timestamp: new Date().toISOString(),
           type: this.mapEntityTypeToMemoryType(
-            entity.entityType,
-          ) as Memory["type"],
+            entity.entityType
+          ) as Memory['type'],
           metadata: {
-            tags: [entity.entityType, entity.name, "search-result"],
+            tags: [entity.entityType, entity.name, 'search-result'],
             importance: this.calculateImportance(entity),
-            source: "mcp-search",
+            source: 'mcp-search',
             entities: [entity.name],
             confidence: 0.9,
           },
-        }),
+        })
       );
 
       if (options?.limit) {
@@ -160,19 +160,19 @@ class MCPMemoryClient {
 
       return memories;
     } catch (error) {
-      console.error("Failed to search memories in MCP:", error);
+      console.error('Failed to search memories in MCP:', error);
       return [];
     }
   }
 
   async addMemory(
     content: string,
-    metadata: Partial<Memory["metadata"]>,
+    metadata: Partial<Memory['metadata']>
   ): Promise<Memory> {
     try {
       // Create a new entity in the MCP memory system
       const entityName = `memory-${Date.now()}`;
-      const entityType = metadata.source ?? "user_input";
+      const entityType = metadata.source ?? 'user_input';
 
       const entity: MCPEntity = {
         name: entityName,
@@ -186,11 +186,11 @@ class MCPMemoryClient {
         agentId: this.agentId,
         content,
         timestamp: new Date().toISOString(),
-        type: this.mapEntityTypeToMemoryType(entityType) as Memory["type"],
+        type: this.mapEntityTypeToMemoryType(entityType) as Memory['type'],
         metadata: {
           tags: metadata.tags || [entityType],
           importance: metadata.importance ?? 0.5,
-          source: metadata.source ?? "dashboard",
+          source: metadata.source ?? 'dashboard',
           entities: [entityName],
           confidence: metadata.confidence ?? 0.9,
         },
@@ -198,19 +198,19 @@ class MCPMemoryClient {
 
       return memory;
     } catch (error) {
-      console.error("Failed to add memory to MCP:", error);
-      throw new Error("Failed to create memory");
+      console.error('Failed to add memory to MCP:', error);
+      throw new Error('Failed to create memory');
     }
   }
   async getStats(): Promise<MemoryStats> {
     try {
-      console.log("MCPMemoryClient: Getting stats...");
+      console.log('MCPMemoryClient: Getting stats...');
       const graphResponse = await this.readGraph();
-      console.log("MCPMemoryClient: Graph response:", graphResponse);
+      console.log('MCPMemoryClient: Graph response:', graphResponse);
 
       if (!graphResponse.entities || graphResponse.entities.length === 0) {
         console.warn(
-          "MCPMemoryClient: No entities found, returning empty stats",
+          'MCPMemoryClient: No entities found, returning empty stats'
         );
         return this.getEmptyStats();
       }
@@ -235,7 +235,7 @@ class MCPMemoryClient {
         memoryTypes: this.mapEntityTypesToMemoryTypes(entityTypes),
         recentActivity: [
           {
-            date: new Date().toISOString().split("T")[0],
+            date: new Date().toISOString().split('T')[0],
             count: entities.length,
           },
         ],
@@ -245,29 +245,29 @@ class MCPMemoryClient {
         })),
       };
 
-      console.log("MCPMemoryClient: Calculated stats:", stats);
+      console.log('MCPMemoryClient: Calculated stats:', stats);
       return stats;
     } catch (error) {
-      console.error("MCPMemoryClient: Failed to get stats:", error);
+      console.error('MCPMemoryClient: Failed to get stats:', error);
       return this.getEmptyStats();
     }
-  } // MCP Tool Wrappers
+  }  // MCP Tool Wrappers
   private async readGraph(): Promise<{
     entities: MCPEntity[];
     relations: MCPRelation[];
   }> {
     try {
       // Call the real MCP API endpoint
-      const response = await fetch("/api/mcp/read-graph", {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('/api/mcp/read-graph', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
       });
 
       if (response.ok) {
         const data = await response.json();
-        console.log("MCP read-graph response:", data);
+        console.log('MCP read-graph response:', data);
 
-        // Convert MCP response format to our expected format
+        // The response now has entities and relations directly
         if (data.entities && Array.isArray(data.entities)) {
           return {
             entities: data.entities.map((entity: any) => ({
@@ -281,30 +281,30 @@ class MCPMemoryClient {
       }
 
       // Fallback with minimal sample data if API fails
-      console.warn("MCP API call failed, using fallback data");
+      console.warn('MCP API call failed, using fallback data');
       return {
         entities: [
           {
-            name: "dashboard-system",
-            entityType: "system",
+            name: 'dashboard-system',
+            entityType: 'system',
             observations: [
-              "Memorai Dashboard System initialized",
-              "Connected to MCP Memory Server",
+              'Memorai Dashboard System initialized',
+              'Connected to MCP Memory Server',
             ],
           },
         ],
         relations: [],
       };
     } catch (error) {
-      console.error("Error reading MCP graph:", error);
+      console.error('Error reading MCP graph:', error);
       return {
         entities: [
           {
-            name: "error-fallback",
-            entityType: "system_error",
+            name: 'error-fallback',
+            entityType: 'system_error',
             observations: [
-              "Failed to connect to MCP server",
-              "Using fallback data",
+              'Failed to connect to MCP server',
+              'Using fallback data',
             ],
           },
         ],
@@ -315,9 +315,9 @@ class MCPMemoryClient {
   private async searchNodes(query: string): Promise<MCPEntity[]> {
     try {
       // Use the actual mcp_standardmemor_search_nodes call
-      const response = await fetch("/api/mcp/search-nodes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('/api/mcp/search-nodes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ query }),
       });
 
@@ -330,49 +330,49 @@ class MCPMemoryClient {
       const graphResponse = await this.readGraph();
       return graphResponse.entities.filter(
         (entity: MCPEntity) =>
-          entity.observations.some((obs) =>
-            obs.toLowerCase().includes(query.toLowerCase()),
-          ) || entity.name.toLowerCase().includes(query.toLowerCase()),
+          entity.observations.some(obs =>
+            obs.toLowerCase().includes(query.toLowerCase())
+          ) || entity.name.toLowerCase().includes(query.toLowerCase())
       );
     } catch (error) {
-      console.error("Error searching MCP nodes:", error);
+      console.error('Error searching MCP nodes:', error);
       return [];
     }
   }
   private async createEntities(entities: MCPEntity[]): Promise<void> {
     try {
       // Use the actual mcp_standardmemor_create_entities call
-      const response = await fetch("/api/mcp/create-entities", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('/api/mcp/create-entities', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ entities }),
       });
 
       if (response.ok) {
-        console.log("Entities created successfully in MCP:", entities);
+        console.log('Entities created successfully in MCP:', entities);
       } else {
-        console.error("Failed to create entities in MCP");
+        console.error('Failed to create entities in MCP');
       }
     } catch (error) {
-      console.error("Error creating entities in MCP:", error);
+      console.error('Error creating entities in MCP:', error);
     }
   } // Helper methods
   private mapEntityTypeToMemoryType(entityType: string): string {
     const typeMap: Record<string, string> = {
-      user_preferences: "personality",
-      project: "task",
-      requirements: "note",
-      technical_issue: "task",
-      conversation: "conversation",
-      document: "document",
-      thread: "thread",
-      emotion: "emotion",
+      user_preferences: 'personality',
+      project: 'task',
+      requirements: 'note',
+      technical_issue: 'task',
+      conversation: 'conversation',
+      document: 'document',
+      thread: 'thread',
+      emotion: 'emotion',
     };
-    return typeMap[entityType] || "note";
+    return typeMap[entityType] || 'note';
   }
 
   private mapEntityTypesToMemoryTypes(
-    entityTypes: Record<string, number>,
+    entityTypes: Record<string, number>
   ): Record<string, number> {
     const memoryTypes: Record<string, number> = {};
     Object.entries(entityTypes).forEach(([entityType, count]) => {
@@ -393,7 +393,7 @@ class MCPMemoryClient {
     };
 
     const baseImportance = typeImportance[entity.entityType] || 0.5;
-    const contentLength = entity.observations.join(" ").length;
+    const contentLength = entity.observations.join(' ').length;
     const lengthBonus = Math.min(contentLength / 1000, 0.2); // Max 0.2 bonus
 
     return Math.min(baseImportance + lengthBonus, 1.0);

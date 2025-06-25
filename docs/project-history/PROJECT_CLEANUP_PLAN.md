@@ -1,17 +1,20 @@
 # 🧹 Memorai Project Cleanup Plan
 
 ## Overview
+
 This document provides a comprehensive cleanup plan for the Memorai MCP project, addressing unused files, redundant code, unnecessary dependencies, and improvement opportunities.
 
 ## 🎯 Project Analysis
 
 ### Current State
+
 - **Type**: Monorepo with pnpm workspaces
 - **Purpose**: Production-ready Agent-Native Memory Control Protocol
 - **Architecture**: Apps (dashboard, api, demo) + Packages (cli, core, mcp, sdk, server)
 - **Status**: Appears to be production-ready but contains significant technical debt
 
 ### Key Issues Identified
+
 1. **Excessive Documentation Redundancy** - 27+ markdown files with overlapping content
 2. **Temporary Fix Scripts** - 17+ temporary fix scripts that should be removed
 3. **Backup Files** - 23+ backup files that should be cleaned up
@@ -24,7 +27,9 @@ This document provides a comprehensive cleanup plan for the Memorai MCP project,
 ### Phase 1: Documentation Consolidation (High Priority)
 
 #### 1.1 Remove Redundant Status Reports
+
 **Files to Remove:**
+
 - `CRITICAL_FIXES_COMPLETION_REPORT.md`
 - `FINAL_COMPLETION_REPORT.md`
 - `FINAL_PRODUCTION_READY_REPORT.md`
@@ -36,7 +41,9 @@ This document provides a comprehensive cleanup plan for the Memorai MCP project,
 **Rationale:** These files contain redundant status information that's already covered in README.md and serve no ongoing purpose.
 
 #### 1.2 Consolidate Deployment Documentation
+
 **Action:** Merge relevant content from:
+
 - `ENTERPRISE_DEPLOYMENT_GUIDE.md`
 - `ENTERPRISE_PRODUCTION_READINESS_PLAN.md`
 - `PERFORMANCE_OPTIMIZATION_GUIDE.md`
@@ -44,14 +51,18 @@ This document provides a comprehensive cleanup plan for the Memorai MCP project,
 **Into:** A single `DEPLOYMENT.md` file in the root
 
 #### 1.3 Archive Obsolete Plans
+
 **Move to Archive:**
+
 - `.github/plans/` directory content
 - `MCP_NPM_MIGRATION.md` (if migration is complete)
 
 ### Phase 2: Temporary Scripts Cleanup (High Priority)
 
 #### 2.1 Remove Root-Level Fix Scripts
+
 **Files to Remove:**
+
 - `fix-api-any-types.cjs`
 - `fix-api-files.cjs`
 - `fix-api-files.js`
@@ -62,7 +73,9 @@ This document provides a comprehensive cleanup plan for the Memorai MCP project,
 **Rationale:** These appear to be one-time fix scripts that should have been removed after use.
 
 #### 2.2 Remove App-Level Fix Scripts
+
 **Files to Remove:**
+
 - `apps/dashboard/fix-critical-lint.mjs`
 - `apps/dashboard/fix-remaining-lint.mjs`
 - `apps/dashboard/scripts/fix-*.js` (all fix scripts)
@@ -71,9 +84,11 @@ This document provides a comprehensive cleanup plan for the Memorai MCP project,
 ### Phase 3: Backup Files Cleanup (Medium Priority)
 
 #### 3.1 Remove All Backup Files
+
 **Files to Remove:** All 23+ `.backup` files identified
 
 **Action Plan:**
+
 1. Review each backup file to ensure current version is stable
 2. Remove all backup files
 3. Update .gitignore to prevent future backup file commits
@@ -81,7 +96,9 @@ This document provides a comprehensive cleanup plan for the Memorai MCP project,
 ### Phase 4: Empty Directory Cleanup (Low Priority)
 
 #### 4.1 Remove Empty Directories
+
 **Directories to Remove:**
+
 - `logs/` (if permanently empty)
 - `data/memory/` (if not needed for runtime)
 
@@ -90,29 +107,36 @@ This document provides a comprehensive cleanup plan for the Memorai MCP project,
 ### Phase 5: Dependency Analysis & Cleanup (Medium Priority)
 
 #### 5.1 Analyze Package Dependencies
+
 **Process:**
+
 1. Run `pnpm audit` to identify security issues
 2. Use `depcheck` to find unused dependencies
 3. Check for version conflicts across packages
 4. Remove unused dependencies
 
 #### 5.2 Consolidate Development Dependencies
+
 **Action:** Move common dev dependencies to root package.json where possible
 
 ### Phase 6: Code Quality Improvements (Medium Priority)
 
 #### 6.1 TypeScript Strict Mode
+
 **Current Issue:** `noUnusedLocals: false` and `noUnusedParameters: false` in tsconfig
 **Action:** Enable strict unused variable checking and clean up code
 
 #### 6.2 Input Validation Improvements
+
 **Current Code Analysis:** The input-validation.ts file has incomplete rate limiting implementation
 **Action:** Complete the rate limiting implementation or remove incomplete code
 
 ### Phase 7: Configuration Optimization (Low Priority)
 
 #### 7.1 Consolidate Similar Configs
+
 **Files to Review:**
+
 - Multiple jest.config.json files
 - Multiple vitest.config.ts files
 - Multiple tsconfig.json files
@@ -122,34 +146,41 @@ This document provides a comprehensive cleanup plan for the Memorai MCP project,
 ## 🔍 Dependency Analysis Results
 
 ### Potential Unused Dependencies (Requires Verification)
+
 Based on monorepo structure, these need individual package analysis:
 
 #### Dashboard App
+
 - Review all Radix UI components for actual usage
 - Check if all React Hook Form dependencies are used
 - Verify Tailwind CSS plugin usage
 
 #### MCP Package
+
 - Check if all OpenAI SDK features are used
 - Verify vector database dependencies
 
 #### Core Package
+
 - Analyze utility dependencies
 
 ## 📊 Estimated Impact
 
 ### File Reduction
+
 - **Documentation**: ~15 files removed (~60% reduction)
 - **Scripts**: ~20 files removed
 - **Backup Files**: ~25 files removed
 - **Total**: ~60 files removed
 
 ### Code Improvement
+
 - Stricter TypeScript configuration
 - Completed input validation
 - Reduced configuration redundancy
 
 ### Maintenance Benefits
+
 - Easier navigation
 - Reduced confusion for new developers
 - Cleaner git history
@@ -158,7 +189,7 @@ Based on monorepo structure, these need individual package analysis:
 ## 🚀 Implementation Order
 
 1. **Phase 1 (Documentation)** - Safe, high impact
-2. **Phase 2 (Fix Scripts)** - Medium risk, high impact  
+2. **Phase 2 (Fix Scripts)** - Medium risk, high impact
 3. **Phase 3 (Backup Files)** - Low risk, medium impact
 4. **Phase 5 (Dependencies)** - Medium risk, medium impact
 5. **Phase 6 (Code Quality)** - Higher risk, high long-term impact
@@ -167,11 +198,13 @@ Based on monorepo structure, these need individual package analysis:
 ## ⚠️ Risks & Mitigation
 
 ### Risks
+
 1. Removing files that are actually needed
 2. Breaking builds or deployments
 3. Losing important historical information
 
 ### Mitigation
+
 1. Create feature branch for cleanup
 2. Test builds after each phase
 3. Review with team before final cleanup
@@ -205,4 +238,4 @@ Based on monorepo structure, these need individual package analysis:
 
 ---
 
-*This cleanup plan will significantly improve the project's maintainability, reduce confusion, and prepare it for long-term success.*
+_This cleanup plan will significantly improve the project's maintainability, reduce confusion, and prepare it for long-term success._

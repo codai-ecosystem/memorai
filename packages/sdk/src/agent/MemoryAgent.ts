@@ -10,8 +10,8 @@ import type {
   ForgetOptions,
   ContextOptions,
   ClientOptions,
-} from "../types/index.js";
-import { MemoraiClient } from "../client/MemoraiClient.js";
+} from '../types/index.js';
+import { MemoraiClient } from '../client/MemoraiClient.js';
 
 /**
  * Agent-specific memory operations wrapper
@@ -38,7 +38,7 @@ export class MemoryAgent {
    */
   public async remember(
     what: string,
-    options: Partial<RememberOptions> = {},
+    options: Partial<RememberOptions> = {}
   ): Promise<AgentMemory> {
     return await this.client.remember(what, options);
   }
@@ -48,7 +48,7 @@ export class MemoryAgent {
    */
   public async recall(
     about: string,
-    options: Partial<RecallOptions> = {},
+    options: Partial<RecallOptions> = {}
   ): Promise<AgentMemory[]> {
     return await this.client.recall(about, options);
   }
@@ -57,7 +57,7 @@ export class MemoryAgent {
    * Get relevant context for current conversation
    */
   public async getContext(
-    options: ContextOptions = {},
+    options: ContextOptions = {}
   ): Promise<AgentMemory[]> {
     return await this.client.getContext(options);
   }

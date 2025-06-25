@@ -1,5 +1,5 @@
-import { render, screen, fireEvent } from "@testing-library/react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // Create a simple mock component
 const MemoryResults = () => {
@@ -27,33 +27,33 @@ const MemoryResults = () => {
   );
 };
 
-describe("MemoryResults", () => {
+describe('MemoryResults', () => {
   const mockFn = vi.fn();
 
   beforeEach(() => {
     mockFn.mockClear();
   });
 
-  it("should render correctly", () => {
+  it('should render correctly', () => {
     render(<MemoryResults />);
 
-    expect(screen.getByTestId("memory-results-container")).toBeInTheDocument();
+    expect(screen.getByTestId('memory-results-container')).toBeInTheDocument();
   });
 
-  it("should display memories count", () => {
+  it('should display memories count', () => {
     render(<MemoryResults />);
 
-    expect(screen.getByText("2 Memories")).toBeInTheDocument();
+    expect(screen.getByText('2 Memories')).toBeInTheDocument();
   });
 
-  it("should render memory items", () => {
+  it('should render memory items', () => {
     render(<MemoryResults />);
 
     expect(screen.getByText(/Test memory 1/)).toBeInTheDocument();
     expect(screen.getByText(/Test memory 2/)).toBeInTheDocument();
   });
 
-  it("should display memory metadata", () => {
+  it('should display memory metadata', () => {
     render(<MemoryResults />);
 
     // Should show importance scores
@@ -61,87 +61,87 @@ describe("MemoryResults", () => {
     expect(screen.getByText(/60%/)).toBeInTheDocument();
   });
 
-  it("should display memory tags", () => {
+  it('should display memory tags', () => {
     render(<MemoryResults />);
 
-    expect(screen.getByText("tag1")).toBeInTheDocument();
-    expect(screen.getByText("tag2")).toBeInTheDocument();
-    expect(screen.getByText("tag3")).toBeInTheDocument();
+    expect(screen.getByText('tag1')).toBeInTheDocument();
+    expect(screen.getByText('tag2')).toBeInTheDocument();
+    expect(screen.getByText('tag3')).toBeInTheDocument();
   });
 
-  it("should handle memory deletion", () => {
+  it('should handle memory deletion', () => {
     render(<MemoryResults />);
 
-    const deleteButton = screen.getByRole("button", { name: /delete/i });
+    const deleteButton = screen.getByRole('button', { name: /delete/i });
     fireEvent.click(deleteButton);
     expect(deleteButton).toBeInTheDocument();
   });
 
-  it("should handle memory editing", () => {
+  it('should handle memory editing', () => {
     render(<MemoryResults />);
 
-    const editButton = screen.getByRole("button", { name: /edit/i });
+    const editButton = screen.getByRole('button', { name: /edit/i });
     fireEvent.click(editButton);
     expect(editButton).toBeInTheDocument();
   });
 
-  it("should sort memories correctly", () => {
+  it('should sort memories correctly', () => {
     render(<MemoryResults />);
 
     const sortSelect = screen.getByDisplayValue(/time/i);
-    fireEvent.change(sortSelect, { target: { value: "relevance" } });
+    fireEvent.change(sortSelect, { target: { value: 'relevance' } });
 
-    expect(sortSelect).toHaveValue("relevance");
+    expect(sortSelect).toHaveValue('relevance');
   });
 
-  it("should filter memories", () => {
+  it('should filter memories', () => {
     render(<MemoryResults />);
 
-    const filterButton = screen.getByRole("button", { name: /filters/i });
+    const filterButton = screen.getByRole('button', { name: /filters/i });
     fireEvent.click(filterButton);
 
     expect(filterButton).toBeInTheDocument();
   });
 
-  it("should handle empty results", () => {
+  it('should handle empty results', () => {
     render(<MemoryResults />);
 
-    expect(screen.getByText("No memories yet")).toBeInTheDocument();
+    expect(screen.getByText('No memories yet')).toBeInTheDocument();
   });
 
-  describe("Memory Item Actions", () => {
-    it("should copy memory content", () => {
+  describe('Memory Item Actions', () => {
+    it('should copy memory content', () => {
       render(<MemoryResults />);
 
-      const copyButton = screen.getByRole("button", { name: /copy/i });
+      const copyButton = screen.getByRole('button', { name: /copy/i });
       fireEvent.click(copyButton);
       expect(copyButton).toBeInTheDocument();
     });
 
-    it("should share memory", () => {
+    it('should share memory', () => {
       render(<MemoryResults />);
 
-      const shareButton = screen.getByRole("button", { name: /share/i });
+      const shareButton = screen.getByRole('button', { name: /share/i });
       fireEvent.click(shareButton);
       expect(shareButton).toBeInTheDocument();
     });
   });
 
-  describe("Accessibility", () => {
-    it("should have proper ARIA labels", () => {
+  describe('Accessibility', () => {
+    it('should have proper ARIA labels', () => {
       render(<MemoryResults />);
 
-      const container = screen.getByTestId("memory-results-container");
-      expect(container).toHaveAttribute("role", "region");
+      const container = screen.getByTestId('memory-results-container');
+      expect(container).toHaveAttribute('role', 'region');
     });
 
-    it("should support keyboard navigation", () => {
+    it('should support keyboard navigation', () => {
       render(<MemoryResults />);
 
-      const deleteButton = screen.getByRole("button", { name: /delete/i });
+      const deleteButton = screen.getByRole('button', { name: /delete/i });
       deleteButton.focus();
 
-      fireEvent.keyDown(deleteButton, { key: "Enter" });
+      fireEvent.keyDown(deleteButton, { key: 'Enter' });
       expect(deleteButton).toBeInTheDocument();
     });
   });

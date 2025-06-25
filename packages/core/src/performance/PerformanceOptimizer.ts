@@ -3,7 +3,7 @@
  * World-class optimization system for production-ready performance
  */
 
-import { logger } from "../utils/logger.js";
+import { logger } from '../utils/logger.js';
 
 export interface PerformanceConfig {
   // Query optimization
@@ -25,7 +25,7 @@ export interface PerformanceConfig {
   retryDelay: number;
 
   // Vector optimization
-  vectorIndexType: "hnsw" | "ivf" | "brute_force";
+  vectorIndexType: 'hnsw' | 'ivf' | 'brute_force';
   hnswM: number;
   hnswEfConstruct: number;
   quantizationEnabled: boolean;
@@ -68,7 +68,7 @@ export class PerformanceOptimizer {
       maxRetries: 3,
       retryDelay: 100,
 
-      vectorIndexType: "hnsw",
+      vectorIndexType: 'hnsw',
       hnswM: 64, // High-performance HNSW
       hnswEfConstruct: 400,
       quantizationEnabled: true,
@@ -84,7 +84,7 @@ export class PerformanceOptimizer {
   public async optimizeQuery<T>(
     queryKey: string,
     queryFn: () => Promise<T>,
-    options: { useCache?: boolean; timeout?: number } = {},
+    options: { useCache?: boolean; timeout?: number } = {}
   ): Promise<T> {
     const startTime = Date.now();
     const {
@@ -97,7 +97,7 @@ export class PerformanceOptimizer {
       if (useCache && this.queryCache.has(queryKey)) {
         const cached = this.queryCache.get(queryKey)!;
         if (cached.expiry > Date.now()) {
-          this.recordMetric("cacheHit", Date.now() - startTime);
+          this.recordMetric('cacheHit', Date.now() - startTime);
           return cached.data as T;
         } else {
           this.queryCache.delete(queryKey);
@@ -117,10 +117,10 @@ export class PerformanceOptimizer {
           expiry: Date.now() + this.config.cacheTTL,
         });
       }
-      this.recordMetric("queryTime", Date.now() - startTime);
+      this.recordMetric('queryTime', Date.now() - startTime);
       return result;
     } catch (error) {
-      this.recordMetric("error", Date.now() - startTime);
+      this.recordMetric('error', Date.now() - startTime);
       throw error;
     }
   }
@@ -131,7 +131,7 @@ export class PerformanceOptimizer {
   public async batchProcess<T, R>(
     items: T[],
     processor: (batch: T[]) => Promise<R[]>,
-    batchSize: number = this.config.batchSize,
+    batchSize: number = this.config.batchSize
   ): Promise<R[]> {
     const results: R[] = [];
     const batches = this.createBatches(items, batchSize);
@@ -140,7 +140,7 @@ export class PerformanceOptimizer {
         const batchResults = await processor(batch);
         results.push(...batchResults);
       } catch (error) {
-        logger.error("Batch processing error:", error);
+        logger.error('Batch processing error:', error);
         // Continue with next batch in production
       }
     }
@@ -158,7 +158,7 @@ export class PerformanceOptimizer {
 
     if (heapUsedMB > memoryThreshold * this.config.gcThreshold) {
       logger.info(
-        `Memory optimization triggered: ${heapUsedMB.toFixed(2)}MB used`,
+        `Memory optimization triggered: ${heapUsedMB.toFixed(2)}MB used`
       );
 
       // Clear expired cache entries
@@ -190,7 +190,7 @@ export class PerformanceOptimizer {
       collection_config: {
         vectors: {
           size: 1536, // OpenAI embedding size
-          distance: "Cosine",
+          distance: 'Cosine',
         },
         optimizers_config: {
           default_segment_number: 2,
@@ -210,7 +210,7 @@ export class PerformanceOptimizer {
         quantization_config: this.config.quantizationEnabled
           ? {
               scalar: {
-                type: "int8",
+                type: 'int8',
                 quantile: 0.99,
                 always_ram: false,
               },
@@ -231,7 +231,7 @@ export class PerformanceOptimizer {
           recentMetrics.length
         : 0;
 
-    const cacheHits = recentMetrics.filter((m) => m.queryTime < 10).length; // Cache hits are typically <10ms
+    const cacheHits = recentMetrics.filter(m => m.queryTime < 10).length; // Cache hits are typically <10ms
     const cacheHitRate =
       recentMetrics.length > 0 ? cacheHits / recentMetrics.length : 0;
 
@@ -258,25 +258,25 @@ export class PerformanceOptimizer {
 
     if (metrics.queryTime > this.config.maxQueryTime) {
       recommendations.push(
-        `Query time (${metrics.queryTime.toFixed(2)}ms) exceeds target (${this.config.maxQueryTime}ms). Consider increasing cache size or optimizing indexes.`,
+        `Query time (${metrics.queryTime.toFixed(2)}ms) exceeds target (${this.config.maxQueryTime}ms). Consider increasing cache size or optimizing indexes.`
       );
     }
 
     if (metrics.cacheHitRate < 0.7) {
       recommendations.push(
-        `Cache hit rate (${(metrics.cacheHitRate * 100).toFixed(1)}%) is low. Consider increasing cache TTL or cache size.`,
+        `Cache hit rate (${(metrics.cacheHitRate * 100).toFixed(1)}%) is low. Consider increasing cache TTL or cache size.`
       );
     }
 
     if (metrics.memoryUsage > this.config.memoryLimit * 0.9) {
       recommendations.push(
-        `Memory usage is approaching limit. Consider reducing batch sizes or enabling compression.`,
+        `Memory usage is approaching limit. Consider reducing batch sizes or enabling compression.`
       );
     }
 
     if (metrics.errorRate > 0.05) {
       recommendations.push(
-        `Error rate (${(metrics.errorRate * 100).toFixed(1)}%) is high. Check connection stability and timeout settings.`,
+        `Error rate (${(metrics.errorRate * 100).toFixed(1)}%) is high. Check connection stability and timeout settings.`
       );
     }
 
@@ -309,7 +309,7 @@ export class PerformanceOptimizer {
   }
 
   private async performCompaction(): Promise<void> {
-    logger.info("Performing memory compaction");
+    logger.info('Performing memory compaction');
     // Implement database compaction logic here
     // This could involve optimizing vector indexes, cleaning up fragmented data, etc.
   }
@@ -323,11 +323,11 @@ export class PerformanceOptimizer {
 
   private recordMetric(type: string, value: number): void {
     const metric: PerformanceMetrics = {
-      queryTime: type === "queryTime" ? value : 0,
+      queryTime: type === 'queryTime' ? value : 0,
       memoryUsage: process.memoryUsage().heapUsed,
-      cacheHitRate: type === "cacheHit" ? 1 : 0,
+      cacheHitRate: type === 'cacheHit' ? 1 : 0,
       throughput: 0,
-      errorRate: type === "error" ? 1 : 0,
+      errorRate: type === 'error' ? 1 : 0,
       connectionCount: 0,
       vectorIndexSize: 0,
       timestamp: new Date(),
@@ -339,7 +339,7 @@ export class PerformanceOptimizer {
   private calculateThroughput(): number {
     const oneMinuteAgo = Date.now() - 60000;
     const recentMetrics = this.metrics.filter(
-      (m) => m.timestamp.getTime() > oneMinuteAgo,
+      m => m.timestamp.getTime() > oneMinuteAgo
     );
     return recentMetrics.length; // Operations per minute
   }
@@ -348,7 +348,7 @@ export class PerformanceOptimizer {
     const recentMetrics = this.metrics.slice(-100);
     if (recentMetrics.length === 0) return 0;
 
-    const errors = recentMetrics.filter((m) => m.errorRate > 0).length;
+    const errors = recentMetrics.filter(m => m.errorRate > 0).length;
     return errors / recentMetrics.length;
   }
 }

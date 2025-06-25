@@ -1,46 +1,46 @@
 {
-    "agentId": "memorai-service-agent",
-    "serviceContext": {
-        "name": "memorai",
-        "type": "enterprise-mcp-server",
-        "priority": 1,
-        "architecture": "v2.0-submodule",
-        "status": "production-ready"
+  "agentId": "memorai-service-agent",
+  "serviceContext": {
+    "name": "memorai",
+    "type": "enterprise-mcp-server",
+    "priority": 1,
+    "architecture": "v2.0-submodule",
+    "status": "production-ready"
+  },
+  "developmentMode": "individual",
+  "vsCodeProfile": "ghcp4_metu",
+  "capabilities": [
+    "memory_architecture",
+    "mcp_protocol_expert",
+    "enterprise_deployment",
+    "performance_optimization",
+    "typescript_monorepo"
+  ],
+  "packageStructure": {
+    "packages": 8,
+    "apps": 3,
+    "totalSize": "9.48MB",
+    "dependencies": 1030
+  },
+  "devEnvironment": {
+    "ports": {
+      "api": 3001,
+      "dashboard": 6366,
+      "mcp": 8080,
+      "demo": 3002
     },
-    "developmentMode": "individual",
-    "vsCodeProfile": "ghcp4_metu",
-    "capabilities": [
-        "memory_architecture",
-        "mcp_protocol_expert",
-        "enterprise_deployment",
-        "performance_optimization",
-        "typescript_monorepo"
-    ],
-    "packageStructure": {
-        "packages": 8,
-        "apps": 3,
-        "totalSize": "9.48MB",
-        "dependencies": 1030
-    },
-    "devEnvironment": {
-        "ports": {
-            "api": 3001,
-            "dashboard": 6366,
-            "mcp": 8080,
-            "demo": 3002
-        },
-        "commands": {
-            "dev": "pnpm dev",
-            "build": "pnpm build",
-            "test": "pnpm test"
-        }
-    },
-    "integrationStatus": {
-        "gitSubmodule": "active",
-        "dependencies": "installed",
-        "build": "ready",
-        "ecosystem": "v2.0-operational"
-    },
-    "lastActivity": "2025-06-23T18:30:00.000Z",
-    "context": "Individual development workspace configured with VS Code Insiders profile ghcp4_metu. Enterprise MCP server with 8 packages ready for AI-powered development."
+    "commands": {
+      "dev": "pnpm dev",
+      "build": "pnpm build",
+      "test": "pnpm test"
+    }
+  },
+  "integrationStatus": {
+    "gitSubmodule": "active",
+    "dependencies": "installed",
+    "build": "ready",
+    "ecosystem": "v2.0-operational"
+  },
+  "lastActivity": "2025-06-23T18:30:00.000Z",
+  "context": "Individual development workspace configured with VS Code Insiders profile ghcp4_metu. Enterprise MCP server with 8 packages ready for AI-powered development."
 }

@@ -11,10 +11,10 @@ import type {
   ContextOptions,
   AgentMemory,
   MemorySession,
-} from "../types/index.js";
-import { MCPConnection } from "../connection/MCPConnection.js";
-import { SDKConfig } from "../config/SDKConfig.js";
-import { MemoryCache } from "../cache/MemoryCache.js";
+} from '../types/index.js';
+import { MCPConnection } from '../connection/MCPConnection.js';
+import { SDKConfig } from '../config/SDKConfig.js';
+import { MemoryCache } from '../cache/MemoryCache.js';
 
 /**
  * Main client class for interacting with Memorai memory system
@@ -32,7 +32,7 @@ export class MemoraiClient {
       agentId: string;
       sessionId?: string;
       tenantId?: string;
-    },
+    }
   ) {
     this.config = new SDKConfig(options);
     this.connection = new MCPConnection(this.config.getConnectionOptions());
@@ -50,8 +50,8 @@ export class MemoraiClient {
 
     // Initialize session
     await this.connection.send({
-      jsonrpc: "2.0",
-      method: "memory/initialize",
+      jsonrpc: '2.0',
+      method: 'memory/initialize',
       params: {
         agentId: this.agentId,
         sessionId: this.sessionId,
@@ -73,10 +73,10 @@ export class MemoraiClient {
    */
   public async remember(
     content: string,
-    options: Partial<RememberOptions> = {},
+    options: Partial<RememberOptions> = {}
   ): Promise<AgentMemory> {
     const operation: MemoryOperation = {
-      operation: "remember",
+      operation: 'remember',
       data: {
         content,
         context: options.context,
@@ -94,8 +94,8 @@ export class MemoraiClient {
     };
 
     const response = await this.connection.send({
-      jsonrpc: "2.0",
-      method: "memory/remember",
+      jsonrpc: '2.0',
+      method: 'memory/remember',
       params: operation,
       id: this.generateRequestId(),
     });
@@ -119,7 +119,7 @@ export class MemoraiClient {
    */
   public async recall(
     query: string,
-    options: Partial<RecallOptions> = {},
+    options: Partial<RecallOptions> = {}
   ): Promise<AgentMemory[]> {
     // Check cache first if enabled
     if (this.config.cacheEnabled && options.useCache !== false) {
@@ -130,7 +130,7 @@ export class MemoraiClient {
     }
 
     const operation: MemoryOperation = {
-      operation: "recall",
+      operation: 'recall',
       data: {
         query: options.query || query,
         limit: options.limit || 10,
@@ -146,8 +146,8 @@ export class MemoraiClient {
     };
 
     const response = await this.connection.send({
-      jsonrpc: "2.0",
-      method: "memory/recall",
+      jsonrpc: '2.0',
+      method: 'memory/recall',
       params: operation,
       id: this.generateRequestId(),
     });
@@ -173,7 +173,7 @@ export class MemoraiClient {
    */
   public async forget(options: ForgetOptions): Promise<void> {
     const operation: MemoryOperation = {
-      operation: "forget",
+      operation: 'forget',
       data: {
         memoryId: options.memoryId,
         query: options.query,
@@ -188,8 +188,8 @@ export class MemoraiClient {
     };
 
     const response = await this.connection.send({
-      jsonrpc: "2.0",
-      method: "memory/forget",
+      jsonrpc: '2.0',
+      method: 'memory/forget',
       params: operation,
       id: this.generateRequestId(),
     });
@@ -208,16 +208,16 @@ export class MemoraiClient {
    * Get contextual information for current conversation
    */
   public async getContext(
-    options: ContextOptions = {},
+    options: ContextOptions = {}
   ): Promise<AgentMemory[]> {
     const operation: MemoryOperation = {
-      operation: "context",
+      operation: 'context',
       data: {
         topic: options.topic,
         timeframe: options.timeframe,
         limit: options.limit || 5,
         includeMemories: options.includeMemories !== false,
-        summaryType: options.summaryType || "brief",
+        summaryType: options.summaryType || 'brief',
         context: {
           agentId: this.agentId,
           sessionId: this.sessionId,
@@ -227,8 +227,8 @@ export class MemoraiClient {
     };
 
     const response = await this.connection.send({
-      jsonrpc: "2.0",
-      method: "memory/context",
+      jsonrpc: '2.0',
+      method: 'memory/context',
       params: operation,
       id: this.generateRequestId(),
     });
@@ -245,8 +245,8 @@ export class MemoraiClient {
    */
   public async getSession(): Promise<MemorySession> {
     const response = await this.connection.send({
-      jsonrpc: "2.0",
-      method: "memory/session",
+      jsonrpc: '2.0',
+      method: 'memory/session',
       params: {
         agentId: this.agentId,
         sessionId: this.sessionId,
@@ -267,8 +267,8 @@ export class MemoraiClient {
    */
   public async clearSession(): Promise<void> {
     await this.connection.send({
-      jsonrpc: "2.0",
-      method: "memory/clear-session",
+      jsonrpc: '2.0',
+      method: 'memory/clear-session',
       params: {
         agentId: this.agentId,
         sessionId: this.sessionId,
@@ -293,8 +293,8 @@ export class MemoraiClient {
     sessionMemories: number;
   }> {
     const response = await this.connection.send({
-      jsonrpc: "2.0",
-      method: "memory/stats",
+      jsonrpc: '2.0',
+      method: 'memory/stats',
       params: {
         agentId: this.agentId,
         sessionId: this.sessionId,

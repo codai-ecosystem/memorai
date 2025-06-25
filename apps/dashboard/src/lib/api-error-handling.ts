@@ -3,9 +3,9 @@
  * Standardized error handling for API routes and responses
  */
 
-import { NextResponse, NextRequest } from "next/server";
-import { ZodError } from "zod";
-import { ValidationError, RateLimitError } from "./input-validation";
+import { NextResponse, NextRequest } from 'next/server';
+import { ZodError } from 'zod';
+import { ValidationError, RateLimitError } from './input-validation';
 
 /**
  * Standard API error response format
@@ -50,25 +50,25 @@ export type ApiResponse<T = unknown> = ApiSuccessResponse<T> | ApiErrorResponse;
  */
 export enum ErrorCode {
   // Client errors (4xx)
-  BAD_REQUEST = "BAD_REQUEST",
-  UNAUTHORIZED = "UNAUTHORIZED",
-  FORBIDDEN = "FORBIDDEN",
-  NOT_FOUND = "NOT_FOUND",
-  METHOD_NOT_ALLOWED = "METHOD_NOT_ALLOWED",
-  VALIDATION_ERROR = "VALIDATION_ERROR",
-  RATE_LIMIT_EXCEEDED = "RATE_LIMIT_EXCEEDED",
+  BAD_REQUEST = 'BAD_REQUEST',
+  UNAUTHORIZED = 'UNAUTHORIZED',
+  FORBIDDEN = 'FORBIDDEN',
+  NOT_FOUND = 'NOT_FOUND',
+  METHOD_NOT_ALLOWED = 'METHOD_NOT_ALLOWED',
+  VALIDATION_ERROR = 'VALIDATION_ERROR',
+  RATE_LIMIT_EXCEEDED = 'RATE_LIMIT_EXCEEDED',
 
   // Server errors (5xx)
-  INTERNAL_ERROR = "INTERNAL_ERROR",
-  SERVICE_UNAVAILABLE = "SERVICE_UNAVAILABLE",
-  DATABASE_ERROR = "DATABASE_ERROR",
-  EXTERNAL_SERVICE_ERROR = "EXTERNAL_SERVICE_ERROR",
+  INTERNAL_ERROR = 'INTERNAL_ERROR',
+  SERVICE_UNAVAILABLE = 'SERVICE_UNAVAILABLE',
+  DATABASE_ERROR = 'DATABASE_ERROR',
+  EXTERNAL_SERVICE_ERROR = 'EXTERNAL_SERVICE_ERROR',
 
   // Application-specific errors
-  MEMORY_NOT_FOUND = "MEMORY_NOT_FOUND",
-  AGENT_NOT_FOUND = "AGENT_NOT_FOUND",
-  SEARCH_FAILED = "SEARCH_FAILED",
-  CONFIGURATION_ERROR = "CONFIGURATION_ERROR",
+  MEMORY_NOT_FOUND = 'MEMORY_NOT_FOUND',
+  AGENT_NOT_FOUND = 'AGENT_NOT_FOUND',
+  SEARCH_FAILED = 'SEARCH_FAILED',
+  CONFIGURATION_ERROR = 'CONFIGURATION_ERROR',
 }
 
 /**
@@ -79,10 +79,10 @@ export class ApiError extends Error {
     public code: ErrorCode,
     message: string,
     public statusCode: number = 500,
-    public details?: unknown,
+    public details?: unknown
   ) {
     super(message);
-    this.name = "ApiError";
+    this.name = 'ApiError';
   }
 }
 
@@ -98,7 +98,7 @@ function generateRequestId(): string {
  */
 export function createSuccessResponse<T>(
   data: T,
-  meta?: ApiSuccessResponse<T>["meta"],
+  meta?: ApiSuccessResponse<T>['meta']
 ): ApiSuccessResponse<T> {
   return {
     success: true,
@@ -118,7 +118,7 @@ export function createErrorResponse(
   code: ErrorCode,
   message: string,
   details?: unknown,
-  requestId?: string,
+  requestId?: string
 ): ApiErrorResponse {
   return {
     success: false,
@@ -166,9 +166,9 @@ function mapErrorToResponse(error: Error): {
     return {
       statusCode: 400,
       errorCode: ErrorCode.VALIDATION_ERROR,
-      message: "Invalid input data",
-      details: error.errors.map((err) => ({
-        field: err.path.join("."),
+      message: 'Invalid input data',
+      details: error.errors.map(err => ({
+        field: err.path.join('.'),
         message: err.message,
       })),
     };
@@ -185,29 +185,29 @@ function mapErrorToResponse(error: Error): {
 
   // Network/connection errors
   if (
-    error.message.includes("ECONNREFUSED") ||
-    error.message.includes("timeout")
+    error.message.includes('ECONNREFUSED') ||
+    error.message.includes('timeout')
   ) {
     return {
       statusCode: 503,
       errorCode: ErrorCode.SERVICE_UNAVAILABLE,
-      message: "Service temporarily unavailable",
+      message: 'Service temporarily unavailable',
       details:
-        process.env.NODE_ENV === "development" ? error.message : undefined,
+        process.env.NODE_ENV === 'development' ? error.message : undefined,
     };
   }
 
   // Database errors
   if (
-    error.message.includes("database") ||
-    error.message.includes("connection")
+    error.message.includes('database') ||
+    error.message.includes('connection')
   ) {
     return {
       statusCode: 500,
       errorCode: ErrorCode.DATABASE_ERROR,
-      message: "Database error occurred",
+      message: 'Database error occurred',
       details:
-        process.env.NODE_ENV === "development" ? error.message : undefined,
+        process.env.NODE_ENV === 'development' ? error.message : undefined,
     };
   }
 
@@ -215,8 +215,8 @@ function mapErrorToResponse(error: Error): {
   return {
     statusCode: 500,
     errorCode: ErrorCode.INTERNAL_ERROR,
-    message: "An unexpected error occurred",
-    details: process.env.NODE_ENV === "development" ? error.message : undefined,
+    message: 'An unexpected error occurred',
+    details: process.env.NODE_ENV === 'development' ? error.message : undefined,
   };
 }
 
@@ -227,7 +227,7 @@ export function handleApiError(error: Error): NextResponse<ApiErrorResponse> {
   const { statusCode, errorCode, message, details } = mapErrorToResponse(error);
 
   // Log error for monitoring
-  console.error("API Error:", {
+  console.error('API Error:', {
     error: error.message,
     stack: error.stack,
     statusCode,
@@ -241,7 +241,7 @@ export function handleApiError(error: Error): NextResponse<ApiErrorResponse> {
   return NextResponse.json(errorResponse, {
     status: statusCode,
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
   });
 }
@@ -250,14 +250,14 @@ export function handleApiError(error: Error): NextResponse<ApiErrorResponse> {
  * Async handler wrapper that catches and handles errors
  */
 export function asyncHandler<T extends unknown[]>(
-  handler: (...args: T) => Promise<NextResponse>,
+  handler: (...args: T) => Promise<NextResponse>
 ) {
   return async (...args: T): Promise<NextResponse> => {
     try {
       return await handler(...args);
     } catch (error) {
       return handleApiError(
-        error instanceof Error ? error : new Error(String(error)),
+        error instanceof Error ? error : new Error(String(error))
       );
     }
   };
@@ -268,14 +268,14 @@ export function asyncHandler<T extends unknown[]>(
  */
 export function validateHttpMethod(
   request: NextRequest,
-  allowedMethods: string[],
+  allowedMethods: string[]
 ): void {
   const method = request.method;
   if (!allowedMethods.includes(method)) {
     throw new ApiError(
       ErrorCode.METHOD_NOT_ALLOWED,
-      `Method ${method} not allowed. Allowed methods: ${allowedMethods.join(", ")}`,
-      405,
+      `Method ${method} not allowed. Allowed methods: ${allowedMethods.join(', ')}`,
+      405
     );
   }
 }
@@ -290,9 +290,9 @@ export async function getRequestBody<T>(request: NextRequest): Promise<T> {
   } catch (error) {
     throw new ApiError(
       ErrorCode.BAD_REQUEST,
-      "Invalid JSON in request body",
+      'Invalid JSON in request body',
       400,
-      error instanceof Error ? error.message : undefined,
+      error instanceof Error ? error.message : undefined
     );
   }
 }
@@ -301,7 +301,7 @@ export async function getRequestBody<T>(request: NextRequest): Promise<T> {
  * Extracts query parameters with type safety
  */
 export function getQueryParams(
-  request: NextRequest,
+  request: NextRequest
 ): Record<string, string | string[]> {
   const { searchParams } = new URL(request.url);
   const params: Record<string, string | string[]> = {};
@@ -328,8 +328,8 @@ export function getQueryParams(
 export function createPaginationMeta(
   page: number,
   limit: number,
-  total: number,
-): NonNullable<ApiSuccessResponse["meta"]>["pagination"] {
+  total: number
+): NonNullable<ApiSuccessResponse['meta']>['pagination'] {
   const totalPages = Math.ceil(total / limit);
 
   return {
@@ -347,18 +347,18 @@ export function createPaginationMeta(
 export function checkRateLimit(
   request: NextRequest,
   maxRequests: number = 100,
-  windowMs: number = 60000,
+  windowMs: number = 60000
 ): void {
   // Get client identifier (IP address from headers)
-  const forwardedFor = request.headers.get("x-forwarded-for");
-  const realIp = request.headers.get("x-real-ip");
-  const identifier = (forwardedFor || realIp) ?? "unknown";
+  const forwardedFor = request.headers.get('x-forwarded-for');
+  const realIp = request.headers.get('x-real-ip');
+  const identifier = (forwardedFor || realIp) ?? 'unknown';
 
   // Check rate limit (this would use Redis in production)
   const isAllowed = validateRateLimit(identifier, maxRequests, windowMs);
 
   if (!isAllowed) {
-    throw new RateLimitError("Rate limit exceeded. Please try again later.");
+    throw new RateLimitError('Rate limit exceeded. Please try again later.');
   }
 }
 
@@ -368,7 +368,7 @@ const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
 function validateRateLimit(
   identifier: string,
   maxRequests: number,
-  windowMs: number,
+  windowMs: number
 ): boolean {
   const now = Date.now();
   const entry = rateLimitStore.get(identifier);
@@ -391,14 +391,14 @@ function validateRateLimit(
  * CORS headers for API responses
  */
 export function addCorsHeaders(response: NextResponse): NextResponse {
-  response.headers.set("Access-Control-Allow-Origin", "*");
+  response.headers.set('Access-Control-Allow-Origin', '*');
   response.headers.set(
-    "Access-Control-Allow-Methods",
-    "GET, POST, PUT, DELETE, OPTIONS",
+    'Access-Control-Allow-Methods',
+    'GET, POST, PUT, DELETE, OPTIONS'
   );
   response.headers.set(
-    "Access-Control-Allow-Headers",
-    "Content-Type, Authorization",
+    'Access-Control-Allow-Headers',
+    'Content-Type, Authorization'
   );
   return response;
 }
@@ -407,9 +407,9 @@ export function addCorsHeaders(response: NextResponse): NextResponse {
  * Security headers for API responses
  */
 export function addSecurityHeaders(response: NextResponse): NextResponse {
-  response.headers.set("X-Content-Type-Options", "nosniff");
-  response.headers.set("X-Frame-Options", "DENY");
-  response.headers.set("X-XSS-Protection", "1; mode=block");
-  response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  response.headers.set('X-Content-Type-Options', 'nosniff');
+  response.headers.set('X-Frame-Options', 'DENY');
+  response.headers.set('X-XSS-Protection', '1; mode=block');
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
   return response;
 }

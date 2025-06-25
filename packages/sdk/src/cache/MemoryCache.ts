@@ -2,7 +2,7 @@
  * @fileoverview Memory cache implementation for SDK
  */
 
-import type { CacheOptions, AgentMemory } from "../types/index.js";
+import type { CacheOptions, AgentMemory } from '../types/index.js';
 
 /**
  * Cache entry with metadata
@@ -25,9 +25,9 @@ export class MemoryCache {
   constructor(options: CacheOptions) {
     this.options = {
       enabled: options.enabled || false,
-      ttl: "ttl" in options ? options.ttl : 300, // Use provided TTL (including undefined) or default to 300
+      ttl: 'ttl' in options ? options.ttl : 300, // Use provided TTL (including undefined) or default to 300
       maxSize: options.maxSize ?? 1000,
-      strategy: options.strategy || "lru",
+      strategy: options.strategy || 'lru',
     };
 
     // Start cleanup interval if caching is enabled
@@ -69,7 +69,7 @@ export class MemoryCache {
   public async set(
     key: string,
     value: AgentMemory,
-    ttl?: number,
+    ttl?: number
   ): Promise<void> {
     if (!this.options.enabled) {
       return;
@@ -142,7 +142,7 @@ export class MemoryCache {
       }
 
       // Simple text matching for cache search
-      const content = entry.value.content?.toLowerCase() || "";
+      const content = entry.value.content?.toLowerCase() || '';
       if (content.includes(queryLower)) {
         const score = this.calculateRelevanceScore(content, queryLower);
         results.push({ memory: entry.value, score });
@@ -156,7 +156,7 @@ export class MemoryCache {
 
     // Sort by relevance score and limit results
     results.sort((a, b) => b.score - a.score);
-    return results.slice(0, limit || 10).map((r) => r.memory);
+    return results.slice(0, limit || 10).map(r => r.memory);
   }
 
   /**
@@ -220,10 +220,10 @@ export class MemoryCache {
     }
 
     switch (this.options.strategy) {
-      case "lru":
+      case 'lru':
         this.evictLRU();
         break;
-      case "fifo":
+      case 'fifo':
         this.evictFIFO();
         break;
       default:
@@ -284,10 +284,10 @@ export class MemoryCache {
    * Calculate simple relevance score for search
    */
   private calculateRelevanceScore(content: string, query: string): number {
-    const exactMatches = (content.match(new RegExp(query, "gi")) || []).length;
+    const exactMatches = (content.match(new RegExp(query, 'gi')) || []).length;
     const wordMatches = query
-      .split(" ")
-      .filter((word) => content.includes(word.toLowerCase())).length;
+      .split(' ')
+      .filter(word => content.includes(word.toLowerCase())).length;
 
     // Simple scoring: exact matches worth more than word matches
     return exactMatches * 10 + wordMatches;

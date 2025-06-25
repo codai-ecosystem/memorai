@@ -126,17 +126,14 @@ Once configured, you can use memory operations directly in Copilot Chat:
 ### Memory Operations
 
 - **Remember**: Store new information
-
   - "Remember that I use React with TypeScript"
   - "Remember the database schema for users table"
 
 - **Recall**: Retrieve specific information
-
   - "What do you remember about my testing preferences?"
   - "Recall information about the payment system"
 
 - **Context**: Get relevant context for current conversation
-
   - "Give me context about this codebase"
   - "What context do you have about error handling?"
 
@@ -162,19 +159,19 @@ Once configured, you can use memory operations directly in Copilot Chat:
 #### Docker Compose (Recommended)
 
 ```yaml
-version: "3.8"
+version: '3.8'
 services:
   qdrant:
     image: qdrant/qdrant
     ports:
-      - "6333:6333"
+      - '6333:6333'
     volumes:
       - qdrant_storage:/qdrant/storage
 
   redis:
     image: redis:alpine
     ports:
-      - "6379:6379"
+      - '6379:6379'
 
 volumes:
   qdrant_storage:
@@ -229,23 +226,23 @@ If you get "command not found" errors:
 ### Programmatic Usage
 
 ```typescript
-import { MemoryEngine, MemoraiServer } from "@codai/memorai-mcp";
+import { MemoryEngine, MemoraiServer } from '@codai/memorai-mcp';
 
 // Create memory engine
 const engine = new MemoryEngine({
   vector_db: {
-    url: "http://localhost:6333",
-    collection: "memories",
+    url: 'http://localhost:6333',
+    collection: 'memories',
   },
   redis: {
-    url: "redis://localhost:6379",
+    url: 'redis://localhost:6379',
   },
   embedding: {
-    provider: "openai",
+    provider: 'openai',
     api_key: process.env.OPENAI_API_KEY,
   },
   security: {
-    encryption_key: "your-32-character-key-here",
+    encryption_key: 'your-32-character-key-here',
     tenant_isolation: true,
   },
 });
@@ -260,25 +257,25 @@ await server.start();
 ```typescript
 // Remember information
 await engine.remember(
-  "User prefers TypeScript for new projects",
-  "tenant-123",
-  "agent-456",
+  'User prefers TypeScript for new projects',
+  'tenant-123',
+  'agent-456'
 );
 
 // Recall information
 const memories = await engine.recall(
-  "coding preferences",
-  "tenant-123",
-  "agent-456",
+  'coding preferences',
+  'tenant-123',
+  'agent-456'
 );
 
 // Get context
-const context = await engine.getContext("tenant-123", "agent-456", {
+const context = await engine.getContext('tenant-123', 'agent-456', {
   limit: 10,
 });
 
 // Forget information
-await engine.forget("old API configuration", "tenant-123", "agent-456");
+await engine.forget('old API configuration', 'tenant-123', 'agent-456');
 ```
 
 ## Production Deployment
@@ -286,13 +283,11 @@ await engine.forget("old API configuration", "tenant-123", "agent-456");
 ### Environment Setup
 
 1. **Required Services**:
-
    - Qdrant vector database
    - Redis for caching
    - OpenAI API access
 
 2. **Security**:
-
    - Use strong encryption keys (32+ characters)
    - Enable tenant isolation
    - Configure audit logging
@@ -324,17 +319,14 @@ The server provides health endpoints:
 ### Common Issues
 
 1. **"Cannot connect to Qdrant"**:
-
    - Verify `MEMORAI_QDRANT_URL` is correct
    - Ensure Qdrant is running: `curl http://localhost:6333/health`
 
 2. **"Redis connection failed"**:
-
    - Check `MEMORAI_REDIS_URL` configuration
    - Test Redis: `redis-cli ping`
 
 3. **"OpenAI API errors"**:
-
    - Verify `MEMORAI_OPENAI_API_KEY` is valid
    - Check API quota and billing
 

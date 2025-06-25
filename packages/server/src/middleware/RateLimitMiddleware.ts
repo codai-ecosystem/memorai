@@ -2,8 +2,8 @@
  * @fileoverview Rate limiting middleware for Memorai MCP Server
  */
 
-import type { FastifyRequest, FastifyReply } from "fastify";
-import { Logger } from "../utils/Logger.js";
+import type { FastifyRequest, FastifyReply } from 'fastify';
+import { Logger } from '../utils/Logger.js';
 
 /**
  * Rate limiting middleware to prevent abuse
@@ -23,7 +23,7 @@ export class RateLimitMiddleware {
    */
   public async checkRateLimit(
     request: FastifyRequest,
-    reply: FastifyReply,
+    reply: FastifyReply
   ): Promise<void> {
     const clientId = this.getClientId(request);
     const now = Date.now();
@@ -32,11 +32,11 @@ export class RateLimitMiddleware {
     let requests = this.requests.get(clientId) || [];
 
     // Remove old requests outside the window
-    requests = requests.filter((time) => now - time < this.windowMs);
+    requests = requests.filter(time => now - time < this.windowMs);
 
     // Check if limit exceeded
     if (requests.length >= this.maxRequests) {
-      Logger.warn("Rate limit exceeded");
+      Logger.warn('Rate limit exceeded');
 
       await this.sendRateLimitError(reply);
       return;
@@ -47,11 +47,11 @@ export class RateLimitMiddleware {
     this.requests.set(clientId, requests);
 
     // Set rate limit headers
-    reply.header("X-RateLimit-Limit", this.maxRequests);
-    reply.header("X-RateLimit-Remaining", this.maxRequests - requests.length);
+    reply.header('X-RateLimit-Limit', this.maxRequests);
+    reply.header('X-RateLimit-Remaining', this.maxRequests - requests.length);
     reply.header(
-      "X-RateLimit-Reset",
-      new Date(now + this.windowMs).toISOString(),
+      'X-RateLimit-Reset',
+      new Date(now + this.windowMs).toISOString()
     );
   }
 
@@ -71,12 +71,12 @@ export class RateLimitMiddleware {
    * Send rate limit error response
    */ private async sendRateLimitError(_reply: FastifyReply): Promise<void> {
     await _reply.code(429).send({
-      jsonrpc: "2.0",
+      jsonrpc: '2.0',
       error: {
         code: -32002, // MCPErrorCode.RATE_LIMIT_EXCEEDED
-        message: "Rate limit exceeded",
+        message: 'Rate limit exceeded',
         data: {
-          type: "rate_limit_error",
+          type: 'rate_limit_error',
           retryAfter: Math.ceil(this.windowMs / 1000),
           timestamp: new Date().toISOString(),
         },
@@ -91,9 +91,7 @@ export class RateLimitMiddleware {
     const now = Date.now();
 
     for (const [clientId, requests] of this.requests.entries()) {
-      const validRequests = requests.filter(
-        (time) => now - time < this.windowMs,
-      );
+      const validRequests = requests.filter(time => now - time < this.windowMs);
 
       if (validRequests.length === 0) {
         this.requests.delete(clientId);

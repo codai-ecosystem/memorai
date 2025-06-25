@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import { motion } from "framer-motion";
+import { motion } from 'framer-motion';
 import {
   Brain,
   Database,
@@ -13,11 +13,11 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Minus,
-} from "lucide-react";
-import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
-import { Badge } from "../ui/badge";
-import { Button } from "../ui/button";
-import { cn } from "../../lib/utils";
+} from 'lucide-react';
+import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
+import { Badge } from '../ui/badge';
+import { Button } from '../ui/button';
+import { cn } from '../../lib/utils';
 
 interface MetricCardProps {
   id: string;
@@ -26,13 +26,13 @@ interface MetricCardProps {
   change?: {
     value: number;
     period: string;
-    direction: "up" | "down" | "neutral";
+    direction: 'up' | 'down' | 'neutral';
   };
   icon: React.ComponentType<{ className?: string }>;
   description?: string;
   badge?: {
     text: string;
-    variant: "default" | "secondary" | "outline";
+    variant: 'default' | 'secondary' | 'outline';
   };
   gradient?: string;
   onClick?: () => void;
@@ -47,29 +47,29 @@ export function MetricCard({
   icon: Icon,
   description,
   badge,
-  gradient = "from-blue-500 to-purple-600",
+  gradient = 'from-blue-500 to-purple-600',
   onClick,
   className,
 }: MetricCardProps) {
-  const getChangeIcon = () : void => {
+  const getChangeIcon = (): void => {
     switch (change?.direction) {
-      case "up":
+      case 'up':
         return ArrowUpRight;
-      case "down":
+      case 'down':
         return ArrowDownRight;
       default:
         return Minus;
     }
   };
 
-  const getChangeColor = () : void => {
+  const getChangeColor = (): void => {
     switch (change?.direction) {
-      case "up":
-        return "text-green-600 dark:text-green-400";
-      case "down":
-        return "text-red-600 dark:text-red-400";
+      case 'up':
+        return 'text-green-600 dark:text-green-400';
+      case 'down':
+        return 'text-red-600 dark:text-red-400';
       default:
-        return "text-muted-foreground";
+        return 'text-muted-foreground';
     }
   };
 
@@ -83,11 +83,11 @@ export function MetricCard({
       whileHover={{ y: -2 }}
       className={className}
     >
-      {" "}
+      {' '}
       <Card
         className={cn(
-          "h-full cursor-pointer transition-all duration-200 hover:shadow-lg border-border/50",
-          onClick && "hover:border-primary/50",
+          'h-full cursor-pointer transition-all duration-200 hover:shadow-lg border-border/50',
+          onClick && 'hover:border-primary/50'
         )}
         onClick={onClick}
         data-testid={id}
@@ -96,8 +96,8 @@ export function MetricCard({
           <div className="flex items-center gap-2">
             <div
               className={cn(
-                "flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br shadow-sm",
-                gradient,
+                'flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br shadow-sm',
+                gradient
               )}
             >
               <Icon className="w-5 h-5 text-white" />
@@ -123,13 +123,13 @@ export function MetricCard({
             {change && (
               <div
                 className={cn(
-                  "flex items-center gap-1 text-xs",
-                  getChangeColor(),
+                  'flex items-center gap-1 text-xs',
+                  getChangeColor()
                 )}
               >
                 <ChangeIcon className="w-3 h-3" />
                 <span className="font-medium">
-                  {change.value > 0 ? "+" : ""}
+                  {change.value > 0 ? '+' : ''}
                   {change.value}%
                 </span>
                 <span className="text-muted-foreground">{change.period}</span>
@@ -153,92 +153,92 @@ export function OverviewMetrics({
 }: OverviewMetricsProps) {
   const metrics = [
     {
-      id: "total-memories",
-      title: "Memory Bank",
-      value: "2,847",
+      id: 'total-memories',
+      title: 'Memory Bank',
+      value: '2,847',
       change: {
         value: 12.5,
-        period: "vs last month",
-        direction: "up" as const,
+        period: 'vs last month',
+        direction: 'up' as const,
       },
       icon: Brain,
-      description: "Stored memory entries",
-      badge: { text: "Active", variant: "default" as const },
-      gradient: "from-blue-500 to-purple-600",
+      description: 'Stored memory entries',
+      badge: { text: 'Active', variant: 'default' as const },
+      gradient: 'from-blue-500 to-purple-600',
     },
     {
-      id: "memory-usage",
-      title: "Memory Usage",
-      value: "45.2 GB",
-      change: { value: 8.1, period: "vs last week", direction: "up" as const },
+      id: 'memory-usage',
+      title: 'Memory Usage',
+      value: '45.2 GB',
+      change: { value: 8.1, period: 'vs last week', direction: 'up' as const },
       icon: Database,
-      description: "Storage utilization",
-      badge: { text: "Optimal", variant: "secondary" as const },
-      gradient: "from-green-500 to-teal-600",
+      description: 'Storage utilization',
+      badge: { text: 'Optimal', variant: 'secondary' as const },
+      gradient: 'from-green-500 to-teal-600',
     },
     {
-      id: "cache-performance",
-      title: "Cache Hit Rate",
-      value: "94.7%",
-      change: { value: 1.2, period: "vs last week", direction: "up" as const },
+      id: 'cache-performance',
+      title: 'Cache Hit Rate',
+      value: '94.7%',
+      change: { value: 1.2, period: 'vs last week', direction: 'up' as const },
       icon: Database,
-      description: "Cache efficiency",
-      badge: { text: "Excellent", variant: "secondary" as const },
-      gradient: "from-emerald-500 to-teal-600",
+      description: 'Cache efficiency',
+      badge: { text: 'Excellent', variant: 'secondary' as const },
+      gradient: 'from-emerald-500 to-teal-600',
     },
     {
-      id: "optimization-status",
-      title: "Optimization Status",
-      value: "Active",
-      change: { value: 0, period: "running", direction: "neutral" as const },
+      id: 'optimization-status',
+      title: 'Optimization Status',
+      value: 'Active',
+      change: { value: 0, period: 'running', direction: 'neutral' as const },
       icon: Activity,
-      description: "System optimization",
-      badge: { text: "Running", variant: "default" as const },
-      gradient: "from-blue-500 to-cyan-600",
+      description: 'System optimization',
+      badge: { text: 'Running', variant: 'default' as const },
+      gradient: 'from-blue-500 to-cyan-600',
     },
     {
-      id: "active-agents",
-      title: "Connected Agents",
-      value: "12",
-      change: { value: 2, period: "new today", direction: "up" as const },
+      id: 'active-agents',
+      title: 'Connected Agents',
+      value: '12',
+      change: { value: 2, period: 'new today', direction: 'up' as const },
       icon: Users,
-      description: "Connected AI agents",
-      badge: { text: "Online", variant: "default" as const },
-      gradient: "from-orange-500 to-red-600",
+      description: 'Connected AI agents',
+      badge: { text: 'Online', variant: 'default' as const },
+      gradient: 'from-orange-500 to-red-600',
     },
     {
-      id: "query-performance",
-      title: "Avg Query Time",
-      value: "127ms",
+      id: 'query-performance',
+      title: 'Avg Query Time',
+      value: '127ms',
       change: {
         value: -15.2,
-        period: "vs last week",
-        direction: "down" as const,
+        period: 'vs last week',
+        direction: 'down' as const,
       },
       icon: Zap,
-      description: "Search performance",
-      badge: { text: "Fast", variant: "secondary" as const },
-      gradient: "from-yellow-500 to-orange-600",
+      description: 'Search performance',
+      badge: { text: 'Fast', variant: 'secondary' as const },
+      gradient: 'from-yellow-500 to-orange-600',
     },
     {
-      id: "memory-quality",
-      title: "Memory Quality",
-      value: "94.8%",
-      change: { value: 2.1, period: "vs last month", direction: "up" as const },
+      id: 'memory-quality',
+      title: 'Memory Quality',
+      value: '94.8%',
+      change: { value: 2.1, period: 'vs last month', direction: 'up' as const },
       icon: Shield,
-      description: "Quality score",
-      badge: { text: "Excellent", variant: "default" as const },
-      gradient: "from-purple-500 to-pink-600",
+      description: 'Quality score',
+      badge: { text: 'Excellent', variant: 'default' as const },
+      gradient: 'from-purple-500 to-pink-600',
     },
     {
-      id: "uptime",
-      title: "System Uptime",
-      value: "99.97%",
-      change: { value: 0, period: "stable", direction: "neutral" as const },
+      id: 'uptime',
+      title: 'System Uptime',
+      value: '99.97%',
+      change: { value: 0, period: 'stable', direction: 'neutral' as const },
       icon: Activity,
-      description: "Availability",
-      badge: { text: "Stable", variant: "outline" as const },
-      gradient: "from-indigo-500 to-blue-600",
+      description: 'Availability',
+      badge: { text: 'Stable', variant: 'outline' as const },
+      gradient: 'from-indigo-500 to-blue-600',
     },
   ];
 
@@ -263,11 +263,11 @@ export function OverviewMetrics({
       initial="hidden"
       animate="show"
       className={cn(
-        "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6",
-        className,
+        'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6',
+        className
       )}
     >
-      {metrics.map((metric) => (
+      {metrics.map(metric => (
         <motion.div key={metric.id} variants={item}>
           <MetricCard {...metric} onClick={() => onCardClick?.(metric.id)} />
         </motion.div>

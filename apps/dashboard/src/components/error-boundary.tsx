@@ -1,13 +1,13 @@
-"use client";
+'use client';
 
-import React, { Component, ErrorInfo, ReactNode } from "react";
-import { AlertTriangle, RefreshCw, Home, Bug } from "lucide-react";
+import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { AlertTriangle, RefreshCw, Home, Bug } from 'lucide-react';
 
 interface Props {
   children: ReactNode;
   fallback?: React.ComponentType<ErrorBoundaryFallbackProps>;
   onError?: (error: Error, errorInfo: ErrorInfo) => void;
-  level?: "page" | "component" | "critical";
+  level?: 'page' | 'component' | 'critical';
 }
 
 interface State {
@@ -21,7 +21,7 @@ export interface ErrorBoundaryFallbackProps {
   error: Error | null;
   errorInfo: ErrorInfo | null;
   resetError: () => void;
-  level: "page" | "component" | "critical";
+  level: 'page' | 'component' | 'critical';
   errorId: string | null;
 }
 
@@ -53,7 +53,7 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    const { onError, level = "component" } = this.props;
+    const { onError, level = 'component' } = this.props;
 
     // Update state with error info
     this.setState({
@@ -62,11 +62,11 @@ export class ErrorBoundary extends Component<Props, State> {
     });
 
     // Log error to console in development
-    if (process.env.NODE_ENV === "development") {
-      console.group("🚨 Error Boundary Caught Error");
-      console.error("Error:", error);
-      console.error("Error Info:", errorInfo);
-      console.error("Component Stack:", errorInfo.componentStack);
+    if (process.env.NODE_ENV === 'development') {
+      console.group('🚨 Error Boundary Caught Error');
+      console.error('Error:', error);
+      console.error('Error Info:', errorInfo);
+      console.error('Component Stack:', errorInfo.componentStack);
       console.groupEnd();
     }
 
@@ -79,7 +79,7 @@ export class ErrorBoundary extends Component<Props, State> {
     }
 
     // Auto-reset for component-level errors after delay
-    if (level === "component") {
+    if (level === 'component') {
       this.scheduleAutoReset();
     }
   }
@@ -93,7 +93,7 @@ export class ErrorBoundary extends Component<Props, State> {
   private reportError = (
     error: Error,
     errorInfo: ErrorInfo,
-    level: string,
+    level: string
   ): void => {
     // In production, this would send to error tracking service
     // like Sentry, Bugsnag, or custom logging endpoint
@@ -104,27 +104,27 @@ export class ErrorBoundary extends Component<Props, State> {
       level,
       timestamp: new Date().toISOString(),
       userAgent:
-        typeof window !== "undefined" ? window.navigator.userAgent : "SSR",
-      url: typeof window !== "undefined" ? window.location.href : "SSR",
+        typeof window !== 'undefined' ? window.navigator.userAgent : 'SSR',
+      url: typeof window !== 'undefined' ? window.location.href : 'SSR',
       errorId: this.state.errorId,
     };
 
     // Send to error tracking service
-    if (process.env.NODE_ENV === "production") {
+    if (process.env.NODE_ENV === 'production') {
       // Example: Send to monitoring service
-      fetch("/api/errors", {
-        method: "POST",
+      fetch('/api/errors', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify(errorReport),
-      }).catch((reportError) => {
-        console.error("Failed to report error:", reportError);
+      }).catch(reportError => {
+        console.error('Failed to report error:', reportError);
       });
     }
 
     // Log structured error for local development
-    console.error("Error Report:", errorReport);
+    console.error('Error Report:', errorReport);
   };
 
   private scheduleAutoReset = (): void => {
@@ -153,7 +153,7 @@ export class ErrorBoundary extends Component<Props, State> {
     const {
       children,
       fallback: CustomFallback,
-      level = "component",
+      level = 'component',
     } = this.props;
 
     if (hasError) {
@@ -193,15 +193,15 @@ function DefaultErrorFallback({
   level,
   errorId,
 }: ErrorBoundaryFallbackProps): React.ReactElement {
-  const isComponentLevel = level === "component";
-  const isCritical = level === "critical";
+  const isComponentLevel = level === 'component';
+  const isCritical = level === 'critical';
 
   return (
     <div
       className={`
         flex flex-col items-center justify-center p-8 text-center
-        ${isComponentLevel ? "min-h-[200px] bg-red-50 border border-red-200 rounded-lg" : "min-h-screen bg-red-50"}
-        ${isCritical ? "bg-red-100 border-red-300" : ""}
+        ${isComponentLevel ? 'min-h-[200px] bg-red-50 border border-red-200 rounded-lg' : 'min-h-screen bg-red-50'}
+        ${isCritical ? 'bg-red-100 border-red-300' : ''}
       `}
       data-testid="error-boundary"
       role="alert"
@@ -210,7 +210,7 @@ function DefaultErrorFallback({
       <div className="flex flex-col items-center space-y-4 max-w-md">
         {/* Error Icon */}
         <div
-          className={`p-4 rounded-full ${isCritical ? "bg-red-200" : "bg-red-100"}`}
+          className={`p-4 rounded-full ${isCritical ? 'bg-red-200' : 'bg-red-100'}`}
         >
           {isCritical ? (
             <Bug className="h-8 w-8 text-red-600" />
@@ -222,23 +222,23 @@ function DefaultErrorFallback({
         {/* Error Title */}
         <h2 className="text-xl font-semibold text-red-800">
           {isCritical
-            ? "Critical Error"
+            ? 'Critical Error'
             : isComponentLevel
-              ? "Component Error"
-              : "Application Error"}
+              ? 'Component Error'
+              : 'Application Error'}
         </h2>
 
         {/* Error Message */}
         <div className="space-y-2">
           <p className="text-red-700">
             {isCritical
-              ? "A critical error has occurred that requires immediate attention."
+              ? 'A critical error has occurred that requires immediate attention.'
               : isComponentLevel
-                ? "This component encountered an error and could not render properly."
-                : "Something went wrong. Please try again or refresh the page."}
+                ? 'This component encountered an error and could not render properly.'
+                : 'Something went wrong. Please try again or refresh the page.'}
           </p>
 
-          {process.env.NODE_ENV === "development" && error && (
+          {process.env.NODE_ENV === 'development' && error && (
             <details className="mt-4 p-4 bg-red-100 border border-red-200 rounded text-left">
               <summary className="cursor-pointer font-medium text-red-800">
                 Technical Details (Development)
@@ -269,7 +269,7 @@ function DefaultErrorFallback({
 
           {!isComponentLevel && (
             <button
-              onClick={() => (window.location.href = "/")}
+              onClick={() => (window.location.href = '/')}
               className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
               data-testid="error-boundary-home"
             >
@@ -295,7 +295,7 @@ function DefaultErrorFallback({
 export function PageErrorBoundary({
   children,
   ...props
-}: Omit<Props, "level">): React.ReactElement {
+}: Omit<Props, 'level'>): React.ReactElement {
   return (
     <ErrorBoundary level="page" {...props}>
       {children}
@@ -309,7 +309,7 @@ export function PageErrorBoundary({
 export function ComponentErrorBoundary({
   children,
   ...props
-}: Omit<Props, "level">): React.ReactElement {
+}: Omit<Props, 'level'>): React.ReactElement {
   return (
     <ErrorBoundary level="component" {...props}>
       {children}
@@ -323,7 +323,7 @@ export function ComponentErrorBoundary({
 export function CriticalErrorBoundary({
   children,
   ...props
-}: Omit<Props, "level">): React.ReactElement {
+}: Omit<Props, 'level'>): React.ReactElement {
   return (
     <ErrorBoundary level="critical" {...props}>
       {children}

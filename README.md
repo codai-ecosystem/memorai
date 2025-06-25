@@ -36,21 +36,49 @@ Enterprise-grade memory system built specifically for AI agents. Provides natura
 - Node.js 18+
 - pnpm 8+
 
-### Installation
+### ⚠️ IMPORTANT: Production Workflow
+
+**CRITICAL**: This service **MUST ONLY** use published npm packages for all operations. Local development servers and manual testing are **FORBIDDEN**.
+
+- ✅ **USE**: Published packages via MCP server in VS Code
+- ✅ **USE**: Playwright MCP for remote/automated testing  
+- ❌ **NEVER**: Local dev servers (`pnpm dev`)
+- ❌ **NEVER**: Manual testing or local package builds
+
+### Installation & Setup
 
 ```bash
-# Clone and setup
+# For package development only
 git clone https://github.com/codai-ecosystem/memorai.git
 cd memorai-mcp
 pnpm install
 
-# Start services (standardized ports)
-pnpm build:all
-pnpm start:dashboard  # Port 6366
-pnpm start:api        # Port 6367
+# ⚠️ WARNING: These commands are for package publishing ONLY
+# DO NOT use for development or testing
+pnpm build:all          # Build packages for publishing
+npm run publish-packages # Publish to npm
 
 # Run comprehensive tests
 pnpm test
+```
+
+### Production Operation
+
+All services run automatically via the **MCP server** in VS Code using published packages:
+
+1. **MCP Server**: VS Code automatically starts `@codai/memorai-mcp` from npm
+2. **Dashboard**: Served at http://localhost:6366 (via MCP server)
+3. **API Server**: Available at http://localhost:6367 (via MCP server)
+
+**Testing**: Use Playwright MCP tools for all remote/automated testing.
+
+```bash
+# The only allowed development workflow:
+# 1. Make changes to code
+# 2. Run publish script to update npm packages
+npm run publish-packages
+# 3. VS Code MCP server automatically uses updated published packages
+# 4. Test using Playwright MCP tools (remote/automated only)
 ```
 
 ### Basic Usage

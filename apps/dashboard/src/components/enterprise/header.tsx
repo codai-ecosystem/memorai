@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import {
   Search,
   Plus,
@@ -17,11 +17,11 @@ import {
   Sun,
   Moon,
   Monitor,
-} from "lucide-react";
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
-import { Badge } from "../ui/badge";
-import { cn } from "../../lib/utils";
+} from 'lucide-react';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { Badge } from '../ui/badge';
+import { cn } from '../../lib/utils';
 
 interface EnterpriseHeaderProps {
   title: string;
@@ -30,7 +30,7 @@ interface EnterpriseHeaderProps {
   onSearch?: (query: string) => void;
   onQuickAction?: (action: string) => void;
   className?: string;
-  "data-testid"?: string;
+  'data-testid'?: string;
 }
 
 export function EnterpriseHeader({
@@ -40,14 +40,14 @@ export function EnterpriseHeader({
   onSearch,
   onQuickAction,
   className,
-  "data-testid": dataTestId,
+  'data-testid': dataTestId,
 }: EnterpriseHeaderProps) {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [isSearchFocused, setIsSearchFocused] = useState(false);
-  const [theme, setTheme] = useState<"light" | "dark" | "system">("system");
+  const [theme, setTheme] = useState<'light' | 'dark' | 'system'>('system');
   const [announcements, setAnnouncements] = useState<string[]>([]);
   const [systemStatus, setSystemStatus] = useState({
-    status: "operational",
+    status: 'operational',
     memoryUsage: 45,
     activeAgents: 12,
     lastSync: new Date(),
@@ -57,12 +57,9 @@ export function EnterpriseHeader({
       // Randomly simulate errors for testing
       if (Math.random() < 0.1) {
         // 10% chance of error
-        setAnnouncements((prev) => [
-          ...prev,
-          "Failed to fetch performance data",
-        ]);
+        setAnnouncements(prev => [...prev, 'Failed to fetch performance data']);
         setTimeout(() => {
-          setAnnouncements((prev) => prev.slice(1));
+          setAnnouncements(prev => prev.slice(1));
         }, 3000);
       }
     }, 5000);
@@ -73,20 +70,20 @@ export function EnterpriseHeader({
   // Listen for cache clearing events
   useEffect(() => {
     const handleCacheCleared = (event: CustomEvent) => {
-      setAnnouncements((prev) => [...prev, event.detail.message]);
+      setAnnouncements(prev => [...prev, event.detail.message]);
       setTimeout(() => {
-        setAnnouncements((prev) => prev.slice(1));
+        setAnnouncements(prev => prev.slice(1));
       }, 3000);
     };
 
     window.addEventListener(
-      "cache-cleared",
-      handleCacheCleared as EventListener,
+      'cache-cleared',
+      handleCacheCleared as EventListener
     );
     return () =>
       window.removeEventListener(
-        "cache-cleared",
-        handleCacheCleared as EventListener,
+        'cache-cleared',
+        handleCacheCleared as EventListener
       );
   }, []);
 
@@ -97,47 +94,47 @@ export function EnterpriseHeader({
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "operational":
-        return "bg-green-500";
-      case "warning":
-        return "bg-yellow-500";
-      case "error":
-        return "bg-red-500";
+      case 'operational':
+        return 'bg-green-500';
+      case 'warning':
+        return 'bg-yellow-500';
+      case 'error':
+        return 'bg-red-500';
       default:
-        return "bg-gray-500";
+        return 'bg-gray-500';
     }
   };
 
   const toggleTheme = (): void => {
-    const themes: Array<"light" | "dark" | "system"> = [
-      "light",
-      "dark",
-      "system",
+    const themes: Array<'light' | 'dark' | 'system'> = [
+      'light',
+      'dark',
+      'system',
     ];
     const currentIndex = themes.indexOf(theme);
     const nextTheme = themes[(currentIndex + 1) % themes.length];
     setTheme(nextTheme);
 
     // Apply theme to document
-    if (nextTheme === "dark") {
-      document.documentElement.classList.add("dark");
-      document.documentElement.classList.add("contrast-more");
-    } else if (nextTheme === "light") {
-      document.documentElement.classList.remove("dark");
-      document.documentElement.classList.remove("contrast-more");
+    if (nextTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+      document.documentElement.classList.add('contrast-more');
+    } else if (nextTheme === 'light') {
+      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.remove('contrast-more');
     } else {
       // System theme - detect and apply
-      const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      document.documentElement.classList.toggle("dark", isDark);
-      document.documentElement.classList.toggle("contrast-more", isDark);
+      const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.classList.toggle('dark', isDark);
+      document.documentElement.classList.toggle('contrast-more', isDark);
     }
   };
 
   const getThemeIcon = () => {
     switch (theme) {
-      case "light":
+      case 'light':
         return Sun;
-      case "dark":
+      case 'dark':
         return Moon;
       default:
         return Monitor;
@@ -146,44 +143,44 @@ export function EnterpriseHeader({
 
   const quickActions = [
     {
-      id: "create",
-      label: "Create Memory",
+      id: 'create',
+      label: 'Create Memory',
       icon: Plus,
-      variant: "default" as const,
-      shortcut: "⌘N",
-      testId: "header-quick-action-add-memory",
+      variant: 'default' as const,
+      shortcut: '⌘N',
+      testId: 'header-quick-action-add-memory',
     },
     {
-      id: "import",
-      label: "Import Data",
+      id: 'import',
+      label: 'Import Data',
       icon: Upload,
-      variant: "outline" as const,
-      shortcut: "⌘I",
-      testId: "header-quick-action-bulk-import",
+      variant: 'outline' as const,
+      shortcut: '⌘I',
+      testId: 'header-quick-action-bulk-import',
     },
     {
-      id: "export",
-      label: "Export",
+      id: 'export',
+      label: 'Export',
       icon: Download,
-      variant: "outline" as const,
-      shortcut: "⌘E",
-      testId: "header-quick-action-export",
+      variant: 'outline' as const,
+      shortcut: '⌘E',
+      testId: 'header-quick-action-export',
     },
     {
-      id: "sync",
-      label: "AI Assist",
+      id: 'sync',
+      label: 'AI Assist',
       icon: Sparkles,
-      variant: "outline" as const,
-      shortcut: "⌘R",
-      testId: "header-quick-action-ai-assist",
+      variant: 'outline' as const,
+      shortcut: '⌘R',
+      testId: 'header-quick-action-ai-assist',
     },
   ];
 
   return (
     <header
       className={cn(
-        "sticky top-0 z-50 w-full border-b border-border/50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60",
-        className,
+        'sticky top-0 z-50 w-full border-b border-border/50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60',
+        className
       )}
       data-testid={dataTestId}
     >
@@ -191,7 +188,7 @@ export function EnterpriseHeader({
         {/* Title Section */}
         <div className="flex items-center gap-4">
           <div>
-            {" "}
+            {' '}
             <motion.h2
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -214,21 +211,21 @@ export function EnterpriseHeader({
 
           {/* Status Indicators */}
           <div className="flex items-center gap-2">
-            {" "}
+            {' '}
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-card border border-border/50">
               <div
                 className={cn(
-                  "w-2 h-2 rounded-full",
-                  getStatusColor(systemStatus.status),
+                  'w-2 h-2 rounded-full',
+                  getStatusColor(systemStatus.status)
                 )}
               />
               <span className="text-xs font-medium">
-                {systemStatus.status === "operational"
-                  ? "System Online"
+                {systemStatus.status === 'operational'
+                  ? 'System Online'
                   : systemStatus.status}
               </span>
             </div>
-            {systemStatus.status === "operational" && (
+            {systemStatus.status === 'operational' && (
               <Badge variant="outline" className="text-xs">
                 All services operational
               </Badge>
@@ -254,18 +251,18 @@ export function EnterpriseHeader({
             transition={{ duration: 0.3, delay: 0.2 }}
           >
             <form onSubmit={handleSearch} className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />{" "}
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />{' '}
               <Input
                 type="text"
                 placeholder="Search memories, agents, or insights..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={e => setSearchQuery(e.target.value)}
                 onFocus={() => setIsSearchFocused(true)}
                 onBlur={() => setIsSearchFocused(false)}
                 className={cn(
-                  "w-80 pl-10 pr-12 h-10 rounded-lg transition-all duration-200",
+                  'w-80 pl-10 pr-12 h-10 rounded-lg transition-all duration-200',
                   isSearchFocused &&
-                  "ring-2 ring-blue-500/20 border-blue-300 dark:border-blue-700",
+                    'ring-2 ring-blue-500/20 border-blue-300 dark:border-blue-700'
                 )}
                 data-testid="header-search-input"
               />
@@ -290,7 +287,7 @@ export function EnterpriseHeader({
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.3, delay: 0.3 + index * 0.05 }}
                 >
-                  {" "}
+                  {' '}
                   <Button
                     variant={action.variant}
                     size="sm"
@@ -304,7 +301,7 @@ export function EnterpriseHeader({
                   </Button>
                 </motion.div>
               );
-            })}{" "}
+            })}{' '}
           </div>
 
           {/* Theme Toggle */}
@@ -313,7 +310,7 @@ export function EnterpriseHeader({
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.3, delay: 0.6 }}
           >
-            {" "}
+            {' '}
             <Button
               variant="outline"
               size="sm"
@@ -322,7 +319,7 @@ export function EnterpriseHeader({
               title="Toggle theme"
               data-testid="theme-toggle-button"
             >
-              {React.createElement(getThemeIcon(), { className: "w-4 h-4" })}
+              {React.createElement(getThemeIcon(), { className: 'w-4 h-4' })}
             </Button>
           </motion.div>
 
@@ -339,7 +336,7 @@ export function EnterpriseHeader({
             </Button>
           </motion.div>
         </div>
-      </div>{" "}
+      </div>{' '}
       {/* Secondary Header Bar (for breadcrumbs, tabs, etc.) */}
       <div className="px-6 py-2 border-t border-border/30 bg-muted/30">
         <div className="flex items-center justify-between">
@@ -358,7 +355,7 @@ export function EnterpriseHeader({
             </span>
           </div>
         </div>
-      </div>{" "}
+      </div>{' '}
       {/* Live region for accessibility announcements */}
       <div
         aria-live="polite"

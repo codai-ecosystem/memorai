@@ -4,7 +4,10 @@
  */
 
 import { MemoryMetadata, MemoryType } from '../types/index';
-import { AIMemoryRelationship, RelationshipExtractor } from './RelationshipExtractor';
+import {
+  AIMemoryRelationship,
+  RelationshipExtractor,
+} from './RelationshipExtractor';
 import { MemoryPattern, PatternRecognitionEngine } from './PatternRecognition';
 
 export interface ConversationThread {
@@ -85,7 +88,7 @@ export class ConversationContextReconstructor {
       enableCrossSessionContext: true,
       enableEmotionalContext: true,
       enableIntentTracking: true,
-      ...config
+      ...config,
     };
 
     this.relationshipExtractor = new RelationshipExtractor();
@@ -96,22 +99,31 @@ export class ConversationContextReconstructor {
    * Reconstruct conversation context from memory fragments
    */
   async reconstructContext(
-    agentId: string, 
+    agentId: string,
     memories: MemoryMetadata[],
     userId?: string
   ): Promise<ConversationThread[]> {
-    console.log(`🔄 Reconstructing conversation context for agent ${agentId}...`);
+    console.log(
+      `🔄 Reconstructing conversation context for agent ${agentId}...`
+    );
 
     // Filter memories for this agent
     const agentMemories = memories.filter(m => m.agent_id === agentId);
-    
+
     // Group memories into conversation threads
-    const threads = await this.groupMemoriesIntoThreads(agentMemories, agentId, userId);
-    
+    const threads = await this.groupMemoriesIntoThreads(
+      agentMemories,
+      agentId,
+      userId
+    );
+
     // Analyze relationships within each thread
     for (const thread of threads) {
-      thread.relationships = await this.relationshipExtractor.extractRelationships(thread.memories);
-      thread.patterns = await this.patternEngine.analyzePatterns(thread.memories);
+      thread.relationships =
+        await this.relationshipExtractor.extractRelationships(thread.memories);
+      thread.patterns = await this.patternEngine.analyzePatterns(
+        thread.memories
+      );
     }
 
     // Reconstruct context for each thread
@@ -135,18 +147,21 @@ export class ConversationContextReconstructor {
    * Group memories into logical conversation threads
    */
   private async groupMemoriesIntoThreads(
-    memories: MemoryMetadata[], 
-    agentId: string, 
+    memories: MemoryMetadata[],
+    agentId: string,
     userId?: string
   ): Promise<ConversationThread[]> {
     const threads: ConversationThread[] = [];
-    const sortedMemories = [...memories].sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+    const sortedMemories = [...memories].sort(
+      (a, b) => a.createdAt.getTime() - b.createdAt.getTime()
+    );
 
     let currentThread: ConversationThread | null = null;
     const maxGapHours = 2; // Maximum gap between memories in same thread
 
     for (const memory of sortedMemories) {
-      const shouldStartNewThread = !currentThread || 
+      const shouldStartNewThread =
+        !currentThread ||
         this.shouldStartNewThread(currentThread, memory, maxGapHours);
 
       if (shouldStartNewThread) {
@@ -170,14 +185,16 @@ export class ConversationContextReconstructor {
           metadata: {
             complexity: 0,
             continuity: 0,
-            tags: [...memory.tags]
-          }
+            tags: [...memory.tags],
+          },
         };
       } else {
         // Add to current thread
         currentThread!.memories.push(memory);
         currentThread!.endTime = memory.createdAt;
-        currentThread!.metadata.tags = [...new Set([...currentThread!.metadata.tags, ...memory.tags])];
+        currentThread!.metadata.tags = [
+          ...new Set([...currentThread!.metadata.tags, ...memory.tags]),
+        ];
       }
     }
 
@@ -189,9 +206,10 @@ export class ConversationContextReconstructor {
     // Determine which threads are still active
     const now = new Date();
     const activeThreshold = this.config.maxThreadAge * 60 * 60 * 1000;
-    
+
     for (const thread of threads) {
-      thread.isActive = (now.getTime() - thread.endTime.getTime()) < activeThreshold;
+      thread.isActive =
+        now.getTime() - thread.endTime.getTime() < activeThreshold;
     }
 
     return threads;
@@ -201,20 +219,24 @@ export class ConversationContextReconstructor {
    * Determine if a new thread should start
    */
   private shouldStartNewThread(
-    currentThread: ConversationThread, 
-    memory: MemoryMetadata, 
+    currentThread: ConversationThread,
+    memory: MemoryMetadata,
     maxGapHours: number
   ): boolean {
     // Check time gap
-    const timeDiff = memory.createdAt.getTime() - currentThread.endTime.getTime();
+    const timeDiff =
+      memory.createdAt.getTime() - currentThread.endTime.getTime();
     const hoursDiff = timeDiff / (1000 * 60 * 60);
-    
+
     if (hoursDiff > maxGapHours) {
       return true;
     }
 
     // Check topic similarity
-    const topicSimilarity = this.calculateTopicSimilarity(currentThread, memory);
+    const topicSimilarity = this.calculateTopicSimilarity(
+      currentThread,
+      memory
+    );
     if (topicSimilarity < this.config.similarityThreshold) {
       return true;
     }
@@ -230,20 +252,25 @@ export class ConversationContextReconstructor {
   /**
    * Calculate topic similarity between thread and new memory
    */
-  private calculateTopicSimilarity(thread: ConversationThread, memory: MemoryMetadata): number {
+  private calculateTopicSimilarity(
+    thread: ConversationThread,
+    memory: MemoryMetadata
+  ): number {
     const threadTags = new Set(thread.metadata.tags);
     const memoryTags = new Set(memory.tags);
-    
+
     const intersection = [...threadTags].filter(tag => memoryTags.has(tag));
     const union = [...new Set([...threadTags, ...memoryTags])];
-    
+
     return union.length > 0 ? intersection.length / union.length : 0;
   }
 
   /**
    * Build conversation context for a thread
    */
-  private async buildConversationContext(thread: ConversationThread): Promise<ConversationContext> {
+  private async buildConversationContext(
+    thread: ConversationThread
+  ): Promise<ConversationContext> {
     const context: ConversationContext = {
       currentTopic: '',
       topicHistory: [],
@@ -251,10 +278,10 @@ export class ConversationContextReconstructor {
       intentions: [],
       emotionalContext: {
         currentMood: 'neutral',
-        moodHistory: []
+        moodHistory: [],
       },
       preferences: {},
-      previousSessions: []
+      previousSessions: [],
     };
 
     // Extract current topic from most recent memories
@@ -274,7 +301,9 @@ export class ConversationContextReconstructor {
 
     // Build emotional context if enabled
     if (this.config.enableEmotionalContext) {
-      context.emotionalContext = await this.buildEmotionalContext(thread.memories);
+      context.emotionalContext = await this.buildEmotionalContext(
+        thread.memories
+      );
     }
 
     // Extract preferences
@@ -288,12 +317,12 @@ export class ConversationContextReconstructor {
    */
   private extractDominantTopic(memories: MemoryMetadata[]): string {
     const topicCounts = new Map<string, number>();
-    
+
     for (const memory of memories) {
       for (const tag of memory.tags) {
         topicCounts.set(tag, (topicCounts.get(tag) || 0) + 1);
       }
-      
+
       // Also extract topic from content (simplified)
       const words = memory.content.toLowerCase().split(/\W+/);
       for (const word of words) {
@@ -303,8 +332,9 @@ export class ConversationContextReconstructor {
       }
     }
 
-    const sortedTopics = Array.from(topicCounts.entries())
-      .sort((a, b) => b[1] - a[1]);
+    const sortedTopics = Array.from(topicCounts.entries()).sort(
+      (a, b) => b[1] - a[1]
+    );
 
     return sortedTopics[0]?.[0] || 'general';
   }
@@ -312,11 +342,13 @@ export class ConversationContextReconstructor {
   /**
    * Build topic history with confidence scores
    */
-  private async buildTopicHistory(memories: MemoryMetadata[]): Promise<Array<{
-    topic: string;
-    timestamp: Date;
-    confidence: number;
-  }>> {
+  private async buildTopicHistory(memories: MemoryMetadata[]): Promise<
+    Array<{
+      topic: string;
+      timestamp: Date;
+      confidence: number;
+    }>
+  > {
     const topicHistory: Array<{
       topic: string;
       timestamp: Date;
@@ -329,11 +361,11 @@ export class ConversationContextReconstructor {
     for (const window of timeWindows) {
       const topic = this.extractDominantTopic(window.memories);
       const confidence = this.calculateTopicConfidence(window.memories, topic);
-      
+
       topicHistory.push({
         topic,
         timestamp: window.startTime,
-        confidence
+        confidence,
       });
     }
 
@@ -343,7 +375,10 @@ export class ConversationContextReconstructor {
   /**
    * Group memories by time windows
    */
-  private groupMemoriesByTimeWindows(memories: MemoryMetadata[], windowMinutes: number): Array<{
+  private groupMemoriesByTimeWindows(
+    memories: MemoryMetadata[],
+    windowMinutes: number
+  ): Array<{
     startTime: Date;
     endTime: Date;
     memories: MemoryMetadata[];
@@ -354,15 +389,17 @@ export class ConversationContextReconstructor {
       memories: MemoryMetadata[];
     }> = [];
 
-    const sortedMemories = [...memories].sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
-    
+    const sortedMemories = [...memories].sort(
+      (a, b) => a.createdAt.getTime() - b.createdAt.getTime()
+    );
+
     if (sortedMemories.length === 0) return windows;
 
     const windowMs = windowMinutes * 60 * 1000;
     let currentWindow = {
       startTime: sortedMemories[0].createdAt,
       endTime: new Date(sortedMemories[0].createdAt.getTime() + windowMs),
-      memories: [] as MemoryMetadata[]
+      memories: [] as MemoryMetadata[],
     };
 
     for (const memory of sortedMemories) {
@@ -371,11 +408,11 @@ export class ConversationContextReconstructor {
         if (currentWindow.memories.length > 0) {
           windows.push(currentWindow);
         }
-        
+
         currentWindow = {
           startTime: memory.createdAt,
           endTime: new Date(memory.createdAt.getTime() + windowMs),
-          memories: [memory]
+          memories: [memory],
         };
       } else {
         currentWindow.memories.push(memory);
@@ -393,12 +430,17 @@ export class ConversationContextReconstructor {
   /**
    * Calculate confidence score for a topic
    */
-  private calculateTopicConfidence(memories: MemoryMetadata[], topic: string): number {
+  private calculateTopicConfidence(
+    memories: MemoryMetadata[],
+    topic: string
+  ): number {
     let relevantMemories = 0;
-    
+
     for (const memory of memories) {
-      if (memory.tags.includes(topic) || 
-          memory.content.toLowerCase().includes(topic.toLowerCase())) {
+      if (
+        memory.tags.includes(topic) ||
+        memory.content.toLowerCase().includes(topic.toLowerCase())
+      ) {
         relevantMemories++;
       }
     }
@@ -409,20 +451,25 @@ export class ConversationContextReconstructor {
   /**
    * Extract entities from memories
    */
-  private async extractEntities(memories: MemoryMetadata[]): Promise<Array<{
-    name: string;
-    type: string;
-    mentions: number;
-    lastMention: Date;
-    importance: number;
-  }>> {
-    const entities = new Map<string, {
+  private async extractEntities(memories: MemoryMetadata[]): Promise<
+    Array<{
       name: string;
       type: string;
       mentions: number;
       lastMention: Date;
       importance: number;
-    }>();
+    }>
+  > {
+    const entities = new Map<
+      string,
+      {
+        name: string;
+        type: string;
+        mentions: number;
+        lastMention: Date;
+        importance: number;
+      }
+    >();
 
     for (const memory of memories) {
       // Extract entities from tags
@@ -432,14 +479,17 @@ export class ConversationContextReconstructor {
           const entity = entities.get(key)!;
           entity.mentions++;
           entity.lastMention = memory.createdAt;
-          entity.importance = Math.min(1, entity.importance + memory.importance * 0.1);
+          entity.importance = Math.min(
+            1,
+            entity.importance + memory.importance * 0.1
+          );
         } else {
           entities.set(key, {
             name: tag,
             type: this.classifyEntityType(tag),
             mentions: 1,
             lastMention: memory.createdAt,
-            importance: memory.importance
+            importance: memory.importance,
           });
         }
       }
@@ -457,7 +507,7 @@ export class ConversationContextReconstructor {
               type: 'unknown',
               mentions: 1,
               lastMention: memory.createdAt,
-              importance: 0.3
+              importance: 0.3,
             });
           }
         }
@@ -474,29 +524,43 @@ export class ConversationContextReconstructor {
    */
   private classifyEntityType(entity: string): string {
     const lowerEntity = entity.toLowerCase();
-    
-    if (['person', 'user', 'agent', 'assistant'].some(type => lowerEntity.includes(type))) {
+
+    if (
+      ['person', 'user', 'agent', 'assistant'].some(type =>
+        lowerEntity.includes(type)
+      )
+    ) {
       return 'person';
     }
-    if (['project', 'task', 'work', 'job'].some(type => lowerEntity.includes(type))) {
+    if (
+      ['project', 'task', 'work', 'job'].some(type =>
+        lowerEntity.includes(type)
+      )
+    ) {
       return 'project';
     }
-    if (['tech', 'code', 'programming', 'software'].some(type => lowerEntity.includes(type))) {
+    if (
+      ['tech', 'code', 'programming', 'software'].some(type =>
+        lowerEntity.includes(type)
+      )
+    ) {
       return 'technology';
     }
-    
+
     return 'concept';
   }
 
   /**
    * Extract intentions from memories
    */
-  private async extractIntentions(memories: MemoryMetadata[]): Promise<Array<{
-    intent: string;
-    confidence: number;
-    fulfilled: boolean;
-    timestamp: Date;
-  }>> {
+  private async extractIntentions(memories: MemoryMetadata[]): Promise<
+    Array<{
+      intent: string;
+      confidence: number;
+      fulfilled: boolean;
+      timestamp: Date;
+    }>
+  > {
     const intentions: Array<{
       intent: string;
       confidence: number;
@@ -507,25 +571,28 @@ export class ConversationContextReconstructor {
     for (const memory of memories) {
       // Simple intent extraction based on keywords
       const intentKeywords = {
-        'learn': ['learn', 'understand', 'explain', 'teach', 'show'],
-        'create': ['create', 'build', 'make', 'generate', 'develop'],
-        'solve': ['solve', 'fix', 'debug', 'resolve', 'troubleshoot'],
-        'find': ['find', 'search', 'locate', 'discover', 'retrieve'],
-        'plan': ['plan', 'schedule', 'organize', 'prepare', 'arrange']
+        learn: ['learn', 'understand', 'explain', 'teach', 'show'],
+        create: ['create', 'build', 'make', 'generate', 'develop'],
+        solve: ['solve', 'fix', 'debug', 'resolve', 'troubleshoot'],
+        find: ['find', 'search', 'locate', 'discover', 'retrieve'],
+        plan: ['plan', 'schedule', 'organize', 'prepare', 'arrange'],
       };
 
       const content = memory.content.toLowerCase();
-      
+
       for (const [intent, keywords] of Object.entries(intentKeywords)) {
         const matches = keywords.filter(keyword => content.includes(keyword));
         if (matches.length > 0) {
-          const confidence = Math.min(1, matches.length / keywords.length + 0.3);
-          
+          const confidence = Math.min(
+            1,
+            matches.length / keywords.length + 0.3
+          );
+
           intentions.push({
             intent,
             confidence,
             fulfilled: this.isIntentFulfilled(intent, memory, memories),
-            timestamp: memory.createdAt
+            timestamp: memory.createdAt,
           });
         }
       }
@@ -537,12 +604,24 @@ export class ConversationContextReconstructor {
   /**
    * Determine if an intent was fulfilled
    */
-  private isIntentFulfilled(intent: string, memory: MemoryMetadata, allMemories: MemoryMetadata[]): boolean {
+  private isIntentFulfilled(
+    intent: string,
+    memory: MemoryMetadata,
+    allMemories: MemoryMetadata[]
+  ): boolean {
     // Simple heuristic: check if subsequent memories contain fulfillment indicators
-    const laterMemories = allMemories.filter(m => m.createdAt > memory.createdAt);
-    const fulfillmentWords = ['done', 'completed', 'finished', 'resolved', 'achieved'];
-    
-    return laterMemories.some(m => 
+    const laterMemories = allMemories.filter(
+      m => m.createdAt > memory.createdAt
+    );
+    const fulfillmentWords = [
+      'done',
+      'completed',
+      'finished',
+      'resolved',
+      'achieved',
+    ];
+
+    return laterMemories.some(m =>
       fulfillmentWords.some(word => m.content.toLowerCase().includes(word))
     );
   }
@@ -571,12 +650,14 @@ export class ConversationContextReconstructor {
       }
     }
 
-    const currentMood = moodHistory.length > 0 ? 
-      moodHistory[moodHistory.length - 1].mood : 'neutral';
+    const currentMood =
+      moodHistory.length > 0
+        ? moodHistory[moodHistory.length - 1].mood
+        : 'neutral';
 
     return {
       currentMood,
-      moodHistory
+      moodHistory,
     };
   }
 
@@ -589,22 +670,40 @@ export class ConversationContextReconstructor {
     intensity: number;
   } | null {
     const content = memory.content.toLowerCase();
-    
+
     const moodIndicators = {
-      'positive': ['happy', 'excited', 'great', 'awesome', 'excellent', 'love', 'wonderful'],
-      'negative': ['sad', 'angry', 'frustrated', 'upset', 'disappointed', 'terrible', 'hate'],
-      'curious': ['wonder', 'interesting', 'curious', 'explore', 'discover'],
-      'focused': ['concentrate', 'focus', 'work', 'task', 'goal', 'objective'],
-      'confused': ['confused', 'unclear', 'don\'t understand', 'puzzled', 'lost']
+      positive: [
+        'happy',
+        'excited',
+        'great',
+        'awesome',
+        'excellent',
+        'love',
+        'wonderful',
+      ],
+      negative: [
+        'sad',
+        'angry',
+        'frustrated',
+        'upset',
+        'disappointed',
+        'terrible',
+        'hate',
+      ],
+      curious: ['wonder', 'interesting', 'curious', 'explore', 'discover'],
+      focused: ['concentrate', 'focus', 'work', 'task', 'goal', 'objective'],
+      confused: ['confused', 'unclear', "don't understand", 'puzzled', 'lost'],
     };
 
     for (const [mood, indicators] of Object.entries(moodIndicators)) {
-      const matches = indicators.filter(indicator => content.includes(indicator));
+      const matches = indicators.filter(indicator =>
+        content.includes(indicator)
+      );
       if (matches.length > 0) {
         return {
           mood,
           timestamp: memory.createdAt,
-          intensity: Math.min(1, matches.length / indicators.length + 0.5)
+          intensity: Math.min(1, matches.length / indicators.length + 0.5),
         };
       }
     }
@@ -615,7 +714,9 @@ export class ConversationContextReconstructor {
   /**
    * Extract preferences from memories
    */
-  private async extractPreferences(memories: MemoryMetadata[]): Promise<Record<string, any>> {
+  private async extractPreferences(
+    memories: MemoryMetadata[]
+  ): Promise<Record<string, any>> {
     const preferences: Record<string, any> = {};
 
     for (const memory of memories) {
@@ -635,7 +736,9 @@ export class ConversationContextReconstructor {
   /**
    * Link threads across sessions
    */
-  private async linkCrossSessionThreads(threads: ConversationThread[]): Promise<void> {
+  private async linkCrossSessionThreads(
+    threads: ConversationThread[]
+  ): Promise<void> {
     for (const thread of threads) {
       const relatedThreads = this.findRelatedThreads(thread, threads);
       thread.context.previousSessions = relatedThreads.map(t => t.id);
@@ -645,7 +748,10 @@ export class ConversationContextReconstructor {
   /**
    * Find related threads based on similarity
    */
-  private findRelatedThreads(thread: ConversationThread, allThreads: ConversationThread[]): ConversationThread[] {
+  private findRelatedThreads(
+    thread: ConversationThread,
+    allThreads: ConversationThread[]
+  ): ConversationThread[] {
     const related: ConversationThread[] = [];
 
     for (const otherThread of allThreads) {
@@ -663,19 +769,23 @@ export class ConversationContextReconstructor {
   /**
    * Calculate similarity between threads
    */
-  private calculateThreadSimilarity(thread1: ConversationThread, thread2: ConversationThread): number {
+  private calculateThreadSimilarity(
+    thread1: ConversationThread,
+    thread2: ConversationThread
+  ): number {
     const tags1 = new Set(thread1.metadata.tags);
     const tags2 = new Set(thread2.metadata.tags);
-    
+
     const intersection = [...tags1].filter(tag => tags2.has(tag));
     const union = [...new Set([...tags1, ...tags2])];
-    
-    const tagSimilarity = union.length > 0 ? intersection.length / union.length : 0;
-    
+
+    const tagSimilarity =
+      union.length > 0 ? intersection.length / union.length : 0;
+
     // Factor in agent similarity
     const agentSimilarity = thread1.agentId === thread2.agentId ? 1 : 0;
-    
-    return (tagSimilarity * 0.7) + (agentSimilarity * 0.3);
+
+    return tagSimilarity * 0.7 + agentSimilarity * 0.3;
   }
 
   /**
@@ -689,10 +799,10 @@ export class ConversationContextReconstructor {
       intentions: [],
       emotionalContext: {
         currentMood: 'neutral',
-        moodHistory: []
+        moodHistory: [],
       },
       preferences: {},
-      previousSessions: []
+      previousSessions: [],
     };
   }
 
@@ -727,9 +837,11 @@ export class ConversationContextReconstructor {
    * Get conversation thread by ID
    */
   getThread(threadId: string): ConversationThread | null {
-    return this.activeThreads.get(threadId) || 
-           this.threadHistory.find(t => t.id === threadId) || 
-           null;
+    return (
+      this.activeThreads.get(threadId) ||
+      this.threadHistory.find(t => t.id === threadId) ||
+      null
+    );
   }
 
   /**
@@ -751,7 +863,8 @@ export class ConversationContextReconstructor {
       .slice(0, 5)
       .map(t => t.topic);
 
-    const summary = `Conversation thread with ${thread.memories.length} memories over ${Math.round(duration / (1000 * 60))} minutes. ` +
+    const summary =
+      `Conversation thread with ${thread.memories.length} memories over ${Math.round(duration / (1000 * 60))} minutes. ` +
       `Main topics: ${keyTopics.join(', ')}. Current mood: ${thread.context.emotionalContext.currentMood}.`;
 
     return {
@@ -759,7 +872,7 @@ export class ConversationContextReconstructor {
       keyTopics,
       duration,
       memoryCount: thread.memories.length,
-      continuityScore: thread.metadata.continuity
+      continuityScore: thread.metadata.continuity,
     };
   }
 }

@@ -1,9 +1,16 @@
 {
   "name": "@codai/memorai-api",
-  "version": "1.0.0",
-  "private": true,
+  "version": "1.0.2",
   "description": "REST API server for Memorai web interface",
   "main": "dist/index.js",
+  "bin": {
+    "memorai-api": "./scripts/start.js"
+  },
+  "files": [
+    "dist",
+    "scripts",
+    "package.json"
+  ],
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
@@ -14,7 +21,7 @@
     "test:coverage": "vitest --coverage"
   },
   "dependencies": {
-    "@codai/memorai-core": "workspace:*",
+    "@codai/memorai-core": "^1.0.11",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",

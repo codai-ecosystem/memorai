@@ -17,13 +17,13 @@
 - **Solution:** Updated content paths to include all relevant directories:
   ```typescript
   content: [
-    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/lib/**/*.{js,ts,jsx,tsx}",
-    "./src/stores/**/*.{js,ts,jsx,tsx}",
-    "./public/**/*.{html,js}",
-    "./backup/**/*.{html,js}",
+    './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/components/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/app/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/lib/**/*.{js,ts,jsx,tsx}',
+    './src/stores/**/*.{js,ts,jsx,tsx}',
+    './public/**/*.{html,js}',
+    './backup/**/*.{html,js}',
   ];
   ```
 - **Result:** Dashboard now running perfectly at http://localhost:6366 with all styles applied

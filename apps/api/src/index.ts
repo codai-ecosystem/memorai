@@ -15,6 +15,7 @@ import { createServer } from 'http';
 import { Server as SocketIOServer } from 'socket.io';
 import { errorHandler } from './middleware/errorHandler';
 import { configRouter } from './routes/config';
+import { graphRouter } from './routes/graph';
 import { memoryRouter } from './routes/memory';
 import { statsRouter } from './routes/stats';
 import { setupWebSocket } from './services/websocket';
@@ -124,6 +125,7 @@ app.get('/health', (_req: Request, res: Response) => {
 
 // API routes
 app.use('/api/memory', memoryRouter);
+app.use('/api/graph', graphRouter);
 app.use('/api/config', configRouter);
 app.use('/api/stats', statsRouter);
 

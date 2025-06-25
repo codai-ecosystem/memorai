@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse } from 'next/server';
 
 export async function POST() {
   try {
@@ -16,14 +16,13 @@ export async function POST() {
     };
 
     // Simulate processing time
-    await new Promise((resolve) => setTimeout(resolve, 3000));
+    await new Promise(resolve => setTimeout(resolve, 3000));
 
     return NextResponse.json(optimizationResult);
   } catch (error) {
-    if (process.env.NODE_ENV === "development")
-      {
-        console.error("Optimization failed:", error);
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Optimization failed:', error);
     }
-    return NextResponse.json({ error: "Optimization failed" }, { status: 500 });
+    return NextResponse.json({ error: 'Optimization failed' }, { status: 500 });
   }
 }

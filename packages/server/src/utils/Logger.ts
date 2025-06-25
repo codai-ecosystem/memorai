@@ -2,8 +2,8 @@
  * @fileoverview Logging utility for Memorai MCP Server
  */
 
-import winston from "winston";
-import { ServerConfig } from "../config/ServerConfig.js";
+import winston from 'winston';
+import { ServerConfig } from '../config/ServerConfig.js';
 
 /**
  * Centralized logging for the server
@@ -27,7 +27,7 @@ export class Logger {
       winston.format.errors({ stack: true }),
     ];
 
-    if (format === "json") {
+    if (format === 'json') {
       formats.push(winston.format.json());
     } else {
       formats.push(winston.format.colorize(), winston.format.simple());
@@ -44,8 +44,8 @@ export class Logger {
       format: winston.format.combine(...formats),
       transports,
       defaultMeta: {
-        service: "memorai-mcp",
-        version: process.env.npm_package_version || "0.1.0",
+        service: 'memorai-mcp',
+        version: process.env.npm_package_version || '0.1.0',
       },
     });
   }

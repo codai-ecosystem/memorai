@@ -5,12 +5,12 @@
  * Hyper-optimized for maximum performance
  */
 
-import { Server } from "@modelcontextprotocol/sdk/server/index.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { Server } from '@modelcontextprotocol/sdk/server/index.js';
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
-} from "@modelcontextprotocol/sdk/types.js";
+} from '@modelcontextprotocol/sdk/types.js';
 
 // Hyper-optimized cache entry
 interface HyperCacheEntry {
@@ -54,7 +54,7 @@ class HyperOptimizedMemoryEngine {
   }
 
   private key(agent: string, op: string, params: unknown): string {
-    return `${agent}:${op}:${typeof params === "string" ? params : JSON.stringify(params)}`;
+    return `${agent}:${op}:${typeof params === 'string' ? params : JSON.stringify(params)}`;
   }
 
   private ultraGC(): void {
@@ -66,7 +66,7 @@ class HyperOptimizedMemoryEngine {
     // LFU cleanup if oversized
     if (this.cache.size > this.MAX_CACHE) {
       const sorted = Array.from(this.cache.entries()).sort(
-        (a, b) => a[1].hits - b[1].hits,
+        (a, b) => a[1].hits - b[1].hits
       );
       const toDelete = this.cache.size - this.MAX_CACHE;
       for (let i = 0; i < toDelete; i++) {
@@ -84,11 +84,11 @@ class HyperOptimizedMemoryEngine {
 
   private preloadCache(): void {
     // Preload common queries for instant response
-    const common = ["status", "context", "recent", "plan", "task"];
+    const common = ['status', 'context', 'recent', 'plan', 'task'];
     const now = Date.now();
 
-    common.forEach((q) => {
-      this.cache.set(this.key("system", "recall", q), {
+    common.forEach(q => {
+      this.cache.set(this.key('system', 'recall', q), {
         data: [{ id: `pre_${q}`, content: `Preloaded ${q}`, relevance: 0.9 }],
         timestamp: now,
         hits: 1,
@@ -123,8 +123,8 @@ class HyperOptimizedMemoryEngine {
     // Instant cache (no real backend for demo)
     const cacheKey = this.key(
       params.agentId,
-      "remember",
-      params.content.substr(0, 50),
+      'remember',
+      params.content.substr(0, 50)
     );
     this.cache.set(cacheKey, {
       data: { id, success: true },
@@ -139,7 +139,7 @@ class HyperOptimizedMemoryEngine {
 
   async recall(agent: string, query: string, limit = 10): Promise<unknown[]> {
     const start = Date.now();
-    const cacheKey = this.key(agent, "recall", `${query}_${limit}`);
+    const cacheKey = this.key(agent, 'recall', `${query}_${limit}`);
 
     // Lightning cache lookup
     const cached = this.cache.get(cacheKey);
@@ -175,7 +175,7 @@ class HyperOptimizedMemoryEngine {
 
   async context(agent: string, size = 5): Promise<unknown> {
     const start = Date.now();
-    const cacheKey = this.key(agent, "context", size);
+    const cacheKey = this.key(agent, 'context', size);
 
     // Ultra-fast cache check
     const cached = this.cache.get(cacheKey);
@@ -188,7 +188,7 @@ class HyperOptimizedMemoryEngine {
     const result = {
       context: `Hyper-fast context for ${agent}`,
       memories: [],
-      summary: "Ultra-optimized context",
+      summary: 'Ultra-optimized context',
     };
 
     // Short TTL for context (5s)
@@ -234,68 +234,68 @@ const hyperEngine = new HyperOptimizedMemoryEngine();
 
 // Create hyper-optimized server
 const server = new Server(
-  { name: "memorai-hyper", version: "3.0.0" },
-  { capabilities: { tools: {} } },
+  { name: 'memorai-hyper', version: '3.0.0' },
+  { capabilities: { tools: {} } }
 );
 
 // Register tools
 server.setRequestHandler(ListToolsRequestSchema, async () => ({
   tools: [
     {
-      name: "remember",
-      description: "Hyper-fast memory storage",
+      name: 'remember',
+      description: 'Hyper-fast memory storage',
       inputSchema: {
-        type: "object",
+        type: 'object',
         properties: {
-          agentId: { type: "string" },
-          content: { type: "string" },
-          metadata: { type: "object" },
+          agentId: { type: 'string' },
+          content: { type: 'string' },
+          metadata: { type: 'object' },
         },
-        required: ["agentId", "content"],
+        required: ['agentId', 'content'],
       },
     },
     {
-      name: "recall",
-      description: "Hyper-fast memory search",
+      name: 'recall',
+      description: 'Hyper-fast memory search',
       inputSchema: {
-        type: "object",
+        type: 'object',
         properties: {
-          agentId: { type: "string" },
-          query: { type: "string" },
-          limit: { type: "number" },
+          agentId: { type: 'string' },
+          query: { type: 'string' },
+          limit: { type: 'number' },
         },
-        required: ["agentId", "query"],
+        required: ['agentId', 'query'],
       },
     },
     {
-      name: "context",
-      description: "Hyper-fast context retrieval",
+      name: 'context',
+      description: 'Hyper-fast context retrieval',
       inputSchema: {
-        type: "object",
+        type: 'object',
         properties: {
-          agentId: { type: "string" },
-          contextSize: { type: "number" },
+          agentId: { type: 'string' },
+          contextSize: { type: 'number' },
         },
-        required: ["agentId"],
+        required: ['agentId'],
       },
     },
     {
-      name: "forget",
-      description: "Hyper-fast memory deletion",
+      name: 'forget',
+      description: 'Hyper-fast memory deletion',
       inputSchema: {
-        type: "object",
+        type: 'object',
         properties: {
-          agentId: { type: "string" },
-          memoryId: { type: "string" },
+          agentId: { type: 'string' },
+          memoryId: { type: 'string' },
         },
-        required: ["agentId", "memoryId"],
+        required: ['agentId', 'memoryId'],
       },
     },
   ],
 }));
 
 // Hyper-fast request handler with proper typing
-server.setRequestHandler(CallToolRequestSchema, async (request) => {
+server.setRequestHandler(CallToolRequestSchema, async request => {
   const { name, arguments: args } = request.params;
   const startTime = Date.now();
 
@@ -303,11 +303,11 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     let result: any;
 
     if (!args) {
-      throw new Error("No arguments provided");
+      throw new Error('No arguments provided');
     }
 
     switch (name) {
-      case "remember": {
+      case 'remember': {
         const { agentId, content, metadata } = args as {
           agentId: string;
           content: string;
@@ -318,11 +318,11 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           content,
           metadata,
         });
-        result = { success: true, memoryId, message: "Hyper-fast storage" };
+        result = { success: true, memoryId, message: 'Hyper-fast storage' };
         break;
       }
 
-      case "recall": {
+      case 'recall': {
         const { agentId, query, limit } = args as {
           agentId: string;
           query: string;
@@ -333,7 +333,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         break;
       }
 
-      case "context": {
+      case 'context': {
         const { agentId, contextSize } = args as {
           agentId: string;
           contextSize?: number;
@@ -343,13 +343,13 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         break;
       }
 
-      case "forget": {
+      case 'forget': {
         const { agentId, memoryId } = args as {
           agentId: string;
           memoryId: string;
         };
         const deleted = await hyperEngine.forget(agentId, memoryId);
-        result = { success: deleted, message: "Hyper-fast deletion" };
+        result = { success: deleted, message: 'Hyper-fast deletion' };
         break;
       }
 
@@ -360,7 +360,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     return {
       content: [
         {
-          type: "text",
+          type: 'text',
           text: JSON.stringify({
             ...result,
             performance: {
@@ -375,10 +375,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     return {
       content: [
         {
-          type: "text",
+          type: 'text',
           text: JSON.stringify({
             success: false,
-            error: error instanceof Error ? error.message : "Unknown error",
+            error: error instanceof Error ? error.message : 'Unknown error',
             performance: {
               responseTime: `${Date.now() - startTime}ms`,
               metrics: hyperEngine.getMetrics(),
@@ -399,7 +399,7 @@ async function main() {
 }
 
 if (require.main === module) {
-  main().catch((_error) => {
+  main().catch(_error => {
     // Console statement removed for production
     process.exit(1);
   });

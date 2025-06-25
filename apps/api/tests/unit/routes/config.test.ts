@@ -1,12 +1,12 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import request from "supertest";
-import express from "express";
-import { configRouter } from "../../../src/routes/config";
-import { errorHandler } from "../../../src/middleware/errorHandler";
-import { createMockMemoryEngine } from "../../helpers/testHelpers";
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import request from 'supertest';
+import express from 'express';
+import { configRouter } from '../../../src/routes/config';
+import { errorHandler } from '../../../src/middleware/errorHandler';
+import { createMockMemoryEngine } from '../../helpers/testHelpers';
 
 // Mock logger
-vi.mock("../../../src/utils/logger", () => ({
+vi.mock('../../../src/utils/logger', () => ({
   logger: {
     error: vi.fn(),
     info: vi.fn(),
@@ -15,7 +15,7 @@ vi.mock("../../../src/utils/logger", () => ({
   },
 }));
 
-describe("Config Routes", () => {
+describe('Config Routes', () => {
   let app: express.Application;
   let mockMemoryEngine: any;
   beforeEach(() => {
@@ -30,15 +30,15 @@ describe("Config Routes", () => {
       next();
     });
 
-    app.use("/api/config", configRouter);
+    app.use('/api/config', configRouter);
 
     // Add error handler middleware
     app.use(errorHandler);
   });
 
-  describe("GET /", () => {
-    it("should return current configuration", async () => {
-      const response = await request(app).get("/api/config").expect(200);
+  describe('GET /', () => {
+    it('should return current configuration', async () => {
+      const response = await request(app).get('/api/config').expect(200);
 
       expect(response.body.success).toBe(true);
       expect(response.body.config).toBeDefined();
@@ -47,17 +47,17 @@ describe("Config Routes", () => {
       expect(response.body.config.features).toBeDefined();
     });
 
-    it("should include tier information", async () => {
-      const response = await request(app).get("/api/config").expect(200);
+    it('should include tier information', async () => {
+      const response = await request(app).get('/api/config').expect(200);
 
       const { config } = response.body;
-      expect(config.tier.level).toBe("basic");
+      expect(config.tier.level).toBe('basic');
       expect(config.tier.capabilities).toBeDefined();
       expect(config.tier.message).toBeDefined();
     });
 
-    it("should include environment information", async () => {
-      const response = await request(app).get("/api/config").expect(200);
+    it('should include environment information', async () => {
+      const response = await request(app).get('/api/config').expect(200);
 
       const { environment } = response.body.config;
       expect(environment.hasOpenAIKey).toBeDefined();
@@ -67,8 +67,8 @@ describe("Config Routes", () => {
       expect(environment.cachePath).toBeDefined();
     });
 
-    it("should include feature capabilities", async () => {
-      const response = await request(app).get("/api/config").expect(200);
+    it('should include feature capabilities', async () => {
+      const response = await request(app).get('/api/config').expect(200);
 
       const { features } = response.body.config;
       expect(features.embedding).toBe(true);
@@ -76,7 +76,7 @@ describe("Config Routes", () => {
       expect(features.persistence).toBe(true);
       expect(features.scalability).toBe(false);
     });
-    it("should handle missing memory engine", async () => {
+    it('should handle missing memory engine', async () => {
       const noEngineApp = express();
       noEngineApp.use(express.json());
 
@@ -84,36 +84,36 @@ describe("Config Routes", () => {
         req.memoryEngine = null;
         next();
       });
-      noEngineApp.use("/api/config", configRouter);
+      noEngineApp.use('/api/config', configRouter);
       noEngineApp.use(errorHandler);
 
       const response = await request(noEngineApp)
-        .get("/api/config")
+        .get('/api/config')
         .expect(503);
 
-      expect(response.body.error).toBe("Memory engine not available");
-      expect(response.body.code).toBe("MEMORY_ENGINE_UNAVAILABLE");
+      expect(response.body.error).toBe('Memory engine not available');
+      expect(response.body.code).toBe('MEMORY_ENGINE_UNAVAILABLE');
     });
 
-    it("should handle configuration retrieval failure", async () => {
+    it('should handle configuration retrieval failure', async () => {
       mockMemoryEngine.getTierInfo.mockImplementation(() => {
-        throw new Error("Tier info failed");
+        throw new Error('Tier info failed');
       });
 
-      const response = await request(app).get("/api/config").expect(500);
+      const response = await request(app).get('/api/config').expect(500);
 
-      expect(response.body.error).toContain("Failed to get configuration");
-      expect(response.body.code).toBe("CONFIG_GET_FAILED");
+      expect(response.body.error).toContain('Failed to get configuration');
+      expect(response.body.code).toBe('CONFIG_GET_FAILED');
     });
   });
 
-  describe("POST /test-tier", () => {
-    it("should accept valid tier values", async () => {
-      const validTiers = ["advanced", "smart", "basic"];
+  describe('POST /test-tier', () => {
+    it('should accept valid tier values', async () => {
+      const validTiers = ['advanced', 'smart', 'basic'];
 
       for (const tier of validTiers) {
         const response = await request(app)
-          .post("/api/config/test-tier")
+          .post('/api/config/test-tier')
           .send({ tier })
           .expect(200);
 
@@ -122,27 +122,27 @@ describe("Config Routes", () => {
       }
     });
 
-    it("should reject invalid tier values", async () => {
-      const invalidTiers = ["invalid", "test", "production", ""];
+    it('should reject invalid tier values', async () => {
+      const invalidTiers = ['invalid', 'test', 'production', ''];
 
       for (const tier of invalidTiers) {
         const response = await request(app)
-          .post("/api/config/test-tier")
+          .post('/api/config/test-tier')
           .send({ tier })
           .expect(400);
 
-        expect(response.body.error).toBe("Invalid tier specified");
-        expect(response.body.code).toBe("INVALID_TIER");
+        expect(response.body.error).toBe('Invalid tier specified');
+        expect(response.body.code).toBe('INVALID_TIER');
       }
     });
-    it("should handle missing tier parameter", async () => {
+    it('should handle missing tier parameter', async () => {
       const response = await request(app)
-        .post("/api/config/test-tier")
+        .post('/api/config/test-tier')
         .send({})
         .expect(400);
 
-      expect(response.body.error).toBe("Tier not specified");
-      expect(response.body.code).toBe("TIER_NOT_SPECIFIED");
+      expect(response.body.error).toBe('Tier not specified');
+      expect(response.body.code).toBe('TIER_NOT_SPECIFIED');
     });
   });
 });

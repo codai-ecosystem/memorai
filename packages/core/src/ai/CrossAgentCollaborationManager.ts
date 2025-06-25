@@ -28,7 +28,7 @@ export interface AgentProfile {
   };
 }
 
-export type AgentType = 
+export type AgentType =
   | 'assistant'
   | 'specialist'
   | 'coordinator'
@@ -57,7 +57,7 @@ export interface MemoryShareRequest {
   };
 }
 
-export type SharePurpose = 
+export type SharePurpose =
   | 'task_collaboration'
   | 'knowledge_sharing'
   | 'problem_solving'
@@ -120,7 +120,7 @@ export class CrossAgentCollaborationManager {
       enableSkillBasedMatching: true,
       privacyProtection: true,
       auditLogging: true,
-      ...config
+      ...config,
     };
   }
 
@@ -129,7 +129,9 @@ export class CrossAgentCollaborationManager {
    */
   registerAgent(profile: AgentProfile): void {
     this.agentProfiles.set(profile.id, profile);
-    console.log(`🤝 Registered agent ${profile.name} (${profile.type}) for collaboration`);
+    console.log(
+      `🤝 Registered agent ${profile.name} (${profile.type}) for collaboration`
+    );
   }
 
   /**
@@ -144,7 +146,7 @@ export class CrossAgentCollaborationManager {
     priority: 'low' | 'medium' | 'high' | 'urgent' = 'medium'
   ): Promise<MemoryShareRequest> {
     const requestId = `share_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
+
     const request: MemoryShareRequest = {
       id: requestId,
       fromAgent,
@@ -152,15 +154,17 @@ export class CrossAgentCollaborationManager {
       memories: memoryIds,
       purpose,
       context,
-      expiresAt: new Date(Date.now() + this.config.defaultShareExpiration * 60 * 60 * 1000),
+      expiresAt: new Date(
+        Date.now() + this.config.defaultShareExpiration * 60 * 60 * 1000
+      ),
       status: 'pending',
       priority,
       metadata: {
         requestedAt: new Date(),
         reason: context,
         expectedValue: this.calculateExpectedValue(fromAgent, toAgent, purpose),
-        sensitivityLevel: this.assessSensitivity(memoryIds)
-      }
+        sensitivityLevel: this.assessSensitivity(memoryIds),
+      },
     };
 
     this.shareRequests.set(requestId, request);
@@ -170,7 +174,9 @@ export class CrossAgentCollaborationManager {
       await this.approveShareRequest(requestId);
     }
 
-    console.log(`📤 Memory share request created: ${fromAgent} → ${toAgent} (${memoryIds.length} memories)`);
+    console.log(
+      `📤 Memory share request created: ${fromAgent} → ${toAgent} (${memoryIds.length} memories)`
+    );
     return request;
   }
 
@@ -184,7 +190,7 @@ export class CrossAgentCollaborationManager {
     }
 
     request.status = 'approved';
-    
+
     // Create or join collaboration session
     const sessionId = await this.getOrCreateCollaborationSession(
       [request.fromAgent, request.toAgent],
@@ -199,7 +205,7 @@ export class CrossAgentCollaborationManager {
           memoryId,
           sharedBy: request.fromAgent,
           accessLevel: this.determineAccessLevel(request),
-          shareTime: new Date()
+          shareTime: new Date(),
         });
       }
     }
@@ -221,7 +227,7 @@ export class CrossAgentCollaborationManager {
     }
 
     request.status = 'denied';
-    
+
     // Update collaboration history
     this.updateCollaborationHistory(request.fromAgent, request.toAgent, false);
 
@@ -236,11 +242,13 @@ export class CrossAgentCollaborationManager {
     agentId: string,
     task: string,
     requiredSkills: string[] = []
-  ): Promise<Array<{
-    agent: AgentProfile;
-    compatibilityScore: number;
-    recommendationReason: string;
-  }>> {
+  ): Promise<
+    Array<{
+      agent: AgentProfile;
+      compatibilityScore: number;
+      recommendationReason: string;
+    }>
+  > {
     const requestingAgent = this.agentProfiles.get(agentId);
     if (!requestingAgent) {
       return [];
@@ -266,12 +274,14 @@ export class CrossAgentCollaborationManager {
         candidates.push({
           agent: candidate,
           compatibilityScore: compatibility.score,
-          recommendationReason: compatibility.reason
+          recommendationReason: compatibility.reason,
         });
       }
     }
 
-    return candidates.sort((a, b) => b.compatibilityScore - a.compatibilityScore);
+    return candidates.sort(
+      (a, b) => b.compatibilityScore - a.compatibilityScore
+    );
   }
 
   /**
@@ -280,12 +290,14 @@ export class CrossAgentCollaborationManager {
   async generateCollaborativeInsights(
     sessionId: string,
     sharedMemories: MemoryMetadata[]
-  ): Promise<Array<{
-    insight: string;
-    confidence: number;
-    contributingAgents: string[];
-    supportingMemories: string[];
-  }>> {
+  ): Promise<
+    Array<{
+      insight: string;
+      confidence: number;
+      contributingAgents: string[];
+      supportingMemories: string[];
+    }>
+  > {
     const session = this.activeSessions.get(sessionId);
     if (!session) {
       return [];
@@ -299,15 +311,23 @@ export class CrossAgentCollaborationManager {
     }> = [];
 
     // Cross-agent pattern detection
-    const crossPatternInsights = await this.detectCrossAgentPatterns(sharedMemories, session.participants);
+    const crossPatternInsights = await this.detectCrossAgentPatterns(
+      sharedMemories,
+      session.participants
+    );
     insights.push(...crossPatternInsights);
 
     // Knowledge gap identification
-    const knowledgeGapInsights = await this.identifyKnowledgeGaps(sharedMemories, session.participants);
+    const knowledgeGapInsights = await this.identifyKnowledgeGaps(
+      sharedMemories,
+      session.participants
+    );
     insights.push(...knowledgeGapInsights);
 
     // Complementary capability insights
-    const capabilityInsights = await this.analyzeComplementaryCapabilities(session.participants);
+    const capabilityInsights = await this.analyzeComplementaryCapabilities(
+      session.participants
+    );
     insights.push(...capabilityInsights);
 
     // Update session with insights
@@ -316,7 +336,7 @@ export class CrossAgentCollaborationManager {
         insight: insight.insight,
         confidence: insight.confidence,
         contributingAgents: insight.contributingAgents,
-        timestamp: new Date()
+        timestamp: new Date(),
       });
     }
 
@@ -333,7 +353,7 @@ export class CrossAgentCollaborationManager {
     problemDescription: string
   ): Promise<string> {
     const sessionId = `collab_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
+
     const session: CollaborationSession = {
       id: sessionId,
       participants: [initiatingAgent, ...participants],
@@ -345,9 +365,9 @@ export class CrossAgentCollaborationManager {
         tasksCompleted: [],
         knowledgeGained: [],
         problemsSolved: [],
-        efficiency: 0
+        efficiency: 0,
       },
-      isActive: true
+      isActive: true,
     };
 
     this.activeSessions.set(sessionId, session);
@@ -359,7 +379,9 @@ export class CrossAgentCollaborationManager {
       problemDescription
     );
 
-    console.log(`🎯 Started collaborative session ${sessionId} with ${participants.length + 1} agents`);
+    console.log(
+      `🎯 Started collaborative session ${sessionId} with ${participants.length + 1} agents`
+    );
     console.log(`💡 Suggested ${suggestions.length} memories for sharing`);
 
     return sessionId;
@@ -384,7 +406,9 @@ export class CrossAgentCollaborationManager {
     session.isActive = false;
 
     // Calculate session efficiency
-    const duration = (session.endTime.getTime() - session.startTime.getTime()) / (1000 * 60 * 60); // hours
+    const duration =
+      (session.endTime.getTime() - session.startTime.getTime()) /
+      (1000 * 60 * 60); // hours
     const efficiency = this.calculateSessionEfficiency(session, duration);
     session.outcomes.efficiency = efficiency;
 
@@ -395,40 +419,50 @@ export class CrossAgentCollaborationManager {
     this.collaborationHistory.push(session);
     this.activeSessions.delete(sessionId);
 
-    console.log(`🏁 Collaborative session ${sessionId} completed with ${efficiency}% efficiency`);
+    console.log(
+      `🏁 Collaborative session ${sessionId} completed with ${efficiency}% efficiency`
+    );
 
     return {
       summary: finalInsights.summary,
       achievements: session.outcomes.tasksCompleted,
       learnings: session.outcomes.knowledgeGained,
       efficiency,
-      recommendations: finalInsights.recommendations
+      recommendations: finalInsights.recommendations,
     };
   }
 
   // Private helper methods
 
-  private async shouldAutoApprove(request: MemoryShareRequest): Promise<boolean> {
+  private async shouldAutoApprove(
+    request: MemoryShareRequest
+  ): Promise<boolean> {
     const fromAgent = this.agentProfiles.get(request.fromAgent);
     const toAgent = this.agentProfiles.get(request.toAgent);
-    
+
     if (!fromAgent || !toAgent) return false;
 
     // Check trust levels
-    const trustThreshold = fromAgent.trustLevel >= this.config.autoApproveThreshold &&
-                          toAgent.trustLevel >= this.config.autoApproveThreshold;
+    const trustThreshold =
+      fromAgent.trustLevel >= this.config.autoApproveThreshold &&
+      toAgent.trustLevel >= this.config.autoApproveThreshold;
 
     // Check sensitivity
     const lowSensitivity = request.metadata.sensitivityLevel === 'low';
 
     // Check agent preferences
-    const preferencesAllow = fromAgent.preferences.shareOwnMemories &&
-                           toAgent.preferences.acceptSharedMemories;
+    const preferencesAllow =
+      fromAgent.preferences.shareOwnMemories &&
+      toAgent.preferences.acceptSharedMemories;
 
     return trustThreshold && lowSensitivity && preferencesAllow;
   }
 
-  private calculateExpectedValue(fromAgent: string, toAgent: string, purpose: SharePurpose): number {
+  private calculateExpectedValue(
+    fromAgent: string,
+    toAgent: string,
+    purpose: SharePurpose
+  ): number {
     // Simplified value calculation based on agent compatibility and purpose
     const purposeValues = {
       task_collaboration: 0.8,
@@ -436,7 +470,7 @@ export class CrossAgentCollaborationManager {
       problem_solving: 0.9,
       context_enrichment: 0.6,
       skill_transfer: 0.8,
-      quality_improvement: 0.7
+      quality_improvement: 0.7,
     };
 
     return purposeValues[purpose] || 0.5;
@@ -462,9 +496,10 @@ export class CrossAgentCollaborationManager {
   ): Promise<string> {
     // Look for existing active session with same participants
     for (const [sessionId, session] of this.activeSessions.entries()) {
-      const sameParticipants = participants.every(p => session.participants.includes(p)) &&
-                              session.participants.every(p => participants.includes(p));
-      
+      const sameParticipants =
+        participants.every(p => session.participants.includes(p)) &&
+        session.participants.every(p => participants.includes(p));
+
       if (sameParticipants && session.purpose === purpose) {
         return sessionId;
       }
@@ -472,7 +507,7 @@ export class CrossAgentCollaborationManager {
 
     // Create new session
     const sessionId = `auto_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
+
     const session: CollaborationSession = {
       id: sessionId,
       participants,
@@ -484,16 +519,20 @@ export class CrossAgentCollaborationManager {
         tasksCompleted: [],
         knowledgeGained: [],
         problemsSolved: [],
-        efficiency: 0
+        efficiency: 0,
       },
-      isActive: true
+      isActive: true,
     };
 
     this.activeSessions.set(sessionId, session);
     return sessionId;
   }
 
-  private updateCollaborationHistory(fromAgent: string, toAgent: string, successful: boolean): void {
+  private updateCollaborationHistory(
+    fromAgent: string,
+    toAgent: string,
+    successful: boolean
+  ): void {
     const fromProfile = this.agentProfiles.get(fromAgent);
     const toProfile = this.agentProfiles.get(toAgent);
 
@@ -526,37 +565,100 @@ export class CrossAgentCollaborationManager {
     if (trustScore > 0.7) reasons.push('High mutual trust');
 
     // Skill matching
-    const skillMatch = requiredSkills.filter(skill => 
-      candidate.capabilities.includes(skill) || candidate.specializations.includes(skill)
-    ).length / Math.max(requiredSkills.length, 1);
+    const skillMatch =
+      requiredSkills.filter(
+        skill =>
+          candidate.capabilities.includes(skill) ||
+          candidate.specializations.includes(skill)
+      ).length / Math.max(requiredSkills.length, 1);
     score += skillMatch * 0.4;
     if (skillMatch > 0.5) reasons.push('Strong skill alignment');
 
     // Agent type complementarity
-    const typeCompatibility = this.config.enableCrossTypeCollaboration ? 
-      this.getTypeCompatibility(requestingAgent.type, candidate.type) : 0.5;
+    const typeCompatibility = this.config.enableCrossTypeCollaboration
+      ? this.getTypeCompatibility(requestingAgent.type, candidate.type)
+      : 0.5;
     score += typeCompatibility * 0.2;
 
     // Collaboration history
-    const historyScore = candidate.collaborationHistory.successfulShares > 0 ?
-      candidate.collaborationHistory.successfulShares / candidate.collaborationHistory.totalInteractions : 0.5;
+    const historyScore =
+      candidate.collaborationHistory.successfulShares > 0
+        ? candidate.collaborationHistory.successfulShares /
+          candidate.collaborationHistory.totalInteractions
+        : 0.5;
     score += historyScore * 0.1;
 
     return {
       score: Math.min(1, score),
-      reason: reasons.join(', ') || 'Basic compatibility'
+      reason: reasons.join(', ') || 'Basic compatibility',
     };
   }
 
   private getTypeCompatibility(type1: AgentType, type2: AgentType): number {
     const compatibilityMatrix: Record<AgentType, Record<AgentType, number>> = {
-      assistant: { specialist: 0.8, coordinator: 0.9, analyst: 0.7, creative: 0.6, technical: 0.7, research: 0.6, assistant: 0.5 },
-      specialist: { assistant: 0.8, coordinator: 0.7, analyst: 0.9, creative: 0.5, technical: 0.8, research: 0.7, specialist: 0.6 },
-      coordinator: { assistant: 0.9, specialist: 0.7, analyst: 0.8, creative: 0.7, technical: 0.6, research: 0.6, coordinator: 0.4 },
-      analyst: { assistant: 0.7, specialist: 0.9, coordinator: 0.8, creative: 0.6, technical: 0.8, research: 0.9, analyst: 0.5 },
-      creative: { assistant: 0.6, specialist: 0.5, coordinator: 0.7, analyst: 0.6, technical: 0.5, research: 0.7, creative: 0.8 },
-      technical: { assistant: 0.7, specialist: 0.8, coordinator: 0.6, analyst: 0.8, creative: 0.5, research: 0.6, technical: 0.7 },
-      research: { assistant: 0.6, specialist: 0.7, coordinator: 0.6, analyst: 0.9, creative: 0.7, technical: 0.6, research: 0.8 }
+      assistant: {
+        specialist: 0.8,
+        coordinator: 0.9,
+        analyst: 0.7,
+        creative: 0.6,
+        technical: 0.7,
+        research: 0.6,
+        assistant: 0.5,
+      },
+      specialist: {
+        assistant: 0.8,
+        coordinator: 0.7,
+        analyst: 0.9,
+        creative: 0.5,
+        technical: 0.8,
+        research: 0.7,
+        specialist: 0.6,
+      },
+      coordinator: {
+        assistant: 0.9,
+        specialist: 0.7,
+        analyst: 0.8,
+        creative: 0.7,
+        technical: 0.6,
+        research: 0.6,
+        coordinator: 0.4,
+      },
+      analyst: {
+        assistant: 0.7,
+        specialist: 0.9,
+        coordinator: 0.8,
+        creative: 0.6,
+        technical: 0.8,
+        research: 0.9,
+        analyst: 0.5,
+      },
+      creative: {
+        assistant: 0.6,
+        specialist: 0.5,
+        coordinator: 0.7,
+        analyst: 0.6,
+        technical: 0.5,
+        research: 0.7,
+        creative: 0.8,
+      },
+      technical: {
+        assistant: 0.7,
+        specialist: 0.8,
+        coordinator: 0.6,
+        analyst: 0.8,
+        creative: 0.5,
+        research: 0.6,
+        technical: 0.7,
+      },
+      research: {
+        assistant: 0.6,
+        specialist: 0.7,
+        coordinator: 0.6,
+        analyst: 0.9,
+        creative: 0.7,
+        technical: 0.6,
+        research: 0.8,
+      },
     };
 
     return compatibilityMatrix[type1]?.[type2] || 0.5;
@@ -565,12 +667,14 @@ export class CrossAgentCollaborationManager {
   private async detectCrossAgentPatterns(
     memories: MemoryMetadata[],
     participants: string[]
-  ): Promise<Array<{
-    insight: string;
-    confidence: number;
-    contributingAgents: string[];
-    supportingMemories: string[];
-  }>> {
+  ): Promise<
+    Array<{
+      insight: string;
+      confidence: number;
+      contributingAgents: string[];
+      supportingMemories: string[];
+    }>
+  > {
     // Simplified cross-agent pattern detection
     const insights: Array<{
       insight: string;
@@ -607,14 +711,16 @@ export class CrossAgentCollaborationManager {
     for (const [tag, agentSet] of commonTags.entries()) {
       if (agentSet.size > 1) {
         const supportingMemories = memories
-          .filter(m => m.tags.includes(tag) && m.agent_id && agentSet.has(m.agent_id))
+          .filter(
+            m => m.tags.includes(tag) && m.agent_id && agentSet.has(m.agent_id)
+          )
           .map(m => m.id);
 
         insights.push({
           insight: `Multiple agents share expertise in "${tag}" domain`,
           confidence: Math.min(0.9, agentSet.size / participants.length),
           contributingAgents: Array.from(agentSet),
-          supportingMemories
+          supportingMemories,
         });
       }
     }
@@ -625,12 +731,14 @@ export class CrossAgentCollaborationManager {
   private async identifyKnowledgeGaps(
     memories: MemoryMetadata[],
     participants: string[]
-  ): Promise<Array<{
-    insight: string;
-    confidence: number;
-    contributingAgents: string[];
-    supportingMemories: string[];
-  }>> {
+  ): Promise<
+    Array<{
+      insight: string;
+      confidence: number;
+      contributingAgents: string[];
+      supportingMemories: string[];
+    }>
+  > {
     // Simplified knowledge gap identification
     const insights: Array<{
       insight: string;
@@ -641,7 +749,7 @@ export class CrossAgentCollaborationManager {
 
     // Identify areas where only one agent has knowledge
     const agentTopics = new Map<string, Set<string>>();
-    
+
     for (const memory of memories) {
       if (memory.agent_id && participants.includes(memory.agent_id)) {
         if (!agentTopics.has(memory.agent_id)) {
@@ -656,9 +764,10 @@ export class CrossAgentCollaborationManager {
     // Find unique knowledge areas
     for (const [agentId, topics] of agentTopics.entries()) {
       for (const topic of topics) {
-        const otherAgentsWithTopic = Array.from(agentTopics.entries())
-          .filter(([otherId, otherTopics]) => otherId !== agentId && otherTopics.has(topic))
-          .length;
+        const otherAgentsWithTopic = Array.from(agentTopics.entries()).filter(
+          ([otherId, otherTopics]) =>
+            otherId !== agentId && otherTopics.has(topic)
+        ).length;
 
         if (otherAgentsWithTopic === 0) {
           insights.push({
@@ -667,7 +776,7 @@ export class CrossAgentCollaborationManager {
             contributingAgents: [agentId],
             supportingMemories: memories
               .filter(m => m.agent_id === agentId && m.tags.includes(topic))
-              .map(m => m.id)
+              .map(m => m.id),
           });
         }
       }
@@ -678,12 +787,14 @@ export class CrossAgentCollaborationManager {
 
   private async analyzeComplementaryCapabilities(
     participants: string[]
-  ): Promise<Array<{
-    insight: string;
-    confidence: number;
-    contributingAgents: string[];
-    supportingMemories: string[];
-  }>> {
+  ): Promise<
+    Array<{
+      insight: string;
+      confidence: number;
+      contributingAgents: string[];
+      supportingMemories: string[];
+    }>
+  > {
     const insights: Array<{
       insight: string;
       confidence: number;
@@ -705,8 +816,10 @@ export class CrossAgentCollaborationManager {
     });
 
     for (const capability of allCapabilities) {
-      const agentsWithCapability = agentProfiles.filter(profile =>
-        profile.capabilities.includes(capability) || profile.specializations.includes(capability)
+      const agentsWithCapability = agentProfiles.filter(
+        profile =>
+          profile.capabilities.includes(capability) ||
+          profile.specializations.includes(capability)
       );
 
       if (agentsWithCapability.length > 1) {
@@ -714,7 +827,7 @@ export class CrossAgentCollaborationManager {
           insight: `Synergistic "${capability}" capabilities across ${agentsWithCapability.length} agents`,
           confidence: 0.7,
           contributingAgents: agentsWithCapability.map(a => a.id),
-          supportingMemories: []
+          supportingMemories: [],
         });
       }
     }
@@ -726,12 +839,14 @@ export class CrossAgentCollaborationManager {
     participants: string[],
     purpose: SharePurpose,
     problemDescription: string
-  ): Promise<Array<{
-    memoryId: string;
-    agent: string;
-    relevanceScore: number;
-    reason: string;
-  }>> {
+  ): Promise<
+    Array<{
+      memoryId: string;
+      agent: string;
+      relevanceScore: number;
+      reason: string;
+    }>
+  > {
     // Simplified memory suggestion algorithm
     const suggestions: Array<{
       memoryId: string;
@@ -742,20 +857,26 @@ export class CrossAgentCollaborationManager {
 
     // This would be implemented with actual memory retrieval and analysis
     // For now, return empty array as placeholder
-    
+
     return suggestions;
   }
 
-  private calculateSessionEfficiency(session: CollaborationSession, durationHours: number): number {
+  private calculateSessionEfficiency(
+    session: CollaborationSession,
+    durationHours: number
+  ): number {
     // Simplified efficiency calculation
-    const insightsPerHour = session.insights.length / Math.max(durationHours, 0.1);
-    const memoriesSharedPerHour = session.sharedMemories.length / Math.max(durationHours, 0.1);
+    const insightsPerHour =
+      session.insights.length / Math.max(durationHours, 0.1);
+    const memoriesSharedPerHour =
+      session.sharedMemories.length / Math.max(durationHours, 0.1);
     const participantEfficiency = session.participants.length > 1 ? 1 : 0.5;
 
-    const efficiency = Math.min(100, 
-      (insightsPerHour * 20) + 
-      (memoriesSharedPerHour * 10) + 
-      (participantEfficiency * 30)
+    const efficiency = Math.min(
+      100,
+      insightsPerHour * 20 +
+        memoriesSharedPerHour * 10 +
+        participantEfficiency * 30
     );
 
     return Math.round(efficiency);
@@ -765,11 +886,12 @@ export class CrossAgentCollaborationManager {
     summary: string;
     recommendations: string[];
   }> {
-    const duration = session.endTime 
-      ? (session.endTime.getTime() - session.startTime.getTime()) / (1000 * 60) 
+    const duration = session.endTime
+      ? (session.endTime.getTime() - session.startTime.getTime()) / (1000 * 60)
       : 0;
 
-    const summary = `Collaborative session completed with ${session.participants.length} agents over ${Math.round(duration)} minutes. ` +
+    const summary =
+      `Collaborative session completed with ${session.participants.length} agents over ${Math.round(duration)} minutes. ` +
       `Generated ${session.insights.length} insights from ${session.sharedMemories.length} shared memories. ` +
       `Efficiency: ${session.outcomes.efficiency}%.`;
 
@@ -777,7 +899,7 @@ export class CrossAgentCollaborationManager {
       'Schedule follow-up sessions for ongoing collaboration',
       'Document key insights for future reference',
       'Consider expanding successful collaboration patterns',
-      'Review and optimize memory sharing processes'
+      'Review and optimize memory sharing processes',
     ];
 
     return { summary, recommendations };
@@ -793,22 +915,35 @@ export class CrossAgentCollaborationManager {
     topCollaborators: Array<{ agentId: string; collaborations: number }>;
     collaborationTrends: Array<{ purpose: SharePurpose; count: number }>;
   } {
-    const totalSessions = this.collaborationHistory.length + this.activeSessions.size;
+    const totalSessions =
+      this.collaborationHistory.length + this.activeSessions.size;
     const activeSessions = this.activeSessions.size;
-    
-    const avgEfficiency = this.collaborationHistory.length > 0
-      ? this.collaborationHistory.reduce((sum, session) => sum + session.outcomes.efficiency, 0) / this.collaborationHistory.length
-      : 0;
+
+    const avgEfficiency =
+      this.collaborationHistory.length > 0
+        ? this.collaborationHistory.reduce(
+            (sum, session) => sum + session.outcomes.efficiency,
+            0
+          ) / this.collaborationHistory.length
+        : 0;
 
     const collaboratorCounts = new Map<string, number>();
     const purposeCounts = new Map<SharePurpose, number>();
 
-    [...this.collaborationHistory, ...this.activeSessions.values()].forEach(session => {
-      session.participants.forEach(participant => {
-        collaboratorCounts.set(participant, (collaboratorCounts.get(participant) || 0) + 1);
-      });
-      purposeCounts.set(session.purpose, (purposeCounts.get(session.purpose) || 0) + 1);
-    });
+    [...this.collaborationHistory, ...this.activeSessions.values()].forEach(
+      session => {
+        session.participants.forEach(participant => {
+          collaboratorCounts.set(
+            participant,
+            (collaboratorCounts.get(participant) || 0) + 1
+          );
+        });
+        purposeCounts.set(
+          session.purpose,
+          (purposeCounts.get(session.purpose) || 0) + 1
+        );
+      }
+    );
 
     const topCollaborators = Array.from(collaboratorCounts.entries())
       .sort((a, b) => b[1] - a[1])
@@ -824,7 +959,7 @@ export class CrossAgentCollaborationManager {
       activeSessions,
       averageEfficiency: Math.round(avgEfficiency),
       topCollaborators,
-      collaborationTrends
+      collaborationTrends,
     };
   }
 }

@@ -135,9 +135,9 @@ spec:
             - containerPort: 3002
           env:
             - name: NODE_ENV
-              value: "production"
+              value: 'production'
             - name: WEB_PORT
-              value: "3002"
+              value: '3002'
           livenessProbe:
             httpGet:
               path: /api/health
@@ -152,11 +152,11 @@ spec:
             periodSeconds: 5
           resources:
             requests:
-              memory: "256Mi"
-              cpu: "250m"
+              memory: '256Mi'
+              cpu: '250m'
             limits:
-              memory: "512Mi"
-              cpu: "500m"
+              memory: '512Mi'
+              cpu: '500m'
 ---
 apiVersion: v1
 kind: Service
@@ -312,28 +312,28 @@ server {
 
 ```javascript
 // Enhanced logging configuration
-const winston = require("winston");
-const path = require("path");
+const winston = require('winston');
+const path = require('path');
 
 const logger = winston.createLogger({
-  level: process.env.LOG_LEVEL || "info",
+  level: process.env.LOG_LEVEL || 'info',
   format: winston.format.combine(
     winston.format.timestamp(),
     winston.format.errors({ stack: true }),
-    winston.format.json(),
+    winston.format.json()
   ),
-  defaultMeta: { service: "memorai-dashboard" },
+  defaultMeta: { service: 'memorai-dashboard' },
   transports: [
     // Error logs
     new winston.transports.File({
-      filename: path.join(__dirname, "logs/error.log"),
-      level: "error",
+      filename: path.join(__dirname, 'logs/error.log'),
+      level: 'error',
       maxsize: 10485760, // 10MB
       maxFiles: 5,
     }),
     // Combined logs
     new winston.transports.File({
-      filename: path.join(__dirname, "logs/combined.log"),
+      filename: path.join(__dirname, 'logs/combined.log'),
       maxsize: 10485760,
       maxFiles: 10,
     }),
@@ -341,7 +341,7 @@ const logger = winston.createLogger({
     new winston.transports.Console({
       format: winston.format.combine(
         winston.format.colorize(),
-        winston.format.simple(),
+        winston.format.simple()
       ),
     }),
   ],
@@ -376,9 +376,9 @@ fi
 
 ```javascript
 // Production server optimizations
-const express = require("express");
-const compression = require("compression");
-const helmet = require("helmet");
+const express = require('express');
+const compression = require('compression');
+const helmet = require('helmet');
 
 const app = express();
 
@@ -394,13 +394,13 @@ app.use(
         scriptSrc: [
           "'self'",
           "'unsafe-inline'",
-          "https://cdn.jsdelivr.net",
-          "https://unpkg.com",
+          'https://cdn.jsdelivr.net',
+          'https://unpkg.com',
         ],
-        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
-        fontSrc: ["'self'", "https://fonts.gstatic.com"],
-        imgSrc: ["'self'", "data:", "https:"],
-        connectSrc: ["'self'", "ws:", "wss:"],
+        styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+        fontSrc: ["'self'", 'https://fonts.gstatic.com'],
+        imgSrc: ["'self'", 'data:', 'https:'],
+        connectSrc: ["'self'", 'ws:', 'wss:'],
       },
     },
     hsts: {
@@ -408,17 +408,17 @@ app.use(
       includeSubDomains: true,
       preload: true,
     },
-  }),
+  })
 );
 
 // Cache control for static assets
 app.use(
-  "/static",
-  express.static("public", {
-    maxAge: "1y",
+  '/static',
+  express.static('public', {
+    maxAge: '1y',
     etag: true,
     lastModified: true,
-  }),
+  })
 );
 ```
 

@@ -1,10 +1,10 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 
 // Mock fetch for testing API endpoints
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
-describe("API Routes Comprehensive Tests", () => {
+describe('API Routes Comprehensive Tests', () => {
   beforeEach(() => {
     mockFetch.mockClear();
   });
@@ -13,53 +13,53 @@ describe("API Routes Comprehensive Tests", () => {
     vi.restoreAllMocks();
   });
 
-  describe("Config API", () => {
-    it("should handle GET /api/config successfully", async () => {
+  describe('Config API', () => {
+    it('should handle GET /api/config successfully', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({
-          apiEndpoint: "http://localhost:3001",
+          apiEndpoint: 'http://localhost:3001',
           memoryLimit: 1000,
           enableNotifications: true,
         }),
       });
 
-      const response = await fetch("/api/config");
+      const response = await fetch('/api/config');
       const data = await response.json();
 
       expect(response.ok).toBe(true);
-      expect(data).toHaveProperty("apiEndpoint");
-      expect(data).toHaveProperty("memoryLimit");
-      expect(data).toHaveProperty("enableNotifications");
+      expect(data).toHaveProperty('apiEndpoint');
+      expect(data).toHaveProperty('memoryLimit');
+      expect(data).toHaveProperty('enableNotifications');
     });
 
-    it("should handle GET /api/config with missing configuration", async () => {
+    it('should handle GET /api/config with missing configuration', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({}),
       });
 
-      const response = await fetch("/api/config");
+      const response = await fetch('/api/config');
       const data = await response.json();
 
       expect(response.ok).toBe(true);
       expect(data).toBeDefined();
     });
 
-    it("should handle network errors gracefully", async () => {
-      mockFetch.mockRejectedValueOnce(new Error("Network error"));
+    it('should handle network errors gracefully', async () => {
+      mockFetch.mockRejectedValueOnce(new Error('Network error'));
 
       try {
-        await fetch("/api/config");
+        await fetch('/api/config');
       } catch (error) {
         expect(error).toBeInstanceOf(Error);
-        expect((error as Error).message).toBe("Network error");
+        expect((error as Error).message).toBe('Network error');
       }
     });
   });
 
-  describe("Stats API", () => {
-    it("should handle GET /api/stats successfully", async () => {
+  describe('Stats API', () => {
+    it('should handle GET /api/stats successfully', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({
@@ -70,19 +70,19 @@ describe("API Routes Comprehensive Tests", () => {
         }),
       });
 
-      const response = await fetch("/api/stats");
+      const response = await fetch('/api/stats');
       const data = await response.json();
 
       expect(response.ok).toBe(true);
-      expect(data).toHaveProperty("totalMemories");
-      expect(data).toHaveProperty("activeAgents");
-      expect(data).toHaveProperty("averageImportance");
-      expect(data).toHaveProperty("recentActivity");
-      expect(typeof data.totalMemories).toBe("number");
-      expect(typeof data.activeAgents).toBe("number");
+      expect(data).toHaveProperty('totalMemories');
+      expect(data).toHaveProperty('activeAgents');
+      expect(data).toHaveProperty('averageImportance');
+      expect(data).toHaveProperty('recentActivity');
+      expect(typeof data.totalMemories).toBe('number');
+      expect(typeof data.activeAgents).toBe('number');
     });
 
-    it("should handle stats with zero values", async () => {
+    it('should handle stats with zero values', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({
@@ -93,7 +93,7 @@ describe("API Routes Comprehensive Tests", () => {
         }),
       });
 
-      const response = await fetch("/api/stats");
+      const response = await fetch('/api/stats');
       const data = await response.json();
 
       expect(response.ok).toBe(true);
@@ -101,17 +101,17 @@ describe("API Routes Comprehensive Tests", () => {
       expect(data.activeAgents).toBe(0);
     });
 
-    it("should handle invalid stats data", async () => {
+    it('should handle invalid stats data', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({
-          totalMemories: "invalid",
+          totalMemories: 'invalid',
           activeAgents: null,
           averageImportance: undefined,
         }),
       });
 
-      const response = await fetch("/api/stats");
+      const response = await fetch('/api/stats');
       const data = await response.json();
 
       expect(response.ok).toBe(true);
@@ -120,32 +120,32 @@ describe("API Routes Comprehensive Tests", () => {
     });
   });
 
-  describe("Memory Context API", () => {
-    it("should handle GET /api/memory/context successfully", async () => {
+  describe('Memory Context API', () => {
+    it('should handle GET /api/memory/context successfully', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({
           entities: [
             {
-              name: "test-entity",
-              entityType: "memory",
-              observations: ["test observation"],
+              name: 'test-entity',
+              entityType: 'memory',
+              observations: ['test observation'],
             },
           ],
           totalCount: 1,
         }),
       });
 
-      const response = await fetch("/api/memory/context");
+      const response = await fetch('/api/memory/context');
       const data = await response.json();
 
       expect(response.ok).toBe(true);
-      expect(data).toHaveProperty("entities");
-      expect(data).toHaveProperty("totalCount");
+      expect(data).toHaveProperty('entities');
+      expect(data).toHaveProperty('totalCount');
       expect(Array.isArray(data.entities)).toBe(true);
     });
 
-    it("should handle empty context", async () => {
+    it('should handle empty context', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({
@@ -154,7 +154,7 @@ describe("API Routes Comprehensive Tests", () => {
         }),
       });
 
-      const response = await fetch("/api/memory/context");
+      const response = await fetch('/api/memory/context');
       const data = await response.json();
 
       expect(response.ok).toBe(true);
@@ -162,24 +162,24 @@ describe("API Routes Comprehensive Tests", () => {
       expect(data.totalCount).toBe(0);
     });
 
-    it("should handle POST /api/memory/remember", async () => {
+    it('should handle POST /api/memory/remember', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({
           success: true,
-          memoryId: "mem_123",
-          message: "Memory stored successfully",
+          memoryId: 'mem_123',
+          message: 'Memory stored successfully',
         }),
       });
 
-      const response = await fetch("/api/memory/remember", {
-        method: "POST",
+      const response = await fetch('/api/memory/remember', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          content: "Test memory content",
-          agentId: "test-agent",
+          content: 'Test memory content',
+          agentId: 'test-agent',
         }),
       });
 
@@ -187,12 +187,12 @@ describe("API Routes Comprehensive Tests", () => {
 
       expect(response.ok).toBe(true);
       expect(data.success).toBe(true);
-      expect(data).toHaveProperty("memoryId");
+      expect(data).toHaveProperty('memoryId');
     });
   });
 
-  describe("MCP API Endpoints", () => {
-    it("should handle GET /api/mcp/read-graph", async () => {
+  describe('MCP API Endpoints', () => {
+    it('should handle GET /api/mcp/read-graph', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({
@@ -207,72 +207,72 @@ describe("API Routes Comprehensive Tests", () => {
         }),
       });
 
-      const response = await fetch("/api/mcp/read-graph");
+      const response = await fetch('/api/mcp/read-graph');
       const data = await response.json();
 
       expect(response.ok).toBe(true);
-      expect(data).toHaveProperty("graph");
-      expect(data).toHaveProperty("metadata");
+      expect(data).toHaveProperty('graph');
+      expect(data).toHaveProperty('metadata');
     });
 
-    it("should handle POST /api/mcp/search-nodes", async () => {
+    it('should handle POST /api/mcp/search-nodes', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({
           results: [
             {
-              id: "node-1",
-              name: "Test Node",
-              type: "entity",
+              id: 'node-1',
+              name: 'Test Node',
+              type: 'entity',
             },
           ],
           total: 1,
         }),
       });
 
-      const response = await fetch("/api/mcp/search-nodes", {
-        method: "POST",
+      const response = await fetch('/api/mcp/search-nodes', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          query: "test search",
+          query: 'test search',
         }),
       });
 
       const data = await response.json();
 
       expect(response.ok).toBe(true);
-      expect(data).toHaveProperty("results");
+      expect(data).toHaveProperty('results');
       expect(Array.isArray(data.results)).toBe(true);
     });
 
-    it("should handle POST /api/mcp/create-entities", async () => {
+    it('should handle POST /api/mcp/create-entities', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({
           success: true,
           createdEntities: [
             {
-              name: "new-entity",
-              entityType: "memory",
-              id: "entity-123",
+              name: 'new-entity',
+              entityType: 'memory',
+              id: 'entity-123',
             },
           ],
         }),
       });
 
-      const response = await fetch("/api/mcp/create-entities", {
-        method: "POST",
+      const response = await fetch('/api/mcp/create-entities', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           entities: [
             {
-              name: "new-entity",
-              entityType: "memory",
-              observations: ["test observation"],
+              name: 'new-entity',
+              entityType: 'memory',
+              observations: ['test observation'],
             },
           ],
         }),
@@ -282,53 +282,53 @@ describe("API Routes Comprehensive Tests", () => {
 
       expect(response.ok).toBe(true);
       expect(data.success).toBe(true);
-      expect(data).toHaveProperty("createdEntities");
+      expect(data).toHaveProperty('createdEntities');
     });
   });
 
-  describe("Error Handling", () => {
-    it("should handle 404 errors", async () => {
+  describe('Error Handling', () => {
+    it('should handle 404 errors', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 404,
-        statusText: "Not Found",
+        statusText: 'Not Found',
         json: async () => ({
-          error: "Endpoint not found",
+          error: 'Endpoint not found',
         }),
       });
 
-      const response = await fetch("/api/nonexistent");
+      const response = await fetch('/api/nonexistent');
 
       expect(response.ok).toBe(false);
       expect(response.status).toBe(404);
     });
 
-    it("should handle 500 errors", async () => {
+    it('should handle 500 errors', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 500,
-        statusText: "Internal Server Error",
+        statusText: 'Internal Server Error',
         json: async () => ({
-          error: "Internal server error",
+          error: 'Internal server error',
         }),
       });
 
-      const response = await fetch("/api/stats");
+      const response = await fetch('/api/stats');
 
       expect(response.ok).toBe(false);
       expect(response.status).toBe(500);
     });
 
-    it("should handle malformed JSON responses", async () => {
+    it('should handle malformed JSON responses', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => {
-          throw new Error("Invalid JSON");
+          throw new Error('Invalid JSON');
         },
       });
 
       try {
-        const response = await fetch("/api/config");
+        const response = await fetch('/api/config');
         await response.json();
       } catch (error) {
         expect(error).toBeInstanceOf(Error);
@@ -336,20 +336,20 @@ describe("API Routes Comprehensive Tests", () => {
     });
   });
 
-  describe("Request Validation", () => {
-    it("should validate required fields in POST requests", async () => {
+  describe('Request Validation', () => {
+    it('should validate required fields in POST requests', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 400,
         json: async () => ({
-          error: "Missing required fields",
+          error: 'Missing required fields',
         }),
       });
 
-      const response = await fetch("/api/memory/remember", {
-        method: "POST",
+      const response = await fetch('/api/memory/remember', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({}), // Empty body
       });
@@ -358,21 +358,21 @@ describe("API Routes Comprehensive Tests", () => {
       expect(response.status).toBe(400);
     });
 
-    it("should validate request content type", async () => {
+    it('should validate request content type', async () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         status: 415,
         json: async () => ({
-          error: "Unsupported media type",
+          error: 'Unsupported media type',
         }),
       });
 
-      const response = await fetch("/api/memory/remember", {
-        method: "POST",
+      const response = await fetch('/api/memory/remember', {
+        method: 'POST',
         headers: {
-          "Content-Type": "text/plain",
+          'Content-Type': 'text/plain',
         },
-        body: "invalid content type",
+        body: 'invalid content type',
       });
 
       expect(response.ok).toBe(false);
@@ -380,50 +380,50 @@ describe("API Routes Comprehensive Tests", () => {
     });
   });
 
-  describe("Performance", () => {
-    it("should handle concurrent requests", async () => {
+  describe('Performance', () => {
+    it('should handle concurrent requests', async () => {
       // Mock multiple successful responses
       mockFetch
         .mockResolvedValueOnce({
           ok: true,
-          json: async () => ({ endpoint: "config" }),
+          json: async () => ({ endpoint: 'config' }),
         })
         .mockResolvedValueOnce({
           ok: true,
-          json: async () => ({ endpoint: "stats" }),
+          json: async () => ({ endpoint: 'stats' }),
         })
         .mockResolvedValueOnce({
           ok: true,
-          json: async () => ({ endpoint: "context" }),
+          json: async () => ({ endpoint: 'context' }),
         });
 
       const requests = [
-        fetch("/api/config"),
-        fetch("/api/stats"),
-        fetch("/api/memory/context"),
+        fetch('/api/config'),
+        fetch('/api/stats'),
+        fetch('/api/memory/context'),
       ];
 
       const responses = await Promise.all(requests);
 
       expect(responses).toHaveLength(3);
-      responses.forEach((response) => {
+      responses.forEach(response => {
         expect(response.ok).toBe(true);
       });
     });
 
-    it("should handle request timeouts", async () => {
+    it('should handle request timeouts', async () => {
       mockFetch.mockImplementationOnce(
         () =>
           new Promise((_, reject) =>
-            setTimeout(() => reject(new Error("Request timeout")), 1000),
-          ),
+            setTimeout(() => reject(new Error('Request timeout')), 1000)
+          )
       );
 
       try {
-        await fetch("/api/stats");
+        await fetch('/api/stats');
       } catch (error) {
         expect(error).toBeInstanceOf(Error);
-        expect((error as Error).message).toBe("Request timeout");
+        expect((error as Error).message).toBe('Request timeout');
       }
     });
   });

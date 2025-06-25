@@ -2,9 +2,9 @@
  * @fileoverview Prometheus metrics collection for Memorai MCP Server
  */
 
-import type { ServerMetrics } from "../types/index.js";
+import type { ServerMetrics } from '../types/index.js';
 // import { logger } from '../utils/logger.js';
-import { Logger } from "../utils/Logger.js";
+import { Logger } from '../utils/Logger.js';
 
 /**
  * Metrics data point for time-series tracking
@@ -79,13 +79,13 @@ export class MetricsCollector {
   /**
    * Record connection event
    */
-  public recordConnection(type: "open" | "close"): void {
-    if (type === "open") {
+  public recordConnection(type: 'open' | 'close'): void {
+    if (type === 'open') {
       this.connections.active++;
       this.connections.total++;
       this.connections.maxConcurrent = Math.max(
         this.connections.maxConcurrent,
-        this.connections.active,
+        this.connections.active
       );
     } else {
       this.connections.active = Math.max(0, this.connections.active - 1);
@@ -110,7 +110,7 @@ export class MetricsCollector {
 
     // Calculate requests per second in the last minute
     const recentRequests = this.requestHistory.filter(
-      (point) => point.timestamp >= windowStart,
+      point => point.timestamp >= windowStart
     );
     const requestsPerSecond =
       (recentRequests.length * 1000) / this.windowSizeMs;
@@ -123,7 +123,7 @@ export class MetricsCollector {
 
     // Calculate error rate
     const recentErrors = this.errorHistory.filter(
-      (point) => point.timestamp >= windowStart,
+      point => point.timestamp >= windowStart
     );
     const errorRate =
       recentRequests.length > 0
@@ -150,43 +150,43 @@ export class MetricsCollector {
     const timestamp = Date.now();
 
     const prometheusMetrics = [
-      "# HELP memorai_requests_per_second Current requests per second",
-      "# TYPE memorai_requests_per_second gauge",
+      '# HELP memorai_requests_per_second Current requests per second',
+      '# TYPE memorai_requests_per_second gauge',
       `memorai_requests_per_second ${metrics.requestsPerSecond} ${timestamp}`,
-      "",
-      "# HELP memorai_average_response_time_ms Average response time in milliseconds",
-      "# TYPE memorai_average_response_time_ms gauge",
+      '',
+      '# HELP memorai_average_response_time_ms Average response time in milliseconds',
+      '# TYPE memorai_average_response_time_ms gauge',
       `memorai_average_response_time_ms ${metrics.averageResponseTime} ${timestamp}`,
-      "",
-      "# HELP memorai_memory_usage_mb Memory usage in megabytes",
-      "# TYPE memorai_memory_usage_mb gauge",
+      '',
+      '# HELP memorai_memory_usage_mb Memory usage in megabytes',
+      '# TYPE memorai_memory_usage_mb gauge',
       `memorai_memory_usage_mb ${metrics.memoryUsage} ${timestamp}`,
-      "",
-      "# HELP memorai_active_connections Current active connections",
-      "# TYPE memorai_active_connections gauge",
+      '',
+      '# HELP memorai_active_connections Current active connections',
+      '# TYPE memorai_active_connections gauge',
       `memorai_active_connections ${metrics.activeConnections} ${timestamp}`,
-      "",
-      "# HELP memorai_error_rate_percent Error rate percentage",
-      "# TYPE memorai_error_rate_percent gauge",
+      '',
+      '# HELP memorai_error_rate_percent Error rate percentage',
+      '# TYPE memorai_error_rate_percent gauge',
       `memorai_error_rate_percent ${metrics.errorRate} ${timestamp}`,
-      "",
-      "# HELP memorai_total_requests Total number of requests processed",
-      "# TYPE memorai_total_requests counter",
+      '',
+      '# HELP memorai_total_requests Total number of requests processed',
+      '# TYPE memorai_total_requests counter',
       `memorai_total_requests ${this.requests.count} ${timestamp}`,
-      "",
-      "# HELP memorai_total_errors Total number of errors",
-      "# TYPE memorai_total_errors counter",
+      '',
+      '# HELP memorai_total_errors Total number of errors',
+      '# TYPE memorai_total_errors counter',
       `memorai_total_errors ${this.requests.errors} ${timestamp}`,
-      "",
-      "# HELP memorai_total_connections Total connections opened",
-      "# TYPE memorai_total_connections counter",
+      '',
+      '# HELP memorai_total_connections Total connections opened',
+      '# TYPE memorai_total_connections counter',
       `memorai_total_connections ${this.connections.total} ${timestamp}`,
-      "",
-      "# HELP memorai_max_concurrent_connections Maximum concurrent connections",
-      "# TYPE memorai_max_concurrent_connections gauge",
+      '',
+      '# HELP memorai_max_concurrent_connections Maximum concurrent connections',
+      '# TYPE memorai_max_concurrent_connections gauge',
       `memorai_max_concurrent_connections ${this.connections.maxConcurrent} ${timestamp}`,
-      "",
-    ].join("\n");
+      '',
+    ].join('\n');
 
     return prometheusMetrics;
   }
@@ -251,7 +251,7 @@ export class MetricsCollector {
   private addDataPoint(
     history: MetricDataPoint[],
     timestamp: number,
-    value: number,
+    value: number
   ): void {
     history.push({ timestamp, value });
 
@@ -289,7 +289,7 @@ export class MetricsCollector {
         const memoryMB = process.memoryUsage().heapUsed / 1024 / 1024;
         this.recordMemoryUsage(memoryMB);
       } catch (error: unknown) {
-        Logger.error("Error recording periodic memory usage", {
+        Logger.error('Error recording periodic memory usage', {
           error: error instanceof Error ? error.message : String(error),
         });
       }

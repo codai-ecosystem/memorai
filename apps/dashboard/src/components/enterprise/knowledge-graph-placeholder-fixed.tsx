@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import {
   RefreshCw,
   Database,
@@ -9,7 +9,7 @@ import {
   GitBranch,
   Settings,
   Play,
-} from "lucide-react";
+} from 'lucide-react';
 
 import {
   Card,
@@ -17,9 +17,9 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "../ui/card";
-import { Button } from "../ui/button";
-import { Badge } from "../ui/badge";
+} from '../ui/card';
+import { Button } from '../ui/button';
+import { Badge } from '../ui/badge';
 
 interface Entity {
   name: string;
@@ -45,36 +45,36 @@ interface GraphData {
 
 const features = [
   {
-    id: "real-time",
-    title: "Real-time Updates",
-    description: "Live synchronization with memory changes",
+    id: 'real-time',
+    title: 'Real-time Updates',
+    description: 'Live synchronization with memory changes',
     icon: RefreshCw,
-    status: "planned",
-    comingSoon: "Q2 2024",
+    status: 'planned',
+    comingSoon: 'Q2 2024',
   },
   {
-    id: "interactive",
-    title: "Interactive Exploration",
-    description: "Drag, zoom, and explore memory networks",
+    id: 'interactive',
+    title: 'Interactive Exploration',
+    description: 'Drag, zoom, and explore memory networks',
     icon: Network,
-    status: "planned",
-    comingSoon: "Q2 2024",
+    status: 'planned',
+    comingSoon: 'Q2 2024',
   },
   {
-    id: "analytics",
-    title: "Graph Analytics",
-    description: "Advanced insights into memory patterns",
+    id: 'analytics',
+    title: 'Graph Analytics',
+    description: 'Advanced insights into memory patterns',
     icon: Database,
-    status: "planned",
-    comingSoon: "Q3 2024",
+    status: 'planned',
+    comingSoon: 'Q3 2024',
   },
   {
-    id: "export",
-    title: "Export & Share",
-    description: "Export visualizations and insights",
+    id: 'export',
+    title: 'Export & Share',
+    description: 'Export visualizations and insights',
     icon: GitBranch,
-    status: "planned",
-    comingSoon: "Q3 2024",
+    status: 'planned',
+    comingSoon: 'Q3 2024',
   },
 ];
 
@@ -89,15 +89,15 @@ export function KnowledgeGraphPlaceholder(): React.JSX.Element {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch("/api/mcp/read-graph");
+      const response = await fetch('/api/mcp/read-graph');
       if (!response.ok) {
-        throw new Error("Failed to fetch graph data");
-    }
+        throw new Error('Failed to fetch graph data');
+      }
       const data = await response.json();
       setGraphData(data);
     } catch (_err) {
       setError(
-        err instanceof Error ? err.message : "Failed to load graph data",
+        err instanceof Error ? err.message : 'Failed to load graph data'
       );
     } finally {
       setLoading(false);
@@ -110,14 +110,14 @@ export function KnowledgeGraphPlaceholder(): React.JSX.Element {
 
   const getEntityTypeColor = (type: string): string => {
     const colors: Record<string, string> = {
-      system: "bg-blue-100 text-blue-800",
-      agent: "bg-green-100 text-green-800",
-      configuration: "bg-purple-100 text-purple-800",
-      status: "bg-yellow-100 text-yellow-800",
-      milestone: "bg-orange-100 text-orange-800",
-      test_data: "bg-gray-100 text-gray-800",
+      system: 'bg-blue-100 text-blue-800',
+      agent: 'bg-green-100 text-green-800',
+      configuration: 'bg-purple-100 text-purple-800',
+      status: 'bg-yellow-100 text-yellow-800',
+      milestone: 'bg-orange-100 text-orange-800',
+      test_data: 'bg-gray-100 text-gray-800',
     };
-    return colors[type] ?? "bg-gray-100 text-gray-800";
+    return colors[type] ?? 'bg-gray-100 text-gray-800';
   };
 
   return (
@@ -137,7 +137,7 @@ export function KnowledgeGraphPlaceholder(): React.JSX.Element {
           variant="outline"
         >
           <RefreshCw
-            className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`}
+            className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`}
           />
           Refresh
         </Button>
@@ -182,8 +182,8 @@ export function KnowledgeGraphPlaceholder(): React.JSX.Element {
                   whileHover={{ scale: 1.02 }}
                   className={`p-3 rounded-lg border cursor-pointer transition-colors ${
                     selectedEntity?.name === entity.name
-                      ? "border-primary bg-primary/5"
-                      : "border-border hover:border-primary/50"
+                      ? 'border-primary bg-primary/5'
+                      : 'border-border hover:border-primary/50'
                   }`}
                   onClick={() => setSelectedEntity(entity)}
                 >
@@ -206,7 +206,7 @@ export function KnowledgeGraphPlaceholder(): React.JSX.Element {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Network className="h-5 w-5" />
-                {selectedEntity ? "Entity Details" : "Relations"}
+                {selectedEntity ? 'Entity Details' : 'Relations'}
               </CardTitle>
               <CardDescription>
                 {selectedEntity
@@ -250,7 +250,8 @@ export function KnowledgeGraphPlaceholder(): React.JSX.Element {
                       </div>
                     </div>
                   ))}
-                  {(!graphData.relations ?? graphData.relations.length === 0) && (
+                  {(!graphData.relations ??
+                    graphData.relations.length === 0) && (
                     <p className="text-muted-foreground text-center py-4">
                       No relations found
                     </p>
@@ -277,15 +278,15 @@ export function KnowledgeGraphPlaceholder(): React.JSX.Element {
             <div className="flex items-center justify-between text-sm text-muted-foreground">
               <span>Source: {graphData.metadata.source}</span>
               <span>
-                Updated:{" "}
+                Updated:{' '}
                 {new Date(graphData.metadata.timestamp).toLocaleTimeString()}
               </span>
               <Badge
                 variant={
-                  graphData.metadata.mcpEnabled ? "default" : "secondary"
+                  graphData.metadata.mcpEnabled ? 'default' : 'secondary'
                 }
               >
-                MCP {graphData.metadata.mcpEnabled ? "Enabled" : "Disabled"}
+                MCP {graphData.metadata.mcpEnabled ? 'Enabled' : 'Disabled'}
               </Badge>
             </div>
           </CardContent>
@@ -308,7 +309,7 @@ export function KnowledgeGraphPlaceholder(): React.JSX.Element {
                     scale: [1, 1.1, 1],
                   }}
                   transition={{
-                    rotate: { duration: 8, repeat: Infinity, ease: "linear" },
+                    rotate: { duration: 8, repeat: Infinity, ease: 'linear' },
                     scale: { duration: 2, repeat: Infinity },
                   }}
                   className="mx-auto w-16 h-16 text-blue-500"
@@ -341,12 +342,12 @@ export function KnowledgeGraphPlaceholder(): React.JSX.Element {
             <Card
               className={`cursor-pointer transition-all duration-300 hover:shadow-lg ${
                 selectedFeature === feature.id
-                  ? "ring-2 ring-blue-500 shadow-lg"
-                  : ""
+                  ? 'ring-2 ring-blue-500 shadow-lg'
+                  : ''
               }`}
               onClick={() =>
                 setSelectedFeature(
-                  selectedFeature === feature.id ? null : feature.id,
+                  selectedFeature === feature.id ? null : feature.id
                 )
               }
             >
@@ -365,7 +366,7 @@ export function KnowledgeGraphPlaceholder(): React.JSX.Element {
                   </div>
                   <Badge
                     variant={
-                      feature.status === "planned" ? "default" : "secondary"
+                      feature.status === 'planned' ? 'default' : 'secondary'
                     }
                     className="ml-2"
                   >
@@ -377,7 +378,7 @@ export function KnowledgeGraphPlaceholder(): React.JSX.Element {
               {selectedFeature === feature.id && (
                 <motion.div
                   initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
+                  animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
                   transition={{ duration: 0.3 }}
                 >

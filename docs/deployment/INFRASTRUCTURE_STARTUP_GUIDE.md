@@ -11,13 +11,14 @@
 The Memorai MCP server needs these services running:
 
 1. **Qdrant Vector Database** (port 6333) - For embeddings and vector search
-2. **Redis** (port 6379) - For caching and session management  
+2. **Redis** (port 6379) - For caching and session management
 3. **PostgreSQL** (port 5432) - For persistent data storage
 4. **Azure OpenAI** - Already configured in your `.env`
 
 ## 🎯 Three Complete Solutions
 
 ### Solution 1: Docker Compose (Recommended)
+
 Start everything with one command:
 
 ```bash
@@ -32,6 +33,7 @@ docker-compose -f tools/docker/docker-compose.dev.yml ps
 **Then your MCP tool in VS Code will work perfectly!**
 
 ### Solution 2: VS Code Tasks (Automated)
+
 I'll create VS Code tasks to start everything in the right order:
 
 ```json
@@ -50,6 +52,7 @@ I'll create VS Code tasks to start everything in the right order:
 ```
 
 ### Solution 3: PowerShell Script (Windows Optimized)
+
 Single script to start everything:
 
 ```powershell
@@ -61,7 +64,7 @@ Write-Host "Waiting for services to start..."
 Start-Sleep -Seconds 10
 
 # Test connections
-Write-Host "Testing Qdrant..." 
+Write-Host "Testing Qdrant..."
 curl http://localhost:6333/health
 
 Write-Host "Testing Redis..."
@@ -73,12 +76,14 @@ Write-Host "✅ All services ready! Your MCP tool will work now."
 ## 🔧 Current State Analysis
 
 ### What VS Code MCP Settings Do:
+
 - ✅ Start the MCP client/server process
 - ✅ Load environment variables from `.env`
 - ✅ Configure Azure OpenAI connection
 - ❌ **Do NOT start** Qdrant, Redis, PostgreSQL
 
 ### What You Need Additionally:
+
 - 🚀 Infrastructure services running **before** using the MCP tool
 - 🔌 Network connectivity between MCP server and databases
 - 📝 Proper health checks to ensure everything is ready

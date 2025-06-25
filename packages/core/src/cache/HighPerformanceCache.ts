@@ -3,8 +3,8 @@
  * Significantly improves MCP recall performance
  */
 
-import { logger } from "../utils/logger.js";
-import type { MemoryResult } from "../types/index.js";
+import { logger } from '../utils/logger.js';
+import type { MemoryResult } from '../types/index.js';
 
 export interface CacheConfig {
   maxSize: number;
@@ -116,15 +116,15 @@ export class HighPerformanceCache<T = any> {
     query: string,
     tenantId: string,
     agentId?: string,
-    options?: any,
+    options?: any
   ): string {
     const keyParts = [query, tenantId];
     if (agentId) keyParts.push(agentId);
     if (options) keyParts.push(JSON.stringify(options));
 
     // Use hash for consistent, shorter keys
-    const crypto = require("crypto");
-    return crypto.createHash("md5").update(keyParts.join("|")).digest("hex");
+    const crypto = require('crypto');
+    return crypto.createHash('md5').update(keyParts.join('|')).digest('hex');
   }
   /**
    * Cache memory search results with smart invalidation
@@ -134,13 +134,13 @@ export class HighPerformanceCache<T = any> {
     tenantId: string,
     results: MemoryResult[],
     agentId?: string,
-    options?: any,
+    options?: any
   ): void {
     const key = HighPerformanceCache.generateMemoryQueryKey(
       query,
       tenantId,
       agentId,
-      options,
+      options
     );
 
     // Cache with shorter TTL for dynamic results
@@ -148,7 +148,7 @@ export class HighPerformanceCache<T = any> {
     this.set(key, results as T, ttl);
 
     logger.debug(
-      `Cached ${results.length} memory results for query: ${query.substring(0, 50)}...`,
+      `Cached ${results.length} memory results for query: ${query.substring(0, 50)}...`
     );
   }
 
@@ -159,13 +159,13 @@ export class HighPerformanceCache<T = any> {
     query: string,
     tenantId: string,
     agentId?: string,
-    options?: any,
+    options?: any
   ): MemoryResult[] | null {
     const key = HighPerformanceCache.generateMemoryQueryKey(
       query,
       tenantId,
       agentId,
-      options,
+      options
     );
     const results = this.get(key);
 
@@ -188,13 +188,13 @@ export class HighPerformanceCache<T = any> {
       }
     }
 
-    keysToDelete.forEach((key) => {
+    keysToDelete.forEach(key => {
       this.cache.delete(key);
       this.removeFromAccessOrder(key);
     });
 
     logger.debug(
-      `Invalidated ${keysToDelete.length} cache entries for tenant: ${tenantId}`,
+      `Invalidated ${keysToDelete.length} cache entries for tenant: ${tenantId}`
     );
     this.updateStats();
   }
@@ -203,7 +203,7 @@ export class HighPerformanceCache<T = any> {
    * Bulk cache operations for better performance
    */
   public setMultiple(
-    entries: Array<{ key: string; value: T; ttl?: number }>,
+    entries: Array<{ key: string; value: T; ttl?: number }>
   ): void {
     entries.forEach(({ key, value, ttl }) => {
       this.set(key, value, ttl);
@@ -212,7 +212,7 @@ export class HighPerformanceCache<T = any> {
 
   public getMultiple(keys: string[]): Map<string, T | null> {
     const results = new Map<string, T | null>();
-    keys.forEach((key) => {
+    keys.forEach(key => {
       results.set(key, this.get(key));
     });
     return results;
@@ -300,7 +300,7 @@ export class HighPerformanceCache<T = any> {
       }
     }
 
-    keysToDelete.forEach((key) => {
+    keysToDelete.forEach(key => {
       this.cache.delete(key);
       this.removeFromAccessOrder(key);
     });

@@ -1,114 +1,98 @@
 {
-    "name": "memorai",
-    "version": "2.0.1",
-    "description": "AI Memory & Database Core - Enterprise MCP Server",
-    "type": "service",
-    "priority": 1,
-    "domain": "memorai.ro",
-    "repository": "https://github.com/codai-ecosystem/memorai.git",
-    "architecture": "v2.0",
-    "integration": "git-submodule",
-    "tech_stack": {
-        "runtime": "Node.js",
-        "language": "TypeScript",
-        "framework": "Turbo Monorepo",
-        "package_manager": "pnpm",
-        "mcp": "Model Context Protocol",
-        "databases": [
-            "Qdrant",
-            "SQLite"
-        ],
-        "apis": [
-            "REST",
-            "GraphQL"
-        ],
-        "tools": [
-            "CLI",
-            "Dashboard",
-            "SDK"
-        ]
+  "name": "memorai",
+  "version": "2.0.1",
+  "description": "AI Memory & Database Core - Enterprise MCP Server",
+  "type": "service",
+  "priority": 1,
+  "domain": "memorai.ro",
+  "repository": "https://github.com/codai-ecosystem/memorai.git",
+  "architecture": "v2.0",
+  "integration": "git-submodule",
+  "tech_stack": {
+    "runtime": "Node.js",
+    "language": "TypeScript",
+    "framework": "Turbo Monorepo",
+    "package_manager": "pnpm",
+    "mcp": "Model Context Protocol",
+    "databases": ["Qdrant", "SQLite"],
+    "apis": ["REST", "GraphQL"],
+    "tools": ["CLI", "Dashboard", "SDK"]
+  },
+  "development": {
+    "dev_server": {
+      "command": "pnpm dev",
+      "ports": {
+        "mcp_server": 8080,
+        "api_server": 3001,
+        "dashboard": 6366,
+        "demo": 3002
+      }
     },
-    "development": {
-        "dev_server": {
-            "command": "pnpm dev",
-            "ports": {
-                "mcp_server": 8080,
-                "api_server": 3001,
-                "dashboard": 6366,
-                "demo": 3002
-            }
-        },
-        "build": {
-            "command": "pnpm build",
-            "output": "dist/"
-        },
-        "test": {
-            "command": "pnpm test",
-            "coverage": true
-        }
+    "build": {
+      "command": "pnpm build",
+      "output": "dist/"
     },
-    "packages": [
-        {
-            "name": "@codai/memorai-core",
-            "description": "Core memory engine and data structures"
-        },
-        {
-            "name": "@codai/memorai-mcp",
-            "description": "Model Context Protocol server implementation"
-        },
-        {
-            "name": "@codai/memorai-sdk",
-            "description": "TypeScript SDK for memorai integration"
-        },
-        {
-            "name": "@codai/memorai-cli",
-            "description": "Command-line interface for memorai management"
-        },
-        {
-            "name": "@codai/memorai-server",
-            "description": "HTTP server and API endpoints"
-        },
-        {
-            "name": "@codai/memorai-api",
-            "description": "REST API application"
-        },
-        {
-            "name": "@codai/memorai-dashboard",
-            "description": "Next.js dashboard for memory visualization"
-        },
-        {
-            "name": "@codai/memorai-demo",
-            "description": "Demo application showcasing memorai capabilities"
-        }
-    ],
-    "agent": {
-        "mode": "individual",
-        "specialization": "memory_systems",
-        "capabilities": [
-            "memory_architecture",
-            "mcp_protocol",
-            "data_structures",
-            "performance_optimization",
-            "enterprise_deployment"
-        ],
-        "memory_file": ".agent/agent.memory.json",
-        "instructions": "copilot-instructions.md"
-    },
-    "ecosystem": {
-        "dependencies": [],
-        "integrations": [
-            "codai",
-            "logai"
-        ],
-        "shared_packages": [
-            "@codai/config",
-            "@codai/ui"
-        ],
-        "api_endpoints": [
-            "/api/memory",
-            "/api/search",
-            "/api/entities",
-            "/api/relations"
-        ]
+    "test": {
+      "command": "pnpm test",
+      "coverage": true
     }
+  },
+  "packages": [
+    {
+      "name": "@codai/memorai-core",
+      "description": "Core memory engine and data structures"
+    },
+    {
+      "name": "@codai/memorai-mcp",
+      "description": "Model Context Protocol server implementation"
+    },
+    {
+      "name": "@codai/memorai-sdk",
+      "description": "TypeScript SDK for memorai integration"
+    },
+    {
+      "name": "@codai/memorai-cli",
+      "description": "Command-line interface for memorai management"
+    },
+    {
+      "name": "@codai/memorai-server",
+      "description": "HTTP server and API endpoints"
+    },
+    {
+      "name": "@codai/memorai-api",
+      "description": "REST API application"
+    },
+    {
+      "name": "@codai/memorai-dashboard",
+      "description": "Next.js dashboard for memory visualization"
+    },
+    {
+      "name": "@codai/memorai-demo",
+      "description": "Demo application showcasing memorai capabilities"
+    }
+  ],
+  "agent": {
+    "mode": "individual",
+    "specialization": "memory_systems",
+    "capabilities": [
+      "memory_architecture",
+      "mcp_protocol",
+      "data_structures",
+      "performance_optimization",
+      "enterprise_deployment"
+    ],
+    "memory_file": ".agent/agent.memory.json",
+    "instructions": "copilot-instructions.md"
+  },
+  "ecosystem": {
+    "dependencies": [],
+    "integrations": ["codai", "logai"],
+    "shared_packages": ["@codai/config", "@codai/ui"],
+    "api_endpoints": [
+      "/api/memory",
+      "/api/search",
+      "/api/entities",
+      "/api/relations"
+    ]
+  }
 }

@@ -1,14 +1,14 @@
-import { z } from "zod";
+import { z } from 'zod';
 
 // Core Memory Types
 export const MemoryTypeSchema = z.enum([
-  "personality",
-  "procedure",
-  "preference",
-  "fact",
-  "thread",
-  "task",
-  "emotion",
+  'personality',
+  'procedure',
+  'preference',
+  'fact',
+  'thread',
+  'task',
+  'emotion',
 ]);
 export type MemoryType = z.infer<typeof MemoryTypeSchema>;
 
@@ -98,7 +98,7 @@ export const MemoryConfigSchema = z.object({
   vector_db: z.object({
     url: z.string().url(),
     api_key: z.string().optional(),
-    collection: z.string().default("memories"),
+    collection: z.string().default('memories'),
     dimension: z.number().int().min(1).default(1536),
   }),
   redis: z.object({
@@ -109,9 +109,9 @@ export const MemoryConfigSchema = z.object({
   // OpenAI/Azure configuration for language model - Default to Azure
   openai: z
     .object({
-      provider: z.enum(["openai", "azure"]).default("azure"), // Changed default to azure
+      provider: z.enum(['openai', 'azure']).default('azure'), // Changed default to azure
       api_key: z.string().optional(),
-      model: z.string().default("memorai-model-r"), // Azure deployment name
+      model: z.string().default('memorai-model-r'), // Azure deployment name
 
       // Standard OpenAI configuration
       base_url: z.string().url().optional(),
@@ -123,8 +123,8 @@ export const MemoryConfigSchema = z.object({
     })
     .optional(),
   embedding: z.object({
-    provider: z.enum(["openai", "azure", "local"]).default("azure"), // Changed default to azure
-    model: z.string().default("memorai-model-r"), // Azure deployment name
+    provider: z.enum(['openai', 'azure', 'local']).default('azure'), // Changed default to azure
+    model: z.string().default('memorai-model-r'), // Azure deployment name
     api_key: z.string().optional(),
 
     // Standard OpenAI configuration
@@ -157,48 +157,50 @@ export class MemoryError extends Error {
   constructor(
     message: string,
     public code: string,
-    public context?: Record<string, unknown>,
+    public context?: Record<string, unknown>
   ) {
     super(message);
-    this.name = "MemoryError";
+    this.name = 'MemoryError';
   }
 }
 
 export class VectorStoreError extends MemoryError {
   constructor(message: string, context?: Record<string, unknown>) {
-    super(message, "VECTOR_STORE_ERROR", context);
-    this.name = "VectorStoreError";
+    super(message, 'VECTOR_STORE_ERROR', context);
+    this.name = 'VectorStoreError';
   }
 }
 
 export class EmbeddingError extends MemoryError {
   constructor(message: string, context?: Record<string, unknown>) {
-    super(message, "EMBEDDING_ERROR", context);
-    this.name = "EmbeddingError";
+    super(message, 'EMBEDDING_ERROR', context);
+    this.name = 'EmbeddingError';
   }
 }
 
 export class ContextError extends MemoryError {
   constructor(message: string, context?: Record<string, unknown>) {
-    super(message, "CONTEXT_ERROR", context);
-    this.name = "ContextError";
+    super(message, 'CONTEXT_ERROR', context);
+    this.name = 'ContextError';
   }
 }
 
 // Advanced Memory Relationship Types
 export const MemoryRelationshipTypeSchema = z.enum([
-  "parent",
-  "child",
-  "sibling",
-  "derived",
-  "references",
-  "conflicts",
-  "supersedes",
-  "complements",
-  "triggers",
-  "context"
+  'parent',
+  'child',
+  'sibling',
+  'derived',
+  'references',
+  'conflicts',
+  'supersedes',
+  'complements',
+  'triggers',
+  'context',
 ]);
-export type MemoryRelationshipType = z.infer<typeof MemoryRelationshipTypeSchema>;
+export type MemoryRelationshipType = z.infer<
+  typeof MemoryRelationshipTypeSchema
+>;
 
 export const MemoryRelationshipSchema = z.object({
   id: z.string(),
@@ -227,7 +229,9 @@ export const EnhancedMemoryMetadataSchema = MemoryMetadataSchema.extend({
   previousVersionId: z.string().optional(),
 
   // Enhanced metadata
-  sourceType: z.enum(["user", "system", "agent", "api", "integration"]).default("user"),
+  sourceType: z
+    .enum(['user', 'system', 'agent', 'api', 'integration'])
+    .default('user'),
   sourceId: z.string().optional(),
 
   // Smart categorization
@@ -235,14 +239,18 @@ export const EnhancedMemoryMetadataSchema = MemoryMetadataSchema.extend({
   suggestedRelationships: z.array(z.string()).default([]),
 
   // Usage patterns
-  accessPattern: z.object({
-    frequency: z.number().default(0),
-    recency: z.number().default(0),
-    contextRelevance: z.number().default(0),
-  }).optional(),
+  accessPattern: z
+    .object({
+      frequency: z.number().default(0),
+      recency: z.number().default(0),
+      contextRelevance: z.number().default(0),
+    })
+    .optional(),
 });
 
-export type EnhancedMemoryMetadata = z.infer<typeof EnhancedMemoryMetadataSchema>;
+export type EnhancedMemoryMetadata = z.infer<
+  typeof EnhancedMemoryMetadataSchema
+>;
 
 // Memory Graph Operations
 export const MemoryGraphQuerySchema = z.object({
