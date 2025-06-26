@@ -1,6 +1,6 @@
 {
   "name": "@codai/memorai-server",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Enterprise MCP server for agent-native memory management",
   "type": "module",
   "main": "./dist/index.js",

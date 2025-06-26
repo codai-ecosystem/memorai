@@ -1,6 +1,6 @@
 {
   "name": "@codai/memorai-cli",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "CLI tools for Memorai MCP - Agent memory management",
   "type": "module",
   "main": "./dist/index.js",
