@@ -15,7 +15,8 @@ import {
 import { spawn } from 'child_process';
 import { config } from 'dotenv';
 import { readFileSync } from 'fs';
-import { dirname, resolve } from 'path';
+import { homedir, platform } from 'os';
+import { dirname, join, resolve } from 'path';
 import { fileURLToPath } from 'url';
 
 import {
@@ -26,32 +27,33 @@ import {
 } from '@codai/memorai-core';
 import { infrastructureManager } from './infrastructure.js';
 
-// Try to load environment variables from multiple possible locations
-const envPaths = [
-  'E:\\GitHub\\workspace-ai\\.env', // VS Code MCP configured path
-  resolve(process.cwd(), '../../../.env.local'),
-  resolve(process.cwd(), '../../../.env'),
-  resolve(process.cwd(), '.env.local'),
-  resolve(process.cwd(), '.env'),
-];
-
-console.error('🔍 Attempting to load environment variables from:');
-for (const envPath of envPaths) {
-  try {
-    const result = config({ path: envPath });
-    if (result.parsed) {
-      console.error(`✅ Loaded environment variables from: ${envPath}`);
-      console.error(`📊 Loaded ${Object.keys(result.parsed).length} variables`);
-      break;
-    }
-  } catch (error) {
-    console.error(`❌ Failed to load from: ${envPath}`);
+/**
+ * Get OS-specific default data path for Memorai memory storage
+ */
+function getDefaultDataPath(): string {
+  const platformType = platform();
+  const userHome = homedir();
+  
+  switch (platformType) {
+    case 'win32':
+      // Windows: Use %LOCALAPPDATA%\Memorai\data\memory
+      return join(userHome, 'AppData', 'Local', 'Memorai', 'data', 'memory');
+    case 'darwin':
+      // macOS: Use ~/Library/Application Support/Memorai/data/memory
+      return join(userHome, 'Library', 'Application Support', 'Memorai', 'data', 'memory');
+    case 'linux':
+    default:
+      // Linux/Unix: Use ~/.local/share/Memorai/data/memory
+      return join(userHome, '.local', 'share', 'Memorai', 'data', 'memory');
   }
 }
 
-// Configure defaults - only force in-memory if explicitly set or no vector DB available
+// Load environment variables from .env file if available (optional)
+config({ path: resolve(process.cwd(), '.env') });
+
+// Configure defaults - use persistent storage for production reliability
 if (!process.env.MEMORAI_USE_INMEMORY) {
-  process.env.MEMORAI_USE_INMEMORY = 'true'; // Default to in-memory for dev
+  process.env.MEMORAI_USE_INMEMORY = 'false'; // Default to persistent storage for enterprise use
 }
 
 // Check for explicit tier setting and credentials
@@ -134,9 +136,8 @@ const memoryConfig: UnifiedMemoryConfig = {
       ? MemoryTierLevel.ADVANCED
       : MemoryTierLevel.SMART,
 
-  // Use shared data directory for unified storage across API and MCP servers
-  dataPath:
-    process.env.MEMORAI_DATA_PATH || 'e:\\GitHub\\memorai\\data\\memory',
+  // Use OS-specific shared data directory for unified storage across API and MCP servers
+  dataPath: process.env.MEMORAI_DATA_PATH || getDefaultDataPath(),
 
   // Azure OpenAI configuration (primary) - only if credentials are available
   azureOpenAI: hasAzureOpenAI
