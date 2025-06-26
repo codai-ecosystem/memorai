@@ -143,13 +143,10 @@ export class QdrantVectorStore implements VectorStore {
         },
       }));
 
-      // Debug logging to see what's being sent
-      console.error('🔍 DEBUG: Upserting points to Qdrant:');
-      console.error('Point count:', qdrantPoints.length);
-      console.error(
-        'First point structure:',
-        JSON.stringify(qdrantPoints[0], null, 2)
-      );
+      // Minimal logging without vector data to prevent performance issues
+      if (process.env.NODE_ENV === 'development' && qdrantPoints.length > 0) {
+        console.log(`Upserting ${qdrantPoints.length} points to Qdrant collection: ${this.collection}`);
+      }
 
       await this.client.upsert(this.collection, {
         wait: true,

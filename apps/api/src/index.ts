@@ -16,6 +16,7 @@ import { Server as SocketIOServer } from 'socket.io';
 import { errorHandler } from './middleware/errorHandler';
 import { configRouter } from './routes/config';
 import { graphRouter } from './routes/graph';
+import { healthRouter } from './routes/health';
 import { memoryRouter } from './routes/memory';
 import { statsRouter } from './routes/stats';
 import { setupWebSocket } from './services/websocket';
@@ -110,18 +111,7 @@ app.use((req: Request, _res: Response, next: NextFunction) => {
 });
 
 // Health check endpoint
-app.get('/health', (_req: Request, res: Response) => {
-  const status = {
-    status: 'healthy',
-    timestamp: new Date().toISOString(),
-    version: process.env.npm_package_version || '1.0.0',
-    memoryEngine: {
-      initialized: !!memoryEngine,
-      tier: memoryEngine ? memoryEngine.getTierInfo().currentTier : 'none',
-    },
-  };
-  res.json(status);
-});
+app.use('/health', healthRouter);
 
 // API routes
 app.use('/api/memory', memoryRouter);
