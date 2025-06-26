@@ -1,9 +1,9 @@
 /**
  * Basic test for web dashboard server
  */
-const { describe, it, expect } = require('@jest/globals');
-const fs = require('fs');
-const path = require('path');
+import { describe, it, expect } from 'vitest';
+import fs from 'fs';
+import path from 'path';
 
 describe('Web Dashboard', () => {
   it('should have basic server functionality', () => {
@@ -24,7 +24,7 @@ describe('Web Dashboard', () => {
     const packageJsonContent = fs.readFileSync(packageJsonPath, 'utf8');
     const packageJson = JSON.parse(packageJsonContent);
     expect(packageJson.name).toBe('@codai/memorai-dashboard');
-    expect(packageJson.version).toBe('2.0.0');
+    expect(packageJson.version).toBe('2.0.4');
     expect(packageJson.main).toBe('next.config.js');
   });
 });

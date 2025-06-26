@@ -28,6 +28,8 @@ export class OpenAIEmbeddingProvider implements EmbeddingProvider {
     // Configure for Azure OpenAI or standard OpenAI
     const clientConfig: ConstructorParameters<typeof OpenAI>[0] = {
       apiKey: config.api_key,
+      // Allow browser environment for testing
+      dangerouslyAllowBrowser: process.env.NODE_ENV === 'test' || process.env.VITEST === 'true',
     };
 
     // Azure OpenAI configuration

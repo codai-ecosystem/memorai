@@ -1,6 +1,9 @@
-import React from 'react';
 import '@testing-library/jest-dom';
 import { vi } from 'vitest';
+import * as React from 'react';
+
+// Add React 19 compatibility
+(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
 
 // Set NODE_ENV for tests using vi.stubEnv
 vi.stubEnv('NODE_ENV', 'test');
@@ -163,7 +166,7 @@ global.IntersectionObserver = vi.fn().mockImplementation(() => ({
 
 // Mock lucide-react icons
 vi.mock('lucide-react', () => {
-  const MockIcon = (props: unknown) =>
+  const MockIcon = (props: Record<string, any>) =>
     React.createElement('svg', { 'data-testid': 'mock-icon', ...props });
 
   return {

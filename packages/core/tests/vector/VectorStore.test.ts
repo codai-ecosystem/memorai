@@ -21,23 +21,22 @@ vi.mock('@qdrant/js-client-rest', () => ({
   })),
 }));
 
+// Helper function to create valid MemoryQuery objects
+const createMemoryQuery = (overrides: Partial<MemoryQuery> = {}): MemoryQuery => ({
+  query: 'test query',
+  tenant_id: 'tenant-1',
+  limit: 10,
+  threshold: 0.7,
+  include_context: true,
+  time_decay: true,
+  ...overrides,
+});
+
 describe('VectorStore', () => {
   let mockQdrantClient: any;
   let qdrantStore: QdrantVectorStore;
   let memoryStore: MemoryVectorStore;
 
-  // Helper function to create valid MemoryQuery objects
-  const createMockQuery = (
-    overrides: Partial<MemoryQuery> = {}
-  ): MemoryQuery => ({
-    query: 'test query',
-    tenant_id: 'tenant-1',
-    limit: 10,
-    threshold: 0.7,
-    include_context: true,
-    time_decay: true,
-    ...overrides,
-  });
   beforeEach(async () => {
     vi.clearAllMocks();
 
@@ -182,9 +181,12 @@ describe('VectorStore', () => {
             wait: true,
             points: [
               {
-                id: 'test-1',
+                id: expect.stringMatching(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i),
                 vector: [0.1, 0.2, 0.3],
-                payload: { content: 'test content' },
+                payload: { 
+                  content: 'test content',
+                  original_id: 'test-1'
+                },
               },
             ],
           }
@@ -276,7 +278,7 @@ describe('VectorStore', () => {
         ]);
       });
       it('should search with type filter', async () => {
-        const query = createMockQuery({ type: 'fact' });
+        const query = createMemoryQuery({ type: 'fact' });
 
         mockQdrantClient.search.mockResolvedValue([]);
 
@@ -312,6 +314,8 @@ describe('VectorStore', () => {
           agent_id: 'agent-1',
           limit: 10,
           threshold: 0.7,
+          include_context: false,
+          time_decay: false,
         };
 
         mockQdrantClient.search.mockResolvedValue([]);
@@ -347,6 +351,8 @@ describe('VectorStore', () => {
           tenant_id: 'tenant-1',
           limit: 10,
           threshold: 0.7,
+          include_context: false,
+          time_decay: false,
         };
 
         const mockSearchResult = [
@@ -376,6 +382,8 @@ describe('VectorStore', () => {
           tenant_id: 'tenant-1',
           limit: 10,
           threshold: 0.7,
+          include_context: false,
+          time_decay: false,
         };
         const error = new Error('Search failed');
         mockQdrantClient.search.mockRejectedValue(error);
@@ -394,6 +402,8 @@ describe('VectorStore', () => {
           tenant_id: 'tenant-1',
           limit: 10,
           threshold: 0.7,
+          include_context: false,
+          time_decay: false,
         };
         mockQdrantClient.search.mockRejectedValue('Unknown error');
 
@@ -597,11 +607,9 @@ describe('VectorStore', () => {
             id: 'mem-1',
             vector: embedding,
             payload: {
-              ...mockMemory,
               created_at: '2024-01-01T00:00:00.000Z',
-              updated_at: '2024-01-01T00:00:00.000Z',
-              last_accessed_at: '2024-01-01T00:00:00.000Z',
-              ttl: '2025-01-01T00:00:00.000Z',
+              type: 'fact',
+              tenant_id: 'tenant-1',
             },
           },
         ]);
@@ -619,11 +627,9 @@ describe('VectorStore', () => {
             id: 'mem-1',
             vector: [0.1, 0.2],
             payload: {
-              ...memoryWithoutTTL,
               created_at: '2024-01-01T00:00:00.000Z',
-              updated_at: '2024-01-01T00:00:00.000Z',
-              last_accessed_at: '2024-01-01T00:00:00.000Z',
-              ttl: undefined,
+              type: 'fact',
+              tenant_id: 'tenant-1',
             },
           },
         ]);
@@ -677,22 +683,18 @@ describe('VectorStore', () => {
             id: 'mem-1',
             vector: [0.1, 0.2],
             payload: {
-              ...mockMemories[0],
               created_at: '2024-01-01T00:00:00.000Z',
-              updated_at: '2024-01-01T00:00:00.000Z',
-              last_accessed_at: '2024-01-01T00:00:00.000Z',
-              ttl: undefined,
+              type: 'fact',
+              tenant_id: 'tenant-1',
             },
           },
           {
             id: 'mem-2',
             vector: [0.3, 0.4],
             payload: {
-              ...mockMemories[1],
               created_at: '2024-01-02T00:00:00.000Z',
-              updated_at: '2024-01-02T00:00:00.000Z',
-              last_accessed_at: '2024-01-02T00:00:00.000Z',
-              ttl: undefined,
+              type: 'personality',
+              tenant_id: 'tenant-1',
             },
           },
         ]);
@@ -716,6 +718,8 @@ describe('VectorStore', () => {
         tenant_id: 'tenant-1',
         limit: 10,
         threshold: 0.7,
+        include_context: false,
+        time_decay: false,
       };
 
       it('should search memories and transform results', async () => {
@@ -974,6 +978,8 @@ describe('VectorStore', () => {
           tenant_id: 'tenant-1',
           limit: 10,
           threshold: 0.7,
+          include_context: false,
+          time_decay: false,
         });
 
         expect(results[0].relevance_reason).toBe(
@@ -1008,6 +1014,8 @@ describe('VectorStore', () => {
           tenant_id: 'tenant-1',
           limit: 10,
           threshold: 0.7,
+          include_context: false,
+          time_decay: false,
         });
 
         expect(results[0].relevance_reason).toBe(
@@ -1042,6 +1050,8 @@ describe('VectorStore', () => {
           tenant_id: 'tenant-1',
           limit: 10,
           threshold: 0.7,
+          include_context: false,
+          time_decay: false,
         });
 
         expect(results[0].relevance_reason).toBe(
@@ -1076,6 +1086,8 @@ describe('VectorStore', () => {
           tenant_id: 'tenant-1',
           limit: 10,
           threshold: 0.5,
+          include_context: false,
+          time_decay: false,
         });
 
         expect(results[0].relevance_reason).toBe(

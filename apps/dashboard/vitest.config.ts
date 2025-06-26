@@ -1,6 +1,6 @@
-import { defineConfig } from 'vitest/config';
-import { resolve } from 'path';
 import react from '@vitejs/plugin-react';
+import { resolve } from 'path';
+import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   plugins: [react()] as any,
@@ -12,6 +12,7 @@ export default defineConfig({
     exclude: ['tests/e2e/**', '**/node_modules/**'],
     env: {
       NODE_ENV: 'test',
+      IS_REACT_ACT_ENVIRONMENT: 'true', // React 19 compatibility
     },
     coverage: {
       provider: 'v8',

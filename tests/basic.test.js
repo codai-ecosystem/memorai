@@ -1,5 +1,5 @@
 // Basic test for memorai service
-const { describe, it, expect } = require('@jest/globals');
+import { describe, it, expect } from 'vitest';
 
 describe('memorai Service', () => {
   it('should be properly configured', () => {

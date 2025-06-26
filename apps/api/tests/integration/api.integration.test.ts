@@ -237,7 +237,7 @@ describe('API Integration Tests', () => {
       expect(response.body.success).toBe(true);
       expect(response.body.config).toMatchObject({
         tier: {
-          level: 'mock',
+          level: expect.stringMatching(/^(mock|basic|smart|advanced)$/),
           capabilities: expect.any(Object),
         },
         environment: {

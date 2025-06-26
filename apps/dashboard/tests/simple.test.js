@@ -1,4 +1,4 @@
-const { describe, it, expect } = require('@jest/globals');
+import { describe, it, expect } from 'vitest';
 
 describe('Simple Test', () => {
   it('should work', () => {

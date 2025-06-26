@@ -26,19 +26,19 @@
     "_DEPRECATED_start:mcp": "echo 'FORBIDDEN: Use MCP server published packages only' && exit 1"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.1.0",
+    "@testing-library/react": "^16.1.0",
     "@typescript-eslint/eslint-plugin": "^8.18.1",
     "@typescript-eslint/parser": "^8.18.1",
+    "@vitest/coverage-v8": "^2.1.9",
+    "@vitest/ui": "^2.1.9",
     "eslint": "^8.57.1",
+    "happy-dom": "^12.0.0",
+    "jsdom": "^23.0.0",
     "prettier": "^3.3.3",
     "turbo": "^2.5.4",
     "typescript": "^5.5.4",
-    "vitest": "^2.1.8",
-    "@vitest/ui": "^2.1.8",
-    "@vitest/coverage-v8": "^1.2.0",
-    "@testing-library/react": "^14.0.0",
-    "@testing-library/jest-dom": "^6.1.0",
-    "jsdom": "^23.0.0",
-    "happy-dom": "^12.0.0"
+    "vitest": "^2.1.9"
   },
   "packageManager": "pnpm@8.15.6",
   "engines": {

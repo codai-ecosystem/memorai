@@ -38,12 +38,12 @@
     "@types/supertest": "^6.0.2",
     "@typescript-eslint/eslint-plugin": "^8.34.0",
     "@typescript-eslint/parser": "^8.34.0",
-    "@vitest/coverage-v8": "^1.4.0",
+    "@vitest/coverage-v8": "^2.1.9",
     "eslint": "^8.57.1",
     "socket.io-client": "^4.7.5",
     "supertest": "^6.3.4",
     "tsx": "^4.7.1",
     "typescript": "^5.4.3",
-    "vitest": "^1.4.0"
+    "vitest": "^2.1.9"
   }
 }

@@ -5,10 +5,10 @@
  * Ultimate testing and validation for production readiness
  */
 
-const fs = require('fs');
-const path = require('path');
-const { performance } = require('perf_hooks');
-const { spawn } = require('child_process');
+import fs from 'fs';
+import path from 'path';
+import { performance } from 'perf_hooks';
+import { spawn } from 'child_process';
 
 class FinalProjectCompletionValidator {
   constructor() {
@@ -633,8 +633,9 @@ async function main() {
   }
 }
 
-if (require.main === module) {
+// ESM equivalent of require.main === module
+if (import.meta.url === `file://${process.argv[1]}`) {
   main().catch(console.error);
 }
 
-module.exports = { FinalProjectCompletionValidator };
+export { FinalProjectCompletionValidator };
