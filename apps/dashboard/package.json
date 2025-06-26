@@ -1,6 +1,6 @@
 {
   "name": "@codai/memorai-dashboard",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "Next.js 15 dashboard for Memorai memory management with cutting-edge architecture",
   "main": "next.config.js",
   "bin": {
