@@ -183,7 +183,7 @@ export class OptimizedQdrantVectorStore implements VectorStore {
       { field_name: 'tenant_id', field_schema: 'keyword' as const },
       { field_name: 'agent_id', field_schema: 'keyword' as const },
       { field_name: 'type', field_schema: 'keyword' as const },
-      { field_name: 'created_at', field_schema: 'datetime' as const },
+      { field_name: 'created_at', field_schema: 'keyword' as const }, // Changed from datetime to keyword
       { field_name: 'importance', field_schema: 'float' as const },
       { field_name: 'access_count', field_schema: 'integer' as const },
       { field_name: 'content_hash', field_schema: 'keyword' as const },

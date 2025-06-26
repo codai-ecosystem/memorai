@@ -12,11 +12,11 @@ import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
+import { spawn } from 'child_process';
 import { config } from 'dotenv';
 import { readFileSync } from 'fs';
 import { dirname, resolve } from 'path';
 import { fileURLToPath } from 'url';
-import { spawn } from 'child_process';
 
 import {
   MemoryTierLevel,
@@ -35,17 +35,17 @@ const envPaths = [
   resolve(process.cwd(), '.env'),
 ];
 
-console.log('🔍 Attempting to load environment variables from:');
+console.error('🔍 Attempting to load environment variables from:');
 for (const envPath of envPaths) {
   try {
     const result = config({ path: envPath });
     if (result.parsed) {
-      console.log(`✅ Loaded environment variables from: ${envPath}`);
-      console.log(`📊 Loaded ${Object.keys(result.parsed).length} variables`);
+      console.error(`✅ Loaded environment variables from: ${envPath}`);
+      console.error(`📊 Loaded ${Object.keys(result.parsed).length} variables`);
       break;
     }
   } catch (error) {
-    console.log(`❌ Failed to load from: ${envPath}`);
+    console.error(`❌ Failed to load from: ${envPath}`);
   }
 }
 
@@ -55,17 +55,17 @@ if (!process.env.MEMORAI_USE_INMEMORY) {
 }
 
 // Check for explicit tier setting and credentials
-console.log('🔍 Checking environment configuration...');
-console.log('MEMORAI_TIER:', process.env.MEMORAI_TIER || 'NOT SET');
-console.log(
+console.error('🔍 Checking environment configuration...');
+console.error('MEMORAI_TIER:', process.env.MEMORAI_TIER || 'NOT SET');
+console.error(
   'AZURE_OPENAI_ENDPOINT:',
   process.env.AZURE_OPENAI_ENDPOINT ? 'SET' : 'NOT SET'
 );
-console.log(
+console.error(
   'AZURE_OPENAI_API_KEY:',
   process.env.AZURE_OPENAI_API_KEY ? 'SET' : 'NOT SET'
 );
-console.log('OPENAI_API_KEY:', process.env.OPENAI_API_KEY ? 'SET' : 'NOT SET');
+console.error('OPENAI_API_KEY:', process.env.OPENAI_API_KEY ? 'SET' : 'NOT SET');
 
 const hasAzureOpenAI =
   process.env.AZURE_OPENAI_ENDPOINT &&
@@ -76,38 +76,38 @@ const hasAzureOpenAI =
 const hasOpenAI =
   process.env.OPENAI_API_KEY && !process.env.OPENAI_API_KEY.includes('your_');
 
-console.log('hasAzureOpenAI:', hasAzureOpenAI);
-console.log('hasOpenAI:', hasOpenAI);
+console.error('hasAzureOpenAI:', hasAzureOpenAI);
+console.error('hasOpenAI:', hasOpenAI);
 
 // Check if MEMORAI_TIER is explicitly set (from VS Code MCP config)
 const explicitTier = process.env.MEMORAI_TIER?.toLowerCase();
 if (explicitTier === 'advanced') {
   if (hasAzureOpenAI || hasOpenAI) {
     process.env.MEMORAI_FORCE_TIER = 'advanced';
-    console.log(
+    console.error(
       '✅ MEMORAI_TIER=advanced set with valid credentials. Using advanced tier.'
     );
   } else {
-    console.log(
+    console.error(
       '⚠️  MEMORAI_TIER=advanced set but no valid AI credentials found.'
     );
-    console.log(
+    console.error(
       '📋 Advanced tier requires Azure OpenAI or OpenAI credentials.'
     );
-    console.log('🔄 Falling back to smart/basic tier.');
+    console.error('🔄 Falling back to smart/basic tier.');
   }
 } else if (hasAzureOpenAI || hasOpenAI) {
   process.env.MEMORAI_FORCE_TIER = process.env.MEMORAI_FORCE_TIER || 'advanced';
-  console.log('✅ Valid AI credentials found. Auto-setting tier to advanced.');
+  console.error('✅ Valid AI credentials found. Auto-setting tier to advanced.');
 } else {
   // Don't force advanced tier without proper credentials
-  console.log(
+  console.error(
     '⚠️  No valid AI credentials found. Memorai will use smart/basic tier.'
   );
-  console.log(
+  console.error(
     '💡 To enable advanced tier with semantic search, configure credentials in .env.local'
   );
-  console.log('📋 See .env.local.example for configuration template');
+  console.error('📋 See .env.local.example for configuration template');
 }
 
 // Function to get MCP version from package.json
@@ -631,56 +631,99 @@ server.setRequestHandler(CallToolRequestSchema, async request => {
 async function startWebServices(): Promise<void> {
   return new Promise((resolve, reject) => {
     let servicesStarted = 0;
-    const totalServices = 2;
-    
-    // Start API server
-    console.log('🔄 Starting API server on port 6367...');
-    const apiProcess = spawn('npx', ['@codai/memorai-api@1.0.2'], {
+    const totalServices = 3; // HTTP MCP Server, API, Dashboard
+
+    // Start HTTP MCP Server
+    console.error('🔄 Starting HTTP MCP server on port 6367...');
+    const httpMcpProcess = spawn('npx', ['@codai/memorai-server@0.1.5'], {
       stdio: 'pipe',
       shell: true,
-      env: { ...process.env, PORT: '6367' }
+      env: { ...process.env, PORT: '6367' },
     });
-    
-    apiProcess.stdout?.on('data', (data) => {
-      console.log(`[API] ${data.toString().trim()}`);
-      if (data.toString().includes('6367') || data.toString().includes('listening')) {
+
+    httpMcpProcess.stdout?.on('data', data => {
+      console.error(`[HTTP-MCP] ${data.toString().trim()}`);
+      if (
+        data.toString().includes('6367') ||
+        data.toString().includes('started') ||
+        data.toString().includes('listening')
+      ) {
         servicesStarted++;
+        console.error(
+          `✅ HTTP MCP Server started (${servicesStarted}/${totalServices})`
+        );
         if (servicesStarted === totalServices) {
           resolve();
         }
       }
     });
-    
-    apiProcess.stderr?.on('data', (data) => {
+
+    httpMcpProcess.stderr?.on('data', data => {
+      console.error(`[HTTP-MCP ERROR] ${data.toString().trim()}`);
+    });
+
+    // Start API server (on different port to avoid conflict)
+    console.error('🔄 Starting API server on port 6368...');
+    const apiProcess = spawn('npx', ['@codai/memorai-api@1.0.9'], {
+      stdio: 'pipe',
+      shell: true,
+      env: { ...process.env, PORT: '6368' },
+    });
+
+    apiProcess.stdout?.on('data', data => {
+      console.error(`[API] ${data.toString().trim()}`);
+      if (
+        data.toString().includes('6368') ||
+        data.toString().includes('listening')
+      ) {
+        servicesStarted++;
+        console.error(
+          `✅ API Server started (${servicesStarted}/${totalServices})`
+        );
+        if (servicesStarted === totalServices) {
+          resolve();
+        }
+      }
+    });
+
+    apiProcess.stderr?.on('data', data => {
       console.error(`[API ERROR] ${data.toString().trim()}`);
     });
-    
+
     // Start Dashboard
-    console.log('🔄 Starting dashboard on port 6366...');
-    const dashboardProcess = spawn('npx', ['@codai/memorai-dashboard@2.0.3'], {
-      stdio: 'pipe', 
+    console.error('🔄 Starting dashboard on port 6366...');
+    const dashboardProcess = spawn('npx', ['@codai/memorai-dashboard@2.0.4'], {
+      stdio: 'pipe',
       shell: true,
-      env: { ...process.env, PORT: '6366' }
+      env: { ...process.env, PORT: '6366', API_PORT: '6368' },
     });
-    
-    dashboardProcess.stdout?.on('data', (data) => {
-      console.log(`[DASHBOARD] ${data.toString().trim()}`);
-      if (data.toString().includes('6366') || data.toString().includes('ready')) {
+
+    dashboardProcess.stdout?.on('data', data => {
+      console.error(`[DASHBOARD] ${data.toString().trim()}`);
+      if (
+        data.toString().includes('6366') ||
+        data.toString().includes('ready')
+      ) {
         servicesStarted++;
+        console.error(
+          `✅ Dashboard started (${servicesStarted}/${totalServices})`
+        );
         if (servicesStarted === totalServices) {
           resolve();
         }
       }
     });
-    
-    dashboardProcess.stderr?.on('data', (data) => {
+
+    dashboardProcess.stderr?.on('data', data => {
       console.error(`[DASHBOARD ERROR] ${data.toString().trim()}`);
     });
-    
+
     // Timeout after 30 seconds
     setTimeout(() => {
       if (servicesStarted < totalServices) {
-        console.log(`⚠️  Only ${servicesStarted}/${totalServices} services started, continuing anyway...`);
+        console.error(
+          `⚠️  Only ${servicesStarted}/${totalServices} services started, continuing anyway...`
+        );
         resolve();
       }
     }, 30000);
@@ -694,7 +737,7 @@ async function main() {
     process.env.MCP_DISABLE_VERSION_CHECK = 'true';
 
     // Start infrastructure services first
-    console.log(
+    console.error(
       '🚀 Memorai MCP Server starting with automated infrastructure...'
     );
     const infrastructureReady =
@@ -707,19 +750,19 @@ async function main() {
     }
 
     // Start dashboard and API services
-    console.log('🌐 Starting dashboard and API services...');
+    console.error('🌐 Starting dashboard and API services...');
     await startWebServices();
 
-    console.log('🧠 Initializing memory engine...');
+    console.error('🧠 Initializing memory engine...');
     await enterpriseEngine.initialize();
 
     const transport = new StdioServerTransport();
 
     // Connect server with error handling
-    console.log('🎯 Starting MCP server...');
+    console.error('🎯 Starting MCP server...');
     await server.connect(transport);
 
-    console.log('✅ Memorai MCP Server ready with full infrastructure!');
+    console.error('✅ Memorai MCP Server ready with full infrastructure!');
   } catch (error) {
     console.error('[ERROR] Server startup failed:', error);
     process.exit(1);

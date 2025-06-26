@@ -3,7 +3,7 @@
  * Detects patterns, trends, and relationships in memory data
  */
 
-import { MemoryMetadata, MemoryResult } from '../types/index';
+import { MemoryMetadata } from '../types/index.js';
 
 export interface MemoryPattern {
   id: string;

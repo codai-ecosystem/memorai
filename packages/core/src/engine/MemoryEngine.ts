@@ -1,22 +1,22 @@
 import { nanoid } from 'nanoid';
 
+import { MemoryConfigManager } from '../config/MemoryConfig.js';
+import { EmbeddingService } from '../embedding/EmbeddingService.js';
 import type {
+  ContextRequest,
+  ContextResponse,
+  MemoryConfig,
   MemoryMetadata,
   MemoryQuery,
   MemoryResult,
-  ContextRequest,
-  ContextResponse,
   MemoryType,
-  MemoryConfig,
 } from '../types/index.js';
 import { MemoryError } from '../types/index.js';
-import { EmbeddingService } from '../embedding/EmbeddingService.js';
 import {
+  InMemoryVectorStore,
   MemoryVectorStore,
   QdrantVectorStore,
-  InMemoryVectorStore,
 } from '../vector/VectorStore.js';
-import { MemoryConfigManager } from '../config/MemoryConfig.js';
 
 export interface RememberOptions {
   type?: MemoryType;
@@ -50,9 +50,10 @@ export class MemoryEngine {
     // Check if we should use in-memory store (for BASIC tier or when external deps not available)
     const useInMemory =
       process.env.MEMORAI_USE_INMEMORY === 'true' ||
-      !vectorConfig.url ||
-      vectorConfig.url.includes('localhost') ||
-      vectorConfig.url.includes('127.0.0.1');
+      (process.env.MEMORAI_USE_INMEMORY !== 'false' &&
+        (!vectorConfig.url ||
+          vectorConfig.url.includes('localhost') ||
+          vectorConfig.url.includes('127.0.0.1')));
 
     if (useInMemory) {
       // Use simple in-memory vector store - no external dependencies

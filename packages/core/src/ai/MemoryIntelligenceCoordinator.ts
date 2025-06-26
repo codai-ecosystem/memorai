@@ -3,13 +3,19 @@
  * Central orchestrator for all AI-powered memory capabilities
  */
 
-import { AIMemoryClassifier, MemoryClassification } from './MemoryClassifier';
-import { PatternRecognitionEngine, MemoryPattern } from './PatternRecognition';
+import { MemoryMetadata } from '../types/index.js';
 import {
-  RelationshipExtractor,
+  AIMemoryClassifier,
+  MemoryClassification,
+} from './MemoryClassifier.js';
+import {
+  MemoryPattern,
+  PatternRecognitionEngine,
+} from './PatternRecognition.js';
+import {
   AIMemoryRelationship,
-} from './RelationshipExtractor';
-import { MemoryMetadata, MemoryResult } from '../types/index';
+  RelationshipExtractor,
+} from './RelationshipExtractor.js';
 
 export interface IntelligenceConfig {
   classifier: {

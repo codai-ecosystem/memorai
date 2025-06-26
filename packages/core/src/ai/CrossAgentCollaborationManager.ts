@@ -3,9 +3,7 @@
  * Enables intelligent memory sharing and coordination between multiple AI agents
  */
 
-import { MemoryMetadata, MemoryResult } from '../types/index';
-import { AIMemoryRelationship } from './RelationshipExtractor';
-import { ConversationThread } from './ConversationContextReconstructor';
+import { MemoryMetadata } from '../types/index.js';
 
 export interface AgentProfile {
   id: string;

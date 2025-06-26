@@ -251,7 +251,7 @@ class MCPMemoryClient {
       console.error('MCPMemoryClient: Failed to get stats:', error);
       return this.getEmptyStats();
     }
-  }  // MCP Tool Wrappers
+  } // MCP Tool Wrappers
   private async readGraph(): Promise<{
     entities: MCPEntity[];
     relations: MCPRelation[];

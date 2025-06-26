@@ -92,60 +92,60 @@ export class MemoryTierDetector {
    * Detect the best available memory tier based on environment
    */
   public async detectBestTier(): Promise<MemoryTierLevel> {
-    console.log('[MemoryTier] Starting tier detection...');
+    console.error('[MemoryTier] Starting tier detection...');
 
     // Check for forced tier override
     const forcedTier =
       process.env.MEMORAI_FORCE_TIER || process.env.MEMORAI_TIER;
     if (forcedTier) {
-      console.log(
+      console.error(
         '[MemoryTier] Found forced tier environment variable:',
         forcedTier
       );
 
       switch (forcedTier.toLowerCase()) {
         case 'advanced':
-          console.log(
+          console.error(
             '[MemoryTier] Forcing advanced tier via environment variable'
           );
           return MemoryTierLevel.ADVANCED;
         case 'smart':
-          console.log(
+          console.error(
             '[MemoryTier] Forcing smart tier via environment variable'
           );
           return MemoryTierLevel.SMART;
         case 'basic':
-          console.log(
+          console.error(
             '[MemoryTier] Forcing basic tier via environment variable'
           );
           return MemoryTierLevel.BASIC;
         default:
-          console.log(
+          console.error(
             '[MemoryTier] Invalid forced tier value, falling back to auto-detection'
           );
       }
     }
 
-    console.log(
+    console.error(
       '[MemoryTier] Auto-detecting tier based on available services...'
     );
 
     // Check for OpenAI availability
-    console.log('[MemoryTier] Checking OpenAI availability...');
+    console.error('[MemoryTier] Checking OpenAI availability...');
     if (await this.isOpenAIAvailable()) {
-      console.log('[MemoryTier] OpenAI is available - selecting ADVANCED tier');
+      console.error('[MemoryTier] OpenAI is available - selecting ADVANCED tier');
       return MemoryTierLevel.ADVANCED;
     }
 
     // Check for local AI availability
-    console.log('[MemoryTier] Checking local AI availability...');
+    console.error('[MemoryTier] Checking local AI availability...');
     if (await this.isLocalAIAvailable()) {
-      console.log('[MemoryTier] Local AI is available - selecting SMART tier');
+      console.error('[MemoryTier] Local AI is available - selecting SMART tier');
       return MemoryTierLevel.SMART;
     }
 
     // Default to basic memory
-    console.log(
+    console.error(
       '[MemoryTier] No advanced services available - selecting BASIC tier'
     );
     return MemoryTierLevel.BASIC;
@@ -176,17 +176,17 @@ export class MemoryTierDetector {
       const azureApiKey = process.env.AZURE_OPENAI_API_KEY;
       const azureDeployment = process.env.AZURE_OPENAI_DEPLOYMENT_NAME;
 
-      console.log('[MemoryTier] Checking OpenAI availability...');
-      console.log('[MemoryTier] Azure Endpoint:', azureEndpoint);
-      console.log('[MemoryTier] Azure API Key present:', !!azureApiKey);
-      console.log('[MemoryTier] Azure Deployment:', azureDeployment);
+      console.error('[MemoryTier] Checking OpenAI availability...');
+      console.error('[MemoryTier] Azure Endpoint:', azureEndpoint);
+      console.error('[MemoryTier] Azure API Key present:', !!azureApiKey);
+      console.error('[MemoryTier] Azure Deployment:', azureDeployment);
 
       if (azureEndpoint && azureApiKey && azureDeployment) {
         // Test Azure OpenAI availability with a minimal chat request
         const azureApiVersion =
           process.env.AZURE_OPENAI_API_VERSION || '2024-02-15-preview';
 
-        console.log('[MemoryTier] Testing Azure OpenAI connection...');
+        console.error('[MemoryTier] Testing Azure OpenAI connection...');
 
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
@@ -210,27 +210,27 @@ export class MemoryTierDetector {
 
           clearTimeout(timeoutId);
 
-          console.log(
+          console.error(
             '[MemoryTier] Azure OpenAI response status:',
             response.status
           );
 
           if (response.ok) {
-            console.log(
+            console.error(
               '[MemoryTier] Azure OpenAI is available - returning true'
             );
             return true;
           } else {
-            console.log(
+            console.error(
               '[MemoryTier] Azure OpenAI returned non-ok status:',
               response.status
             );
             const errorText = await response.text();
-            console.log('[MemoryTier] Azure OpenAI error:', errorText);
+            console.error('[MemoryTier] Azure OpenAI error:', errorText);
           }
         } catch (error) {
           clearTimeout(timeoutId);
-          console.log('[MemoryTier] Azure OpenAI test failed:', error);
+          console.error('[MemoryTier] Azure OpenAI test failed:', error);
         }
       }
 
@@ -238,15 +238,15 @@ export class MemoryTierDetector {
       const apiKey =
         process.env.MEMORAI_OPENAI_API_KEY || process.env.OPENAI_API_KEY;
 
-      console.log('[MemoryTier] Standard OpenAI API Key present:', !!apiKey);
+      console.error('[MemoryTier] Standard OpenAI API Key present:', !!apiKey);
 
       if (!apiKey) {
-        console.log('[MemoryTier] No OpenAI API key found - returning false');
+        console.error('[MemoryTier] No OpenAI API key found - returning false');
         return false;
       }
 
       // Quick test call to validate API key
-      console.log('[MemoryTier] Testing standard OpenAI connection...');
+      console.error('[MemoryTier] Testing standard OpenAI connection...');
 
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
@@ -263,20 +263,20 @@ export class MemoryTierDetector {
 
         clearTimeout(timeoutId);
 
-        console.log(
+        console.error(
           '[MemoryTier] Standard OpenAI response status:',
           response.status
         );
         const isOk = response.ok;
-        console.log('[MemoryTier] Standard OpenAI result:', isOk);
+        console.error('[MemoryTier] Standard OpenAI result:', isOk);
         return isOk;
       } catch (error) {
         clearTimeout(timeoutId);
-        console.log('[MemoryTier] Standard OpenAI test failed:', error);
+        console.error('[MemoryTier] Standard OpenAI test failed:', error);
         return false;
       }
     } catch (error) {
-      console.log('[MemoryTier] isOpenAIAvailable caught error:', error);
+      console.error('[MemoryTier] isOpenAIAvailable caught error:', error);
       return false;
     }
   }

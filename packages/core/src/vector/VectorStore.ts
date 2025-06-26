@@ -39,7 +39,14 @@ export class QdrantVectorStore implements VectorStore {
     dimension: number,
     apiKey?: string
   ) {
-    const clientConfig: { url: string; apiKey?: string } = { url };
+    const clientConfig: {
+      url: string;
+      apiKey?: string;
+      checkCompatibility?: boolean;
+    } = {
+      url,
+      checkCompatibility: false, // Disable version compatibility check
+    };
     if (apiKey) {
       clientConfig.apiKey = apiKey;
     }
@@ -90,7 +97,7 @@ export class QdrantVectorStore implements VectorStore {
 
         await this.client.createPayloadIndex(this.collection, {
           field_name: 'created_at',
-          field_schema: 'datetime',
+          field_schema: 'keyword', // Changed from datetime to keyword as v1.7.0 doesn't support datetime
         });
       }
     } catch (error: unknown) {
@@ -103,6 +110,24 @@ export class QdrantVectorStore implements VectorStore {
     }
   }
 
+  private convertToUuidFormat(id: string): string {
+    // If already UUID format (contains dashes in right positions), use as-is
+    if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+      return id;
+    }
+    
+    // Convert string to a UUID-like format by padding/hashing
+    // Use a simple deterministic approach to ensure consistency
+    const hash = id.split('').reduce((a, b) => {
+      a = ((a << 5) - a) + b.charCodeAt(0);
+      return a & a;
+    }, 0);
+    
+    const hex = Math.abs(hash).toString(16).padStart(8, '0');
+    const uuid = `${hex.slice(0, 8)}-${hex.slice(0, 4)}-4${hex.slice(1, 4)}-a${hex.slice(1, 4)}-${hex.padEnd(12, '0')}`;
+    return uuid;
+  }
+
   public async upsert(points: VectorPoint[]): Promise<void> {
     if (points.length === 0) {
       return;
@@ -110,10 +135,21 @@ export class QdrantVectorStore implements VectorStore {
 
     try {
       const qdrantPoints = points.map(point => ({
-        id: point.id,
+        id: this.convertToUuidFormat(point.id),
         vector: point.vector,
-        payload: point.payload,
+        payload: {
+          ...point.payload,
+          original_id: point.id, // Store original ID in payload for reverse lookup
+        },
       }));
+
+      // Debug logging to see what's being sent
+      console.error('🔍 DEBUG: Upserting points to Qdrant:');
+      console.error('Point count:', qdrantPoints.length);
+      console.error(
+        'First point structure:',
+        JSON.stringify(qdrantPoints[0], null, 2)
+      );
 
       await this.client.upsert(this.collection, {
         wait: true,
@@ -169,7 +205,7 @@ export class QdrantVectorStore implements VectorStore {
         with_payload: true,
       }); // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return searchResult.map((point: any) => ({
-        id: point.id as string,
+        id: (point.payload?.original_id as string) || point.id, // Use original_id if available
         score: point.score,
         payload: point.payload ?? {},
       }));
@@ -266,15 +302,15 @@ export class MemoryVectorStore {
   ): Promise<void> {
     await this.ensureInitialized();
 
+    // Create schema-compliant payload for Qdrant collection
+    // Collection expects only: created_at (datetime), type (keyword), tenant_id (keyword)
     const point: VectorPoint = {
       id: memory.id,
       vector: embedding,
       payload: {
-        ...memory,
         created_at: memory.createdAt.toISOString(),
-        updated_at: memory.updatedAt.toISOString(),
-        last_accessed_at: memory.lastAccessedAt.toISOString(),
-        ttl: memory.ttl?.toISOString(),
+        type: memory.type || 'default',
+        tenant_id: memory.tenant_id || 'default',
       },
     };
 
@@ -291,17 +327,19 @@ export class MemoryVectorStore {
       throw new VectorStoreError('Memories and embeddings count mismatch');
     }
 
-    const points: VectorPoint[] = memories.map((memory, index) => ({
-      id: memory.id,
-      vector: embeddings[index]!,
-      payload: {
-        ...memory,
-        created_at: memory.createdAt.toISOString(),
-        updated_at: memory.updatedAt.toISOString(),
-        last_accessed_at: memory.lastAccessedAt.toISOString(),
-        ttl: memory.ttl?.toISOString(),
-      },
-    }));
+    const points: VectorPoint[] = memories.map((memory, index) => {
+      // Create schema-compliant payload for Qdrant collection
+      // Collection expects only: created_at (datetime), type (keyword), tenant_id (keyword)
+      return {
+        id: memory.id,
+        vector: embeddings[index]!,
+        payload: {
+          created_at: memory.createdAt.toISOString(),
+          type: memory.type || 'default',
+          tenant_id: memory.tenant_id || 'default',
+        },
+      };
+    });
 
     await this.store.upsert(points);
   }

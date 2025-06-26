@@ -56,7 +56,7 @@ importers:
   apps/api:
     dependencies:
       '@codai/memorai-core':
-        specifier: workspace:*
+        specifier: ^1.0.11
         version: link:../../packages/core
       cors:
         specifier: ^2.8.5
@@ -351,8 +351,8 @@ importers:
         specifier: ^20.0.0
         version: 20.1.2
       '@qdrant/js-client-rest':
-        specifier: ^1.7.0
-        version: 1.14.1(typescript@5.8.3)
+        specifier: 1.7.0
+        version: 1.7.0(typescript@5.8.3)
       nanoid:
         specifier: ^5.0.0
         version: 5.1.5
@@ -388,7 +388,7 @@ importers:
   packages/mcp:
     dependencies:
       '@codai/memorai-core':
-        specifier: ^1.0.11
+        specifier: ^1.0.18
         version: link:../core
       '@codai/memorai-server':
         specifier: ^0.1.2
@@ -1155,6 +1155,11 @@ packages:
       fast-uri: 2.4.0
     dev: false
 
+  /@fastify/busboy@2.1.1:
+    resolution: {integrity: sha512-vBZP4NlzfOlerQTnba4aqZoMhE/a9HY7HRqoOPaETQcSQuWEIyZMHGfVu6w9wGtGK5fED5qRs2DteVCjOH60sA==}
+    engines: {node: '>=14'}
+    dev: false
+
   /@fastify/cors@9.0.1:
     resolution: {integrity: sha512-YY9Ho3ovI+QHIL2hW+9X4XqQjXLjJqsU+sMV/xFsxZkE8p3GNnYVFpoOxF7SsP5ZL76gwvbo3V9L+FIekBGU4Q==}
     dependencies:
@@ -1853,16 +1858,16 @@ packages:
     resolution: {integrity: sha512-wwQAWhWSuHaag8c4q/KN/vCoeOJYshAIvMQwD4GpSb3OiZklFfvAgmj0VCBBImRpuF/aFgIRzllXlVX93Jevww==}
     dev: true
 
-  /@qdrant/js-client-rest@1.14.1(typescript@5.8.3):
-    resolution: {integrity: sha512-CkCCTDc4gCXq+hhjB3yDw9Hs/PxCJ0bKqk/LjAAmuL9+nDm/RPue4C/tGOIMlzouTQ2l6J6t+JPeM//j38VFug==}
-    engines: {node: '>=18.17.0', pnpm: '>=8'}
+  /@qdrant/js-client-rest@1.7.0(typescript@5.8.3):
+    resolution: {integrity: sha512-16O0EQfrrybcPVipodxykr6dMUlBzKW7a63cSDUFVgc5a1AWESwERykwjuvW5KqvKdkPcxZ2NssrvgUO1W3MgA==}
+    engines: {node: '>=18.0.0', pnpm: '>=8'}
     peerDependencies:
-      typescript: '>=4.7'
+      typescript: '>=4.1'
     dependencies:
       '@qdrant/openapi-typescript-fetch': 1.2.6
       '@sevinf/maybe': 0.5.0
       typescript: 5.8.3
-      undici: 6.21.3
+      undici: 5.29.0
     dev: false
 
   /@qdrant/openapi-typescript-fetch@1.2.6:
@@ -9569,9 +9574,11 @@ packages:
   /undici-types@6.21.0:
     resolution: {integrity: sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==}
 
-  /undici@6.21.3:
-    resolution: {integrity: sha512-gBLkYIlEnSp8pFbT64yFgGE6UIB9tAkhukC23PmMDCe5Nd+cRqKxSjw5y54MK2AZMgZfJWMaNE4nYUHgi1XEOw==}
-    engines: {node: '>=18.17'}
+  /undici@5.29.0:
+    resolution: {integrity: sha512-raqeBD6NQK4SkWhQzeYKd1KmIG6dllBOTt55Rmkt4HtI9mwdWtJljnrXjAFUBLTSN67HWrOIZ3EPF4kjUw80Bg==}
+    engines: {node: '>=14.0'}
+    dependencies:
+      '@fastify/busboy': 2.1.1
     dev: false
 
   /universal-user-agent@6.0.1:

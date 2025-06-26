@@ -3,29 +3,29 @@
  * Addresses 45GB memory issue and performance problems
  */
 
-import { randomUUID, createHash } from 'crypto';
+import { createHash, randomUUID } from 'crypto';
 
-import type {
-  MemoryMetadata,
-  MemoryQuery,
-  MemoryResult,
-  ContextRequest,
-  ContextResponse,
-  MemoryType,
-  MemoryConfig,
-} from '../types/index.js';
-import { MemoryError } from '../types/index.js';
-import { EmbeddingService } from '../embedding/EmbeddingService.js';
-import { MemoryVectorStore } from '../vector/VectorStore.js';
-import { OptimizedQdrantVectorStore } from '../vector/OptimizedQdrantVectorStore.js';
-import { MemoryConfigManager } from '../config/MemoryConfig.js';
-import { InputValidator } from '../security/SecurityManager.js';
-import { MemoryOptimizer } from '../optimization/MemoryOptimizer.js';
 import {
   HighPerformanceCache,
   memoryCache,
 } from '../cache/HighPerformanceCache.js';
+import { MemoryConfigManager } from '../config/MemoryConfig.js';
+import { EmbeddingService } from '../embedding/EmbeddingService.js';
+import { MemoryOptimizer } from '../optimization/MemoryOptimizer.js';
+import { InputValidator } from '../security/SecurityManager.js';
+import type {
+  ContextRequest,
+  ContextResponse,
+  MemoryConfig,
+  MemoryMetadata,
+  MemoryQuery,
+  MemoryResult,
+  MemoryType,
+} from '../types/index.js';
+import { MemoryError } from '../types/index.js';
 import { logger } from '../utils/logger.js';
+import { OptimizedQdrantVectorStore } from '../vector/OptimizedQdrantVectorStore.js';
+import { MemoryVectorStore } from '../vector/VectorStore.js';
 
 export interface RememberOptions {
   type?: MemoryType;

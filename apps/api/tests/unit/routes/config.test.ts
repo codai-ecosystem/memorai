@@ -1,8 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import request from 'supertest';
 import express from 'express';
-import { configRouter } from '../../../src/routes/config';
+import request from 'supertest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { errorHandler } from '../../../src/middleware/errorHandler';
+import { configRouter } from '../../../src/routes/config';
 import { createMockMemoryEngine } from '../../helpers/testHelpers';
 
 // Mock logger

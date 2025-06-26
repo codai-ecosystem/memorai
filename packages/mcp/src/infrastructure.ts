@@ -62,7 +62,7 @@ export class InfrastructureManager {
       candidatePaths.find(filePath => fs.existsSync(filePath)) ||
       candidatePaths[0]; // Default to first path if none found
 
-    console.log(`🔍 Using Docker Compose file: ${this.dockerComposeFile}`);
+    console.error(`🔍 Using Docker Compose file: ${this.dockerComposeFile}`);
   }
 
   /**
@@ -116,18 +116,18 @@ export class InfrastructureManager {
     const timeout = service.timeout || 30000;
     const startTime = Date.now();
 
-    console.log(`   ⏳ Waiting for ${service.name}...`);
+    console.error(`   ⏳ Waiting for ${service.name}...`);
 
     while (Date.now() - startTime < timeout) {
       if (await this.checkServiceHealth(service)) {
-        console.log(`   ✅ ${service.name}: Ready`);
+        console.error(`   ✅ ${service.name}: Ready`);
         return true;
       }
       await sleep(1000);
       process.stdout.write('.');
     }
 
-    console.log(`\n   ❌ ${service.name}: Timeout after ${timeout}ms`);
+    console.error(`\n   ❌ ${service.name}: Timeout after ${timeout}ms`);
     return false;
   }
 
@@ -135,7 +135,7 @@ export class InfrastructureManager {
    * Check if all services are already running
    */
   public async areServicesRunning(): Promise<boolean> {
-    console.log('🔍 Checking existing infrastructure...');
+    console.error('🔍 Checking existing infrastructure...');
 
     for (const service of this.services) {
       if (!(await this.checkServiceHealth(service))) {
@@ -143,7 +143,7 @@ export class InfrastructureManager {
       }
     }
 
-    console.log('✅ All infrastructure services are already running!');
+    console.error('✅ All infrastructure services are already running!');
     return true;
   }
 
@@ -152,7 +152,7 @@ export class InfrastructureManager {
    */
   private async startDockerServices(): Promise<boolean> {
     return new Promise(resolve => {
-      console.log('🐳 Starting Docker infrastructure services...');
+      console.error('🐳 Starting Docker infrastructure services...');
 
       // First, try to stop any existing services
       const downProcess = spawn(
@@ -180,7 +180,7 @@ export class InfrastructureManager {
 
         upProcess.on('close', code => {
           if (code === 0) {
-            console.log('✅ Docker services started successfully');
+            console.error('✅ Docker services started successfully');
             resolve(true);
           } else {
             console.error('❌ Failed to start Docker services:');
@@ -215,8 +215,8 @@ export class InfrastructureManager {
    */
   public async startInfrastructure(force: boolean = false): Promise<boolean> {
     try {
-      console.log('🚀 Starting Complete Memorai Infrastructure...');
-      console.log(
+      console.error('🚀 Starting Complete Memorai Infrastructure...');
+      console.error(
         '============================================================'
       );
 
@@ -231,7 +231,7 @@ export class InfrastructureManager {
       }
 
       // Wait for all services to be ready
-      console.log('⏳ Waiting for all services to be ready...');
+      console.error('⏳ Waiting for all services to be ready...');
       let allReady = true;
 
       for (const service of this.services) {
@@ -241,10 +241,10 @@ export class InfrastructureManager {
       }
 
       if (allReady) {
-        console.log('\n🎯 All Infrastructure Ready!');
-        console.log('✅ Qdrant Vector Database: http://localhost:6333');
-        console.log('✅ Redis Cache: localhost:6379');
-        console.log('✅ PostgreSQL Database: localhost:5432');
+        console.error('\n🎯 All Infrastructure Ready!');
+        console.error('✅ Qdrant Vector Database: http://localhost:6333');
+        console.error('✅ Redis Cache: localhost:6379');
+        console.error('✅ PostgreSQL Database: localhost:5432');
         return true;
       } else {
         console.error('\n❌ Some services failed to start properly');
@@ -261,7 +261,7 @@ export class InfrastructureManager {
    */
   public async stopInfrastructure(): Promise<boolean> {
     return new Promise(resolve => {
-      console.log('🛑 Stopping infrastructure services...');
+      console.error('🛑 Stopping infrastructure services...');
 
       const downProcess = spawn(
         'docker-compose',
@@ -271,7 +271,7 @@ export class InfrastructureManager {
 
       downProcess.on('close', code => {
         if (code === 0) {
-          console.log('✅ Infrastructure services stopped');
+          console.error('✅ Infrastructure services stopped');
           resolve(true);
         } else {
           console.error('❌ Failed to stop infrastructure services');

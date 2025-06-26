@@ -4,7 +4,7 @@
  */
 
 import OpenAI from 'openai';
-import { MemoryMetadata, MemoryType } from '../types/index';
+import { MemoryMetadata, MemoryType } from '../types/index.js';
 
 export interface AIMemoryRelationship {
   id: string;

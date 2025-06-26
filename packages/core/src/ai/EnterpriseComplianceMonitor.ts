@@ -3,12 +3,11 @@
  * Comprehensive compliance monitoring and reporting for enterprise environments
  */
 
+import { MemoryMetadata } from '../types/index.js';
 import {
-  SecurityAuditEvent,
   ComplianceStandard,
-  SecurityLevel,
-} from './AdvancedMemorySecurityManager';
-import { MemoryMetadata } from '../types/index';
+  SecurityAuditEvent,
+} from './AdvancedMemorySecurityManager.js';
 
 export interface CompliancePolicy {
   id: string;

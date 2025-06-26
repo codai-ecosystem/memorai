@@ -4,7 +4,7 @@
  */
 
 import crypto from 'crypto';
-import { MemoryMetadata, MemoryResult } from '../types/index';
+import { MemoryMetadata } from '../types/index.js';
 
 export interface SecurityConfig {
   zeroTrustEnabled: boolean;

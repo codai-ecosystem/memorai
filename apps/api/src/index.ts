@@ -72,15 +72,15 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Global memory engine instance
 let memoryEngine: UnifiedMemoryEngine | null = null;
 
-// Initialize memory engine
+// Initialize memory engine with PRODUCTION configuration
+// Use ADVANCED tier to match MCP server configuration
 async function initializeMemoryEngine() {
   try {
     memoryEngine = new UnifiedMemoryEngine({
-      autoDetect: false, // Force basic tier for unified storage
+      autoDetect: true, // Auto-detect best tier (should be advanced)
       enableFallback: true,
-      preferredTier: MemoryTierLevel.BASIC, // Use basic tier for file-based unified storage
-      dataPath:
-        process.env.MEMORAI_DATA_PATH || 'e:\\GitHub\\memorai\\data\\memory',
+      preferredTier: MemoryTierLevel.ADVANCED, // Use ADVANCED tier to match MCP server
+      // Remove local dataPath to use shared infrastructure storage
       localEmbedding: {
         model: 'all-MiniLM-L6-v2',
         pythonPath: process.env.PYTHON_PATH ?? 'python',
@@ -149,6 +149,9 @@ async function startServer() {
       logger.info(`🚀 Memorai API Server running on port ${PORT}`);
       logger.info(`📊 Health check: http://localhost:${PORT}/health`);
       logger.info(`🔌 WebSocket: ws://localhost:${PORT}`);
+      logger.info(
+        `� Graph endpoint with MCP integration: http://localhost:${PORT}/api/graph`
+      );
     });
   } catch (error) {
     logger.error('Failed to start server:', error);

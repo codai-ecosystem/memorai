@@ -1,4 +1,4 @@
-import { NextResponse, NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET() {
   try {
@@ -40,12 +40,16 @@ export async function GET() {
     }
 
     // Connect to actual MCP server instead of using mock data
-    const response = await fetch('http://localhost:6367/api/memory/context', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+    const apiPort = process.env.API_PORT || '6368';
+    const response = await fetch(
+      `http://localhost:${apiPort}/api/memory/context`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
 
     if (!response.ok) {
       throw new Error(`MCP Server error: ${response.status}`);
@@ -108,13 +112,17 @@ export async function POST(request: NextRequest) {
     }
 
     // Forward request to actual MCP server
-    const response = await fetch('http://localhost:6367/api/memory/context', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-    });
+    const apiPort = process.env.API_PORT || '6368';
+    const response = await fetch(
+      `http://localhost:${apiPort}/api/memory/context`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      }
+    );
 
     if (!response.ok) {
       throw new Error(`MCP Server error: ${response.status}`);

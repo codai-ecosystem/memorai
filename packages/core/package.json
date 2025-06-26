@@ -1,6 +1,6 @@
 {
   "name": "@codai/memorai-core",
-  "version": "1.0.11",
+  "version": "1.0.19",
   "description": "Core memory engine with vector operations for AI agents",
   "type": "module",
   "main": "./dist/index.js",
@@ -33,7 +33,7 @@
   },
   "dependencies": {
     "@octokit/rest": "^20.0.0",
-    "@qdrant/js-client-rest": "^1.7.0",
+    "@qdrant/js-client-rest": "1.7.0",
     "nanoid": "^5.0.0",
     "openai": "^4.20.0",
     "zod": "^3.22.0"

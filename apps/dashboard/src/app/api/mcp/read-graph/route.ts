@@ -18,7 +18,8 @@ interface McpEntity {
 export async function GET() {
   try {
     // Connect to actual API server graph endpoint
-    const response = await fetch('http://localhost:6367/api/graph', {
+    const apiPort = process.env.API_PORT || '6368';
+    const response = await fetch(`http://localhost:${apiPort}/api/graph`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -33,16 +34,18 @@ export async function GET() {
     const graphData = apiResponse.data || { entities: [], relations: [] };
 
     // Convert API graph format to MCP format
-    const mcpEntities: McpEntity[] = graphData.entities.map((entity: ApiGraphEntity) => ({
-      name: entity.name,
-      entityType: entity.type,
-      observations: [
-        entity.properties.content || `${entity.type}: ${entity.name}`,
-        ...(entity.properties.tags || []).map((tag: string) => `Tag: ${tag}`),
-        `Importance: ${entity.properties.importance || 0.5}`,
-        `Created: ${entity.createdAt}`,
-      ].filter(Boolean),
-    }));
+    const mcpEntities: McpEntity[] = graphData.entities.map(
+      (entity: ApiGraphEntity) => ({
+        name: entity.name,
+        entityType: entity.type,
+        observations: [
+          entity.properties.content || `${entity.type}: ${entity.name}`,
+          ...(entity.properties.tags || []).map((tag: string) => `Tag: ${tag}`),
+          `Importance: ${entity.properties.importance || 0.5}`,
+          `Created: ${entity.createdAt}`,
+        ].filter(Boolean),
+      })
+    );
 
     return NextResponse.json({
       success: true,

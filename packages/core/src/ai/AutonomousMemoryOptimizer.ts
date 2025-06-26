@@ -3,12 +3,12 @@
  * Self-healing and self-optimizing memory system with AI-driven decisions
  */
 
-import { MemoryMetadata, MemoryResult, MemoryQuery } from '../types/index';
+import { PerformanceOptimizer } from '../performance/PerformanceOptimizer.js';
+import { MemoryMetadata } from '../types/index.js';
 import {
   MemoryIntelligenceCoordinator,
   MemoryIntelligenceReport,
-} from './MemoryIntelligenceCoordinator';
-import { PerformanceOptimizer } from '../performance/PerformanceOptimizer';
+} from './MemoryIntelligenceCoordinator.js';
 
 export interface OptimizationRule {
   id: string;

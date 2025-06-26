@@ -317,10 +317,11 @@ class MemoraiDashboardEnhanced {
 
     try {
       // Load data in parallel with proper error handling
-      const [memories, stats, config] = await Promise.allSettled([
+      const [memories, stats, config, projects] = await Promise.allSettled([
         this.fetchMemories(),
         this.fetchStats(),
         this.fetchConfig(),
+        this.fetchProjects(),
       ]);
 
       // Handle memories result
@@ -355,10 +356,25 @@ class MemoraiDashboardEnhanced {
         };
       }
 
+      // Handle projects result
+      if (projects.status === 'fulfilled') {
+        this.projects = projects.value;
+      } else {
+        console.error('Failed to load projects:', projects.reason);
+        this.projects = {
+          apps: [],
+          services: [],
+          totalApps: 0,
+          totalServices: 0,
+          totalProjects: 0
+        };
+      }
+
       // Update UI with loaded data
       this.updateMemoriesDisplay();
       this.updateStatsDisplay();
       this.updateConfigDisplay();
+      this.updateProjectsDisplay();
       this.updateSystemStatus();
     } catch (error) {
       console.error('Failed to load initial data:', error);
@@ -429,6 +445,35 @@ class MemoraiDashboardEnhanced {
       };
     }
   }
+
+  async fetchProjects() {
+    try {
+      this.performance.apiCalls++;
+      // Try to fetch from projects.index.json in the root
+      const response = await fetch('/projects.index.json');
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const data = await response.json();
+      return {
+        apps: data.apps || [],
+        services: data.services || [],
+        totalApps: data.totalApps || 0,
+        totalServices: data.totalServices || 0,
+        totalProjects: data.totalProjects || (data.totalApps + data.totalServices) || 0,
+        lastUpdated: data.lastUpdated
+      };
+    } catch (error) {
+      console.error('Failed to fetch projects:', error);
+      this.performance.errors++;
+      return {
+        apps: [],
+        services: [],
+        totalApps: 0,
+        totalServices: 0,
+        totalProjects: 0
+      };
+    }
+  }
+
   updateMemoriesDisplay() {
     const container = document.getElementById('memory-results');
     if (!container) return;
@@ -989,24 +1034,78 @@ class MemoraiDashboardEnhanced {
   }
 
   switchTab(tabName) {
-    // Update active tab
+    // Update active tab buttons
     document.querySelectorAll('[data-tab]').forEach(tab => {
       tab.classList.toggle('active', tab.dataset.tab === tabName);
     });
 
     // Update tab content visibility
-    document.querySelectorAll('[data-tab-content]').forEach(content => {
-      content.classList.toggle(
-        'hidden',
-        content.dataset.tabContent !== tabName
-      );
+    document.querySelectorAll('.tab-content').forEach(content => {
+      content.classList.add('hidden');
     });
+    
+    // Show the target tab content
+    const targetTab = document.getElementById(`${tabName}-tab`);
+    if (targetTab) {
+      targetTab.classList.remove('hidden');
+    }
 
     this.currentTab = tabName;
 
+    // Update tab description
+    const tabDescriptions = {
+      memory: {
+        icon: 'brain',
+        text: 'Advanced memory management with real-time analytics, AI-powered insights, and visual knowledge mapping'
+      },
+      graph: {
+        icon: 'network', 
+        text: 'Interactive neural graph visualization showing memory connections and knowledge relationships'
+      },
+      analytics: {
+        icon: 'bar-chart-3',
+        text: 'Comprehensive analytics dashboard with performance metrics, usage trends, and system insights'
+      },
+      insights: {
+        icon: 'lightbulb',
+        text: 'AI-powered insights and recommendations based on memory patterns and usage analytics'
+      },
+      config: {
+        icon: 'settings',
+        text: 'System configuration, connection settings, and advanced management options'
+      },
+      ecosystem: {
+        icon: 'globe',
+        text: 'Complete overview of all Codai ecosystem services, applications, and system architecture'
+      }
+    };
+
+    const tabDescription = document.getElementById('tab-description');
+    const desc = tabDescriptions[tabName];
+    if (desc && tabDescription) {
+      tabDescription.innerHTML = `
+        <i data-lucide="${desc.icon}" class="w-4 h-4 text-primary-500"></i>
+        <span class="animate-fade-in">${desc.text}</span>
+      `;
+      // Re-initialize Lucide icons for the new icon
+      if (window.lucide) {
+        window.lucide.createIcons();
+      }
+    }
+
     // Load tab-specific data
-    if (tabName === 'memories' && this.memories.length === 0) {
+    if (tabName === 'memory' && this.memories.length === 0) {
       this.loadInitialData();
+    } else if (tabName === 'ecosystem') {
+      // Ensure projects are loaded and displayed when switching to ecosystem tab
+      if (!this.projects || (!this.projects.apps && !this.projects.services)) {
+        this.fetchProjects().then(projects => {
+          this.projects = projects;
+          this.updateProjectsDisplay();
+        });
+      } else {
+        this.updateProjectsDisplay();
+      }
     }
   }
 
@@ -1464,6 +1563,107 @@ class MemoraiDashboardEnhanced {
       const config = tierConfig[tier] || tierConfig.smart;
       tierBadge.className = `tier-badge ${config.class}`;
       tierBadge.innerHTML = `<span>${config.label}</span>`;
+    }
+  }
+
+  updateProjectsDisplay() {
+    // Update services overview
+    const servicesContainer = document.getElementById('services-overview');
+    if (servicesContainer && this.projects) {
+      const { apps = [], services = [], totalApps = 0, totalServices = 0, totalProjects = 0 } = this.projects;
+      
+      // Create services overview HTML
+      const servicesByCategory = {};
+      const appsByTier = {};
+      
+      // Group services by category
+      services.forEach(service => {
+        const category = service.category || 'other';
+        if (!servicesByCategory[category]) servicesByCategory[category] = [];
+        servicesByCategory[category].push(service);
+      });
+      
+      // Group apps by tier
+      apps.forEach(app => {
+        const tier = app.tier || 'other';
+        if (!appsByTier[tier]) appsByTier[tier] = [];
+        appsByTier[tier].push(app);
+      });
+
+      servicesContainer.innerHTML = `
+        <div class="ecosystem-overview">
+          <div class="overview-stats">
+            <div class="stat-card">
+              <h4>Total Projects</h4>
+              <div class="stat-number">${totalProjects}</div>
+            </div>
+            <div class="stat-card">
+              <h4>Core Apps</h4>
+              <div class="stat-number">${totalApps}</div>
+            </div>
+            <div class="stat-card">
+              <h4>Services</h4>
+              <div class="stat-number">${totalServices}</div>
+            </div>
+          </div>
+          
+          <div class="projects-grid">
+            <div class="apps-section">
+              <h3>Core Applications</h3>
+              ${Object.entries(appsByTier).map(([tier, tierApps]) => `
+                <div class="tier-group">
+                  <h4 class="tier-title">${tier.charAt(0).toUpperCase() + tier.slice(1)} Tier</h4>
+                  <div class="project-list">
+                    ${tierApps.map(app => `
+                      <div class="project-card app-card" data-priority="${app.priority}">
+                        <div class="project-header">
+                          <h5>${app.name}</h5>
+                          <span class="project-status ${app.status}">${app.status}</span>
+                        </div>
+                        <p class="project-description">${app.description}</p>
+                        <div class="project-meta">
+                          <span class="project-domain">${app.domain}</span>
+                          <span class="project-framework">${app.metadata?.framework || 'N/A'}</span>
+                        </div>
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+            
+            <div class="services-section">
+              <h3>Support Services</h3>
+              ${Object.entries(servicesByCategory).map(([category, categoryServices]) => `
+                <div class="category-group">
+                  <h4 class="category-title">${category.charAt(0).toUpperCase() + category.slice(1)}</h4>
+                  <div class="project-list">
+                    ${categoryServices.map(service => `
+                      <div class="project-card service-card" data-priority="${service.priority}">
+                        <div class="project-header">
+                          <h5>${service.name}</h5>
+                          <span class="project-status ${service.status}">${service.status}</span>
+                        </div>
+                        <p class="project-description">${service.description}</p>
+                        <div class="project-meta">
+                          <span class="project-domain">${service.domain}</span>
+                          <span class="project-port">Port: ${service.port}</span>
+                        </div>
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // Update project count in header/stats
+    const projectCountElement = document.getElementById('total-projects');
+    if (projectCountElement && this.projects) {
+      projectCountElement.textContent = this.projects.totalProjects || 0;
     }
   }
 

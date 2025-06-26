@@ -3,12 +3,15 @@
  * Advanced system for reconstructing and maintaining conversation context across sessions
  */
 
-import { MemoryMetadata, MemoryType } from '../types/index';
+import { MemoryMetadata } from '../types/index.js';
+import {
+  MemoryPattern,
+  PatternRecognitionEngine,
+} from './PatternRecognition.js';
 import {
   AIMemoryRelationship,
   RelationshipExtractor,
-} from './RelationshipExtractor';
-import { MemoryPattern, PatternRecognitionEngine } from './PatternRecognition';
+} from './RelationshipExtractor.js';
 
 export interface ConversationThread {
   id: string;

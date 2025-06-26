@@ -4,7 +4,7 @@
  */
 
 import { EventEmitter } from 'events';
-import { MemoryMetadata, MemoryResult } from '../types/index';
+import { MemoryMetadata } from '../types/index.js';
 
 export interface NeuralNetworkConfig {
   architecture: 'transformer' | 'lstm' | 'gru' | 'attention' | 'hybrid';

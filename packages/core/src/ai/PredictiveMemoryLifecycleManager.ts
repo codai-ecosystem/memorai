@@ -4,7 +4,7 @@
  */
 
 import { EventEmitter } from 'events';
-import { MemoryMetadata } from '../types/index';
+import { MemoryMetadata } from '../types/index.js';
 
 export interface MemoryLifecycleStage {
   stage:

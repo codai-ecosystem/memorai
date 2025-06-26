@@ -4,7 +4,7 @@
  */
 
 import OpenAI from 'openai';
-import { MemoryMetadata, MemoryType } from '../types/index';
+import { MemoryMetadata } from '../types/index.js';
 
 export interface MemoryClassification {
   category: string;

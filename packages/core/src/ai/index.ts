@@ -6,101 +6,101 @@
 // Core AI Components
 export {
   AIMemoryClassifier,
-  MemoryClassification,
   ClassificationConfig,
-} from './MemoryClassifier';
+  MemoryClassification,
+} from './MemoryClassifier.js';
 export {
-  PatternRecognitionEngine,
-  MemoryPattern,
-  PatternAnalysisConfig,
-} from './PatternRecognition';
-export {
-  RelationshipExtractor,
-  AIMemoryRelationship,
-  RelationshipType,
-  RelationshipExtractionConfig,
-} from './RelationshipExtractor';
-export {
+  IntelligenceConfig,
   MemoryIntelligenceCoordinator,
   MemoryIntelligenceReport,
-  IntelligenceConfig,
-} from './MemoryIntelligenceCoordinator';
+} from './MemoryIntelligenceCoordinator.js';
+export {
+  MemoryPattern,
+  PatternAnalysisConfig,
+  PatternRecognitionEngine,
+} from './PatternRecognition.js';
+export {
+  AIMemoryRelationship,
+  RelationshipExtractionConfig,
+  RelationshipExtractor,
+  RelationshipType,
+} from './RelationshipExtractor.js';
 
 // Advanced AI Features (v3.0)
 export {
-  AutonomousMemoryOptimizer,
-  OptimizationRule,
-  OptimizationContext,
-  OptimizationAction,
   AutonomousConfig,
-} from './AutonomousMemoryOptimizer';
+  AutonomousMemoryOptimizer,
+  OptimizationAction,
+  OptimizationContext,
+  OptimizationRule,
+} from './AutonomousMemoryOptimizer.js';
 
 export {
+  ContextReconstructionConfig,
+  ConversationContext,
   ConversationContextReconstructor,
   ConversationThread,
-  ConversationContext,
-  ContextReconstructionConfig,
-} from './ConversationContextReconstructor';
+} from './ConversationContextReconstructor.js';
 
 export {
-  CrossAgentCollaborationManager,
   AgentProfile,
-  MemoryShareRequest,
-  CollaborationSession,
   CollaborationConfig,
-} from './CrossAgentCollaborationManager';
+  CollaborationSession,
+  CrossAgentCollaborationManager,
+  MemoryShareRequest,
+} from './CrossAgentCollaborationManager.js';
 
 // Phase 3: Enterprise Security & Compliance
 export {
+  SecurityAuditEvent as AISecurityAuditEvent,
   AdvancedMemorySecurityManager,
+  ComplianceStandard,
   SecurityConfig,
   SecurityContext,
   SecurityLevel,
   MemoryClassification as SecurityMemoryClassification,
-  SecurityAuditEvent as AISecurityAuditEvent,
   ThreatDetectionRule,
-  ComplianceStandard,
-} from './AdvancedMemorySecurityManager';
+} from './AdvancedMemorySecurityManager.js';
 
 export {
-  EnterpriseComplianceMonitor,
   CompliancePolicy,
+  ComplianceReport,
   ComplianceRule,
   ComplianceViolation,
-  ComplianceReport,
   DataSubjectRequest,
-} from './EnterpriseComplianceMonitor';
+  EnterpriseComplianceMonitor,
+} from './EnterpriseComplianceMonitor.js';
 
 // Phase 3: Multi-Cloud Deployment
 export {
-  MultiCloudDeploymentManager,
   CloudProvider,
-  DeploymentTarget,
   CloudResource,
   DeploymentConfiguration,
-  DisasterRecoveryPlan,
   DeploymentMetrics,
-} from './MultiCloudDeploymentManager';
+  DeploymentTarget,
+  DisasterRecoveryPlan,
+  MultiCloudDeploymentManager,
+} from './MultiCloudDeploymentManager.js';
 
 // Phase 4: Advanced AI & Deep Learning
 export {
-  DeepLearningMemoryEngine,
-  NeuralNetworkConfig,
-  MemoryEmbedding,
-  PersonalityProfile,
-  ContextualMemoryCluster,
-  PredictiveModel,
-  DeepInsight,
   CognitiveLoadMetrics,
-} from './DeepLearningMemoryEngine';
+  ContextualMemoryCluster,
+  DeepInsight,
+  DeepLearningMemoryEngine,
+  MemoryEmbedding,
+  NeuralNetworkConfig,
+  PersonalityProfile,
+  PredictiveModel,
+} from './DeepLearningMemoryEngine.js';
 
 export {
-  PredictiveMemoryLifecycleManager,
-  MemoryLifecycleStage,
-  MemoryLifecyclePrediction,
-  LifecycleOptimization,
   LifecycleAnalytics,
+  LifecycleOpportunity,
+  LifecycleOptimization,
   LifecycleRecommendation,
   LifecycleRisk,
-  LifecycleOpportunity,
-} from './PredictiveMemoryLifecycleManager';
+  MemoryLifecyclePrediction,
+  MemoryLifecycleStage,
+  PredictiveMemoryLifecycleManager,
+} from './PredictiveMemoryLifecycleManager.js';

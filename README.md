@@ -41,7 +41,7 @@ Enterprise-grade memory system built specifically for AI agents. Provides natura
 **CRITICAL**: This service **MUST ONLY** use published npm packages for all operations. Local development servers and manual testing are **FORBIDDEN**.
 
 - ✅ **USE**: Published packages via MCP server in VS Code
-- ✅ **USE**: Playwright MCP for remote/automated testing  
+- ✅ **USE**: Playwright MCP for remote/automated testing
 - ❌ **NEVER**: Local dev servers (`pnpm dev`)
 - ❌ **NEVER**: Manual testing or local package builds
 

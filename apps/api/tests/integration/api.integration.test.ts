@@ -1,19 +1,18 @@
-import {
-  describe,
-  it,
-  expect,
-  vi,
-  beforeAll,
-  afterAll,
-  beforeEach,
-  afterEach,
-} from 'vitest';
-import request from 'supertest';
-import express from 'express';
 import { UnifiedMemoryEngine } from '@codai/memorai-core';
+import express from 'express';
+import request from 'supertest';
 import {
-  generateTestMemory,
+  afterAll,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest';
+import {
   generateTestMemories,
+  generateTestMemory,
   setTestEnv,
 } from '../helpers/testHelpers';
 
@@ -87,10 +86,10 @@ vi.mock('@codai/memorai-core', () => ({
 }));
 
 // Import after mocking
-import { memoryRouter } from '../../src/routes/memory';
-import { configRouter } from '../../src/routes/config';
-import { statsRouter } from '../../src/routes/stats';
 import { errorHandler } from '../../src/middleware/errorHandler';
+import { configRouter } from '../../src/routes/config';
+import { memoryRouter } from '../../src/routes/memory';
+import { statsRouter } from '../../src/routes/stats';
 
 describe('API Integration Tests', () => {
   let app: express.Application;
