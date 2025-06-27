@@ -3,7 +3,7 @@
  * Handles HTTP requests to the Memorai MCP server and backend APIs
  */
 
-import { Memory, Config } from '../stores/types';
+import { Config, Memory } from '../stores/types';
 
 export class APIError extends Error {
   constructor(
@@ -84,7 +84,7 @@ class ApiClient {
 
       // Otherwise, wrap the data
       return { data: responseData, success: true };
-    } catch (_error) {
+    } catch (error) {
       console.error(`API request failed for ${endpoint}:`, error);
       return {
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -152,7 +152,7 @@ class ApiClient {
 
   // Configuration
   async getConfig(): Promise<ApiResponse<Config>> {
-    return this.request<Config>('/config');
+    return this.request<Config>('/config/dashboard');
   }
 
   async updateConfig(config: Partial<Config>): Promise<ApiResponse<Config>> {

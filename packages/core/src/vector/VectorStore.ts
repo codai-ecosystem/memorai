@@ -112,17 +112,19 @@ export class QdrantVectorStore implements VectorStore {
 
   private convertToUuidFormat(id: string): string {
     // If already UUID format (contains dashes in right positions), use as-is
-    if (/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
+    if (
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
+    ) {
       return id;
     }
-    
+
     // Convert string to a UUID-like format by padding/hashing
     // Use a simple deterministic approach to ensure consistency
     const hash = id.split('').reduce((a, b) => {
-      a = ((a << 5) - a) + b.charCodeAt(0);
+      a = (a << 5) - a + b.charCodeAt(0);
       return a & a;
     }, 0);
-    
+
     const hex = Math.abs(hash).toString(16).padStart(8, '0');
     const uuid = `${hex.slice(0, 8)}-${hex.slice(0, 4)}-4${hex.slice(1, 4)}-a${hex.slice(1, 4)}-${hex.padEnd(12, '0')}`;
     return uuid;
@@ -145,7 +147,9 @@ export class QdrantVectorStore implements VectorStore {
 
       // Minimal logging without vector data to prevent performance issues
       if (process.env.NODE_ENV === 'development' && qdrantPoints.length > 0) {
-        console.log(`Upserting ${qdrantPoints.length} points to Qdrant collection: ${this.collection}`);
+        console.log(
+          `Upserting ${qdrantPoints.length} points to Qdrant collection: ${this.collection}`
+        );
       }
 
       await this.client.upsert(this.collection, {

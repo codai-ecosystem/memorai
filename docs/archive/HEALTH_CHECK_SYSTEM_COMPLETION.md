@@ -9,20 +9,23 @@ The comprehensive health check system for Memorai MCP server has been successful
 ### Health Endpoints Implemented
 
 1. **`/health`** - Basic lightweight health check
+
    - Returns: `{ status: "healthy", timestamp: ISO_DATE }`
    - HTTP Status: 200 (healthy) / 503 (unhealthy)
 
 2. **`/health/detailed`** - Comprehensive service monitoring
+
    - Monitors: Dashboard (6366), API (6368), MCP (6367)
    - Memory engine status with tier information
    - System memory usage
    - Service health with timeout handling
 
 3. **`/health/ready`** - Readiness probe
+
    - Checks if all services are ready to receive requests
    - Container orchestration compatible
 
-4. **`/health/live`** - Liveness probe  
+4. **`/health/live`** - Liveness probe
    - Checks if application is alive and responsive
    - Container orchestration compatible
 
@@ -38,16 +41,19 @@ The comprehensive health check system for Memorai MCP server has been successful
 ## DEPLOYMENT STATUS
 
 ### Code Changes
+
 - ✅ Health routes created: `apps/api/src/routes/health.ts`
 - ✅ Server integration: Updated `apps/api/src/index.ts`
 - ✅ Router integration: `app.use('/health', healthRouter)`
 
 ### Git & Publishing
+
 - ✅ **Committed**: `feat: implement comprehensive health check system for Memorai MCP server`
 - ✅ **Pushed**: Changes pushed to main branch (commit: 11a4857, 59d3c7e)
 - ✅ **Published**: API package v1.0.11 published to npm with health system
 
 ### MCP Server Status
+
 - ✅ **Memorai MCP v2.0.55** - Active and functional
 - ✅ **Smart Tier AI Embeddings** - Working (15.98ms response time)
 - ✅ **Memory System** - Validated through `mcp_memoraimcpser_recall`
@@ -96,25 +102,28 @@ if ($healthResponse.StatusCode -eq 200) {
 ### Health Endpoints for VS Code Integration
 
 1. **Quick Status Check**: `GET /health`
-2. **Detailed Diagnostics**: `GET /health/detailed`  
+2. **Detailed Diagnostics**: `GET /health/detailed`
 3. **Service Readiness**: `GET /health/ready`
 4. **Application Liveness**: `GET /health/live`
 
 ## ENTERPRISE FEATURES
 
 ### Monitoring Capabilities
+
 - Service-specific health checking with configurable timeouts
 - Memory engine status validation with tier information
 - System resource monitoring (memory usage, uptime)
 - Error categorization and detailed logging
 
 ### Production Readiness
+
 - Proper HTTP status codes (200, 503, 500)
 - Timeout handling for external service checks
 - Graceful degradation when services are unavailable
 - Container orchestration compatible (ready/live probes)
 
 ### Performance Optimization
+
 - Lightweight basic health check for frequent polling
 - Detailed health check for comprehensive diagnostics
 - Async service checking with Promise.all for parallel execution
@@ -123,12 +132,14 @@ if ($healthResponse.StatusCode -eq 200) {
 ## TESTING STATUS
 
 ### Core Functionality
+
 - ✅ **MCP Server**: Validated working (v2.0.55, Smart Tier)
 - ✅ **Memory System**: Confirmed operational with AI embeddings
 - ✅ **Health Routes**: Implemented and integrated
 - ✅ **Package Publishing**: Successfully published v1.0.11
 
 ### Known Issues
+
 - ⚠️ **API Server Startup**: Some environment-specific startup delays
 - ⚠️ **Test Environment**: Jest/Vitest configuration conflicts (non-blocking)
 - ⚠️ **Development Mode**: Conflicts with production workflow requirements
@@ -138,6 +149,7 @@ if ($healthResponse.StatusCode -eq 200) {
 ### For VS Code Integration
 
 1. **Create Health Check Workflow**:
+
    ```typescript
    // Add to VS Code extension or MCP client
    async function checkMemoraiHealth(): Promise<boolean> {
@@ -151,6 +163,7 @@ if ($healthResponse.StatusCode -eq 200) {
    ```
 
 2. **Integrate with MCP Server Startup**:
+
    - Check health before starting MCP servers
    - Display status in VS Code status bar
    - Provide restart/troubleshooting options

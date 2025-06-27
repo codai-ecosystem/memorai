@@ -3,10 +3,10 @@
  * Comprehensive health monitoring for all Memorai services
  */
 
-import { Router, Request, Response } from 'express';
 import { UnifiedMemoryEngine } from '@codai/memorai-core';
-import { logger } from '../utils/logger';
 import axios from 'axios';
+import { Request, Response, Router } from 'express';
+import { logger } from '../utils/logger';
 
 export const healthRouter = Router();
 
@@ -47,17 +47,21 @@ interface HealthResponse {
 /**
  * Check if a service is responding
  */
-async function checkService(name: string, url: string, timeout = 5000): Promise<ServiceStatus> {
+async function checkService(
+  name: string,
+  url: string,
+  timeout = 5000
+): Promise<ServiceStatus> {
   const startTime = Date.now();
-  
+
   try {
-    const response = await axios.get(url, { 
+    const response = await axios.get(url, {
       timeout,
-      validateStatus: (status) => status < 500 // Accept 2xx, 3xx, 4xx but not 5xx
+      validateStatus: status => status < 500, // Accept 2xx, 3xx, 4xx but not 5xx
     });
-    
+
     const responseTime = Date.now() - startTime;
-    
+
     return {
       name,
       status: response.status < 400 ? 'healthy' : 'degraded',
@@ -65,12 +69,12 @@ async function checkService(name: string, url: string, timeout = 5000): Promise<
       responseTime,
       details: {
         httpStatus: response.status,
-        headers: response.headers
-      }
+        headers: response.headers,
+      },
     };
   } catch (error: any) {
     const responseTime = Date.now() - startTime;
-    
+
     return {
       name,
       status: 'unhealthy',
@@ -79,8 +83,8 @@ async function checkService(name: string, url: string, timeout = 5000): Promise<
       error: error.message,
       details: {
         code: error.code,
-        errno: error.errno
-      }
+        errno: error.errno,
+      },
     };
   }
 }
@@ -92,11 +96,11 @@ function getSystemMemory() {
   const used = process.memoryUsage();
   const total = used.heapTotal;
   const percentage = (used.heapUsed / total) * 100;
-  
+
   return {
     used: used.heapUsed,
     total,
-    percentage: Math.round(percentage * 100) / 100
+    percentage: Math.round(percentage * 100) / 100,
   };
 }
 
@@ -107,7 +111,7 @@ function checkMemoryEngine(memoryEngine: UnifiedMemoryEngine | null) {
   if (!memoryEngine) {
     return {
       initialized: false,
-      tier: 'none'
+      tier: 'none',
     };
   }
 
@@ -119,14 +123,14 @@ function checkMemoryEngine(memoryEngine: UnifiedMemoryEngine | null) {
       performance: {
         responseTime: `${tierInfo.capabilities?.performance || 'unknown'}`,
         offline: tierInfo.capabilities?.offline || false,
-        embeddings: tierInfo.capabilities?.embeddings || false
-      }
+        embeddings: tierInfo.capabilities?.embeddings || false,
+      },
     };
   } catch (error) {
     return {
       initialized: false,
       tier: 'error',
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
     };
   }
 }
@@ -136,7 +140,7 @@ function checkMemoryEngine(memoryEngine: UnifiedMemoryEngine | null) {
  */
 healthRouter.get('/', (req: Request, res: Response) => {
   const memoryEngine = (req as any).memoryEngine as UnifiedMemoryEngine | null;
-  
+
   const status: Partial<HealthResponse> = {
     status: 'healthy',
     timestamp: new Date().toISOString(),
@@ -144,10 +148,10 @@ healthRouter.get('/', (req: Request, res: Response) => {
     uptime: process.uptime(),
     memory: {
       engine: checkMemoryEngine(memoryEngine),
-      system: getSystemMemory()
-    }
+      system: getSystemMemory(),
+    },
   };
-  
+
   res.json(status);
 });
 
@@ -157,15 +161,15 @@ healthRouter.get('/', (req: Request, res: Response) => {
 healthRouter.get('/detailed', async (req: Request, res: Response) => {
   const memoryEngine = (req as any).memoryEngine as UnifiedMemoryEngine | null;
   const startTime = Date.now();
-  
+
   try {
     // Check all known services
     const serviceChecks = await Promise.allSettled([
       checkService('Dashboard', 'http://localhost:6366'),
       checkService('API Server', 'http://localhost:6368/health'),
-      checkService('HTTP MCP Server', 'http://localhost:6367/health')
+      checkService('HTTP MCP Server', 'http://localhost:6367/health'),
     ]);
-    
+
     const services: ServiceStatus[] = serviceChecks.map((result, index) => {
       const serviceNames = ['Dashboard', 'API Server', 'HTTP MCP Server'];
       if (result.status === 'fulfilled') {
@@ -174,15 +178,19 @@ healthRouter.get('/detailed', async (req: Request, res: Response) => {
         return {
           name: serviceNames[index],
           status: 'unknown',
-          error: result.reason?.message || 'Check failed'
+          error: result.reason?.message || 'Check failed',
         };
       }
     });
-    
+
     // Determine overall system status
-    const unhealthyServices = services.filter(s => s.status === 'unhealthy').length;
-    const degradedServices = services.filter(s => s.status === 'degraded').length;
-    
+    const unhealthyServices = services.filter(
+      s => s.status === 'unhealthy'
+    ).length;
+    const degradedServices = services.filter(
+      s => s.status === 'degraded'
+    ).length;
+
     let overallStatus: 'healthy' | 'degraded' | 'unhealthy';
     if (unhealthyServices > 0) {
       overallStatus = 'unhealthy';
@@ -191,7 +199,7 @@ healthRouter.get('/detailed', async (req: Request, res: Response) => {
     } else {
       overallStatus = 'healthy';
     }
-    
+
     const healthResponse: HealthResponse = {
       status: overallStatus,
       timestamp: new Date().toISOString(),
@@ -200,28 +208,27 @@ healthRouter.get('/detailed', async (req: Request, res: Response) => {
       services,
       memory: {
         engine: checkMemoryEngine(memoryEngine),
-        system: getSystemMemory()
+        system: getSystemMemory(),
       },
       dependencies: {
         // Add vector store health check if available
         vectorStore: {
           name: 'Vector Store',
-          status: memoryEngine ? 'healthy' : 'unknown'
-        }
-      }
+          status: memoryEngine ? 'healthy' : 'unknown',
+        },
+      },
     };
-    
+
     const responseTime = Date.now() - startTime;
     logger.info(`Health check completed in ${responseTime}ms`, {
       status: overallStatus,
-      servicesChecked: services.length
+      servicesChecked: services.length,
     });
-    
+
     res.json(healthResponse);
-    
   } catch (error) {
     logger.error('Health check failed:', error);
-    
+
     const errorResponse: HealthResponse = {
       status: 'unhealthy',
       timestamp: new Date().toISOString(),
@@ -230,11 +237,11 @@ healthRouter.get('/detailed', async (req: Request, res: Response) => {
       services: [],
       memory: {
         engine: checkMemoryEngine(memoryEngine),
-        system: getSystemMemory()
+        system: getSystemMemory(),
       },
-      dependencies: {}
+      dependencies: {},
     };
-    
+
     res.status(503).json(errorResponse);
   }
 });
@@ -244,18 +251,18 @@ healthRouter.get('/detailed', async (req: Request, res: Response) => {
  */
 healthRouter.get('/ready', (req: Request, res: Response) => {
   const memoryEngine = (req as any).memoryEngine as UnifiedMemoryEngine | null;
-  
+
   if (!memoryEngine) {
     res.status(503).json({
       ready: false,
-      reason: 'Memory engine not initialized'
+      reason: 'Memory engine not initialized',
     });
     return;
   }
-  
+
   res.json({
     ready: true,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 });
 
@@ -266,6 +273,6 @@ healthRouter.get('/live', (_req: Request, res: Response) => {
   res.json({
     alive: true,
     timestamp: new Date().toISOString(),
-    uptime: process.uptime()
+    uptime: process.uptime(),
   });
 });

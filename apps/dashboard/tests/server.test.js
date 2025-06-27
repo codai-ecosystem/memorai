@@ -1,9 +1,9 @@
 /**
  * Basic test for web dashboard server
  */
-import { describe, it, expect } from 'vitest';
 import fs from 'fs';
 import path from 'path';
+import { describe, expect, it } from 'vitest';
 
 describe('Web Dashboard', () => {
   it('should have basic server functionality', () => {

@@ -33,14 +33,21 @@ import { infrastructureManager } from './infrastructure.js';
 function getDefaultDataPath(): string {
   const platformType = platform();
   const userHome = homedir();
-  
+
   switch (platformType) {
     case 'win32':
       // Windows: Use %LOCALAPPDATA%\Memorai\data\memory
       return join(userHome, 'AppData', 'Local', 'Memorai', 'data', 'memory');
     case 'darwin':
       // macOS: Use ~/Library/Application Support/Memorai/data/memory
-      return join(userHome, 'Library', 'Application Support', 'Memorai', 'data', 'memory');
+      return join(
+        userHome,
+        'Library',
+        'Application Support',
+        'Memorai',
+        'data',
+        'memory'
+      );
     case 'linux':
     default:
       // Linux/Unix: Use ~/.local/share/Memorai/data/memory
@@ -67,7 +74,10 @@ console.error(
   'AZURE_OPENAI_API_KEY:',
   process.env.AZURE_OPENAI_API_KEY ? 'SET' : 'NOT SET'
 );
-console.error('OPENAI_API_KEY:', process.env.OPENAI_API_KEY ? 'SET' : 'NOT SET');
+console.error(
+  'OPENAI_API_KEY:',
+  process.env.OPENAI_API_KEY ? 'SET' : 'NOT SET'
+);
 
 const hasAzureOpenAI =
   process.env.AZURE_OPENAI_ENDPOINT &&
@@ -100,7 +110,9 @@ if (explicitTier === 'advanced') {
   }
 } else if (hasAzureOpenAI || hasOpenAI) {
   process.env.MEMORAI_FORCE_TIER = process.env.MEMORAI_FORCE_TIER || 'advanced';
-  console.error('✅ Valid AI credentials found. Auto-setting tier to advanced.');
+  console.error(
+    '✅ Valid AI credentials found. Auto-setting tier to advanced.'
+  );
 } else {
   // Don't force advanced tier without proper credentials
   console.error(

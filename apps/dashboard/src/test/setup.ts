@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom';
-import { vi } from 'vitest';
 import * as React from 'react';
+import { vi } from 'vitest';
 
 // Add React 19 compatibility
 (globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;

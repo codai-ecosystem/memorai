@@ -1,26 +1,31 @@
 # Critical Test Fixes Required
 
 ## Current Status
+
 - Tests passing: 1015/1200 (84.6%)
 - Tests failing: 185/1200 (15.4%)
 
 ## Main Issue Categories
 
 ### 1. React Component Tests (Dashboard) - ~150 failing tests
+
 - **Root cause**: React 19 compatibility issues
 - **Solution**: All React component tests failing due to React version conflicts
 - **Files affected**: `apps/dashboard/tests/unit/components/*.test.tsx`
 
 ### 2. Vector Store Tests - ~4 failing tests
+
 - **Root cause**: Mock expectations don't match actual implementation
 - **Solution**: Update test expectations for UUID conversion and simplified payload
 - **Files affected**: `packages/core/tests/vector/VectorStore.test.ts`
 
 ### 3. Package Version Tests - ~1 failing test
+
 - **Root cause**: Version mismatch expectation
 - **Solution**: ✅ FIXED - Updated expected version from 2.0.0 to 2.0.4
 
 ### 4. MemoryQuery Type Issues - Multiple files
+
 - **Root cause**: Missing required fields `include_context` and `time_decay`
 - **Solution**: Add missing fields to all MemoryQuery objects
 

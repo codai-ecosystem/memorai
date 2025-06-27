@@ -1,5 +1,5 @@
 // Basic test for memorai service
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 describe('memorai Service', () => {
   it('should be properly configured', () => {

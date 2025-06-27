@@ -1,4 +1,4 @@
-import { Router, Request, Response } from 'express';
+import { Request, Response, Router } from 'express';
 import { asyncHandler, createApiError } from '../middleware/errorHandler';
 import { logger } from '../utils/logger';
 
@@ -114,6 +114,82 @@ router.post(
         `Failed to test tier: ${errorMessage}`,
         500,
         'TIER_TEST_FAILED'
+      );
+    }
+  })
+);
+
+// Dashboard-specific configuration endpoint
+router.get(
+  '/dashboard',
+  asyncHandler(async (req: Request, res: Response) => {
+    const { memoryEngine } = req as any;
+    if (!memoryEngine) {
+      throw createApiError(
+        'Memory engine not available',
+        503,
+        'MEMORY_ENGINE_UNAVAILABLE'
+      );
+    }
+
+    try {
+      const tierInfo = memoryEngine.getTierInfo();
+
+      // Return configuration in format expected by dashboard
+      const dashboardConfig = {
+        version: '2.0.55',
+        environment: 'development',
+        features: {
+          memoryStorage: true,
+          vectorSearch: tierInfo.capabilities.semanticSearch || false,
+          agentTracking: true,
+          realTimeUpdates: true,
+        },
+        settings: {
+          maxMemories: 10000,
+          retentionDays: 365,
+          enableEmbeddings: tierInfo.capabilities.embeddings || false,
+          enableCache: true,
+        },
+        endpoints: {
+          api: 'http://localhost:6367/api',
+          websocket: 'ws://localhost:6367',
+        },
+        security: {
+          maxRequestsPerMinute: 1000,
+          encryptionEnabled: true,
+          authRequired: false,
+          sessionTimeout: 3600,
+        },
+        providers: {
+          embedding: tierInfo.currentTier === 'advanced' ? 'openai' : 'local',
+          storage: 'qdrant',
+        },
+        performance: {
+          queryTimeout: 30,
+          cacheSize: 100,
+          batchSize: 50,
+          enablePreloading: true,
+        },
+        tier: tierInfo,
+      };
+
+      res.json({
+        data: dashboardConfig,
+        success: true,
+        cached: false,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      logger.error('Failed to get dashboard configuration', {
+        error: errorMessage,
+      });
+      throw createApiError(
+        `Failed to get dashboard configuration: ${errorMessage}`,
+        500,
+        'DASHBOARD_CONFIG_GET_FAILED'
       );
     }
   })

@@ -24,12 +24,12 @@ const nextConfig = {
   images: {
     domains: ['localhost'],
   },
-  // Keep compatibility with existing Express server
+  // API server proxy to port 6367
   async rewrites() {
     return [
       {
         source: '/api/:path*',
-        destination: 'http://localhost:6366/api/:path*',
+        destination: 'http://localhost:6367/api/:path*',
       },
     ];
   },

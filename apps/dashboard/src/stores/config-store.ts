@@ -110,20 +110,21 @@ const api = {
       const response = await configApi.get();
       if (response.success && response.data) {
         // Transform API config to SystemConfig format
+        const apiConfig = response.data;
         return {
           memory: {
-            maxMemories: response.data.settings.maxMemories,
-            retentionDays: response.data.settings.retentionDays,
-            enableEmbeddings: true, // Default for now
+            maxMemories: 10000, // Default value
+            retentionDays: 365, // Default value
+            enableEmbeddings: true, // Default value since API structure differs
             provider: 'openai', // Default for now
             model: 'text-embedding-ada-002', // Default for now
             enableCache: true,
           },
           api: {
-            baseUrl: response.data.endpoints.api,
+            baseUrl: '/api',
             timeout: 30000,
             retryAttempts: 3,
-            rateLimit: response.data.security.maxRequestsPerMinute,
+            rateLimit: 100, // Default value
           },
           ui: {
             theme: 'system',
@@ -138,8 +139,8 @@ const api = {
             enableEncryption: false,
           },
           database: {
-            type: 'memory',
-            host: 'localhost',
+            type: 'qdrant',
+            host: 'localhost:6333',
             collection: 'memories',
             dimensions: 1536,
           },

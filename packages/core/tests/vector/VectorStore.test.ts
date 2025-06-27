@@ -1,12 +1,12 @@
-import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import {
-  QdrantVectorStore,
-  MemoryVectorStore,
-  type VectorPoint,
-  type SearchResult,
-} from '../../src/vector/VectorStore.js';
-import { VectorStoreError } from '../../src/types/index.js';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { MemoryMetadata, MemoryQuery } from '../../src/types/index.js';
+import { VectorStoreError } from '../../src/types/index.js';
+import {
+  MemoryVectorStore,
+  QdrantVectorStore,
+  type SearchResult,
+  type VectorPoint,
+} from '../../src/vector/VectorStore.js';
 
 // Mock QdrantClient
 vi.mock('@qdrant/js-client-rest', () => ({
@@ -22,7 +22,9 @@ vi.mock('@qdrant/js-client-rest', () => ({
 }));
 
 // Helper function to create valid MemoryQuery objects
-const createMemoryQuery = (overrides: Partial<MemoryQuery> = {}): MemoryQuery => ({
+const createMemoryQuery = (
+  overrides: Partial<MemoryQuery> = {}
+): MemoryQuery => ({
   query: 'test query',
   tenant_id: 'tenant-1',
   limit: 10,
@@ -181,11 +183,13 @@ describe('VectorStore', () => {
             wait: true,
             points: [
               {
-                id: expect.stringMatching(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i),
+                id: expect.stringMatching(
+                  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+                ),
                 vector: [0.1, 0.2, 0.3],
-                payload: { 
+                payload: {
                   content: 'test content',
-                  original_id: 'test-1'
+                  original_id: 'test-1',
                 },
               },
             ],

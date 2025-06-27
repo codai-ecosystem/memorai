@@ -5,10 +5,9 @@
  * Ultimate testing and validation for production readiness
  */
 
-import fs from 'fs';
-import path from 'path';
-import { performance } from 'perf_hooks';
 import { spawn } from 'child_process';
+import fs from 'fs';
+import { performance } from 'perf_hooks';
 
 class FinalProjectCompletionValidator {
   constructor() {

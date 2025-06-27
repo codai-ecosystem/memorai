@@ -6,15 +6,15 @@
  */
 
 import { spawn } from 'child_process';
-import { setTimeout } from 'timers/promises';
 import http from 'http';
+import { setTimeout } from 'timers/promises';
 
 const PORT = 6367;
 const HEALTH_ENDPOINTS = [
   '/health',
-  '/health/detailed', 
+  '/health/detailed',
   '/health/ready',
-  '/health/live'
+  '/health/live',
 ];
 
 console.log('🏥 MEMORAI HEALTH CHECK VALIDATION');
@@ -24,21 +24,21 @@ console.log('===================================\n');
 console.log('🚀 Starting API server with published package...');
 const apiProcess = spawn('npx', ['@codai/memorai-api@1.0.11'], {
   stdio: 'pipe',
-  shell: true
+  shell: true,
 });
 
 let serverReady = false;
 
-apiProcess.stdout.on('data', (data) => {
+apiProcess.stdout.on('data', data => {
   const output = data.toString();
   console.log(`[API] ${output.trim()}`);
-  
+
   if (output.includes('Server running') || output.includes('listening')) {
     serverReady = true;
   }
 });
 
-apiProcess.stderr.on('data', (data) => {
+apiProcess.stderr.on('data', data => {
   console.error(`[API ERROR] ${data.toString().trim()}`);
 });
 
@@ -54,23 +54,23 @@ if (!serverReady) {
 console.log('\n🔍 Testing Health Endpoints');
 console.log('============================');
 
-const testEndpoint = async (endpoint) => {
-  return new Promise((resolve) => {
+const testEndpoint = async endpoint => {
+  return new Promise(resolve => {
     const options = {
       hostname: 'localhost',
       port: PORT,
       path: endpoint,
       method: 'GET',
-      timeout: 5000
+      timeout: 5000,
     };
 
-    const req = http.request(options, (res) => {
+    const req = http.request(options, res => {
       let data = '';
-      
-      res.on('data', (chunk) => {
+
+      res.on('data', chunk => {
         data += chunk;
       });
-      
+
       res.on('end', () => {
         try {
           const jsonData = JSON.parse(data);
@@ -85,7 +85,7 @@ const testEndpoint = async (endpoint) => {
       });
     });
 
-    req.on('error', (error) => {
+    req.on('error', error => {
       console.log(`❌ ${endpoint}: ${error.message}\n`);
       resolve({ endpoint, error: error.message });
     });
@@ -120,7 +120,9 @@ if (successful.length > 0) {
   console.log('\n🎉 Health check system is working!');
   console.log('\nNext steps:');
   console.log('1. Health endpoints are accessible for VS Code integration');
-  console.log('2. VS Code instances can check service status before starting MCP servers');
+  console.log(
+    '2. VS Code instances can check service status before starting MCP servers'
+  );
   console.log('3. Enterprise-grade monitoring is available');
 } else {
   console.log('\n⚠️  Health check system needs investigation');
