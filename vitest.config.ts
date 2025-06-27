@@ -17,7 +17,6 @@ export default defineConfig({
       reporter: ['text', 'json', 'html'],
       exclude: [
         'node_modules/',
-        'src/test/',
         '**/*.d.ts',
         '**/*.config.*',
         '**/dist/',
@@ -30,7 +29,6 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
       '@codai/memorai-core': path.resolve(__dirname, './packages/core/src'),
       '@codai/memorai-sdk': path.resolve(__dirname, './packages/sdk/src'),
       '@codai/memorai-server': path.resolve(__dirname, './packages/server/src'),
