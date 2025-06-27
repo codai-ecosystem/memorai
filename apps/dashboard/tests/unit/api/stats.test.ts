@@ -1,5 +1,11 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { GET } from '../../../src/app/api/stats/route';
+
+// Mock the fetch function to prevent actual API calls during testing
+global.fetch = vi.fn().mockResolvedValue({
+  ok: true,
+  json: () => Promise.resolve({ memories: [] })
+});
 
 describe('Stats API Route', () => {
   describe('GET /api/stats', () => {

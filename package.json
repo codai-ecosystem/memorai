@@ -11,8 +11,8 @@
   "scripts": {
     "build": "turbo build",
     "build:all": "turbo build",
-    "test": "jest --passWithNoTests",
-    "test:watch": "jest --watch --passWithNoTests",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "lint": "turbo lint",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "clean": "turbo clean && rm -rf node_modules",

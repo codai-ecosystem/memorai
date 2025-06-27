@@ -1,10 +1,8 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import {
-  StorageAdapter,
   InMemoryStorageAdapter,
   PostgreSQLStorageAdapter,
   RedisStorageAdapter,
-  MemoryFilters,
 } from '../../src/storage/StorageAdapter';
 import type { MemoryMetadata } from '../../src/types/index';
 
