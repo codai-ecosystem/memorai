@@ -1350,7 +1350,7 @@ export class DeepLearningMemoryEngine extends EventEmitter {
 
   private async generateSamplePredictions(
     features: number[][],
-    model: any,
+    model: unknown,
     type: string
   ): Promise<any> {
     return {
@@ -1436,13 +1436,13 @@ export class DeepLearningMemoryEngine extends EventEmitter {
    * Get comprehensive analytics
    */
   getDeepLearningAnalytics(): {
-    networks: any;
+    networks: unknown;
     personalityProfiles: number;
     memoryClusters: number;
     predictiveModels: number;
     insights: number;
-    performance: any;
-    trainingStatus: any;
+    performance: unknown;
+    trainingStatus: unknown;
   } {
     return {
       networks: Object.fromEntries(

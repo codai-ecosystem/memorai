@@ -901,10 +901,10 @@ export class PredictiveMemoryLifecycleManager extends EventEmitter {
   }
 
   private async simulateOptimizedPerformance(
-    current: any,
+    current: unknown,
     optimizations: OptimizationAction[]
   ): Promise<any> {
-    let optimized = { ...current };
+    let optimized = current && typeof current === 'object' ? { ...current as any } : {};
 
     for (const optimization of optimizations) {
       switch (optimization.type) {

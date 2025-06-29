@@ -116,7 +116,7 @@ export interface DataSubjectRequest {
   dueDate: Date;
   processedBy?: string;
   completionDate?: Date;
-  data?: any;
+  data?: unknown;
   reason?: string;
 }
 

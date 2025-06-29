@@ -913,17 +913,17 @@ export class AdvancedMemorySecurityManager {
     return true; // Simplified - would check against trusted device database
   }
 
-  private hasGeographicRestrictions(location: any): boolean {
+  private hasGeographicRestrictions(location: unknown): boolean {
     return false; // Simplified - would check against restricted locations
   }
 
   private async getUserSecurityHistory(
-    userId: string
+    _userId: string
   ): Promise<{ violationCount: number }> {
     return { violationCount: 0 }; // Simplified
   }
 
-  private async assessLocationRisk(location: any): Promise<number> {
+  private async assessLocationRisk(_location: unknown): Promise<number> {
     return 0.1; // Simplified - would use real geolocation risk assessment
   }
 
@@ -932,7 +932,7 @@ export class AdvancedMemorySecurityManager {
     return hour < 6 || hour > 22 ? 0.3 : 0.1; // Higher risk outside business hours
   }
 
-  private async assessDeviceRisk(fingerprint: string): Promise<number> {
+  private async assessDeviceRisk(_fingerprint: string): Promise<number> {
     return 0.1; // Simplified
   }
 
@@ -978,7 +978,7 @@ export class AdvancedMemorySecurityManager {
 
   private async analyzeThreatIndicators(
     context: SecurityContext,
-    action: Permission
+    _action: Permission
   ): Promise<void> {
     const recentEvents = this.auditEvents.filter(
       e => Date.now() - e.timestamp.getTime() < 3600000 // Last hour

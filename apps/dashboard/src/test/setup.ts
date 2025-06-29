@@ -50,7 +50,7 @@ vi.mock('framer-motion', () => ({
 global.fetch = vi.fn();
 
 // Mock API responses
-export const mockApiResponse = (data: any, ok = true) => {
+export const mockApiResponse = (data: unknown, ok = true) => {
   return Promise.resolve({
     ok,
     json: () => Promise.resolve(data),

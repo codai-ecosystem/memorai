@@ -47,7 +47,7 @@ export interface MCPRequest {
 }
 
 export interface MCPResponse {
-  result?: any;
+  result?: unknown;
   error?: MCPError;
   id?: string | number;
   jsonrpc: '2.0';
@@ -56,7 +56,7 @@ export interface MCPResponse {
 export interface MCPError {
   code: number;
   message: string;
-  data?: any;
+  data?: unknown;
 }
 
 // Authentication & Authorization
@@ -94,7 +94,7 @@ export interface TenantSettings {
 // Memory Operations
 export interface MemoryRequest {
   operation: 'remember' | 'recall' | 'forget' | 'context';
-  data?: any;
+  data?: unknown;
   query?: MemoryQuery;
   memoryId?: string;
   context?: ContextResponse;
@@ -102,7 +102,7 @@ export interface MemoryRequest {
 
 export interface MemoryResponse {
   success: boolean;
-  data?: any;
+  data?: unknown;
   memories?: MemoryMetadata[];
   context?: ContextResponse;
   metadata?: ResponseMetadata;

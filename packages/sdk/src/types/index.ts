@@ -32,7 +32,7 @@ export interface CacheOptions {
 // Memory Operations
 export interface MemoryOperation {
   operation: 'remember' | 'recall' | 'forget' | 'context';
-  data?: any;
+  data?: unknown;
   options?: OperationOptions;
 }
 
@@ -136,16 +136,16 @@ export interface ResponseMetadata {
 export interface SDKError {
   code: string;
   message: string;
-  details?: any;
+  details?: unknown;
   retryable?: boolean;
 }
 
 export class MemoraiSDKError extends Error {
   public readonly code: string;
-  public readonly details?: any;
+  public readonly details?: unknown;
   public readonly retryable: boolean;
 
-  constructor(code: string, message: string, details?: any, retryable = false) {
+  constructor(code: string, message: string, details?: unknown, retryable = false) {
     super(message);
     this.name = 'MemoraiSDKError';
     this.code = code;

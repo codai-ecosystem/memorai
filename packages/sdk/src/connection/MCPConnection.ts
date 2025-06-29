@@ -18,8 +18,8 @@ export class MCPConnection {
   private pendingRequests = new Map<
     string | number,
     {
-      resolve: (value: any) => void;
-      reject: (error: any) => void;
+      resolve: (value: unknown) => void;
+      reject: (error: unknown) => void;
       timeout?: NodeJS.Timeout;
     }
   >();

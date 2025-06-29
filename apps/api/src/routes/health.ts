@@ -8,7 +8,7 @@ import axios from 'axios';
 import { Request, Response, Router } from 'express';
 import { logger } from '../utils/logger';
 
-export const healthRouter = Router();
+export const healthRouter: Router = Router();
 
 interface ServiceStatus {
   name: string;
@@ -72,7 +72,7 @@ async function checkService(
         headers: response.headers,
       },
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     const responseTime = Date.now() - startTime;
 
     return {
@@ -80,10 +80,10 @@ async function checkService(
       status: 'unhealthy',
       url,
       responseTime,
-      error: error.message,
+      error: (error as any).message,
       details: {
-        code: error.code,
-        errno: error.errno,
+        code: (error as any).code,
+        errno: (error as any).errno,
       },
     };
   }

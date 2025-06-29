@@ -134,7 +134,7 @@ export function AnalyticsDashboard({ className }: AnalyticsDashboardProps) {
     title: string;
     value: string | number;
     change?: string;
-    icon: any;
+    icon: unknown;
     color?: 'blue' | 'green' | 'purple' | 'orange';
   }) => {
     const colorClasses = {

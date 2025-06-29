@@ -131,7 +131,7 @@ function getMCPVersion(): string {
     const packagePath = resolve(__dirname, '../package.json');
     const packageJson = JSON.parse(readFileSync(packagePath, 'utf8'));
     return packageJson.version || 'unknown';
-  } catch (error) {
+  } catch {
     return 'unknown';
   }
 }
@@ -642,7 +642,7 @@ server.setRequestHandler(CallToolRequestSchema, async request => {
  * Start web services (dashboard and API) using published packages
  */
 async function startWebServices(): Promise<void> {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     let servicesStarted = 0;
     const totalServices = 3; // HTTP MCP Server, API, Dashboard
 

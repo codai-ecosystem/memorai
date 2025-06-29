@@ -1,4 +1,4 @@
-import { spawn, ChildProcess } from 'child_process';
+import { spawn } from 'child_process';
 import { promisify } from 'util';
 import * as path from 'path';
 import * as fs from 'fs';
@@ -104,7 +104,7 @@ export class InfrastructureManager {
         });
       }
       return false;
-    } catch (error) {
+    } catch {
       return false;
     }
   }

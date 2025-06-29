@@ -526,9 +526,8 @@ class MemoraiDashboardEnhanced {
                     <p class="text-gray-900 dark:text-white leading-relaxed">${this.escapeHtml(memory.content)}</p>
                 </div>
                 
-                ${
-                  memory.metadata
-                    ? `
+                ${memory.metadata
+        ? `
                 <div class="border-t border-gray-200 dark:border-gray-600 pt-3">
                     <div class="flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400">
                         ${memory.metadata.source ? `<span>Source: ${memory.metadata.source}</span>` : ''}
@@ -536,8 +535,8 @@ class MemoraiDashboardEnhanced {
                     </div>
                 </div>
                 `
-                    : ''
-                }
+        : ''
+      }
             </div>
         `;
   }
@@ -638,9 +637,9 @@ class MemoraiDashboardEnhanced {
       const rate =
         this.performance.errors > 0
           ? Math.max(
-              0,
-              100 - (this.performance.errors / this.performance.apiCalls) * 100
-            )
+            0,
+            100 - (this.performance.errors / this.performance.apiCalls) * 100
+          )
           : 98.5;
       successRateElement.textContent = `${rate.toFixed(1)}%`;
     }
@@ -714,12 +713,12 @@ class MemoraiDashboardEnhanced {
     const svgContent = `
             <svg viewBox="0 0 100 100" class="w-32 h-32">
                 ${segments
-                  .map(
-                    segment => `
+        .map(
+          segment => `
                     <path d="${segment.path}" fill="${segment.color}" stroke="white" stroke-width="0.5" opacity="0.8"/>
                 `
-                  )
-                  .join('')}
+        )
+        .join('')}
             </svg>
         `;
 
@@ -878,9 +877,9 @@ class MemoraiDashboardEnhanced {
     const tagsInput = document.getElementById('memory-tags')?.value?.trim();
     const tags = tagsInput
       ? tagsInput
-          .split(',')
-          .map(tag => tag.trim())
-          .filter(Boolean)
+        .split(',')
+        .map(tag => tag.trim())
+        .filter(Boolean)
       : [];
 
     const metadata = {};
@@ -943,9 +942,9 @@ class MemoraiDashboardEnhanced {
       ?.value?.trim();
     const tags = tagsInput
       ? tagsInput
-          .split(',')
-          .map(tag => tag.trim())
-          .filter(Boolean)
+        .split(',')
+        .map(tag => tag.trim())
+        .filter(Boolean)
       : [];
 
     const metadata = {};
@@ -1043,7 +1042,7 @@ class MemoraiDashboardEnhanced {
     document.querySelectorAll('.tab-content').forEach(content => {
       content.classList.add('hidden');
     });
-    
+
     // Show the target tab content
     const targetTab = document.getElementById(`${tabName}-tab`);
     if (targetTab) {
@@ -1059,7 +1058,7 @@ class MemoraiDashboardEnhanced {
         text: 'Advanced memory management with real-time analytics, AI-powered insights, and visual knowledge mapping'
       },
       graph: {
-        icon: 'network', 
+        icon: 'network',
         text: 'Interactive neural graph visualization showing memory connections and knowledge relationships'
       },
       analytics: {
@@ -1571,18 +1570,18 @@ class MemoraiDashboardEnhanced {
     const servicesContainer = document.getElementById('services-overview');
     if (servicesContainer && this.projects) {
       const { apps = [], services = [], totalApps = 0, totalServices = 0, totalProjects = 0 } = this.projects;
-      
+
       // Create services overview HTML
       const servicesByCategory = {};
       const appsByTier = {};
-      
+
       // Group services by category
       services.forEach(service => {
         const category = service.category || 'other';
         if (!servicesByCategory[category]) servicesByCategory[category] = [];
         servicesByCategory[category].push(service);
       });
-      
+
       // Group apps by tier
       apps.forEach(app => {
         const tier = app.tier || 'other';

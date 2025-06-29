@@ -46,7 +46,7 @@ export function MemorySearch({ className }: MemorySearchProps) {
     debouncedSearch(value);
   };
 
-  const handleFilterChange = (key: string, value: any) => {
+  const handleFilterChange = (key: string, value: unknown) => {
     const newFilters = { ...filters, [key]: value };
     setFilters(newFilters);
 

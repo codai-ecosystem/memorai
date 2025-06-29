@@ -62,7 +62,7 @@ class EnterpriseDataSourceManager {
   private memoryEngine: any | null = null;
   private metricsCache = new Map<
     string,
-    { data: any; timestamp: number; ttl: number }
+    { data: unknown; timestamp: number; ttl: number }
   >();
   private realtimeStats: RealTimeStats | null = null;
   private systemConfig: SystemConfig | null = null;
@@ -109,7 +109,7 @@ class EnterpriseDataSourceManager {
     return null;
   }
 
-  private setCachedData(key: string, data: any, ttl: number): void {
+  private setCachedData(key: string, data: unknown, ttl: number): void {
     this.metricsCache.set(key, {
       data,
       timestamp: Date.now(),
@@ -363,7 +363,7 @@ class EnterpriseDataSourceManager {
     try {
       // Get actual recent activities from memory engine
       const activities = await this.memoryEngine.getRecentActivities(10);
-      return activities.map((activity: any) => ({
+      return activities.map((activity: unknown) => ({
         id: activity.id ?? Date.now().toString(),
         type: activity.type ?? 'memory_operation',
         timestamp: activity.timestamp ?? new Date().toISOString(),

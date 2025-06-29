@@ -311,7 +311,7 @@ server.setRequestHandler(CallToolRequestSchema, async request => {
         const { agentId, content, metadata } = args as {
           agentId: string;
           content: string;
-          metadata?: any;
+          metadata?: unknown;
         };
         const memoryId = await hyperEngine.remember({
           agentId,

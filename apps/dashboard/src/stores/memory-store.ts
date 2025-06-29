@@ -82,7 +82,7 @@ interface MemoryState {
 
 // API functions using MCP Memory Client
 const api = {
-  async getMemories(params?: any): Promise<Memory[]> {
+  async getMemories(params?: unknown): Promise<Memory[]> {
     try {
       return await mcpMemoryClient.getMemories({
         limit: params?.limit,
@@ -111,7 +111,7 @@ const api = {
     }
   },
 
-  async searchMemories(query: string, options?: any): Promise<Memory[]> {
+  async searchMemories(query: string, options?: unknown): Promise<Memory[]> {
     try {
       return await mcpMemoryClient.searchMemories(query, {
         limit: options?.limit,

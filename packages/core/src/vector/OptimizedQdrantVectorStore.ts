@@ -389,7 +389,7 @@ export class OptimizedQdrantVectorStore implements VectorStore {
 
   // Helper methods
   private buildFilter(query: MemoryQuery): any {
-    const filter: { must: unknown[] } = { must: [] };
+    const filter: { must: any[] } = { must: [] };
 
     if (query.tenant_id) {
       filter.must.push({ key: 'tenant_id', match: { value: query.tenant_id } });

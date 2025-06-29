@@ -833,4 +833,29 @@ export class MemoryEngine {
       );
     }
   }
+
+  /**
+   * Delete a specific memory by ID
+   */
+  public async deleteMemory(memoryId: string): Promise<boolean> {
+    if (!this.isInitialized) {
+      throw new MemoryError(
+        'Memory engine not initialized. Call initialize() first.',
+        'NOT_INITIALIZED'
+      );
+    }
+
+    try {
+      await this.vectorStore.deleteMemories([memoryId]);
+      return true;
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        throw new MemoryError(
+          `Failed to delete memory: ${error.message}`,
+          'DELETE_ERROR'
+        );
+      }
+      throw new MemoryError('Unknown delete error', 'DELETE_ERROR');
+    }
+  }
 }

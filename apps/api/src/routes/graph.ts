@@ -7,7 +7,7 @@ import { Request, Response, Router } from 'express';
 import { asyncHandler, createApiError } from '../middleware/errorHandler';
 import { logger } from '../utils/logger';
 
-const router = Router();
+const router: Router = Router();
 
 interface GraphEntity {
   id: string;
@@ -95,7 +95,7 @@ router.get(
   asyncHandler(async (req: Request, res: Response) => {
     try {
       // Get memory data from MCP server
-      let memories: any[] = [];
+      let memories: unknown[] = [];
 
       try {
         memories = await getMCPMemories(req.memoryEngine);

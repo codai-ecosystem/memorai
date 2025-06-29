@@ -1,5 +1,5 @@
 {
-  "name": "memorai-mcp",
+  "name": "memorai-mcp-service",
   "version": "2.0.1",
   "description": "Production-Ready Agent-Native Memory Control Protocol",
   "type": "module",
@@ -17,7 +17,7 @@
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "clean": "turbo clean && rm -rf node_modules",
     "publish-packages": "node scripts/publish-packages.js",
-    "test:ui": "npx vitest ui",
+    "test:ui": "vitest --ui",
     "test:run": "vitest run",
     "test:coverage": "vitest --coverage",
     "_DEPRECATED_dev": "echo 'FORBIDDEN: Use published packages via MCP server only' && exit 1",
@@ -38,7 +38,11 @@
     "prettier": "^3.3.3",
     "turbo": "^2.5.4",
     "typescript": "^5.5.4",
-    "vitest": "^2.1.9"
+    "vitest": "^2.1.9",
+    "@types/node": "^20.12.12",
+    "autoprefixer": "^10.4.19",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.3"
   },
   "packageManager": "pnpm@8.15.6",
   "engines": {
@@ -58,12 +62,22 @@
     "vector-database"
   ],
   "license": "MIT",
-  "pnpm": {
-    "overrides": {
-      "esbuild": ">=0.25.0",
-      "fast-jwt": ">=5.0.6",
-      "brace-expansion": ">=2.0.2"
-    }
-  },
-  "author": "Dragos CV"
+  "author": "Dragos CV",
+  "dependencies": {
+    "class-variance-authority": "^0.7.0",
+    "@heroicons/react": "^2.0.18",
+    "tailwind-merge": "^2.3.0",
+    "clsx": "^2.1.1",
+    "postgres": "^3.4.4",
+    "@radix-ui/react-progress": "^1.0.3",
+    "@radix-ui/react-tabs": "^1.0.4",
+    "@radix-ui/react-select": "^2.0.0",
+    "lucide-react": "^0.263.1",
+    "recharts": "^2.12.7",
+    "zod": "^3.23.8",
+    "uuid": "^9.0.1",
+    "@types/uuid": "^9.0.8",
+    "sqlite3": "^5.1.6",
+    "@types/sqlite3": "^3.1.11"
+  }
 }

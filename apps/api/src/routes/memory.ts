@@ -305,7 +305,7 @@ router.get(
           agentId,
           { limit: limit * page }
         );
-        memories = results.map((r: any) => (r as any).memory);
+        memories = results.map((r: unknown) => (r as any).memory);
       } else {
         // For listing all, use the getContext method
         const contextResponse = await memoryEngine.getContext({
@@ -314,7 +314,7 @@ router.get(
           max_memories: limit * page,
         });
         memories =
-          contextResponse.memories?.map((m: any) => (m as any).memory) || [];
+          contextResponse.memories?.map((m: unknown) => (m as any).memory) || [];
       }
 
       // Simple pagination (this should be improved in the memory engine)
@@ -378,7 +378,7 @@ router.get(
         agentId,
         exportedAt: new Date().toISOString(),
         memoryCount: memories.length,
-        memories: memories.map((memory: any) => ({
+        memories: memories.map((memory: unknown) => ({
           id: (memory as any).id,
           content: (memory as any).content,
           metadata: (memory as any).metadata,

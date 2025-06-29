@@ -15,7 +15,7 @@ export interface Memory {
     tags?: string[];
     source?: string;
     similarity?: number;
-    [key: string]: any;
+    [key: string]: unknown;
   };
 }
 
@@ -173,7 +173,7 @@ export interface MemoryEvent {
 
 export interface SystemEvent {
   type: 'system:status' | 'system:error' | 'system:config';
-  data: any;
+  data: unknown;
   timestamp: string;
 }
 

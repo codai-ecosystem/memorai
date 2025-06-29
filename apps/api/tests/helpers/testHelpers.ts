@@ -40,11 +40,11 @@ export const createMockMemoryEngine = (config: Partial<any> = {}) => {
           options?: any
         ) => {
           const agentMemories = Array.from(memories.values()).filter(
-            (m: any) => m.agentId === agentId
+            (m: unknown) => m.agentId === agentId
           );
           return agentMemories
             .slice(0, options?.limit || 10)
-            .map((memory: any) => ({
+            .map((memory: unknown) => ({
               memory,
               score: 0.9,
             }));
@@ -58,17 +58,17 @@ export const createMockMemoryEngine = (config: Partial<any> = {}) => {
       }
       return false;
     }),
-    getContext: vi.fn().mockImplementation(async (request: any) => {
+    getContext: vi.fn().mockImplementation(async (request: unknown) => {
       const agentId = request.agent_id || request.agentId;
       const maxMemories = request.max_memories || request.contextSize || 10;
       const agentMemories = Array.from(memories.values()).filter(
-        (m: any) => m.agentId === agentId
+        (m: unknown) => m.agentId === agentId
       );
       return {
         context: `Context for ${agentId} with ${agentMemories.length} memories`,
         memories: agentMemories
           .slice(0, maxMemories)
-          .map((memory: any) => ({ memory, score: 0.9 })),
+          .map((memory: unknown) => ({ memory, score: 0.9 })),
         summary: `Context for ${agentId} with ${agentMemories.length} memories`,
         confidence: 0.9,
         generated_at: new Date(),

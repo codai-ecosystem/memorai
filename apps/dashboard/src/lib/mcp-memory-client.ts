@@ -43,7 +43,7 @@ export interface MemoryStats {
 
 export interface MCPMemoryResponse {
   success: boolean;
-  data?: any;
+  data?: unknown;
   error?: string;
 }
 
@@ -270,7 +270,7 @@ class MCPMemoryClient {
         // The response now has entities and relations directly
         if (data.entities && Array.isArray(data.entities)) {
           return {
-            entities: data.entities.map((entity: any) => ({
+            entities: data.entities.map((entity: unknown) => ({
               name: entity.name,
               entityType: entity.entityType,
               observations: entity.observations || [],

@@ -331,7 +331,7 @@ export class UnifiedMemoryEngine {
   }
 
   /**
-   * Forget a memory
+   * Forget a memory by ID
    */
   public async forget(memoryId: string): Promise<boolean> {
     if (!this.isInitialized) {
@@ -342,7 +342,19 @@ export class UnifiedMemoryEngine {
     }
 
     try {
-      return await this.activeEngine.forget(memoryId);
+      // Handle different engine types with their specific delete methods
+      if (this.activeEngine === this.advancedEngine && this.advancedEngine) {
+        // Advanced tier: use the new deleteMemory method
+        return await this.advancedEngine.deleteMemory(memoryId);
+      } else if (this.activeEngine === this.basicEngine && this.basicEngine) {
+        // Basic tier: use the existing forget method
+        await this.basicEngine.forget(memoryId);
+        return true;
+      } else {
+        // Fallback: try casting and calling forget - this may fail but will trigger fallback
+        await (this.activeEngine as any).forget(memoryId);
+        return true;
+      }
     } catch (error) {
       if (this.config.enableFallback) {
         logger.warn(
