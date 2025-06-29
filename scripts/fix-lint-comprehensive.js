@@ -2,7 +2,6 @@
 
 import { readFileSync, writeFileSync } from 'fs';
 import { glob } from 'glob';
-import { join } from 'path';
 
 console.log('🔧 Comprehensive Lint Fix Script');
 
@@ -15,7 +14,7 @@ const fixes = {
   explicitAny: /:\s*any\b/g,
 };
 
-const processFile = (filePath) => {
+const processFile = filePath => {
   try {
     const content = readFileSync(filePath, 'utf8');
     let fixed = content;
@@ -43,17 +42,19 @@ const processFile = (filePath) => {
 const main = async () => {
   const pattern = 'packages/core/src/**/*.ts';
   const files = await glob(pattern, { cwd: process.cwd() });
-  
+
   console.log(`Found ${files.length} TypeScript files to process`);
-  
+
   let totalChanges = 0;
   for (const file of files) {
     const changes = processFile(file);
     totalChanges += changes;
   }
-  
+
   console.log(`\n🎉 Total fixes applied: ${totalChanges}`);
-  console.log('⚠️  Manual fixes still needed for unused variables and any types');
+  console.log(
+    '⚠️  Manual fixes still needed for unused variables and any types'
+  );
   console.log('Run: pnpm eslint packages/core/src --fix to verify');
 };
 

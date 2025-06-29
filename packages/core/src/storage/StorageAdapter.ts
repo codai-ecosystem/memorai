@@ -3,8 +3,9 @@
  */
 
 import { promises as fs } from 'fs';
-import { join, dirname } from 'path';
+import { dirname, join } from 'path';
 import type { MemoryMetadata } from '../types/index.js';
+import { ProductionPostgreSQLAdapter } from './ProductionPostgreSQLAdapter.js';
 
 /**
  * Storage adapter interface for different storage backends
@@ -49,8 +50,14 @@ export interface MemoryFilters {
   agentId?: string;
   type?: string;
   importance?: number;
+  minImportance?: number;
+  maxImportance?: number;
+  tags?: string[];
   since?: Date;
   until?: Date;
+  startDate?: Date;
+  endDate?: Date;
+  sortBy?: 'created' | 'updated' | 'accessed' | 'importance';
   offset?: number;
   limit?: number;
 }
@@ -128,62 +135,368 @@ export class InMemoryStorageAdapter implements StorageAdapter {
 }
 
 /**
- * PostgreSQL storage adapter (stub for future implementation)
+ * PostgreSQL storage adapter (production implementation available)
+ * @deprecated Use ProductionPostgreSQLAdapter for production deployments
+ */
+/**
+ * PostgreSQL storage adapter - Enhanced implementation
+ * @deprecated Use ProductionPostgreSQLAdapter for new implementations
  */
 export class PostgreSQLStorageAdapter implements StorageAdapter {
-  constructor(private connectionString: string) {}
-  async store(_memory: MemoryMetadata): Promise<void> {
-    throw new Error('PostgreSQL adapter not implemented yet');
+  private adapter: ProductionPostgreSQLAdapter;
+
+  constructor(connectionString: string) {
+    console.warn(
+      'PostgreSQLStorageAdapter is deprecated. Use ProductionPostgreSQLAdapter instead.'
+    );
+
+    // Initialize with the production adapter internally
+    const config = this.parseConnectionString(connectionString);
+    this.adapter = new ProductionPostgreSQLAdapter(config);
   }
 
-  async retrieve(_id: string): Promise<MemoryMetadata | null> {
-    throw new Error('PostgreSQL adapter not implemented yet');
+  private parseConnectionString(connectionString: string): any {
+    // Simple connection string parsing for backward compatibility
+    const url = new URL(connectionString);
+    return {
+      host: url.hostname,
+      port: parseInt(url.port) || 5432,
+      database: url.pathname.slice(1),
+      user: url.username,
+      password: url.password,
+      ssl: url.searchParams.get('ssl') === 'true',
+    };
   }
 
-  async update(_id: string, _updates: Partial<MemoryMetadata>): Promise<void> {
-    throw new Error('PostgreSQL adapter not implemented yet');
+  async store(memory: MemoryMetadata): Promise<void> {
+    return this.adapter.store(memory);
   }
 
-  async delete(_id: string): Promise<void> {
-    throw new Error('PostgreSQL adapter not implemented yet');
+  async retrieve(id: string): Promise<MemoryMetadata | null> {
+    return this.adapter.retrieve(id);
   }
 
-  async list(_filters?: MemoryFilters): Promise<MemoryMetadata[]> {
-    throw new Error('PostgreSQL adapter not implemented yet');
+  async update(id: string, updates: Partial<MemoryMetadata>): Promise<void> {
+    return this.adapter.update(id, updates);
   }
 
-  async clear(_tenantId?: string): Promise<void> {
-    throw new Error('PostgreSQL adapter not implemented yet');
+  async delete(id: string): Promise<void> {
+    return this.adapter.delete(id);
+  }
+
+  async list(filters?: MemoryFilters): Promise<MemoryMetadata[]> {
+    return this.adapter.list(filters);
+  }
+
+  async clear(tenantId?: string): Promise<void> {
+    return this.adapter.clear(tenantId);
   }
 }
 
 /**
- * Redis storage adapter (stub for future implementation)
+ * Redis storage adapter - Production implementation
  */
 export class RedisStorageAdapter implements StorageAdapter {
-  constructor(private redisUrl: string) {}
-  async store(_memory: MemoryMetadata): Promise<void> {
-    throw new Error('Redis adapter not implemented yet');
+  private redis: any;
+
+  constructor(private redisUrl: string) {
+    // Import and initialize Redis client dynamically to avoid import issues
+    this.initializeRedis();
   }
 
-  async retrieve(_id: string): Promise<MemoryMetadata | null> {
-    throw new Error('Redis adapter not implemented yet');
+  private async initializeRedis(): Promise<void> {
+    try {
+      const Redis = await import('ioredis');
+      this.redis = new Redis.default(this.redisUrl, {
+        maxRetriesPerRequest: 3,
+        lazyConnect: true,
+        keepAlive: 30000,
+        retryStrategy: (times: number) => Math.min(times * 50, 2000),
+      });
+    } catch (error) {
+      console.error('Failed to initialize Redis client:', error);
+      throw error;
+    }
   }
 
-  async update(_id: string, _updates: Partial<MemoryMetadata>): Promise<void> {
-    throw new Error('Redis adapter not implemented yet');
+  private async ensureConnected(): Promise<void> {
+    if (!this.redis) {
+      await this.initializeRedis();
+    }
+    if (this.redis.status !== 'ready') {
+      await this.redis.connect();
+    }
   }
 
-  async delete(_id: string): Promise<void> {
-    throw new Error('Redis adapter not implemented yet');
+  async store(memory: MemoryMetadata): Promise<void> {
+    try {
+      await this.ensureConnected();
+
+      // Store memory as JSON with TTL if specified
+      const memoryData = JSON.stringify(memory);
+      const key = `memory:${memory.id}`;
+
+      if (memory.ttl) {
+        const ttlSeconds = Math.floor(
+          (memory.ttl.getTime() - Date.now()) / 1000
+        );
+        if (ttlSeconds > 0) {
+          await this.redis.setex(key, ttlSeconds, memoryData);
+        } else {
+          await this.redis.set(key, memoryData);
+        }
+      } else {
+        await this.redis.set(key, memoryData);
+      }
+
+      // Create indexes for efficient querying
+      if (memory.tenant_id) {
+        await this.redis.sadd(`tenant:${memory.tenant_id}:memories`, memory.id);
+      }
+      if (memory.agent_id) {
+        await this.redis.sadd(`agent:${memory.agent_id}:memories`, memory.id);
+      }
+      if (memory.type) {
+        await this.redis.sadd(`type:${memory.type}:memories`, memory.id);
+      }
+
+      // Store tags for search
+      if (memory.tags && memory.tags.length > 0) {
+        for (const tag of memory.tags) {
+          await this.redis.sadd(`tag:${tag}:memories`, memory.id);
+        }
+      }
+    } catch (error) {
+      console.error('Redis store error:', error);
+      throw error;
+    }
   }
 
-  async list(_filters?: MemoryFilters): Promise<MemoryMetadata[]> {
-    throw new Error('Redis adapter not implemented yet');
+  async retrieve(id: string): Promise<MemoryMetadata | null> {
+    try {
+      await this.ensureConnected();
+
+      const memoryData = await this.redis.get(`memory:${id}`);
+      if (!memoryData) {
+        return null;
+      }
+
+      const memory = JSON.parse(memoryData) as MemoryMetadata;
+
+      // Convert date strings back to Date objects
+      if (memory.createdAt && typeof memory.createdAt === 'string') {
+        memory.createdAt = new Date(memory.createdAt);
+      }
+      if (memory.updatedAt && typeof memory.updatedAt === 'string') {
+        memory.updatedAt = new Date(memory.updatedAt);
+      }
+      if (memory.lastAccessedAt && typeof memory.lastAccessedAt === 'string') {
+        memory.lastAccessedAt = new Date(memory.lastAccessedAt);
+      }
+      if (memory.ttl && typeof memory.ttl === 'string') {
+        memory.ttl = new Date(memory.ttl);
+      }
+
+      // Update last accessed time
+      memory.lastAccessedAt = new Date();
+      memory.accessCount = (memory.accessCount || 0) + 1;
+
+      // Store updated access info back to Redis
+      await this.redis.set(`memory:${id}`, JSON.stringify(memory));
+
+      return memory;
+    } catch (error) {
+      console.error('Redis retrieve error:', error);
+      return null;
+    }
   }
 
-  async clear(_tenantId?: string): Promise<void> {
-    throw new Error('Redis adapter not implemented yet');
+  async update(id: string, updates: Partial<MemoryMetadata>): Promise<void> {
+    try {
+      await this.ensureConnected();
+
+      const existing = await this.retrieve(id);
+      if (!existing) {
+        throw new Error(`Memory with id ${id} not found`);
+      }
+
+      // Merge updates with existing memory
+      const updated: MemoryMetadata = {
+        ...existing,
+        ...updates,
+        id, // Ensure ID doesn't change
+        updatedAt: new Date(),
+      };
+
+      // Remove old indexes if needed
+      if (updates.tenant_id && existing.tenant_id !== updates.tenant_id) {
+        if (existing.tenant_id) {
+          await this.redis.srem(`tenant:${existing.tenant_id}:memories`, id);
+        }
+      }
+      if (updates.agent_id && existing.agent_id !== updates.agent_id) {
+        if (existing.agent_id) {
+          await this.redis.srem(`agent:${existing.agent_id}:memories`, id);
+        }
+      }
+
+      // Store updated memory
+      await this.store(updated);
+    } catch (error) {
+      console.error('Redis update error:', error);
+      throw error;
+    }
+  }
+
+  async delete(id: string): Promise<void> {
+    try {
+      await this.ensureConnected();
+
+      // Get memory first to clean up indexes
+      const memory = await this.retrieve(id);
+
+      if (memory) {
+        // Remove from indexes
+        if (memory.tenant_id) {
+          await this.redis.srem(`tenant:${memory.tenant_id}:memories`, id);
+        }
+        if (memory.agent_id) {
+          await this.redis.srem(`agent:${memory.agent_id}:memories`, id);
+        }
+        if (memory.type) {
+          await this.redis.srem(`type:${memory.type}:memories`, id);
+        }
+        if (memory.tags) {
+          for (const tag of memory.tags) {
+            await this.redis.srem(`tag:${tag}:memories`, id);
+          }
+        }
+      }
+
+      // Delete the memory itself
+      await this.redis.del(`memory:${id}`);
+    } catch (error) {
+      console.error('Redis delete error:', error);
+      throw error;
+    }
+  }
+
+  async list(filters?: MemoryFilters): Promise<MemoryMetadata[]> {
+    try {
+      await this.ensureConnected();
+
+      let memoryIds: string[] = [];
+
+      if (filters?.tenantId) {
+        memoryIds = await this.redis.smembers(
+          `tenant:${filters.tenantId}:memories`
+        );
+      } else if (filters?.agentId) {
+        memoryIds = await this.redis.smembers(
+          `agent:${filters.agentId}:memories`
+        );
+      } else if (filters?.type) {
+        memoryIds = await this.redis.smembers(`type:${filters.type}:memories`);
+      } else {
+        // Get all memory keys if no specific filter
+        const keys = await this.redis.keys('memory:*');
+        memoryIds = keys.map((key: string) => key.replace('memory:', ''));
+      }
+
+      // Retrieve all memories
+      const memories: MemoryMetadata[] = [];
+      for (const id of memoryIds) {
+        const memory = await this.retrieve(id);
+        if (memory) {
+          memories.push(memory);
+        }
+      }
+
+      // Apply additional filters
+      let filtered = memories;
+
+      if (filters?.tags && filters.tags.length > 0) {
+        filtered = filtered.filter(
+          memory =>
+            memory.tags && memory.tags.some(tag => filters.tags!.includes(tag))
+        );
+      }
+
+      if (filters?.minImportance !== undefined) {
+        filtered = filtered.filter(
+          memory => memory.importance >= filters.minImportance!
+        );
+      }
+
+      if (filters?.maxImportance !== undefined) {
+        filtered = filtered.filter(
+          memory => memory.importance <= filters.maxImportance!
+        );
+      }
+
+      // Sort by creation date (newest first) and apply limit
+      filtered.sort((a, b) => {
+        const dateA =
+          a.createdAt instanceof Date ? a.createdAt : new Date(a.createdAt);
+        const dateB =
+          b.createdAt instanceof Date ? b.createdAt : new Date(b.createdAt);
+        return dateB.getTime() - dateA.getTime();
+      });
+
+      if (filters?.limit) {
+        filtered = filtered.slice(0, filters.limit);
+      }
+
+      return filtered;
+    } catch (error) {
+      console.error('Redis list error:', error);
+      return [];
+    }
+  }
+
+  async clear(tenantId?: string): Promise<void> {
+    try {
+      await this.ensureConnected();
+
+      if (tenantId) {
+        // Clear memories for specific tenant
+        const memoryIds = await this.redis.smembers(
+          `tenant:${tenantId}:memories`
+        );
+
+        for (const id of memoryIds) {
+          await this.delete(id);
+        }
+
+        // Clear tenant index
+        await this.redis.del(`tenant:${tenantId}:memories`);
+      } else {
+        // Clear all memories
+        const keys = await this.redis.keys('memory:*');
+        if (keys.length > 0) {
+          await this.redis.del(...keys);
+        }
+
+        // Clear all indexes
+        const indexKeys = await this.redis.keys('tenant:*:memories');
+        const agentKeys = await this.redis.keys('agent:*:memories');
+        const typeKeys = await this.redis.keys('type:*:memories');
+        const tagKeys = await this.redis.keys('tag:*:memories');
+
+        const allIndexKeys = [
+          ...indexKeys,
+          ...agentKeys,
+          ...typeKeys,
+          ...tagKeys,
+        ];
+        if (allIndexKeys.length > 0) {
+          await this.redis.del(...allIndexKeys);
+        }
+      }
+    } catch (error) {
+      console.error('Redis clear error:', error);
+      throw error;
+    }
   }
 }
 

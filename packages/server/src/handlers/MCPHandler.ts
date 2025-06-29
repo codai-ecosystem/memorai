@@ -2,14 +2,14 @@
  * @fileoverview MCP Protocol handler for Memorai operations
  */
 
+import { MemoryEngine } from '@codai/memorai-core';
 import type { FastifyReply } from 'fastify';
 import type {
+  AuthenticatedRequest,
   MCPRequest,
   MCPResponse,
   MemoryResponse,
-  AuthenticatedRequest,
 } from '../types/index.js';
-import { MemoryEngine } from '@codai/memorai-core';
 import { Logger } from '../utils/Logger.js';
 
 // Parameter types for MCP operations
@@ -317,11 +317,7 @@ export class MCPHandler {
    */
   private isValidMCPRequest(request: unknown): request is MCPRequest {
     const req = request as MCPRequestBody;
-    return (
-      req &&
-      req.jsonrpc === '2.0' &&
-      typeof req.method === 'string'
-    );
+    return req && req.jsonrpc === '2.0' && typeof req.method === 'string';
   }
 
   /**

@@ -1,7 +1,7 @@
 {
   "name": "@codai/memorai-core",
-  "version": "1.0.21",
-  "description": "Core memory engine with vector operations for AI agents",
+  "version": "1.1.1",
+  "description": "Simplified advanced memory engine - no tiers, just powerful semantic search with persistence",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -34,8 +34,12 @@
   "dependencies": {
     "@octokit/rest": "^20.0.0",
     "@qdrant/js-client-rest": "1.7.0",
+    "@types/ioredis": "^5.0.0",
+    "@types/pg": "^8.15.4",
+    "ioredis": "^5.6.1",
     "nanoid": "^5.0.0",
     "openai": "^4.20.0",
+    "pg": "^8.16.3",
     "zod": "^3.22.0"
   },
   "devDependencies": {

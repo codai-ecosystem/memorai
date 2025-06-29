@@ -1,7 +1,5 @@
-export * from '@codai/memorai-core';
-export * from '@codai/memorai-server';
-
-// Re-export main types for convenience
+// Simplified MCP Package - Core types and AdvancedMemoryEngine only
+export { AdvancedMemoryEngine } from '@codai/memorai-core';
 export type {
   MemoryMetadata,
   MemoryType,
@@ -9,7 +7,6 @@ export type {
   MemoryConfig,
 } from '@codai/memorai-core';
 
-export type { ServerConfig, ServerOptions } from '@codai/memorai-server';
-
-// Default export for MCP server
-export { MemoraiServer as default } from '@codai/memorai-server';
+// This package provides a simplified MCP server via the bin script
+// Use: npx @codai/memorai-mcp
+// Or: memorai-mcp (after global install)

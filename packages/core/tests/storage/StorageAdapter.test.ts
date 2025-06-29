@@ -382,46 +382,46 @@ describe('StorageAdapter', () => {
       );
     });
 
-    it('should throw error for store method', async () => {
+    it('should throw initialization error when not initialized', async () => {
       const memory = { id: 'test' } as MemoryMetadata;
       await expect(adapter.store(memory)).rejects.toThrow(
-        'PostgreSQL adapter not implemented yet'
+        'PostgreSQL adapter not initialized'
       );
     });
 
-    it('should throw error for retrieve method', async () => {
+    it('should throw initialization error for retrieve method', async () => {
       await expect(adapter.retrieve('test-id')).rejects.toThrow(
-        'PostgreSQL adapter not implemented yet'
+        'PostgreSQL adapter not initialized'
       );
     });
 
-    it('should throw error for update method', async () => {
+    it('should throw initialization error for update method', async () => {
       await expect(adapter.update('test-id', {})).rejects.toThrow(
-        'PostgreSQL adapter not implemented yet'
+        'PostgreSQL adapter not initialized'
       );
     });
 
-    it('should throw error for delete method', async () => {
+    it('should throw initialization error for delete method', async () => {
       await expect(adapter.delete('test-id')).rejects.toThrow(
-        'PostgreSQL adapter not implemented yet'
+        'PostgreSQL adapter not initialized'
       );
     });
 
-    it('should throw error for list method', async () => {
+    it('should throw initialization error for list method', async () => {
       await expect(adapter.list()).rejects.toThrow(
-        'PostgreSQL adapter not implemented yet'
+        'PostgreSQL adapter not initialized'
       );
     });
 
-    it('should throw error for clear method', async () => {
+    it('should throw initialization error for clear method', async () => {
       await expect(adapter.clear()).rejects.toThrow(
-        'PostgreSQL adapter not implemented yet'
+        'PostgreSQL adapter not initialized'
       );
     });
 
-    it('should throw error for clear method with tenantId', async () => {
+    it('should throw initialization error for clear method with tenantId', async () => {
       await expect(adapter.clear('tenant-1')).rejects.toThrow(
-        'PostgreSQL adapter not implemented yet'
+        'PostgreSQL adapter not initialized'
       );
     });
   });
@@ -433,47 +433,57 @@ describe('StorageAdapter', () => {
       adapter = new RedisStorageAdapter('redis://localhost:6379');
     });
 
-    it('should throw error for store method', async () => {
-      const memory = { id: 'test' } as MemoryMetadata;
-      await expect(adapter.store(memory)).rejects.toThrow(
-        'Redis adapter not implemented yet'
-      );
+    it('should handle basic store operation', async () => {
+      const memory = {
+        id: 'test',
+        type: 'fact' as const,
+        content: 'test content',
+        confidence: 0.8,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        lastAccessedAt: new Date(),
+        accessCount: 0,
+        importance: 0.8,
+        tags: [],
+        tenant_id: 'tenant-1',
+        agent_id: 'agent-1',
+      } as MemoryMetadata;
+
+      // Should not throw - real implementation handles storage
+      await expect(adapter.store(memory)).resolves.not.toThrow();
     });
 
-    it('should throw error for retrieve method', async () => {
-      await expect(adapter.retrieve('test-id')).rejects.toThrow(
-        'Redis adapter not implemented yet'
-      );
+    it('should return null for non-existent memory', async () => {
+      const result = await adapter.retrieve('non-existent');
+      expect(result).toBeNull();
     });
 
-    it('should throw error for update method', async () => {
+    it('should handle update operation for non-existent memory', async () => {
+      // Real implementation throws specific error for missing memory
       await expect(adapter.update('test-id', {})).rejects.toThrow(
-        'Redis adapter not implemented yet'
+        'Memory with id test-id not found'
       );
     });
 
-    it('should throw error for delete method', async () => {
-      await expect(adapter.delete('test-id')).rejects.toThrow(
-        'Redis adapter not implemented yet'
-      );
+    it('should handle delete operation gracefully', async () => {
+      // Should not throw - delete operations are idempotent
+      await expect(adapter.delete('test-id')).resolves.not.toThrow();
     });
 
-    it('should throw error for list method', async () => {
-      await expect(adapter.list()).rejects.toThrow(
-        'Redis adapter not implemented yet'
-      );
+    it('should handle list operation', async () => {
+      // Should return an array (might be empty but not throw)
+      const result = await adapter.list();
+      expect(Array.isArray(result)).toBe(true);
     });
 
-    it('should throw error for clear method', async () => {
-      await expect(adapter.clear()).rejects.toThrow(
-        'Redis adapter not implemented yet'
-      );
+    it('should handle clear operation', async () => {
+      // Should not throw - clear operations are idempotent
+      await expect(adapter.clear()).resolves.not.toThrow();
     });
 
-    it('should throw error for clear method with tenantId', async () => {
-      await expect(adapter.clear('tenant-1')).rejects.toThrow(
-        'Redis adapter not implemented yet'
-      );
+    it('should handle clear operation with tenantId', async () => {
+      // Should not throw - clear operations are idempotent
+      await expect(adapter.clear('tenant-1')).resolves.not.toThrow();
     });
   });
 });

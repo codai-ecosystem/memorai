@@ -5,7 +5,7 @@ console.log('🔧 Systematic Lint Fix - AutonomousMemoryOptimizer.ts');
 
 function fixFile(filePath) {
   console.log(`Processing: ${filePath}`);
-  
+
   let content = fs.readFileSync(filePath, 'utf8');
   let changes = 0;
 
@@ -16,7 +16,7 @@ function fixFile(filePath) {
     return `${param}: ${type}, _context: unknown`;
   });
 
-  // Fix unused 'params' parameters  
+  // Fix unused 'params' parameters
   const paramsFixPattern = /params:\s*any/g;
   content = content.replace(paramsFixPattern, () => {
     changes++;
@@ -31,7 +31,8 @@ function fixFile(filePath) {
   });
 
   // Fix console statements by commenting them
-  const consolePattern = /^(\s*)console\.(log|error|warn|info|debug)\([^)]*\);\s*$/gm;
+  const consolePattern =
+    /^(\s*)console\.(log|error|warn|info|debug)\([^)]*\);\s*$/gm;
   content = content.replace(consolePattern, (match, indent) => {
     changes++;
     return `${indent}// ${match.trim()}`;
@@ -41,7 +42,7 @@ function fixFile(filePath) {
     fs.writeFileSync(filePath, content);
     console.log(`✅ Applied ${changes} fixes to ${path.basename(filePath)}`);
   }
-  
+
   return changes;
 }
 

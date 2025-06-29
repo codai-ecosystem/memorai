@@ -12,60 +12,16 @@ import {
   ListToolsRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
 import { config } from 'dotenv';
-import { program } from 'commander';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
 
 import { AdvancedMemoryEngine, type MemoryType } from '@codai/memorai-core';
 
-// Parse command line arguments
-program
-  .option('-e, --env-path <path>', 'Path to .env file')
-  .option('-v, --verbose', 'Enable verbose logging')
-  .parse();
-
-const options = program.opts();
-
-// Load environment variables from custom path if specified
-if (options.envPath) {
-  config({ path: options.envPath });
-} else {
-  // Try default locations: current dir, parent dir, workspace-ai
-  const __filename = fileURLToPath(import.meta.url);
-  const __dirname = dirname(__filename);
-  
-  const envPaths = [
-    '.env',
-    '../.env',
-    '../../.env',
-    'E:\\GitHub\\workspace-ai\\.env'
-  ];
-  
-  let envLoaded = false;
-  for (const envPath of envPaths) {
-    try {
-      const result = config({ path: envPath });
-      if (!result.error) {
-        console.error(`[MCP] Loaded environment from: ${envPath}`);
-        envLoaded = true;
-        break;
-      }
-    } catch (error) {
-      // Continue to next path
-    }
-  }
-  
-  if (!envLoaded) {
-    config(); // Fallback to default behavior
-  }
-}
+// Load environment variables
+config();
 
 // Simple debug logger
 const debug = {
   info: (message: string, ...args: unknown[]) => {
-    if (options.verbose) {
-      console.error(`[MCP] ${message}`, ...args);
-    }
+    console.error(`[MCP] ${message}`, ...args);
   },
   error: (message: string, ...args: unknown[]) => {
     console.error(`[MCP ERROR] ${message}`, ...args);

@@ -339,7 +339,8 @@ export class GitHubIntegration {
       labels: issue.labels.map((label: string | GitHubLabel) =>
         typeof label === 'string' ? label : label.name || ''
       ),
-      assignees: issue.assignees?.map((assignee: GitHubUser) => assignee.login) || [],
+      assignees:
+        issue.assignees?.map((assignee: GitHubUser) => assignee.login) || [],
       createdAt: new Date(issue.created_at),
       updatedAt: new Date(issue.updated_at),
       comments: comments.map((comment: GitHubComment) => ({
@@ -379,7 +380,9 @@ export class GitHubIntegration {
       head: pr.head.ref,
       base: pr.base.ref,
       author: pr.user?.login || 'Unknown',
-      reviewers: reviews.map((review: GitHubReview) => review.user?.login || 'Unknown'),
+      reviewers: reviews.map(
+        (review: GitHubReview) => review.user?.login || 'Unknown'
+      ),
       changedFiles: files.map((file: GitHubFile) => ({
         filename: file.filename,
         status: file.status,

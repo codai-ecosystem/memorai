@@ -4,18 +4,22 @@
  */
 
 import { QdrantClient } from '@qdrant/js-client-rest';
-import type { VectorStore, VectorPoint, SearchResult } from './VectorStore.js';
 import type { MemoryQuery } from '../types/index.js';
 import { VectorStoreError } from '../types/index.js';
 import { logger } from '../utils/logger.js';
+import type { SearchResult, VectorPoint, VectorStore } from './VectorStore.js';
 
-// Qdrant-specific type interfaces  
+// Qdrant-specific type interfaces
 export interface QdrantSearchPoint {
   id: string | number;
   version: number;
   score: number;
-  payload?: Record<string, unknown> | { [key: string]: unknown; } | null;
-  vector?: Record<string, unknown> | number[] | { [key: string]: number[] } | null;
+  payload?: Record<string, unknown> | { [key: string]: unknown } | null;
+  vector?:
+    | Record<string, unknown>
+    | number[]
+    | { [key: string]: number[] }
+    | null;
   shard_key?: string | number | Record<string, unknown> | null;
 }
 

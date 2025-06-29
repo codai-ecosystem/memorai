@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-console.log('🔧 Fix Broken Console Comments');
+console.log('🔧 Simple Lint Fix Script - Removing Console Statements');
 
 function getAllTsFiles(dir, files = []) {
   const entries = fs.readdirSync(dir, { withFileTypes: true });
@@ -18,28 +18,26 @@ function getAllTsFiles(dir, files = []) {
   return files;
 }
 
-function fixBrokenConsoleComments(filePath) {
+function fixConsoleStatements(filePath) {
   try {
     const content = fs.readFileSync(filePath, 'utf8');
-    let fixed = content;
+    const lines = content.split('\n');
     let changes = 0;
 
-    // Fix broken multi-line console statements by removing orphaned parts
-    fixed = fixed.replace(
-      /\s*\/\/\s*console\.(log|error|warn|info|debug)\(\s*\n([^)]*\n)*\s*\);?/g,
-      match => {
+    const fixedLines = lines.map(line => {
+      // Comment out console statements
+      if (line.trim().match(/^\s*console\.(log|error|warn|info|debug)\(/)) {
         changes++;
-        return ''; // Remove completely
+        const indent = line.match(/^(\s*)/)[1];
+        return `${indent}// ${line.trim()}`;
       }
-    );
-
-    // Fix remaining orphaned console parts
-    fixed = fixed.replace(/^\s*[`"'].*[`"']\s*\);\s*$/gm, '');
+      return line;
+    });
 
     if (changes > 0) {
-      fs.writeFileSync(filePath, fixed);
+      fs.writeFileSync(filePath, fixedLines.join('\n'));
       console.log(
-        `✅ Fixed ${changes} broken console comments in ${path.relative(process.cwd(), filePath)}`
+        `✅ Fixed ${changes} console statements in ${path.relative(process.cwd(), filePath)}`
       );
     }
 
@@ -63,11 +61,14 @@ const main = () => {
 
   let totalChanges = 0;
   for (const file of files) {
-    const changes = fixBrokenConsoleComments(file);
+    const changes = fixConsoleStatements(file);
     totalChanges += changes;
   }
 
-  console.log(`\n🎉 Total broken console comments fixed: ${totalChanges}`);
+  console.log(`\n🎉 Total console statements commented: ${totalChanges}`);
+  console.log(
+    '⚠️  Run: pnpm eslint packages/core/src to check remaining issues'
+  );
 };
 
 main();

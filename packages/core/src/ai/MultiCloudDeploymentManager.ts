@@ -330,7 +330,7 @@ export class MultiCloudDeploymentManager {
     this.providers.set(gcpProvider.id, gcpProvider);
 
     logger.info('Multi-Cloud Deployment Manager initialized', {
-      providers: Array.from(this.providers.keys())
+      providers: Array.from(this.providers.keys()),
     });
   }
 
@@ -436,7 +436,7 @@ export class MultiCloudDeploymentManager {
 
       logger.info('Deployment completed successfully', {
         deploymentName: deployment.name,
-        provider: deployment.providerId
+        provider: deployment.providerId,
       });
     } catch (error) {
       deployment.status.phase = 'error';
@@ -452,7 +452,8 @@ export class MultiCloudDeploymentManager {
 
       logger.error('Deployment failed', {
         deploymentName: deployment.name,
-        error: error instanceof Error ? error.message : 'Unknown deployment error'
+        error:
+          error instanceof Error ? error.message : 'Unknown deployment error',
       });
     }
   }
@@ -548,7 +549,7 @@ export class MultiCloudDeploymentManager {
 
     logger.info('Provisioned resources for deployment', {
       deploymentName: deployment.name,
-      resourceCount: deployment.resources.length
+      resourceCount: deployment.resources.length,
     });
   }
 
@@ -588,7 +589,7 @@ export class MultiCloudDeploymentManager {
     }
 
     logger.info('Configured networking for deployment', {
-      deploymentName: deployment.name
+      deploymentName: deployment.name,
     });
   }
 
@@ -623,7 +624,7 @@ export class MultiCloudDeploymentManager {
     }
 
     logger.info('Configured security for deployment', {
-      deploymentName: deployment.name
+      deploymentName: deployment.name,
     });
   }
 
@@ -635,7 +636,7 @@ export class MultiCloudDeploymentManager {
     await this.waitFor(3000);
 
     logger.info('Deployed application for deployment', {
-      deploymentName: deployment.name
+      deploymentName: deployment.name,
     });
   }
 
@@ -686,7 +687,7 @@ export class MultiCloudDeploymentManager {
     this.deployments.set(backupDeployment.id, backupDeployment);
     logger.info('Created backup deployment', {
       backupDeploymentName: backupDeployment.name,
-      originalDeployment: primary.name
+      originalDeployment: primary.name,
     });
   }
 
@@ -764,7 +765,7 @@ export class MultiCloudDeploymentManager {
     this.disasterRecoveryPlans.set(planId, drPlan);
     logger.info('Created disaster recovery plan', {
       planName: name,
-      planId: planId
+      planId: planId,
     });
 
     return drPlan;
@@ -784,7 +785,7 @@ export class MultiCloudDeploymentManager {
 
     logger.warn('Executing disaster recovery', {
       planName: plan.name,
-      reason: reason
+      reason: reason,
     });
 
     const startTime = Date.now();
@@ -797,7 +798,7 @@ export class MultiCloudDeploymentManager {
       )) {
         logger.debug('Executing disaster recovery procedure', {
           procedureName: procedure.name,
-          type: procedure.type
+          type: procedure.type,
         });
 
         if (procedure.type === 'automated' && procedure.script) {
@@ -805,7 +806,7 @@ export class MultiCloudDeploymentManager {
         } else {
           logger.info('Manual procedure required', {
             procedureName: procedure.name,
-            documentation: procedure.documentation
+            documentation: procedure.documentation,
           });
           // In real implementation, would integrate with alerting system
         }
@@ -817,13 +818,13 @@ export class MultiCloudDeploymentManager {
       logger.info('Disaster recovery completed', {
         totalTimeMinutes: totalTime,
         rtoTarget: plan.rto,
-        planName: plan.name
+        planName: plan.name,
       });
     } catch (error) {
       success = false;
       logger.error('Disaster recovery failed', {
         planName: plan.name,
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: error instanceof Error ? error.message : 'Unknown error',
       });
     }
 

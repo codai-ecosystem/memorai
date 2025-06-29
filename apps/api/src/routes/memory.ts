@@ -1,4 +1,4 @@
-import { Router, Request, Response } from 'express';
+import { Request, Response, Router } from 'express';
 import { z } from 'zod';
 import { asyncHandler, createApiError } from '../middleware/errorHandler';
 import { logger } from '../utils/logger';
@@ -97,8 +97,7 @@ router.post(
           error: (error as ZodErrorObject)?.errors,
         });
         const fieldErrors = (error as ZodErrorObject)?.errors.map(
-          (err: ZodErrorItem) =>
-            `${err.path.join('.')}: ${err.message}`
+          (err: ZodErrorItem) => `${err.path.join('.')}: ${err.message}`
         );
         throw createApiError(
           `Validation error: ${fieldErrors.join(', ')}`,
@@ -160,8 +159,7 @@ router.post(
           error: (error as ZodErrorObject)?.errors,
         });
         const fieldErrors = (error as ZodErrorObject)?.errors.map(
-          (err: ZodErrorItem) =>
-            `${err.path.join('.')}: ${err.message}`
+          (err: ZodErrorItem) => `${err.path.join('.')}: ${err.message}`
         );
         throw createApiError(
           `Validation error: ${fieldErrors.join(', ')}`,
@@ -221,8 +219,7 @@ router.post(
           error: (error as ZodErrorObject)?.errors,
         });
         const fieldErrors = (error as ZodErrorObject)?.errors.map(
-          (err: ZodErrorItem) =>
-            `${err.path.join('.')}: ${err.message}`
+          (err: ZodErrorItem) => `${err.path.join('.')}: ${err.message}`
         );
         throw createApiError(
           `Validation error: ${fieldErrors.join(', ')}`,
@@ -281,8 +278,7 @@ router.delete(
           error: (error as ZodErrorObject)?.errors,
         });
         const fieldErrors = (error as ZodErrorObject)?.errors.map(
-          (err: ZodErrorItem) =>
-            `${err.path.join('.')}: ${err.message}`
+          (err: ZodErrorItem) => `${err.path.join('.')}: ${err.message}`
         );
         throw createApiError(
           `Validation error: ${fieldErrors.join(', ')}`,
@@ -348,7 +344,9 @@ router.get(
           max_memories: limit * page,
         });
         memories =
-          (contextResponse as unknown as ContextResponse).memories?.map((m: unknown) => (m as MemoryResult).memory) || [];
+          (contextResponse as unknown as ContextResponse).memories?.map(
+            (m: unknown) => (m as MemoryResult).memory
+          ) || [];
       }
 
       // Simple pagination (this should be improved in the memory engine)

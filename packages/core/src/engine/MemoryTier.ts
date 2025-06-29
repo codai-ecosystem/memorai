@@ -100,24 +100,37 @@ export class MemoryTierDetector {
     const forcedTier =
       process.env.MEMORAI_FORCE_TIER || process.env.MEMORAI_TIER;
     if (forcedTier) {
-      logger.debug('[MemoryTier] Found forced tier environment variable:', forcedTier);
+      logger.debug(
+        '[MemoryTier] Found forced tier environment variable:',
+        forcedTier
+      );
 
       switch (forcedTier.toLowerCase()) {
         case 'advanced':
-          logger.debug('[MemoryTier] Forcing advanced tier via environment variable');
+          logger.debug(
+            '[MemoryTier] Forcing advanced tier via environment variable'
+          );
           return MemoryTierLevel.ADVANCED;
         case 'smart':
-          logger.debug('[MemoryTier] Forcing smart tier via environment variable');
+          logger.debug(
+            '[MemoryTier] Forcing smart tier via environment variable'
+          );
           return MemoryTierLevel.SMART;
         case 'basic':
-          logger.debug('[MemoryTier] Forcing basic tier via environment variable');
+          logger.debug(
+            '[MemoryTier] Forcing basic tier via environment variable'
+          );
           return MemoryTierLevel.BASIC;
         default:
-          logger.warn('[MemoryTier] Invalid forced tier value, falling back to auto-detection');
+          logger.warn(
+            '[MemoryTier] Invalid forced tier value, falling back to auto-detection'
+          );
       }
     }
 
-    logger.debug('[MemoryTier] Auto-detecting tier based on available services...');
+    logger.debug(
+      '[MemoryTier] Auto-detecting tier based on available services...'
+    );
 
     // Check for OpenAI availability
     logger.debug('[MemoryTier] Checking OpenAI availability...');
@@ -134,7 +147,9 @@ export class MemoryTierDetector {
     }
 
     // Default to basic memory
-    logger.info('[MemoryTier] No advanced services available - selecting BASIC tier');
+    logger.info(
+      '[MemoryTier] No advanced services available - selecting BASIC tier'
+    );
     return MemoryTierLevel.BASIC;
   }
 
@@ -197,13 +212,21 @@ export class MemoryTierDetector {
 
           clearTimeout(timeoutId);
 
-          logger.debug('[MemoryTier] Azure OpenAI response status:', response.status);
+          logger.debug(
+            '[MemoryTier] Azure OpenAI response status:',
+            response.status
+          );
 
           if (response.ok) {
-            logger.info('[MemoryTier] Azure OpenAI is available - returning true');
+            logger.info(
+              '[MemoryTier] Azure OpenAI is available - returning true'
+            );
             return true;
           } else {
-            logger.warn('[MemoryTier] Azure OpenAI returned non-ok status:', response.status);
+            logger.warn(
+              '[MemoryTier] Azure OpenAI returned non-ok status:',
+              response.status
+            );
             const errorText = await response.text();
             logger.error('[MemoryTier] Azure OpenAI error:', errorText);
           }
@@ -242,7 +265,10 @@ export class MemoryTierDetector {
 
         clearTimeout(timeoutId);
 
-        logger.debug('[MemoryTier] Standard OpenAI response status:', response.status);
+        logger.debug(
+          '[MemoryTier] Standard OpenAI response status:',
+          response.status
+        );
         const isOk = response.ok;
         logger.debug('[MemoryTier] Standard OpenAI result:', isOk);
         return isOk;

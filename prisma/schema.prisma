@@ -1,0 +1,198 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// NextAuth.js required models
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  password      String?   // For credentials-based authentication
+  role          String    @default("USER")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // Authentication relations
+  accounts      Account[]
+  sessions      Session[]
+  
+  // User preferences and settings
+  preferences   UserPreferences?
+  
+  // Collaboration features
+  workspaceMembers WorkspaceMember[]
+  projects         Project[]
+  collaborationParticipants CollaborationParticipant[]
+  presenceUpdates PresenceUpdate[]
+  
+  @@map("users")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// User preferences model for personalization
+model UserPreferences {
+  id               String  @id @default(cuid())
+  userId           String  @unique
+  theme            String  @default("system") // light, dark, system
+  language         String  @default("en")
+  timezone         String  @default("UTC")
+  emailNotifications Boolean @default(true)
+  pushNotifications  Boolean @default(true)
+  
+  // AI preferences
+  aiProvider       String  @default("openai")
+  aiModel          String  @default("gpt-4")
+  aiTemperature    Float   @default(0.7)
+  
+  // UI preferences
+  sidebarCollapsed Boolean @default(false)
+  compactMode      Boolean @default(false)
+  
+  user             User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("user_preferences")
+}
+
+// Collaboration models
+model Workspace {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  slug        String    @unique
+  ownerId     String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  members     WorkspaceMember[]
+  projects    Project[]
+  
+  @@map("workspaces")
+}
+
+model WorkspaceMember {
+  id          String        @id @default(cuid())
+  workspaceId String
+  userId      String
+  role        String        @default("MEMBER")
+  joinedAt    DateTime      @default(now())
+  
+  workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([workspaceId, userId])
+  @@map("workspace_members")
+}
+
+model Project {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  workspaceId String
+  ownerId     String
+  isPublic    Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  owner       User      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  
+  @@map("projects")
+}
+
+// Real-time collaboration models
+model CollaborationSession {
+  id          String    @id @default(cuid())
+  workspaceId String
+  type        String    // "shared_workspace", "collaborative_editing", "presence"
+  createdBy   String
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  participants    CollaborationParticipant[]
+  presenceUpdates PresenceUpdate[]
+  
+  @@map("collaboration_sessions")
+}
+
+model CollaborationParticipant {
+  id          String    @id @default(cuid())
+  sessionId   String
+  userId      String
+  permissions String    @default("write") // "read", "write", "admin"
+  joinedAt    DateTime  @default(now())
+  leftAt      DateTime?
+  
+  session     CollaborationSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user        User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([sessionId, userId])
+  @@map("collaboration_participants")
+}
+
+model PresenceUpdate {
+  id            String    @id @default(cuid())
+  userId        String
+  workspaceId   String
+  sessionId     String?
+  status        String    // "online", "offline", "away", "busy"
+  currentFile   String?
+  cursorPosition String?   // JSON string: { "line": number, "column": number }
+  updatedAt     DateTime  @default(now())
+  
+  user          User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  session       CollaborationSession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  
+  @@unique([userId, workspaceId])
+  @@map("presence_updates")
+}
+
+// Note: SQLite doesn't support enums, so we use string constants
+// Valid UserRole values: "USER", "ADMIN", "MODERATOR"
+// Valid WorkspaceRole values: "OWNER", "ADMIN", "MEMBER", "VIEWER"
+// Valid CollaborationType values: "shared_workspace", "collaborative_editing", "presence"
+// Valid PresenceStatus values: "online", "offline", "away", "busy"
+// Valid Permissions values: "read", "write", "admin"

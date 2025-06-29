@@ -11,6 +11,10 @@ export {
   type LocalEmbeddingConfig,
 } from './embedding/LocalEmbeddingService.js';
 export { BasicMemoryEngine } from './engine/BasicMemoryEngine.js';
+export {
+  AdvancedMemoryEngine,
+  type AdvancedMemoryConfig,
+} from './engine/AdvancedMemoryEngine.js';
 export * from './engine/MemoryEngine.js';
 export * from './engine/MemoryTier.js';
 export {

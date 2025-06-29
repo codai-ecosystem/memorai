@@ -2,9 +2,9 @@
  * @fileoverview Authentication middleware for Memorai MCP Server
  */
 
-import type { FastifyRequest, FastifyReply } from 'fastify';
-import type { AuthContext } from '../types/index.js';
+import type { FastifyReply, FastifyRequest } from 'fastify';
 import { ServerConfig } from '../config/ServerConfig.js';
+import type { AuthContext } from '../types/index.js';
 import { Logger } from '../utils/Logger.js';
 
 /**
@@ -74,54 +74,113 @@ export class AuthMiddleware {
         };
       }
 
-      // Production JWT validation
+      // Production JWT validation with enhanced security
       if (!this.config.isDevelopment()) {
-        // Basic JWT structure validation
-        const parts = token.split('.');
-        if (parts.length !== 3) {
-          throw new Error('Invalid JWT format');
-        }
-        try {
-          // Decode payload (basic validation - in production, use proper JWT library)
-          const payloadStr = parts[1];
-          if (!payloadStr) {
-            throw new Error('Missing JWT payload');
-          }
-
-          const payload = JSON.parse(
-            Buffer.from(payloadStr, 'base64').toString()
-          );
-
-          // Validate expiration
-          if (payload.exp && payload.exp * 1000 < Date.now()) {
-            throw new Error('Token expired');
-          }
-
-          // Validate required fields
-          if (!payload.sub || !payload.tenant_id) {
-            throw new Error('Invalid token payload');
-          }
-
-          return {
-            userId: payload.sub,
-            tenantId: payload.tenant_id,
-            roles: payload.roles || ['user'],
-            permissions: payload.permissions || ['memory:read'],
-            token,
-            expiresAt: payload.exp ? payload.exp * 1000 : Date.now() + 3600000,
-          };
-        } catch {
-          throw new Error('Invalid token payload');
-        }
+        return await this.validateProductionJWT(token);
       }
 
-      // In production, implement proper JWT verification here
-      throw new Error('Token validation not implemented');
+      // Development mode fallback - should not reach here
+      throw new Error('Invalid authentication configuration');
     } catch (error: unknown) {
       throw new Error(
         `Authentication failed: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
     }
+  }
+
+  /**
+   * Validate JWT token with full signature verification for production
+   */
+  private async validateProductionJWT(token: string): Promise<AuthContext> {
+    try {
+      // Basic JWT structure validation
+      const parts = token.split('.');
+      if (parts.length !== 3) {
+        throw new Error('Invalid JWT format');
+      }
+
+      const [headerStr, payloadStr, signature] = parts;
+
+      if (!headerStr || !payloadStr || !signature) {
+        throw new Error('Missing JWT components');
+      }
+
+      // Verify JWT signature
+      const secretKey = process.env.JWT_SECRET || 'memorai-default-secret';
+      const expectedSignature = await this.generateJWTSignature(
+        `${headerStr}.${payloadStr}`,
+        secretKey
+      );
+
+      // Constant-time comparison for security
+      if (!this.timingSafeEqual(signature, expectedSignature)) {
+        throw new Error('Invalid token signature');
+      }
+
+      // Decode and validate payload
+      const payload = JSON.parse(Buffer.from(payloadStr, 'base64').toString());
+
+      // Enhanced validation for production
+      if (payload.exp && payload.exp * 1000 < Date.now()) {
+        throw new Error('Token expired');
+      }
+
+      if (!payload.sub || !payload.tenant_id) {
+        throw new Error('Invalid token payload - missing required fields');
+      }
+
+      // Additional security checks
+      const expectedIssuer = process.env.JWT_ISSUER || 'memorai';
+      if (payload.iss && payload.iss !== expectedIssuer) {
+        throw new Error('Invalid token issuer');
+      }
+
+      // Validate audience if present
+      const expectedAudience = process.env.JWT_AUDIENCE || 'memorai-api';
+      if (payload.aud && payload.aud !== expectedAudience) {
+        throw new Error('Invalid token audience');
+      }
+
+      return {
+        userId: payload.sub,
+        tenantId: payload.tenant_id,
+        roles: payload.roles || ['user'],
+        permissions: payload.permissions || ['memory:read'],
+        token,
+        expiresAt: payload.exp ? payload.exp * 1000 : Date.now() + 3600000,
+      };
+    } catch (error) {
+      throw new Error(
+        `JWT validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
+  }
+
+  /**
+   * Generate JWT signature using HMAC-SHA256
+   */
+  private async generateJWTSignature(
+    data: string,
+    secret: string
+  ): Promise<string> {
+    const crypto = await import('crypto');
+    return crypto.createHmac('sha256', secret).update(data).digest('base64url');
+  }
+
+  /**
+   * Timing-safe string comparison to prevent timing attacks
+   */
+  private timingSafeEqual(a: string, b: string): boolean {
+    if (a.length !== b.length) {
+      return false;
+    }
+
+    let result = 0;
+    for (let i = 0; i < a.length; i++) {
+      result |= a.charCodeAt(i) ^ b.charCodeAt(i);
+    }
+
+    return result === 0;
   }
 
   /**
