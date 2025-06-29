@@ -21,24 +21,25 @@ function fixUnusedVariables(content) {
   const patterns = [
     // Function parameters
     {
-      pattern: /\(([^,)]+),\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*:\s*[^,)]+\)\s*(?::\s*[^{]+)?{/g,
+      pattern:
+        /\(([^,)]+),\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*:\s*[^,)]+\)\s*(?::\s*[^{]+)?{/g,
       replacement: (match, firstParam, unusedParam) => {
         // Only add underscore if parameter doesn't already start with underscore
         if (!unusedParam.startsWith('_')) {
           return match.replace(unusedParam, `_${unusedParam}`);
         }
         return match;
-      }
+      },
     },
-    // Variable declarations 
+    // Variable declarations
     {
       pattern: /\b(const|let)\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*=/g,
       replacement: (match, keyword, varName) => {
         // Skip if already starts with underscore
         if (varName.startsWith('_')) return match;
         return `${keyword} _${varName} =`;
-      }
-    }
+      },
+    },
   ];
 
   let fixedContent = content;
@@ -58,35 +59,41 @@ function fixUnusedVariables(content) {
  */
 function fixConsoleStatements(content, filePath) {
   // Check if logger is already imported
-  const hasLoggerImport = content.includes('import') && content.includes('logger');
-  
+  const hasLoggerImport =
+    content.includes('import') && content.includes('logger');
+
   let fixedContent = content;
-  
+
   // Add logger import if not present
   if (!hasLoggerImport && content.includes('console.')) {
     // Find the first import statement
     const importMatch = content.match(/^import[^;]+;/m);
     if (importMatch) {
-      const importIndex = content.indexOf(importMatch[0]) + importMatch[0].length;
-      const loggerImport = "\nimport { logger } from '@codai/memorai-core/dist/utils/logger.js';";
-      fixedContent = content.slice(0, importIndex) + loggerImport + content.slice(importIndex);
+      const importIndex =
+        content.indexOf(importMatch[0]) + importMatch[0].length;
+      const loggerImport =
+        "\nimport { logger } from '@codai/memorai-core/dist/utils/logger.js';";
+      fixedContent =
+        content.slice(0, importIndex) +
+        loggerImport +
+        content.slice(importIndex);
     }
   }
-  
+
   // Replace console statements
   const consoleReplacements = {
     'console.log': 'logger.info',
     'console.info': 'logger.info',
     'console.warn': 'logger.warn',
     'console.error': 'logger.error',
-    'console.debug': 'logger.debug'
+    'console.debug': 'logger.debug',
   };
-  
+
   Object.entries(consoleReplacements).forEach(([oldCall, newCall]) => {
     const regex = new RegExp(`\\b${oldCall.replace('.', '\\.')}\\b`, 'g');
     fixedContent = fixedContent.replace(regex, newCall);
   });
-  
+
   return fixedContent;
 }
 
@@ -114,14 +121,17 @@ function fixAnyTypes(content) {
     '(result: any)': '(result: unknown)',
     '(data: any)': '(data: unknown)',
     '(response: any)': '(response: unknown)',
-    '(params: any)': '(params: unknown)'
+    '(params: any)': '(params: unknown)',
   };
-  
+
   let fixedContent = content;
   Object.entries(commonAnyFixes).forEach(([anyType, fixedType]) => {
-    fixedContent = fixedContent.replace(new RegExp(anyType.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), fixedType);
+    fixedContent = fixedContent.replace(
+      new RegExp(anyType.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'),
+      fixedType
+    );
   });
-  
+
   return fixedContent;
 }
 
@@ -132,12 +142,12 @@ function processFile(filePath) {
   try {
     const content = fs.readFileSync(filePath, 'utf8');
     let fixedContent = content;
-    
+
     // Apply fixes
     // fixedContent = fixUnusedVariables(fixedContent);  // Commented out as it's too aggressive
     // fixedContent = fixConsoleStatements(fixedContent, filePath); // Commented out for infrastructure files
     fixedContent = fixAnyTypes(fixedContent);
-    
+
     // Only write if content changed
     if (fixedContent !== content) {
       fs.writeFileSync(filePath, fixedContent, 'utf8');
@@ -156,23 +166,30 @@ function processFile(filePath) {
  */
 function findTypeScriptFiles(dir, files = []) {
   const entries = fs.readdirSync(dir, { withFileTypes: true });
-  
+
   for (const entry of entries) {
     const fullPath = path.join(dir, entry.name);
-    
+
     if (entry.isDirectory()) {
       // Skip node_modules, dist, .git, etc.
-      if (!['node_modules', 'dist', '.git', '.next', 'coverage'].includes(entry.name)) {
+      if (
+        !['node_modules', 'dist', '.git', '.next', 'coverage'].includes(
+          entry.name
+        )
+      ) {
         findTypeScriptFiles(fullPath, files);
       }
-    } else if (entry.isFile() && (entry.name.endsWith('.ts') || entry.name.endsWith('.tsx'))) {
+    } else if (
+      entry.isFile() &&
+      (entry.name.endsWith('.ts') || entry.name.endsWith('.tsx'))
+    ) {
       // Skip test files for now
       if (!entry.name.includes('.test.') && !entry.name.includes('.spec.')) {
         files.push(fullPath);
       }
     }
   }
-  
+
   return files;
 }
 
@@ -181,20 +198,20 @@ function findTypeScriptFiles(dir, files = []) {
  */
 function main() {
   console.log('🔧 Starting comprehensive ESLint issue fixes...\n');
-  
+
   const tsFiles = findTypeScriptFiles(projectRoot);
   console.log(`📁 Found ${tsFiles.length} TypeScript files to process\n`);
-  
+
   let fixedCount = 0;
   let totalCount = 0;
-  
+
   for (const file of tsFiles) {
     totalCount++;
     if (processFile(file)) {
       fixedCount++;
     }
   }
-  
+
   console.log(`\n🎯 Summary:`);
   console.log(`   📝 Files processed: ${totalCount}`);
   console.log(`   ✅ Files fixed: ${fixedCount}`);

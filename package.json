@@ -1,15 +1,14 @@
 {
-  "name": "memorai-mcp-service",
+  "name": "@codai/memorai-service",
   "version": "2.0.1",
   "description": "Production-Ready Agent-Native Memory Control Protocol",
-  "type": "module",
   "private": true,
   "workspaces": [
     "packages/*",
     "apps/*"
   ],
   "scripts": {
-    "build": "turbo build",
+    "build": "cross-env TEMP_OVERRIDE=\"E:\\GitHub\\codai-project\\temp\" TMP_OVERRIDE=\"E:\\GitHub\\codai-project\\temp\" turbo build",
     "build:all": "turbo build",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -20,10 +19,10 @@
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
     "test:coverage": "vitest --coverage",
-    "_DEPRECATED_dev": "echo 'FORBIDDEN: Use published packages via MCP server only' && exit 1",
-    "_DEPRECATED_start:dashboard": "echo 'FORBIDDEN: Use MCP server published packages only' && exit 1",
-    "_DEPRECATED_start:api": "echo 'FORBIDDEN: Use MCP server published packages only' && exit 1",
-    "_DEPRECATED_start:mcp": "echo 'FORBIDDEN: Use MCP server published packages only' && exit 1"
+    "dev": "turbo run dev --parallel",
+    "start:dashboard": "turbo run dev --filter=@codai/memorai-dashboard",
+    "start:api": "turbo run dev --filter=@codai/memorai-api",
+    "start:mcp": "turbo run dev --filter=@codai/memorai-mcp"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.1.0",
@@ -78,6 +77,8 @@
     "uuid": "^9.0.1",
     "@types/uuid": "^9.0.8",
     "sqlite3": "^5.1.6",
-    "@types/sqlite3": "^3.1.11"
-  }
+    "@types/sqlite3": "^3.1.11",
+    "@radix-ui/react-slot": "^1.0.2"
+  },
+  "type": "module"
 }

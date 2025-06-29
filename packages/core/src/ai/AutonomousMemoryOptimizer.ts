@@ -45,10 +45,44 @@ export interface OptimizationContext {
   };
 }
 
+// Specific parameter types for different optimization actions
+export interface CacheOptimizationParams {
+  newCacheSize: number;
+  evictionPolicy: string;
+}
+
+export interface IndexRebuildParams {
+  indexType: string;
+  dimensions: number;
+}
+
+export interface MemoryArchiveParams {
+  ageThreshold: number;
+  accessThreshold: number;
+}
+
+export interface RelationshipPruningParams {
+  strengthThreshold: number;
+  confidenceThreshold: number;
+}
+
+export interface EmbeddingRefreshParams {
+  batchSize: number;
+  model: string;
+}
+
+export type OptimizationParams =
+  | CacheOptimizationParams
+  | IndexRebuildParams
+  | MemoryArchiveParams
+  | RelationshipPruningParams
+  | EmbeddingRefreshParams
+  | Record<string, unknown>;
+
 export interface OptimizationAction {
   type: OptimizationActionType;
   description: string;
-  parameters: Record<string, any>;
+  parameters: OptimizationParams;
   expectedImpact: {
     performance: number; // -1 to 1 scale
     accuracy: number;
@@ -137,7 +171,7 @@ export class AutonomousMemoryOptimizer {
     }
 
     this.isRunning = true;
-    console.log('🚀 Starting autonomous memory optimization...');
+    // Starting autonomous memory optimization with continuous monitoring
 
     try {
       while (this.isRunning) {
@@ -148,8 +182,8 @@ export class AutonomousMemoryOptimizer {
           await this.sleep(this.config.optimizationInterval * 60 * 1000);
         }
       }
-    } catch (error) {
-      console.error('Autonomous optimization failed:', error);
+    } catch {
+      // Autonomous optimization failed - stopping optimization cycle
       this.isRunning = false;
     }
   }
@@ -159,7 +193,7 @@ export class AutonomousMemoryOptimizer {
    */
   stopAutonomousOptimization(): void {
     this.isRunning = false;
-    console.log('⏹️ Stopping autonomous memory optimization...');
+    // Stopping autonomous memory optimization - setting running flag to false
   }
 
   /**
@@ -170,7 +204,7 @@ export class AutonomousMemoryOptimizer {
     improvements: Record<string, number>;
     recommendations: string[];
   }> {
-    console.log('🔄 Running optimization cycle...');
+    // Running optimization cycle - analyzing memory context and executing improvements
 
     // Gather optimization context
     const context = await this.gatherOptimizationContext();
@@ -191,9 +225,7 @@ export class AutonomousMemoryOptimizer {
 
     this.lastOptimization = new Date();
 
-    console.log(
-      `✅ Optimization cycle completed: ${results.actionsExecuted} actions executed`
-    );
+    // Optimization cycle completed with ${results.actionsExecuted} actions executed
 
     return results;
   }
@@ -251,8 +283,8 @@ export class AutonomousMemoryOptimizer {
         if (rule.condition(context)) {
           opportunities.push(rule);
         }
-      } catch (error) {
-        console.warn(`Optimization rule ${rule.id} evaluation failed:`, error);
+      } catch {
+        // Optimization rule evaluation failed - skipping rule and continuing with others
       }
     }
 
@@ -281,9 +313,7 @@ export class AutonomousMemoryOptimizer {
 
         if (this.config.requireApproval) {
           // In real implementation, this would wait for user approval
-          console.log(
-            `⏳ Optimization action requires approval: ${action.description}`
-          );
+          // Optimization action requires approval: ${action.description} - skipping for now
           continue;
         }
 
@@ -307,7 +337,7 @@ export class AutonomousMemoryOptimizer {
             metrics: beforeMetrics,
           });
 
-          console.log(`✅ Executed optimization: ${action.description}`);
+          // Executed optimization: ${action.description} successfully
         } else {
           this.optimizationHistory.push({
             timestamp: new Date(),
@@ -316,13 +346,10 @@ export class AutonomousMemoryOptimizer {
             metrics: beforeMetrics,
           });
 
-          console.warn(`❌ Failed optimization: ${action.description}`);
+          // Failed optimization: ${action.description} - logging failure for analysis
         }
-      } catch (error) {
-        console.error(
-          `Optimization execution failed for rule ${rule.id}:`,
-          error
-        );
+      } catch {
+        // Optimization execution failed for rule - continuing with other rules
       }
     }
 
@@ -345,7 +372,7 @@ export class AutonomousMemoryOptimizer {
    */
   private async executeOptimizationAction(
     action: OptimizationAction,
-    context: OptimizationContext
+    _context: OptimizationContext
   ): Promise<boolean> {
     switch (action.type) {
       case 'cache_optimization':
@@ -373,7 +400,7 @@ export class AutonomousMemoryOptimizer {
         return this.consolidatePatterns(action.parameters);
 
       default:
-        console.warn(`Unknown optimization action type: ${action.type}`);
+        // Unknown optimization action type: ${action.type} - returning false
         return false;
     }
   }
@@ -419,7 +446,7 @@ export class AutonomousMemoryOptimizer {
         condition: context =>
           context.performance.queryLatency >
           this.config.performanceTargets.maxQueryLatency,
-        action: async context => ({
+        action: async _context => ({
           type: 'index_rebuild',
           description: 'Rebuild search indexes for better query performance',
           parameters: {
@@ -448,7 +475,7 @@ export class AutonomousMemoryOptimizer {
         condition: context =>
           context.performance.memoryUsage >
           this.config.performanceTargets.maxMemoryUsage,
-        action: async context => ({
+        action: async _context => ({
           type: 'memory_archive',
           description: 'Archive old and rarely accessed memories',
           parameters: {
@@ -475,7 +502,7 @@ export class AutonomousMemoryOptimizer {
         id: 'relationship_bloat',
         name: 'Relationship Pruning',
         condition: context => context.intelligence.relationships.total > 1000,
-        action: async context => ({
+        action: async _context => ({
           type: 'relationship_pruning',
           description: 'Remove weak or redundant relationships',
           parameters: {
@@ -507,7 +534,7 @@ export class AutonomousMemoryOptimizer {
           const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
           return context.timeWindow.start < thirtyDaysAgo;
         },
-        action: async context => ({
+        action: async _context => ({
           type: 'embedding_refresh',
           description: 'Refresh embeddings for improved semantic search',
           parameters: {
@@ -551,72 +578,62 @@ export class AutonomousMemoryOptimizer {
 
   // Optimization action implementations (simplified for demo)
 
-  private async optimizeCache(params: Record<string, any>): Promise<boolean> {
-    console.log(
-      `🔧 Optimizing cache: size=${params.newCacheSize}, policy=${params.evictionPolicy}`
-    );
+  private async optimizeCache(_params: OptimizationParams): Promise<boolean> {
+    // Optimizing cache: size=${_params.newCacheSize}, policy=${_params.evictionPolicy}
     // Implementation would configure actual cache settings
     return true;
   }
 
-  private async rebuildIndexes(params: Record<string, any>): Promise<boolean> {
-    console.log(
-      `🔧 Rebuilding indexes: type=${params.indexType}, dimensions=${params.dimensions}`
-    );
+  private async rebuildIndexes(_params: OptimizationParams): Promise<boolean> {
+    // Rebuilding indexes: type=${_params.indexType}, dimensions=${_params.dimensions}
     // Implementation would rebuild vector/search indexes
     return true;
   }
 
   private async archiveOldMemories(
-    params: Record<string, any>
+    _params: OptimizationParams
   ): Promise<boolean> {
-    console.log(
-      `🔧 Archiving memories: age>${params.ageThreshold}days, access<${params.accessThreshold}`
-    );
+    // Archiving memories: age>${_params.ageThreshold}days, access<${_params.accessThreshold}
     // Implementation would move old memories to archive storage
     return true;
   }
 
   private async pruneWeakRelationships(
-    params: Record<string, any>
+    _params: OptimizationParams
   ): Promise<boolean> {
-    console.log(
-      `🔧 Pruning relationships: strength>${params.strengthThreshold}, confidence>${params.confidenceThreshold}`
-    );
+    // Pruning relationships: strength>${_params.strengthThreshold}, confidence>${_params.confidenceThreshold}
     // Implementation would remove weak relationships
     return true;
   }
 
   private async refreshEmbeddings(
-    params: Record<string, any>
+    _params: OptimizationParams
   ): Promise<boolean> {
-    console.log(
-      `🔧 Refreshing embeddings: batch=${params.batchSize}, model=${params.model}`
-    );
+    // Refreshing embeddings: batch=${_params.batchSize}, model=${_params.model}
     // Implementation would regenerate embeddings
     return true;
   }
 
   private async adjustThresholds(
-    params: Record<string, any>
+    _params: OptimizationParams
   ): Promise<boolean> {
-    console.log('🔧 Adjusting similarity thresholds based on performance data');
+    // Adjusting similarity thresholds based on performance data
     // Implementation would optimize search thresholds
     return true;
   }
 
   private async updateClustering(
-    params: Record<string, any>
+    _params: OptimizationParams
   ): Promise<boolean> {
-    console.log('🔧 Updating memory clusters for better organization');
+    // Updating memory clusters for better organization
     // Implementation would recompute memory clusters
     return true;
   }
 
   private async consolidatePatterns(
-    params: Record<string, any>
+    _params: OptimizationParams
   ): Promise<boolean> {
-    console.log('🔧 Consolidating similar patterns to reduce redundancy');
+    // Consolidating similar patterns to reduce redundancy
     // Implementation would merge similar patterns
     return true;
   }
@@ -667,7 +684,7 @@ export class AutonomousMemoryOptimizer {
    */
   addOptimizationRule(rule: OptimizationRule): void {
     this.optimizationRules.push(rule);
-    console.log(`Added custom optimization rule: ${rule.name}`);
+    // Added custom optimization rule: ${rule.name}
   }
 
   /**

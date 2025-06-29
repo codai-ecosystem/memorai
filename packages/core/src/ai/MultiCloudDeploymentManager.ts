@@ -3,6 +3,8 @@
  * Enterprise-grade cloud deployment and orchestration across multiple cloud providers
  */
 
+import { logger } from '../utils/logger.js';
+
 export interface CloudProvider {
   id: string;
   name: string;
@@ -327,10 +329,9 @@ export class MultiCloudDeploymentManager {
     this.providers.set(azureProvider.id, azureProvider);
     this.providers.set(gcpProvider.id, gcpProvider);
 
-    console.log('☁️ Multi-Cloud Deployment Manager initialized');
-    console.log(
-      `🌐 Providers: ${Array.from(this.providers.keys()).join(', ')}`
-    );
+    logger.info('Multi-Cloud Deployment Manager initialized', {
+      providers: Array.from(this.providers.keys())
+    });
   }
 
   /**
@@ -433,7 +434,10 @@ export class MultiCloudDeploymentManager {
       deployment.status.progress = 100;
       deployment.status.lastDeployment = new Date();
 
-      console.log(`✅ Deployment ${deployment.name} completed successfully`);
+      logger.info('Deployment completed successfully', {
+        deploymentName: deployment.name,
+        provider: deployment.providerId
+      });
     } catch (error) {
       deployment.status.phase = 'error';
       deployment.status.errors.push({
@@ -446,7 +450,10 @@ export class MultiCloudDeploymentManager {
         resolved: false,
       });
 
-      console.error(`❌ Deployment ${deployment.name} failed:`, error);
+      logger.error('Deployment failed', {
+        deploymentName: deployment.name,
+        error: error instanceof Error ? error.message : 'Unknown deployment error'
+      });
     }
   }
 
@@ -539,9 +546,10 @@ export class MultiCloudDeploymentManager {
       resource.status = 'running';
     }
 
-    console.log(
-      `📦 Provisioned ${deployment.resources.length} resources for ${deployment.name}`
-    );
+    logger.info('Provisioned resources for deployment', {
+      deploymentName: deployment.name,
+      resourceCount: deployment.resources.length
+    });
   }
 
   /**
@@ -579,7 +587,9 @@ export class MultiCloudDeploymentManager {
       deployment.resources.push(lbResource);
     }
 
-    console.log(`🌐 Configured networking for ${deployment.name}`);
+    logger.info('Configured networking for deployment', {
+      deploymentName: deployment.name
+    });
   }
 
   /**
@@ -612,7 +622,9 @@ export class MultiCloudDeploymentManager {
       deployment.resources.push(firewallResource);
     }
 
-    console.log(`🔒 Configured security for ${deployment.name}`);
+    logger.info('Configured security for deployment', {
+      deploymentName: deployment.name
+    });
   }
 
   /**
@@ -622,7 +634,9 @@ export class MultiCloudDeploymentManager {
     // Simulate application deployment
     await this.waitFor(3000);
 
-    console.log(`🚀 Deployed application for ${deployment.name}`);
+    logger.info('Deployed application for deployment', {
+      deploymentName: deployment.name
+    });
   }
 
   /**
@@ -670,7 +684,10 @@ export class MultiCloudDeploymentManager {
     }));
 
     this.deployments.set(backupDeployment.id, backupDeployment);
-    console.log(`🔄 Created backup deployment: ${backupDeployment.name}`);
+    logger.info('Created backup deployment', {
+      backupDeploymentName: backupDeployment.name,
+      originalDeployment: primary.name
+    });
   }
 
   /**
@@ -745,7 +762,10 @@ export class MultiCloudDeploymentManager {
     };
 
     this.disasterRecoveryPlans.set(planId, drPlan);
-    console.log(`🚨 Created disaster recovery plan: ${name}`);
+    logger.info('Created disaster recovery plan', {
+      planName: name,
+      planId: planId
+    });
 
     return drPlan;
   }
@@ -762,8 +782,10 @@ export class MultiCloudDeploymentManager {
       throw new Error(`Disaster recovery plan ${planId} not found`);
     }
 
-    console.log(`🚨 EXECUTING DISASTER RECOVERY: ${plan.name}`);
-    console.log(`📝 Reason: ${reason}`);
+    logger.warn('Executing disaster recovery', {
+      planName: plan.name,
+      reason: reason
+    });
 
     const startTime = Date.now();
     let success = true;
@@ -773,14 +795,18 @@ export class MultiCloudDeploymentManager {
       for (const procedure of plan.procedures.sort(
         (a, b) => a.order - b.order
       )) {
-        console.log(`⚡ Executing: ${procedure.name}`);
+        logger.debug('Executing disaster recovery procedure', {
+          procedureName: procedure.name,
+          type: procedure.type
+        });
 
         if (procedure.type === 'automated' && procedure.script) {
           await this.executeScript(procedure.script);
         } else {
-          console.log(
-            `👤 Manual procedure required: ${procedure.documentation}`
-          );
+          logger.info('Manual procedure required', {
+            procedureName: procedure.name,
+            documentation: procedure.documentation
+          });
           // In real implementation, would integrate with alerting system
         }
 
@@ -788,13 +814,17 @@ export class MultiCloudDeploymentManager {
       }
 
       const totalTime = Math.floor((Date.now() - startTime) / 1000 / 60);
-      console.log(`✅ Disaster recovery completed in ${totalTime} minutes`);
-      console.log(
-        `🎯 RTO Target: ${plan.rto} minutes, Achieved: ${totalTime} minutes`
-      );
+      logger.info('Disaster recovery completed', {
+        totalTimeMinutes: totalTime,
+        rtoTarget: plan.rto,
+        planName: plan.name
+      });
     } catch (error) {
       success = false;
-      console.error(`❌ Disaster recovery failed:`, error);
+      logger.error('Disaster recovery failed', {
+        planName: plan.name,
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
 
     // Record test result
@@ -1034,7 +1064,7 @@ export class MultiCloudDeploymentManager {
 
   private async executeScript(scriptPath: string): Promise<void> {
     // Simulate script execution
-    console.log(`🔧 Executing script: ${scriptPath}`);
+    logger.debug('Executing script', { scriptPath });
     await this.waitFor(1000);
   }
 
@@ -1080,6 +1110,6 @@ export class MultiCloudDeploymentManager {
       clearInterval(this.metricsCollectionInterval);
     }
 
-    console.log('🔌 Multi-Cloud Deployment Manager shutdown completed');
+    logger.info('Multi-Cloud Deployment Manager shutdown completed');
   }
 }

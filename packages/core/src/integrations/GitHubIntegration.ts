@@ -1,6 +1,65 @@
 import { Octokit } from '@octokit/rest';
 import { logger } from '../utils/logger.js';
 
+// GitHub API response interfaces
+export interface GitHubTreeItem {
+  type?: string;
+  mode?: string;
+  path?: string;
+  sha?: string;
+  size?: number;
+  url?: string;
+}
+
+export interface GitHubLabel {
+  id?: number;
+  node_id?: string;
+  url?: string;
+  name?: string;
+  description?: string | null;
+  color?: string | null;
+  default?: boolean;
+}
+
+export interface GitHubUser {
+  login: string;
+  id: number;
+  avatar_url?: string;
+  html_url?: string;
+}
+
+export interface GitHubReview {
+  id: number;
+  node_id: string;
+  user: GitHubUser | null;
+  state: string;
+  body: string;
+  submitted_at?: string;
+}
+
+export interface GitHubComment {
+  id: number;
+  node_id: string;
+  url: string;
+  body?: string;
+  body_text?: string;
+  body_html?: string;
+  html_url: string;
+  user: GitHubUser | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface GitHubFile {
+  filename: string;
+  status: string;
+  additions: number;
+  deletions: number;
+  changes: number;
+  blob_url?: string;
+  patch?: string;
+}
+
 export interface GitHubIntegrationConfig {
   token: string;
   owner: string;
@@ -91,7 +150,7 @@ export class GitHubIntegration {
           recursive: 'true',
         });
         const files = tree.tree.filter(
-          (item: any) =>
+          (item: GitHubTreeItem) =>
             item.type === 'blob' && this.shouldProcessFile(item.path || '')
         );
 
@@ -277,15 +336,15 @@ export class GitHubIntegration {
       title: issue.title,
       body: issue.body || '',
       state: issue.state,
-      labels: issue.labels.map((label: any) =>
+      labels: issue.labels.map((label: string | GitHubLabel) =>
         typeof label === 'string' ? label : label.name || ''
       ),
-      assignees: issue.assignees?.map((assignee: any) => assignee.login) || [],
+      assignees: issue.assignees?.map((assignee: GitHubUser) => assignee.login) || [],
       createdAt: new Date(issue.created_at),
       updatedAt: new Date(issue.updated_at),
-      comments: comments.map((comment: any) => ({
+      comments: comments.map((comment: GitHubComment) => ({
         author: comment.user?.login || 'Unknown',
-        body: comment.body,
+        body: comment.body || '',
         createdAt: new Date(comment.created_at),
       })),
     };
@@ -320,8 +379,8 @@ export class GitHubIntegration {
       head: pr.head.ref,
       base: pr.base.ref,
       author: pr.user?.login || 'Unknown',
-      reviewers: reviews.map((review: any) => review.user?.login || 'Unknown'),
-      changedFiles: files.map((file: any) => ({
+      reviewers: reviews.map((review: GitHubReview) => review.user?.login || 'Unknown'),
+      changedFiles: files.map((file: GitHubFile) => ({
         filename: file.filename,
         status: file.status,
         additions: file.additions,

@@ -3,13 +3,47 @@ import { z } from 'zod';
 import { asyncHandler, createApiError } from '../middleware/errorHandler';
 import { logger } from '../utils/logger';
 
+// Zod error interfaces for proper typing
+interface ZodErrorItem {
+  path: (string | number)[];
+  message: string;
+  code: string;
+}
+
+interface ZodErrorObject extends Error {
+  name: 'ZodError';
+  errors: ZodErrorItem[];
+}
+
+// API error interface
+interface ApiError extends Error {
+  statusCode: number;
+}
+
+// Memory interfaces for proper typing
+interface MemoryResult {
+  memory: MemoryObject;
+}
+
+interface MemoryObject {
+  id: string;
+  content: string;
+  metadata: Record<string, unknown>;
+  timestamp: string;
+  similarity?: number;
+}
+
+interface ContextResponse {
+  memories?: MemoryResult[];
+}
+
 const router: Router = Router();
 
 // Validation schemas
 const rememberSchema = z.object({
   agentId: z.string().min(1),
   content: z.string().min(1),
-  metadata: z.record(z.any()).optional(),
+  metadata: z.record(z.unknown()).optional(),
 });
 
 const recallSchema = z.object({
@@ -58,13 +92,13 @@ router.post(
         message: 'Memory stored successfully',
       });
     } catch (error: unknown) {
-      if ((error as any)?.name === 'ZodError') {
+      if ((error as ZodErrorObject)?.name === 'ZodError') {
         logger.error('Validation error in remember', {
-          error: (error as any)?.errors,
+          error: (error as ZodErrorObject)?.errors,
         });
-        const fieldErrors = (error as any)?.errors.map(
-          (err: unknown) =>
-            `${(err as any)?.path.join('.')}: ${(err as any)?.message}`
+        const fieldErrors = (error as ZodErrorObject)?.errors.map(
+          (err: ZodErrorItem) =>
+            `${err.path.join('.')}: ${err.message}`
         );
         throw createApiError(
           `Validation error: ${fieldErrors.join(', ')}`,
@@ -121,13 +155,13 @@ router.post(
         query,
       });
     } catch (error: unknown) {
-      if ((error as any)?.name === 'ZodError') {
+      if ((error as ZodErrorObject)?.name === 'ZodError') {
         logger.error('Validation error in recall', {
-          error: (error as any)?.errors,
+          error: (error as ZodErrorObject)?.errors,
         });
-        const fieldErrors = (error as any)?.errors.map(
-          (err: unknown) =>
-            `${(err as any)?.path.join('.')}: ${(err as any)?.message}`
+        const fieldErrors = (error as ZodErrorObject)?.errors.map(
+          (err: ZodErrorItem) =>
+            `${err.path.join('.')}: ${err.message}`
         );
         throw createApiError(
           `Validation error: ${fieldErrors.join(', ')}`,
@@ -182,13 +216,13 @@ router.post(
         context,
       });
     } catch (error: unknown) {
-      if ((error as any)?.name === 'ZodError') {
+      if ((error as ZodErrorObject)?.name === 'ZodError') {
         logger.error('Validation error in context', {
-          error: (error as any)?.errors,
+          error: (error as ZodErrorObject)?.errors,
         });
-        const fieldErrors = (error as any)?.errors.map(
-          (err: unknown) =>
-            `${(err as any)?.path.join('.')}: ${(err as any)?.message}`
+        const fieldErrors = (error as ZodErrorObject)?.errors.map(
+          (err: ZodErrorItem) =>
+            `${err.path.join('.')}: ${err.message}`
         );
         throw createApiError(
           `Validation error: ${fieldErrors.join(', ')}`,
@@ -242,13 +276,13 @@ router.delete(
         message: 'Memory forgotten successfully',
       });
     } catch (error: unknown) {
-      if ((error as any)?.name === 'ZodError') {
+      if ((error as ZodErrorObject)?.name === 'ZodError') {
         logger.error('Validation error in forget', {
-          error: (error as any)?.errors,
+          error: (error as ZodErrorObject)?.errors,
         });
-        const fieldErrors = (error as any)?.errors.map(
-          (err: unknown) =>
-            `${(err as any)?.path.join('.')}: ${(err as any)?.message}`
+        const fieldErrors = (error as ZodErrorObject)?.errors.map(
+          (err: ZodErrorItem) =>
+            `${err.path.join('.')}: ${err.message}`
         );
         throw createApiError(
           `Validation error: ${fieldErrors.join(', ')}`,
@@ -260,7 +294,7 @@ router.delete(
         error &&
         typeof error === 'object' &&
         'statusCode' in error &&
-        (error as any).statusCode === 404
+        (error as ApiError).statusCode === 404
       ) {
         throw error; // Re-throw 404 errors as-is
       }
@@ -305,7 +339,7 @@ router.get(
           agentId,
           { limit: limit * page }
         );
-        memories = results.map((r: unknown) => (r as any).memory);
+        memories = results.map((r: unknown) => (r as MemoryResult).memory);
       } else {
         // For listing all, use the getContext method
         const contextResponse = await memoryEngine.getContext({
@@ -314,7 +348,7 @@ router.get(
           max_memories: limit * page,
         });
         memories =
-          contextResponse.memories?.map((m: unknown) => (m as any).memory) || [];
+          (contextResponse as unknown as ContextResponse).memories?.map((m: unknown) => (m as MemoryResult).memory) || [];
       }
 
       // Simple pagination (this should be improved in the memory engine)
@@ -379,11 +413,11 @@ router.get(
         exportedAt: new Date().toISOString(),
         memoryCount: memories.length,
         memories: memories.map((memory: unknown) => ({
-          id: (memory as any).id,
-          content: (memory as any).content,
-          metadata: (memory as any).metadata,
-          timestamp: (memory as any).timestamp,
-          similarity: (memory as any).similarity,
+          id: (memory as MemoryObject).id,
+          content: (memory as MemoryObject).content,
+          metadata: (memory as MemoryObject).metadata,
+          timestamp: (memory as MemoryObject).timestamp,
+          similarity: (memory as MemoryObject).similarity,
         })),
       };
 
@@ -404,7 +438,7 @@ router.get(
         error &&
         typeof error === 'object' &&
         'statusCode' in error &&
-        (error as any).statusCode === 400
+        (error as ApiError).statusCode === 400
       ) {
         throw error; // Re-throw validation errors as-is
       }

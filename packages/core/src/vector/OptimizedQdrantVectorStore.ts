@@ -9,6 +9,63 @@ import type { MemoryQuery } from '../types/index.js';
 import { VectorStoreError } from '../types/index.js';
 import { logger } from '../utils/logger.js';
 
+// Qdrant-specific type interfaces  
+export interface QdrantSearchPoint {
+  id: string | number;
+  version: number;
+  score: number;
+  payload?: Record<string, unknown> | { [key: string]: unknown; } | null;
+  vector?: Record<string, unknown> | number[] | { [key: string]: number[] } | null;
+  shard_key?: string | number | Record<string, unknown> | null;
+}
+
+export interface QdrantFilter {
+  must: QdrantFilterCondition[];
+}
+
+export interface QdrantFilterCondition {
+  key: string;
+  match: {
+    value: string | number | boolean;
+  };
+}
+
+interface QdrantQuantizationConfig {
+  scalar: {
+    type: 'int8';
+    quantile: number;
+    always_ram: boolean;
+  };
+}
+
+interface QdrantCollectionConfig {
+  vectors: {
+    size: number;
+    distance: 'Cosine';
+    hnsw_config: {
+      m: number;
+      ef_construct: number;
+      full_scan_threshold: number;
+      max_indexing_threads: number;
+      on_disk: boolean;
+    };
+  };
+  optimizers_config: {
+    deleted_threshold: number;
+    vacuum_min_vector_number: number;
+    default_segment_number: number;
+    max_segment_size: number;
+    memmap_threshold: number;
+    indexing_threshold: number;
+    flush_interval_sec: number;
+    max_optimization_threads: number;
+  };
+  shard_number: number;
+  replication_factor: number;
+  write_consistency_factor: number;
+  quantization_config?: QdrantQuantizationConfig;
+}
+
 export interface OptimizedQdrantConfig {
   url: string;
   collection: string;
@@ -113,10 +170,10 @@ export class OptimizedQdrantVectorStore implements VectorStore {
   }
 
   private async createOptimizedCollection(): Promise<void> {
-    const createConfig = {
+    const createConfig: QdrantCollectionConfig = {
       vectors: {
         size: this.dimension,
-        distance: 'Cosine' as const,
+        distance: 'Cosine',
         hnsw_config: {
           m: this.config.hnswM,
           ef_construct: this.config.hnswEfConstruct,
@@ -142,7 +199,7 @@ export class OptimizedQdrantVectorStore implements VectorStore {
 
     // Add quantization for memory efficiency
     if (this.config.quantizationEnabled) {
-      (createConfig as any).quantization_config = {
+      createConfig.quantization_config = {
         scalar: {
           type: 'int8',
           quantile: 0.99,
@@ -245,10 +302,10 @@ export class OptimizedQdrantVectorStore implements VectorStore {
     const searchResult = await this.retryOperation(async () => {
       return await connection.search(this.collection, searchParams);
     });
-    return searchResult.map((point: any) => ({
-      id: point.id,
+    return searchResult.map((point: QdrantSearchPoint) => ({
+      id: String(point.id),
       score: point.score,
-      payload: point.payload,
+      payload: (point.payload as Record<string, unknown>) || {},
     }));
   }
 
@@ -388,8 +445,8 @@ export class OptimizedQdrantVectorStore implements VectorStore {
   }
 
   // Helper methods
-  private buildFilter(query: MemoryQuery): any {
-    const filter: { must: any[] } = { must: [] };
+  private buildFilter(query: MemoryQuery): QdrantFilter | undefined {
+    const filter: QdrantFilter = { must: [] };
 
     if (query.tenant_id) {
       filter.must.push({ key: 'tenant_id', match: { value: query.tenant_id } });

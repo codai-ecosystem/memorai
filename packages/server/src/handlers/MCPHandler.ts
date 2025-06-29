@@ -12,6 +12,35 @@ import type {
 import { MemoryEngine } from '@codai/memorai-core';
 import { Logger } from '../utils/Logger.js';
 
+// Parameter types for MCP operations
+interface RememberParams {
+  content: string;
+  context?: Record<string, unknown>;
+}
+
+interface RecallParams {
+  query: string;
+  limit?: number;
+  threshold?: number;
+}
+
+interface ForgetParams {
+  memoryId?: string;
+  query?: string;
+}
+
+interface ContextParams {
+  topic?: string;
+  timeframe?: string;
+  limit?: number;
+}
+
+interface MCPRequestBody {
+  id?: string | number;
+  jsonrpc?: string;
+  method?: string;
+}
+
 /**
  * Handles Model Context Protocol requests for memory operations
  */
@@ -61,7 +90,7 @@ export class MCPHandler {
         reply,
         -32603,
         'Internal error',
-        (request.body as any)?.id
+        (request.body as MCPRequestBody)?.id
       );
     }
   }
@@ -106,18 +135,19 @@ export class MCPHandler {
     params: unknown,
     request: AuthenticatedRequest
   ): Promise<MemoryResponse> {
-    const { content, context } = params as any;
+    const { content, context } = params as RememberParams;
 
     if (!content) {
       throw new Error('Content is required for remember operation');
     }
 
     const { result: memory, processingTime } = await this.withTiming(() =>
-      this.memoryEngine.remember(content, {
-        userId: request.auth.userId,
-        tenantId: request.auth.tenantId,
-        ...context,
-      })
+      this.memoryEngine.remember(
+        content,
+        request.auth.tenantId,
+        request.auth.userId,
+        context || {}
+      )
     );
 
     return {
@@ -138,7 +168,7 @@ export class MCPHandler {
     params: unknown,
     request: AuthenticatedRequest
   ): Promise<MemoryResponse> {
-    const { query, limit, threshold = 0.7 } = params as any;
+    const { query, limit, threshold = 0.7 } = params as RecallParams;
 
     if (!query) {
       throw new Error('Query is required for recall operation');
@@ -192,7 +222,7 @@ export class MCPHandler {
     params: unknown,
     request: AuthenticatedRequest
   ): Promise<MemoryResponse> {
-    const { memoryId, query } = params as any;
+    const { memoryId, query } = params as ForgetParams;
 
     if (!memoryId && !query) {
       throw new Error(
@@ -226,7 +256,7 @@ export class MCPHandler {
     params: unknown,
     request: AuthenticatedRequest
   ): Promise<MemoryResponse> {
-    const { topic, timeframe, limit = 50 } = params as any;
+    const { topic, timeframe, limit = 50 } = params as ContextParams;
 
     const { result: context, processingTime } = await this.withTiming(() =>
       this.memoryEngine.context({
@@ -286,10 +316,11 @@ export class MCPHandler {
    * Validate MCP request format
    */
   private isValidMCPRequest(request: unknown): request is MCPRequest {
+    const req = request as MCPRequestBody;
     return (
-      (request as any) &&
-      (request as any).jsonrpc === '2.0' &&
-      typeof (request as any).method === 'string'
+      req &&
+      req.jsonrpc === '2.0' &&
+      typeof req.method === 'string'
     );
   }
 

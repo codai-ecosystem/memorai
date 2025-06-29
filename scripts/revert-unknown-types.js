@@ -24,7 +24,7 @@ function revertProblematicUnknowns(content) {
     '(item: unknown)': '(item: any)',
     '(point: unknown)': '(point: any)',
     '(error: unknown)': '(error: unknown)', // Keep this one
-    '(err: unknown)': '(err: unknown)', // Keep this one  
+    '(err: unknown)': '(err: unknown)', // Keep this one
     '(result: unknown)': '(result: any)',
     '(data: unknown)': '(data: any)',
     '(response: unknown)': '(response: any)',
@@ -37,15 +37,18 @@ function revertProblematicUnknowns(content) {
     ': unknown[]': ': any[]',
     'metadata: unknown': 'metadata: any',
     'specification: unknown': 'specification: any',
-    'resource.specification: unknown': 'resource.specification: any'
+    'resource.specification: unknown': 'resource.specification: any',
   };
-  
+
   let fixedContent = content;
   Object.entries(revertPatterns).forEach(([unknownType, anyType]) => {
-    const regex = new RegExp(unknownType.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g');
+    const regex = new RegExp(
+      unknownType.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
+      'g'
+    );
     fixedContent = fixedContent.replace(regex, anyType);
   });
-  
+
   return fixedContent;
 }
 
@@ -56,10 +59,10 @@ function processFile(filePath) {
   try {
     const content = fs.readFileSync(filePath, 'utf8');
     let fixedContent = content;
-    
+
     // Apply reverts
     fixedContent = revertProblematicUnknowns(fixedContent);
-    
+
     // Only write if content changed
     if (fixedContent !== content) {
       fs.writeFileSync(filePath, fixedContent, 'utf8');
@@ -78,21 +81,28 @@ function processFile(filePath) {
  */
 function findTypeScriptFiles(dir, files = []) {
   const entries = fs.readdirSync(dir, { withFileTypes: true });
-  
+
   for (const entry of entries) {
     const fullPath = path.join(dir, entry.name);
-    
+
     if (entry.isDirectory()) {
-      if (!['node_modules', 'dist', '.git', '.next', 'coverage'].includes(entry.name)) {
+      if (
+        !['node_modules', 'dist', '.git', '.next', 'coverage'].includes(
+          entry.name
+        )
+      ) {
         findTypeScriptFiles(fullPath, files);
       }
-    } else if (entry.isFile() && (entry.name.endsWith('.ts') || entry.name.endsWith('.tsx'))) {
+    } else if (
+      entry.isFile() &&
+      (entry.name.endsWith('.ts') || entry.name.endsWith('.tsx'))
+    ) {
       if (!entry.name.includes('.test.') && !entry.name.includes('.spec.')) {
         files.push(fullPath);
       }
     }
   }
-  
+
   return files;
 }
 
@@ -101,21 +111,21 @@ function findTypeScriptFiles(dir, files = []) {
  */
 function main() {
   console.log('🔄 Reverting problematic unknown types...\n');
-  
+
   const coreDir = path.join(projectRoot, 'packages', 'core');
   const tsFiles = findTypeScriptFiles(coreDir);
   console.log(`📁 Found ${tsFiles.length} TypeScript files in core package\n`);
-  
+
   let fixedCount = 0;
   let totalCount = 0;
-  
+
   for (const file of tsFiles) {
     totalCount++;
     if (processFile(file)) {
       fixedCount++;
     }
   }
-  
+
   console.log(`\n🎯 Summary:`);
   console.log(`   📝 Files processed: ${totalCount}`);
   console.log(`   ✅ Files fixed: ${fixedCount}`);

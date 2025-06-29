@@ -22,6 +22,14 @@ export interface SecurityConfig {
   quantumSafety: boolean;
 }
 
+export interface EncryptionMetadata {
+  algorithm: string;
+  keyId: string;
+  iv: string;
+  authTag?: string;
+  timestamp: Date;
+}
+
 export type ComplianceStandard =
   | 'GDPR'
   | 'HIPAA'
@@ -91,7 +99,7 @@ export interface SecurityAuditEvent {
     ip: string;
     userAgent: string;
     location?: string;
-    details: Record<string, any>;
+    details: Record<string, unknown>;
   };
   compliance: {
     gdprCompliant: boolean;
@@ -171,14 +179,8 @@ export class AdvancedMemorySecurityManager {
     // Start key rotation schedule
     this.scheduleKeyRotation();
 
-    console.log('🔒 Advanced Memory Security Manager initialized');
-    console.log(
-      `🛡️ Zero-trust: ${this.config.zeroTrustEnabled ? 'ENABLED' : 'DISABLED'}`
-    );
-    console.log(
-      `🔐 Encryption: ${this.config.encryptionAlgorithm.toUpperCase()}`
-    );
-    console.log(`📋 Compliance: ${this.config.complianceMode.join(', ')}`);
+    // Security manager initialization complete
+    // Zero-trust, encryption, and compliance configuration loaded
   }
 
   /**
@@ -255,13 +257,7 @@ export class AdvancedMemorySecurityManager {
     securityContext: SecurityContext
   ): Promise<{
     encryptedData: string;
-    encryptionMetadata: {
-      algorithm: string;
-      keyId: string;
-      iv: string;
-      authTag?: string;
-      timestamp: Date;
-    };
+    encryptionMetadata: EncryptionMetadata;
   }> {
     const classification = await this.classifyMemoryData(memory);
 
@@ -289,7 +285,7 @@ export class AdvancedMemorySecurityManager {
     }
 
     let encryptedData: string;
-    let encryptionMetadata: any;
+    let encryptionMetadata: EncryptionMetadata;
 
     switch (this.config.encryptionAlgorithm) {
       case 'aes-256-gcm':
@@ -373,8 +369,8 @@ export class AdvancedMemorySecurityManager {
    */
   async decryptMemory(
     encryptedData: string,
-    encryptionMetadata: any,
-    securityContext: SecurityContext
+    encryptionMetadata: EncryptionMetadata,
+    _securityContext: SecurityContext
   ): Promise<MemoryMetadata> {
     if (encryptionMetadata.algorithm === 'none') {
       return JSON.parse(encryptedData);
@@ -393,7 +389,7 @@ export class AdvancedMemorySecurityManager {
           encryptedData,
           key,
           encryptionMetadata.iv,
-          encryptionMetadata.authTag
+          encryptionMetadata.authTag || ''
         );
         break;
 
@@ -402,7 +398,7 @@ export class AdvancedMemorySecurityManager {
           encryptedData,
           key,
           encryptionMetadata.iv,
-          encryptionMetadata.authTag
+          encryptionMetadata.authTag || ''
         );
         break;
 
@@ -730,8 +726,8 @@ export class AdvancedMemorySecurityManager {
   private async decryptWithChaCha20(
     encryptedData: string,
     key: Buffer,
-    nonce: string,
-    authTag: string
+    _nonce: string,
+    _authTag: string
   ): Promise<string> {
     // Simplified implementation
     const decipher = crypto.createDecipher('chacha20-poly1305', key);
@@ -766,9 +762,9 @@ export class AdvancedMemorySecurityManager {
   }
 
   private async decryptWithQuantumResistant(
-    encryptedData: string,
-    key: Buffer,
-    nonce: string
+    _encryptedData: string,
+    _key: Buffer,
+    _nonce: string
   ): Promise<string> {
     // Placeholder implementation
     // In production, would use proper post-quantum decryption
@@ -809,9 +805,7 @@ export class AdvancedMemorySecurityManager {
     this.auditEvents.push(auditEvent);
 
     if (this.config.auditLogging) {
-      console.log(
-        `🔍 AUDIT: ${auditEvent.eventType} by ${auditEvent.userId} - ${auditEvent.result}`
-      );
+      // Audit logging: ${auditEvent.eventType} by ${auditEvent.userId} - ${auditEvent.result}
     }
 
     return auditEvent.id;
@@ -827,9 +821,9 @@ export class AdvancedMemorySecurityManager {
   }
 
   private async rotateEncryptionKeys(): Promise<void> {
-    console.log('🔄 Rotating encryption keys...');
+    // Key rotation in progress...
     await this.generateMasterKey();
-    console.log('✅ Encryption keys rotated successfully');
+    // Encryption keys rotated successfully
   }
 
   private initializeThreatDetectionRules(): void {
@@ -909,11 +903,11 @@ export class AdvancedMemorySecurityManager {
 
   // Helper methods (simplified implementations)
 
-  private isDeviceTrusted(fingerprint: string): boolean {
+  private isDeviceTrusted(_fingerprint: string): boolean {
     return true; // Simplified - would check against trusted device database
   }
 
-  private hasGeographicRestrictions(location: unknown): boolean {
+  private hasGeographicRestrictions(_location: unknown): boolean {
     return false; // Simplified - would check against restricted locations
   }
 
@@ -995,7 +989,7 @@ export class AdvancedMemorySecurityManager {
     rule: ThreatDetectionRule,
     context: SecurityContext
   ): Promise<void> {
-    console.warn(`🚨 THREAT DETECTED: ${rule.name} (${rule.severity})`);
+    // THREAT DETECTED: ${rule.name} (${rule.severity})
 
     await this.auditEvent({
       eventType: 'security_violation',

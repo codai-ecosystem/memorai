@@ -24,8 +24,40 @@ import {
   PerformanceMonitor,
   UnifiedMemoryEngine,
   type UnifiedMemoryConfig,
+  type MemoryType,
+  type RememberOptions,
+  type PerformanceMetrics,
+  type MemoryTierInfo,
 } from '@codai/memorai-core';
 import { infrastructureManager } from './infrastructure.js';
+
+// Simple debug logger for MCP server
+const debug = {
+  info: (message: string, ...args: unknown[]) => {
+    if (process.env.NODE_ENV !== 'production') {
+      // eslint-disable-next-line no-console
+      console.error(`[MCP] ${message}`, ...args);
+    }
+  },
+  error: (message: string, ...args: unknown[]) => {
+    // eslint-disable-next-line no-console
+    console.error(`[MCP ERROR] ${message}`, ...args);
+  },
+  warn: (message: string, ...args: unknown[]) => {
+    if (process.env.NODE_ENV !== 'production') {
+      // eslint-disable-next-line no-console
+      console.error(`[MCP WARN] ${message}`, ...args);
+    }
+  },
+};
+
+// MCP Server specific interfaces
+interface MemoryMetadata {
+  type?: MemoryType;
+  importance?: number;
+  tags?: string[];
+  [key: string]: unknown;
+}
 
 /**
  * Get OS-specific default data path for Memorai memory storage
@@ -64,17 +96,17 @@ if (!process.env.MEMORAI_USE_INMEMORY) {
 }
 
 // Check for explicit tier setting and credentials
-console.error('🔍 Checking environment configuration...');
-console.error('MEMORAI_TIER:', process.env.MEMORAI_TIER || 'NOT SET');
-console.error(
+debug.info('🔍 Checking environment configuration...');
+debug.info('MEMORAI_TIER:', process.env.MEMORAI_TIER || 'NOT SET');
+debug.info(
   'AZURE_OPENAI_ENDPOINT:',
   process.env.AZURE_OPENAI_ENDPOINT ? 'SET' : 'NOT SET'
 );
-console.error(
+debug.info(
   'AZURE_OPENAI_API_KEY:',
   process.env.AZURE_OPENAI_API_KEY ? 'SET' : 'NOT SET'
 );
-console.error(
+debug.info(
   'OPENAI_API_KEY:',
   process.env.OPENAI_API_KEY ? 'SET' : 'NOT SET'
 );
@@ -88,40 +120,40 @@ const hasAzureOpenAI =
 const hasOpenAI =
   process.env.OPENAI_API_KEY && !process.env.OPENAI_API_KEY.includes('your_');
 
-console.error('hasAzureOpenAI:', hasAzureOpenAI);
-console.error('hasOpenAI:', hasOpenAI);
+debug.info('hasAzureOpenAI:', hasAzureOpenAI);
+debug.info('hasOpenAI:', hasOpenAI);
 
 // Check if MEMORAI_TIER is explicitly set (from VS Code MCP config)
 const explicitTier = process.env.MEMORAI_TIER?.toLowerCase();
 if (explicitTier === 'advanced') {
   if (hasAzureOpenAI || hasOpenAI) {
     process.env.MEMORAI_FORCE_TIER = 'advanced';
-    console.error(
+    debug.info(
       '✅ MEMORAI_TIER=advanced set with valid credentials. Using advanced tier.'
     );
   } else {
-    console.error(
+    debug.warn(
       '⚠️  MEMORAI_TIER=advanced set but no valid AI credentials found.'
     );
-    console.error(
+    debug.warn(
       '📋 Advanced tier requires Azure OpenAI or OpenAI credentials.'
     );
-    console.error('🔄 Falling back to smart/basic tier.');
+    debug.warn('🔄 Falling back to smart/basic tier.');
   }
 } else if (hasAzureOpenAI || hasOpenAI) {
   process.env.MEMORAI_FORCE_TIER = process.env.MEMORAI_FORCE_TIER || 'advanced';
-  console.error(
+  debug.info(
     '✅ Valid AI credentials found. Auto-setting tier to advanced.'
   );
 } else {
   // Don't force advanced tier without proper credentials
-  console.error(
+  debug.warn(
     '⚠️  No valid AI credentials found. Memorai will use smart/basic tier.'
   );
-  console.error(
+  debug.warn(
     '💡 To enable advanced tier with semantic search, configure credentials in .env.local'
   );
-  console.error('📋 See .env.local.example for configuration template');
+  debug.warn('📋 See .env.local.example for configuration template');
 }
 
 // Function to get MCP version from package.json
@@ -209,9 +241,9 @@ class EnterpriseMemoryEngine {
         'default-tenant', // Use default tenant for MCP
         agentId,
         {
-          type: (metadata as any)?.type || 'general',
-          importance: (metadata as any)?.importance || 0.5,
-          tags: (metadata as any)?.tags || [],
+          type: (metadata as MemoryMetadata)?.type || 'fact',
+          importance: (metadata as MemoryMetadata)?.importance || 0.5,
+          tags: (metadata as MemoryMetadata)?.tags || [],
           context: metadata as Record<string, unknown>,
         }
       );
@@ -387,11 +419,11 @@ class EnterpriseMemoryEngine {
     }
   }
 
-  getMetrics(): any {
+  getMetrics(): PerformanceMetrics {
     return this.performanceMonitor.getMetrics();
   }
 
-  getTierInfo(): any {
+  getTierInfo(): MemoryTierInfo {
     return this.unifiedEngine.getTierInfo();
   }
 }
@@ -642,12 +674,12 @@ server.setRequestHandler(CallToolRequestSchema, async request => {
  * Start web services (dashboard and API) using published packages
  */
 async function startWebServices(): Promise<void> {
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     let servicesStarted = 0;
     const totalServices = 3; // HTTP MCP Server, API, Dashboard
 
     // Start HTTP MCP Server
-    console.error('🔄 Starting HTTP MCP server on port 6367...');
+    debug.info('🔄 Starting HTTP MCP server on port 6367...');
     const httpMcpProcess = spawn('npx', ['@codai/memorai-server@0.1.5'], {
       stdio: 'pipe',
       shell: true,
@@ -655,14 +687,14 @@ async function startWebServices(): Promise<void> {
     });
 
     httpMcpProcess.stdout?.on('data', data => {
-      console.error(`[HTTP-MCP] ${data.toString().trim()}`);
+      debug.info(`[HTTP-MCP] ${data.toString().trim()}`);
       if (
         data.toString().includes('6367') ||
         data.toString().includes('started') ||
         data.toString().includes('listening')
       ) {
         servicesStarted++;
-        console.error(
+        debug.info(
           `✅ HTTP MCP Server started (${servicesStarted}/${totalServices})`
         );
         if (servicesStarted === totalServices) {
@@ -672,11 +704,11 @@ async function startWebServices(): Promise<void> {
     });
 
     httpMcpProcess.stderr?.on('data', data => {
-      console.error(`[HTTP-MCP ERROR] ${data.toString().trim()}`);
+      debug.error(`[HTTP-MCP ERROR] ${data.toString().trim()}`);
     });
 
     // Start API server (on different port to avoid conflict)
-    console.error('🔄 Starting API server on port 6368...');
+    debug.info('🔄 Starting API server on port 6368...');
     const apiProcess = spawn('npx', ['@codai/memorai-api@1.0.9'], {
       stdio: 'pipe',
       shell: true,
@@ -684,13 +716,13 @@ async function startWebServices(): Promise<void> {
     });
 
     apiProcess.stdout?.on('data', data => {
-      console.error(`[API] ${data.toString().trim()}`);
+      debug.info(`[API] ${data.toString().trim()}`);
       if (
         data.toString().includes('6368') ||
         data.toString().includes('listening')
       ) {
         servicesStarted++;
-        console.error(
+        debug.info(
           `✅ API Server started (${servicesStarted}/${totalServices})`
         );
         if (servicesStarted === totalServices) {
@@ -700,11 +732,11 @@ async function startWebServices(): Promise<void> {
     });
 
     apiProcess.stderr?.on('data', data => {
-      console.error(`[API ERROR] ${data.toString().trim()}`);
+      debug.error(`[API ERROR] ${data.toString().trim()}`);
     });
 
     // Start Dashboard
-    console.error('🔄 Starting dashboard on port 6366...');
+    debug.info('🔄 Starting dashboard on port 6366...');
     const dashboardProcess = spawn('npx', ['@codai/memorai-dashboard@2.0.4'], {
       stdio: 'pipe',
       shell: true,
@@ -712,13 +744,13 @@ async function startWebServices(): Promise<void> {
     });
 
     dashboardProcess.stdout?.on('data', data => {
-      console.error(`[DASHBOARD] ${data.toString().trim()}`);
+      debug.info(`[DASHBOARD] ${data.toString().trim()}`);
       if (
         data.toString().includes('6366') ||
         data.toString().includes('ready')
       ) {
         servicesStarted++;
-        console.error(
+        debug.info(
           `✅ Dashboard started (${servicesStarted}/${totalServices})`
         );
         if (servicesStarted === totalServices) {
@@ -728,13 +760,13 @@ async function startWebServices(): Promise<void> {
     });
 
     dashboardProcess.stderr?.on('data', data => {
-      console.error(`[DASHBOARD ERROR] ${data.toString().trim()}`);
+      debug.error(`[DASHBOARD ERROR] ${data.toString().trim()}`);
     });
 
     // Timeout after 30 seconds
     setTimeout(() => {
       if (servicesStarted < totalServices) {
-        console.error(
+        debug.warn(
           `⚠️  Only ${servicesStarted}/${totalServices} services started, continuing anyway...`
         );
         resolve();
@@ -750,41 +782,41 @@ async function main() {
     process.env.MCP_DISABLE_VERSION_CHECK = 'true';
 
     // Start infrastructure services first
-    console.error(
+    debug.info(
       '🚀 Memorai MCP Server starting with automated infrastructure...'
     );
     const infrastructureReady =
       await infrastructureManager.startInfrastructure();
 
     if (!infrastructureReady) {
-      console.error('❌ Failed to start required infrastructure services');
-      console.error('💡 Please ensure Docker is installed and running');
+      debug.error('❌ Failed to start required infrastructure services');
+      debug.error('💡 Please ensure Docker is installed and running');
       process.exit(1);
     }
 
     // Start dashboard and API services
-    console.error('🌐 Starting dashboard and API services...');
+    debug.info('🌐 Starting dashboard and API services...');
     await startWebServices();
 
-    console.error('🧠 Initializing memory engine...');
+    debug.info('🧠 Initializing memory engine...');
     await enterpriseEngine.initialize();
 
     const transport = new StdioServerTransport();
 
     // Connect server with error handling
-    console.error('🎯 Starting MCP server...');
+    debug.info('🎯 Starting MCP server...');
     await server.connect(transport);
 
-    console.error('✅ Memorai MCP Server ready with full infrastructure!');
+    debug.info('✅ Memorai MCP Server ready with full infrastructure!');
   } catch (error) {
-    console.error('[ERROR] Server startup failed:', error);
+    debug.error('[ERROR] Server startup failed:', error);
     process.exit(1);
   }
 }
 
 // Auto-start server
 main().catch(error => {
-  console.error('[ERROR] Main function failed:', error);
+  debug.error('[ERROR] Main function failed:', error);
   process.exit(1);
 });
 

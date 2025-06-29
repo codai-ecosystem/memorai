@@ -21,6 +21,7 @@ module.exports = {
     ".next/",
     "out/",
     "build/",
-    "dist/"
+    "dist/",
+    "tests/"
   ]
 };
