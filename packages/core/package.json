@@ -1,6 +1,6 @@
 {
   "name": "@codai/memorai-core",
-  "version": "2.2.2",
+  "version": "2.3.0",
   "description": "Simplified advanced memory engine - no tiers, just powerful semantic search with persistence",
   "type": "module",
   "main": "./dist/index.js",

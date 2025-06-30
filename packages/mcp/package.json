@@ -1,6 +1,6 @@
 {
   "name": "@codai/memorai-mcp",
-  "version": "5.1.4",
+  "version": "5.2.0",
   "description": "🎯 COMPLETELY SIMPLIFIED Memorai MCP - No Tiers, Just Advanced Memory with Persistence",
   "type": "module",
   "main": "./dist/index.js",

@@ -1,6 +1,6 @@
 {
   "name": "@codai/memorai-service",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "description": "Production-Ready Agent-Native Memory Control Protocol",
   "private": true,
   "workspaces": [

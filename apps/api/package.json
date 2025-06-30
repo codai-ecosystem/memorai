@@ -1,6 +1,6 @@
 {
   "name": "@codai/memorai-api",
-  "version": "1.0.14",
+  "version": "1.1.0",
   "description": "REST API server for Memorai web interface",
   "main": "dist/index.js",
   "bin": {
