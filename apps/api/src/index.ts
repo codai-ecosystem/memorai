@@ -5,7 +5,7 @@
  * RESTful API and WebSocket server for the Memorai web interface
  */
 
-import { MemoryTierLevel, UnifiedMemoryEngine } from '@codai/memorai-core';
+import { AdvancedMemoryEngine } from '@codai/memorai-core';
 import cors from 'cors';
 import { config } from 'dotenv';
 import express, { Express, NextFunction, Request, Response } from 'express';
@@ -71,35 +71,32 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Global memory engine instance
-let memoryEngine: UnifiedMemoryEngine | null = null;
+let memoryEngine: AdvancedMemoryEngine | null = null;
 
-// Initialize memory engine with PRODUCTION configuration
-// Use ADVANCED tier to match MCP server configuration
+// Initialize memory engine with simplified configuration
 async function initializeMemoryEngine() {
   try {
-    memoryEngine = new UnifiedMemoryEngine({
-      autoDetect: true, // Auto-detect best tier (should be advanced)
-      enableFallback: true,
-      preferredTier: MemoryTierLevel.ADVANCED, // Use ADVANCED tier to match MCP server
-      // Remove local dataPath to use shared infrastructure storage
-      localEmbedding: {
-        model: 'all-MiniLM-L6-v2',
-        pythonPath: process.env.PYTHON_PATH ?? 'python',
-        ...(process.env.MEMORAI_CACHE_PATH
-          ? { cachePath: process.env.MEMORAI_CACHE_PATH }
-          : {}),
-      },
-    });
+    logger.info('🔧 Initializing Advanced Memory Engine...');
+    memoryEngine = new AdvancedMemoryEngine();
 
     await memoryEngine.initialize();
 
-    const tierInfo = memoryEngine.getTierInfo();
-    logger.info(`Memory engine initialized: ${tierInfo.message}`);
-    logger.info(`Capabilities: ${JSON.stringify(tierInfo.capabilities)}`);
+    // Verify connection with a test operation
+    const testResult = await memoryEngine.remember(
+      'API Server initialization test',
+      'system',
+      'api-server',
+      { type: 'fact', importance: 1 }
+    );
+
+    logger.info('✅ Memory engine initialized: Advanced Memory Engine');
+    logger.info('✅ Features: Semantic search, embeddings, persistence');
+    logger.info(`✅ Connection verified with memory ID: ${testResult}`);
 
     return memoryEngine;
   } catch (error) {
-    logger.error('Failed to initialize memory engine:', error);
+    logger.error('❌ Failed to initialize memory engine:', error);
+    logger.error('💡 API will run in degraded mode without memory features');
     return null;
   }
 }
@@ -173,7 +170,7 @@ startServer();
 declare global {
   namespace Express {
     interface Request {
-      memoryEngine: UnifiedMemoryEngine | null;
+      memoryEngine: AdvancedMemoryEngine | null;
     }
   }
 }

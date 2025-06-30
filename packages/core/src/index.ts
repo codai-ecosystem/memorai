@@ -16,11 +16,7 @@ export {
   type AdvancedMemoryConfig,
 } from './engine/AdvancedMemoryEngine.js';
 export * from './engine/MemoryEngine.js';
-export * from './engine/MemoryTier.js';
-export {
-  UnifiedMemoryEngine,
-  type UnifiedMemoryConfig,
-} from './engine/UnifiedMemoryEngine.js';
+
 export * from './storage/StorageAdapter.js';
 export * from './temporal/TemporalEngine.js';
 export * from './types/index.js';

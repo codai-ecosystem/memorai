@@ -148,7 +148,7 @@ importers:
   apps/api:
     dependencies:
       '@codai/memorai-core':
-        specifier: ^1.0.11
+        specifier: ^2.2.2
         version: link:../../packages/core
       axios:
         specifier: ^1.7.4
@@ -400,7 +400,7 @@ importers:
   packages/cli:
     dependencies:
       '@codai/memorai-core':
-        specifier: ^1.0.0
+        specifier: ^2.2.2
         version: link:../core
       '@codai/memorai-sdk':
         specifier: ^0.1.2
@@ -504,7 +504,7 @@ importers:
   packages/mcp:
     dependencies:
       '@codai/memorai-core':
-        specifier: ^1.0.18
+        specifier: ^2.2.2
         version: link:../core
       '@codai/memorai-server':
         specifier: ^0.1.2
@@ -550,7 +550,7 @@ importers:
   packages/sdk:
     dependencies:
       '@codai/memorai-core':
-        specifier: ^1.0.0
+        specifier: ^2.2.2
         version: link:../core
       zod:
         specifier: ^3.22.4
@@ -582,7 +582,7 @@ importers:
     dependencies:
       '@codai/memorai-core':
         specifier: ^1.0.0
-        version: link:../core
+        version: 1.1.1(typescript@5.8.3)
       '@fastify/cors':
         specifier: ^9.0.1
         version: 9.0.1
@@ -895,6 +895,26 @@ packages:
       '@types/tough-cookie': 4.0.5
       tough-cookie: 4.1.4
     dev: true
+
+  /@codai/memorai-core@1.1.1(typescript@5.8.3):
+    resolution: {integrity: sha512-h1D7LqfHr3x0CzGgxtQMKlQ849yT8MPgfh23j8IMixcnij7EFP4SDyZrXrgNZfCcG51Xi8Tur/Z1zVhnvEnCgg==}
+    dependencies:
+      '@octokit/rest': 20.1.2
+      '@qdrant/js-client-rest': 1.7.0(typescript@5.8.3)
+      '@types/ioredis': 5.0.0
+      '@types/pg': 8.15.4
+      ioredis: 5.6.1
+      nanoid: 5.1.5
+      openai: 4.104.0(zod@3.25.56)
+      pg: 8.16.3
+      zod: 3.25.56
+    transitivePeerDependencies:
+      - encoding
+      - pg-native
+      - supports-color
+      - typescript
+      - ws
+    dev: false
 
   /@colors/colors@1.6.0:
     resolution: {integrity: sha512-Ir+AOibqzrIsL6ajt3Rz3LskB7OiMVHqltZmspbW/TJuTVuyOMirVqAkjfY6JISiLHgyNqicAC8AyHHGzNd/dA==}

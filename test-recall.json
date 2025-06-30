@@ -1,0 +1,5 @@
+{
+  "agentId": "test-agent",
+  "query": "integration test",
+  "limit": 5
+}

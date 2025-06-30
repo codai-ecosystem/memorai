@@ -39,8 +39,8 @@ export async function GET() {
       });
     }
 
-    // Connect to actual MCP server instead of using mock data
-    const apiPort = process.env.API_PORT || '6368';
+    // Connect to actual API server instead of using mock data
+    const apiPort = process.env.API_PORT || '6367';
     const response = await fetch(
       `http://localhost:${apiPort}/api/memory/context`,
       {
@@ -111,8 +111,8 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Forward request to actual MCP server
-    const apiPort = process.env.API_PORT || '6368';
+    // Forward request to actual API server
+    const apiPort = process.env.API_PORT || '6367';
     const response = await fetch(
       `http://localhost:${apiPort}/api/memory/context`,
       {

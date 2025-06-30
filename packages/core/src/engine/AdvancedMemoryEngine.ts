@@ -226,7 +226,14 @@ export class AdvancedMemoryEngine {
         });
       }
       
-      return mergedResults;
+      // Return results without embedding arrays to keep response concise
+      return mergedResults.map(result => ({
+        ...result,
+        memory: {
+          ...result.memory,
+          embedding: undefined, // Exclude embedding array to keep response concise
+        },
+      }));
       
     } catch (error: unknown) {
       throw this.handleError(error, 'RECALL_ERROR');
@@ -257,7 +264,10 @@ export class AdvancedMemoryEngine {
       return {
         context: contextSummary,
         memories: recentMemories.map(memory => ({
-          memory,
+          memory: {
+            ...memory,
+            embedding: undefined, // Exclude embedding array to keep response concise
+          },
           score: memory.importance,
           relevance_reason: 'Recent context',
         })),
@@ -368,7 +378,7 @@ export class AdvancedMemoryEngine {
     if (memory.embedding) {
       this.semanticIndex.set(memory.id, {
         embedding: memory.embedding,
-        metadata: memory,
+        metadata: { ...memory, embedding: undefined }, // Exclude embedding from metadata to keep responses concise
       });
     }
     
@@ -651,7 +661,7 @@ export class AdvancedMemoryEngine {
       .map(([type, count]) => `${count} ${type}${count > 1 ? 's' : ''}`)
       .join(', ');
 
-    return `Context includes ${memories.length} memories: ${typeSummary}. Using advanced semantic search with persistent storage.`;
+    return `${memories.length} memories found: ${typeSummary}`;
   }
 
   private getDefaultDataPath(): string {

@@ -1,11 +1,11 @@
 import { Server as SocketIOServer } from 'socket.io';
-import { UnifiedMemoryEngine } from '@codai/memorai-core';
+import { AdvancedMemoryEngine } from '@codai/memorai-core';
 import { logger } from '../utils/logger';
-import { updateStats, updateTierUsage } from '../routes/stats';
+import { updateStats } from '../routes/stats';
 
 export function setupWebSocket(
   io: SocketIOServer,
-  getMemoryEngine: () => UnifiedMemoryEngine | null
+  getMemoryEngine: () => AdvancedMemoryEngine | null
 ) {
   io.on('connection', socket => {
     logger.info('WebSocket client connected', { id: socket.id });
@@ -27,13 +27,18 @@ export function setupWebSocket(
 
         const startTime = Date.now();
         const result = await memoryEngine.remember(
-          data.agentId,
           data.content,
-          data.metadata
+          'default-tenant',
+          data.agentId,
+          {
+            type: data.metadata?.type || 'fact',
+            importance: data.metadata?.importance || 0.5,
+            tags: data.metadata?.tags || [],
+            context: data.metadata,
+          }
         );
         const responseTime = Date.now() - startTime;
         updateStats('remember', data.agentId, responseTime);
-        updateTierUsage(memoryEngine.getTierInfo().currentTier, 1);
 
         // Broadcast to all clients
         io.emit('memory:created', {
@@ -65,13 +70,13 @@ export function setupWebSocket(
 
         const startTime = Date.now();
         const results = await memoryEngine.recall(
-          data.agentId,
           data.query,
-          data.limit ?? 10
+          'default-tenant',
+          data.agentId,
+          { limit: data.limit ?? 10 }
         );
         const responseTime = Date.now() - startTime;
         updateStats('recall', data.agentId, responseTime);
-        updateTierUsage(memoryEngine.getTierInfo().currentTier, results.length);
 
         callback({ success: true, memories: results });
         logger.info('WebSocket memory recalled', {
@@ -99,7 +104,6 @@ export function setupWebSocket(
 
         if (success) {
           updateStats('forget', data.agentId, responseTime);
-          updateTierUsage(memoryEngine.getTierInfo().currentTier, 1);
 
           // Broadcast to all clients
           io.emit('memory:deleted', {
@@ -130,7 +134,7 @@ export function setupWebSocket(
         const config = {
           memoryEngine: {
             available: !!memoryEngine,
-            tier: memoryEngine ? memoryEngine.getTierInfo() : null,
+            type: 'AdvancedMemoryEngine',
           },
           environment: {
             hasOpenAI: !!process.env.OPENAI_API_KEY,
@@ -200,7 +204,7 @@ export function setupWebSocket(
     const memoryEngine = getMemoryEngine();
     if (memoryEngine) {
       broadcastSystemEvent('health:check', {
-        tier: memoryEngine.getTierInfo(),
+        type: 'AdvancedMemoryEngine',
         uptime: process.uptime(),
         memoryUsage: process.memoryUsage(),
       });

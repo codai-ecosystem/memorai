@@ -1,0 +1,8 @@
+{
+  "agentId": "integration-test",
+  "content": "Testing complete dashboard-to-API integration",
+  "metadata": {
+    "type": "integration-test",
+    "importance": 1.0
+  }
+}

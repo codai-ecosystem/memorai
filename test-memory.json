@@ -1,0 +1,9 @@
+{
+  "agentId": "test-agent",
+  "content": "Integration test memory for dashboard",
+  "metadata": {
+    "type": "fact",
+    "importance": 0.8,
+    "tags": ["integration", "test"]
+  }
+}
