@@ -1,5 +1,0 @@
-{
-  "agentId": "unified-test",
-  "content": "New API server memory with explicit env var",
-  "type": "api-env-test"
-}

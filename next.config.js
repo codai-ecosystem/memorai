@@ -28,8 +28,7 @@ const nextConfig = {
     }
     return config;
   },
-  // Reduce memory usage
-  swcMinify: true,
+  // Reduce memory usage  
   compress: true,
   poweredByHeader: false,
 };
