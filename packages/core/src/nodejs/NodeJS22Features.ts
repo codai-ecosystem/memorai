@@ -3,16 +3,15 @@
  * Modern Node.js patterns with Native Test Runner, Performance Hooks, and Advanced APIs
  */
 
-import { performance, PerformanceObserver } from 'perf_hooks';
-import { Worker, isMainThread, parentPort, workerData } from 'worker_threads';
 import { AsyncLocalStorage } from 'async_hooks';
 import { createHash, randomBytes } from 'crypto';
+import { performance, PerformanceObserver } from 'perf_hooks';
+import { Worker } from 'worker_threads';
 import { MemoryMetadata, MemoryQuery, MemoryResult } from '../types/index.js';
 import { Result } from '../typescript/TypeScriptAdvanced.js';
 
 // Node.js 22+ Advanced Features
 export namespace NodeJS22Features {
-  
   /**
    * Native Test Runner Integration
    */
@@ -50,13 +49,13 @@ export namespace NodeJS22Features {
         test('should create memory with valid data', async () => {
           const agentId = 'test-agent';
           const content = 'Test memory content';
-          
+
           // Mock memory creation
           const result = await NodeJS22Features.MemoryService.createMemory({
             agentId,
             content,
             importance: 0.8,
-            type: 'fact'
+            type: 'fact',
           });
 
           if (!result.success) {
@@ -74,11 +73,12 @@ export namespace NodeJS22Features {
             limit: 10,
             threshold: 0.7,
             include_context: true,
-            time_decay: false
+            time_decay: false,
           };
 
-          const results = await NodeJS22Features.MemoryService.searchMemories(query);
-          
+          const results =
+            await NodeJS22Features.MemoryService.searchMemories(query);
+
           if (!results.success) {
             throw new Error(`Memory search failed: ${results.error}`);
           }
@@ -87,18 +87,18 @@ export namespace NodeJS22Features {
         });
 
         test('should handle concurrent memory operations', async () => {
-          const operations = Array.from({ length: 10 }, (_, i) => 
+          const operations = Array.from({ length: 10 }, (_, i) =>
             NodeJS22Features.MemoryService.createMemory({
               agentId: 'test-agent',
               content: `Concurrent memory ${i}`,
               importance: Math.random(),
-              type: 'fact'
+              type: 'fact',
             })
           );
 
           const results = await Promise.allSettled(operations);
           const failed = results.filter(r => r.status === 'rejected');
-          
+
           if (failed.length > 0) {
             throw new Error(`${failed.length} concurrent operations failed`);
           }
@@ -115,26 +115,30 @@ export namespace NodeJS22Features {
       describe('Performance Benchmarks', () => {
         test('memory creation should complete within 100ms', async () => {
           const start = performance.now();
-          
+
           await NodeJS22Features.MemoryService.createMemory({
             agentId: 'perf-test',
             content: 'Performance test memory',
             importance: 0.5,
-            type: 'fact'
+            type: 'fact',
           });
 
           const duration = performance.now() - start;
-          
+
           if (duration > 100) {
-            throw new Error(`Memory creation took ${duration}ms, expected < 100ms`);
+            throw new Error(
+              `Memory creation took ${duration}ms, expected < 100ms`
+            );
           }
 
-          console.log(`✓ Memory creation completed in ${duration.toFixed(2)}ms`);
+          console.log(
+            `✓ Memory creation completed in ${duration.toFixed(2)}ms`
+          );
         });
 
         test('memory search should handle large result sets', async () => {
           const start = performance.now();
-          
+
           const result = await NodeJS22Features.MemoryService.searchMemories({
             query: '*',
             agent_id: 'perf-test',
@@ -142,11 +146,11 @@ export namespace NodeJS22Features {
             limit: 1000,
             threshold: 0.5,
             include_context: true,
-            time_decay: false
+            time_decay: false,
           });
 
           const duration = performance.now() - start;
-          
+
           if (duration > 500) {
             throw new Error(`Search took ${duration}ms, expected < 500ms`);
           }
@@ -178,7 +182,7 @@ export namespace NodeJS22Features {
       }
 
       private setupObserver(): void {
-        this.observer = new PerformanceObserver((list) => {
+        this.observer = new PerformanceObserver(list => {
           const entries = list.getEntries();
           for (const entry of entries) {
             if (entry.name.startsWith('memory-')) {
@@ -187,7 +191,7 @@ export namespace NodeJS22Features {
                 duration: entry.duration,
                 timestamp: entry.startTime,
                 memoryUsage: process.memoryUsage(),
-                cpuUsage: process.cpuUsage()
+                cpuUsage: process.cpuUsage(),
               });
             }
           }
@@ -216,7 +220,10 @@ export namespace NodeJS22Features {
         const operationMetrics = this.getMetrics(operation);
         if (operationMetrics.length === 0) return 0;
 
-        const totalDuration = operationMetrics.reduce((sum, m) => sum + m.duration, 0);
+        const totalDuration = operationMetrics.reduce(
+          (sum, m) => sum + m.duration,
+          0
+        );
         return totalDuration / operationMetrics.length;
       }
 
@@ -245,10 +252,9 @@ export namespace NodeJS22Features {
     /**
      * Decorated memory operations with performance tracking
      */
-    export function withPerformanceTracking<T extends (...args: any[]) => Promise<any>>(
-      operation: string,
-      fn: T
-    ): T {
+    export function withPerformanceTracking<
+      T extends (...args: any[]) => Promise<any>,
+    >(operation: string, fn: T): T {
       return (async (...args: Parameters<T>) => {
         tracker.startOperation(operation);
         try {
@@ -279,9 +285,11 @@ export namespace NodeJS22Features {
       start(intervalMs: number = 5000): void {
         this.interval = setInterval(() => {
           const usage = process.memoryUsage();
-          
-          if (usage.heapUsed > this.thresholds.heap || 
-              usage.external > this.thresholds.external) {
+
+          if (
+            usage.heapUsed > this.thresholds.heap ||
+            usage.external > this.thresholds.external
+          ) {
             this.onThresholdExceeded?.(usage);
           }
         }, intervalMs);
@@ -408,7 +416,10 @@ export namespace NodeJS22Features {
                   case 'analyzePatterns':
                     result = {
                       patterns: ['time-based', 'topic-clustering'],
-                      insights: ['Most active in mornings', 'Technology-focused content']
+                      insights: [
+                        'Most active in mornings',
+                        'Technology-focused content',
+                      ],
                     };
                     break;
                   default:
@@ -417,7 +428,12 @@ export namespace NodeJS22Features {
 
                 worker.handleMessage({ id, success: true, result });
               } catch (error) {
-                worker.handleMessage({ id, success: false, error: error instanceof Error ? error.message : 'Unknown error' });
+                worker.handleMessage({
+                  id,
+                  success: false,
+                  error:
+                    error instanceof Error ? error.message : 'Unknown error',
+                });
               }
             }, 100);
           },
@@ -430,13 +446,13 @@ export namespace NodeJS22Features {
               worker.messageHandler(message);
             }
           },
-          terminate: () => Promise.resolve()
+          terminate: () => Promise.resolve(),
         } as any;
 
         worker.onMessage((message: any) => {
           const { id, success, result, error } = message;
           const task = this.activeJobs.get(id);
-          
+
           if (task) {
             this.activeJobs.delete(id);
             if (success) {
@@ -454,32 +470,34 @@ export namespace NodeJS22Features {
       private processQueue(): void {
         if (this.queue.length === 0) return;
 
-        const availableWorker = this.workers.find(w => 
-          Array.from(this.activeJobs.values()).every(job => 
-            !this.workers.includes(w)
+        const availableWorker = this.workers.find(w =>
+          Array.from(this.activeJobs.values()).every(
+            job => !this.workers.includes(w)
           )
         );
 
         if (availableWorker) {
           const task = this.queue.shift()!;
           this.activeJobs.set(task.id, task);
-          
+
           availableWorker.postMessage({
             id: task.id,
             type: 'processMemoryBatch', // Default type
-            data: task.data
+            data: task.data,
           });
         }
       }
 
-      async processMemoryBatch(memories: MemoryMetadata[]): Promise<MemoryMetadata[]> {
+      async processMemoryBatch(
+        memories: MemoryMetadata[]
+      ): Promise<MemoryMetadata[]> {
         return new Promise((resolve, reject) => {
           const taskId = randomBytes(16).toString('hex');
           const task: WorkerTask<MemoryMetadata[], MemoryMetadata[]> = {
             id: taskId,
             data: memories,
             resolve,
-            reject
+            reject,
           };
 
           this.queue.push(task);
@@ -494,7 +512,7 @@ export namespace NodeJS22Features {
             id: taskId,
             data: text,
             resolve,
-            reject
+            reject,
           };
 
           this.queue.push(task);
@@ -512,7 +530,7 @@ export namespace NodeJS22Features {
             id: taskId,
             data: memories,
             resolve,
-            reject
+            reject,
           };
 
           this.queue.push(task);
@@ -535,7 +553,7 @@ export namespace NodeJS22Features {
         return {
           poolSize: this.workers.length,
           activeJobs: this.activeJobs.size,
-          queueLength: this.queue.length
+          queueLength: this.queue.length,
         };
       }
     }
@@ -575,9 +593,13 @@ export namespace NodeJS22Features {
         type: string;
       }): Promise<Result<string, string>> {
         const context = this.getCurrentContext();
-        
+
         if (!context) {
-          return { success: false, error: 'No request context available', data: undefined };
+          return {
+            success: false,
+            error: 'No request context available',
+            data: undefined,
+          };
         }
 
         // Add context information to memory
@@ -585,41 +607,47 @@ export namespace NodeJS22Features {
           ...data,
           agentId: context.agentId,
           requestId: context.requestId,
-          contextMetadata: context.metadata
+          contextMetadata: context.metadata,
         };
 
         // Simulate memory creation
         const memoryId = `mem_${Date.now()}_${randomBytes(8).toString('hex')}`;
-        
+
         return { success: true, data: memoryId, error: undefined };
       }
 
-      static async searchMemories(query: MemoryQuery): Promise<Result<MemoryResult[], string>> {
+      static async searchMemories(
+        query: MemoryQuery
+      ): Promise<Result<MemoryResult[], string>> {
         const context = this.getCurrentContext();
-        
+
         if (!context) {
-          return { success: false, error: 'No request context available', data: undefined };
+          return {
+            success: false,
+            error: 'No request context available',
+            data: undefined,
+          };
         }
 
         // Ensure query is scoped to current agent
         const scopedQuery = {
           ...query,
-          agentId: context.agentId
+          agentId: context.agentId,
         };
 
         // Simulate search with context
         const results: MemoryResult[] = [];
-        
+
         return { success: true, data: results, error: undefined };
       }
 
       static logOperation(operation: string, details?: any): void {
         const context = this.getCurrentContext();
-        
+
         console.log(`[${context?.requestId || 'no-context'}] ${operation}`, {
           agentId: context?.agentId,
           timestamp: new Date().toISOString(),
-          details
+          details,
         });
       }
     }
@@ -635,7 +663,7 @@ export namespace NodeJS22Features {
         requestId: randomBytes(16).toString('hex'),
         agentId,
         timestamp: Date.now(),
-        metadata
+        metadata,
       };
     }
   }
@@ -655,7 +683,10 @@ export namespace NodeJS22Features {
         return randomBytes(this.keyLength);
       }
 
-      encrypt(data: string, key: Buffer): {
+      encrypt(
+        data: string,
+        key: Buffer
+      ): {
         encrypted: string;
         iv: string;
         tag: string;
@@ -673,18 +704,21 @@ export namespace NodeJS22Features {
         return {
           encrypted,
           iv: iv.toString('hex'),
-          tag: tag.toString('hex')
+          tag: tag.toString('hex'),
         };
       }
 
-      decrypt(encryptedData: {
-        encrypted: string;
-        iv: string;
-        tag: string;
-      }, key: Buffer): string {
+      decrypt(
+        encryptedData: {
+          encrypted: string;
+          iv: string;
+          tag: string;
+        },
+        key: Buffer
+      ): string {
         const crypto = require('crypto');
         const decipher = crypto.createDecipher(this.algorithm, key);
-        
+
         decipher.setAuthTag(Buffer.from(encryptedData.tag, 'hex'));
         decipher.setAAD(Buffer.from('memory-data'));
 
@@ -732,7 +766,7 @@ export namespace NodeJS22Features {
         const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', {
           modulusLength: 2048,
           publicKeyEncoding: { type: 'spki', format: 'pem' },
-          privateKeyEncoding: { type: 'pkcs8', format: 'pem' }
+          privateKeyEncoding: { type: 'pkcs8', format: 'pem' },
         });
 
         return { publicKey, privateKey };
@@ -761,7 +795,7 @@ export namespace NodeJS22Features {
       options: CreateMemoryOptions
     ): Promise<Result<string, string>> {
       const context = AsyncContext.ContextualMemoryService.getCurrentContext();
-      
+
       try {
         let content = options.content;
 
@@ -781,20 +815,22 @@ export namespace NodeJS22Features {
 
         // Process through worker if content is large
         if (content.length > 10000) {
-          const processed = await workerPool.processMemoryBatch([{
-            content,
-            agentId: options.agentId,
-            importance: options.importance,
-            type: options.type,
-            signature: signatureData
-          } as any]);
+          const processed = await workerPool.processMemoryBatch([
+            {
+              content,
+              agentId: options.agentId,
+              importance: options.importance,
+              type: options.type,
+              signature: signatureData,
+            } as any,
+          ]);
         }
 
         AsyncContext.ContextualMemoryService.logOperation('memory-created', {
           agentId: options.agentId,
           contentLength: content.length,
           encrypted: options.encrypt,
-          signed: options.sign
+          signed: options.sign,
         });
 
         const memoryId = `mem_${Date.now()}_${randomBytes(8).toString('hex')}`;
@@ -803,7 +839,7 @@ export namespace NodeJS22Features {
         return {
           success: false,
           error: error instanceof Error ? error.message : 'Creation failed',
-          data: undefined
+          data: undefined,
         };
       }
     }
@@ -821,7 +857,7 @@ export namespace NodeJS22Features {
         AsyncContext.ContextualMemoryService.logOperation('memory-searched', {
           agentId: query.agent_id,
           queryLength: query.query?.length || 0,
-          limit: query.limit
+          limit: query.limit,
         });
 
         const results: MemoryResult[] = [];
@@ -830,7 +866,7 @@ export namespace NodeJS22Features {
         return {
           success: false,
           error: error instanceof Error ? error.message : 'Search failed',
-          data: undefined
+          data: undefined,
         };
       }
     }
@@ -841,14 +877,14 @@ export namespace NodeJS22Features {
       try {
         // Get agent's memories (mocked)
         const memories: MemoryMetadata[] = [];
-        
+
         // Analyze patterns using worker
         const analysis = await workerPool.analyzePatterns(memories);
 
         AsyncContext.ContextualMemoryService.logOperation('memory-analyzed', {
           agentId,
           memoryCount: memories.length,
-          patternsFound: analysis.patterns.length
+          patternsFound: analysis.patterns.length,
         });
 
         return { success: true, data: analysis, error: undefined };
@@ -856,7 +892,7 @@ export namespace NodeJS22Features {
         return {
           success: false,
           error: error instanceof Error ? error.message : 'Analysis failed',
-          data: undefined
+          data: undefined,
         };
       }
     }
@@ -873,12 +909,17 @@ export namespace NodeJS22Features {
     } {
       return {
         performance: {
-          createLatency: PerformanceMonitoring.tracker.getAverageLatency('memory-create'),
-          searchLatency: PerformanceMonitoring.tracker.getAverageLatency('memory-search'),
-          p95CreateLatency: PerformanceMonitoring.tracker.getP95Latency('memory-create')
+          createLatency:
+            PerformanceMonitoring.tracker.getAverageLatency('memory-create'),
+          searchLatency:
+            PerformanceMonitoring.tracker.getAverageLatency('memory-search'),
+          p95CreateLatency:
+            PerformanceMonitoring.tracker.getP95Latency('memory-create'),
         },
         workers: workerPool.getStats(),
-        context: AsyncContext.ContextualMemoryService.getCurrentContext() !== undefined
+        context:
+          AsyncContext.ContextualMemoryService.getCurrentContext() !==
+          undefined,
       };
     }
   }

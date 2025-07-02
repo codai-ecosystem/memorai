@@ -5,15 +5,21 @@
 
 import { EventEmitter } from 'events';
 import { performance } from 'perf_hooks';
-import { AdvancedEventBus, MemoryEventType } from '../events/EventDrivenArchitecture.js';
-import { CachePort, MonitoringPort } from '../hexagonal/HexagonalArchitecture.js';
+import {
+  AdvancedEventBus,
+  MemoryEventType,
+} from '../events/EventDrivenArchitecture.js';
+import {
+  CachePort,
+  MonitoringPort,
+} from '../hexagonal/HexagonalArchitecture.js';
 
 // Performance Configuration
 export interface PerformanceConfig {
   targetQueryTime: number; // Target query response time in ms
   cacheConfig: {
     l1: { size: number; ttl: number }; // Memory cache
-    l2: { size: number; ttl: number }; // Redis cache  
+    l2: { size: number; ttl: number }; // Redis cache
     l3: { size: number; ttl: number }; // Distributed cache
   };
   preloadingConfig: {
@@ -65,34 +71,34 @@ export interface PerformanceMetrics {
 export class QueryPerformanceTracker {
   private queryTimes: number[] = [];
   private maxSamples: number = 10000;
-  
+
   recordQuery(duration: number): void {
     this.queryTimes.push(duration);
-    
+
     // Keep only recent samples
     if (this.queryTimes.length > this.maxSamples) {
       this.queryTimes = this.queryTimes.slice(-this.maxSamples);
     }
   }
-  
+
   getMetrics(): PerformanceMetrics['queryTime'] {
     if (this.queryTimes.length === 0) {
       return { avg: 0, p50: 0, p95: 0, p99: 0, min: 0, max: 0 };
     }
-    
+
     const sorted = [...this.queryTimes].sort((a, b) => a - b);
     const len = sorted.length;
-    
+
     return {
       avg: this.queryTimes.reduce((sum, time) => sum + time, 0) / len,
       p50: sorted[Math.floor(len * 0.5)],
       p95: sorted[Math.floor(len * 0.95)],
       p99: sorted[Math.floor(len * 0.99)],
       min: sorted[0],
-      max: sorted[len - 1]
+      max: sorted[len - 1],
     };
   }
-  
+
   isPerformingWell(targetTime: number): boolean {
     const metrics = this.getMetrics();
     return metrics.p95 <= targetTime;
@@ -108,7 +114,7 @@ export class MultiTierCache implements CachePort {
   private metrics = {
     l1: { hits: 0, misses: 0 },
     l2: { hits: 0, misses: 0 },
-    l3: { hits: 0, misses: 0 }
+    l3: { hits: 0, misses: 0 },
   };
 
   constructor(
@@ -119,7 +125,7 @@ export class MultiTierCache implements CachePort {
     this.l2Cache = l2Cache;
     this.l3Cache = l3Cache;
     this.config = config;
-    
+
     // L1 cleanup
     setInterval(() => this.cleanupL1Cache(), 60000); // Every minute
   }
@@ -155,7 +161,7 @@ export class MultiTierCache implements CachePort {
         // Promote to L2 and L1
         await Promise.all([
           this.l2Cache.set(key, l3Result, this.config.l2.ttl),
-          this.setL1(key, l3Result, this.config.l1.ttl)
+          this.setL1(key, l3Result, this.config.l1.ttl),
         ]);
         return l3Result;
       }
@@ -171,8 +177,12 @@ export class MultiTierCache implements CachePort {
     // Set in all cache tiers
     await Promise.all([
       this.setL1(key, value, ttl || this.config.l1.ttl),
-      this.l2Cache.set(key, value, ttl || this.config.l2.ttl).catch(console.warn),
-      this.l3Cache.set(key, value, ttl || this.config.l3.ttl).catch(console.warn)
+      this.l2Cache
+        .set(key, value, ttl || this.config.l2.ttl)
+        .catch(console.warn),
+      this.l3Cache
+        .set(key, value, ttl || this.config.l3.ttl)
+        .catch(console.warn),
     ]);
   }
 
@@ -180,7 +190,7 @@ export class MultiTierCache implements CachePort {
     this.l1Cache.delete(key);
     await Promise.all([
       this.l2Cache.delete(key).catch(console.warn),
-      this.l3Cache.delete(key).catch(console.warn)
+      this.l3Cache.delete(key).catch(console.warn),
     ]);
   }
 
@@ -198,13 +208,13 @@ export class MultiTierCache implements CachePort {
 
     await Promise.all([
       this.l2Cache.clear(pattern).catch(console.warn),
-      this.l3Cache.clear(pattern).catch(console.warn)
+      this.l3Cache.clear(pattern).catch(console.warn),
     ]);
   }
 
   async exists(key: string): Promise<boolean> {
     if (this.l1Cache.has(key)) return true;
-    
+
     try {
       if (await this.l2Cache.exists(key)) return true;
       return await this.l3Cache.exists(key);
@@ -217,7 +227,7 @@ export class MultiTierCache implements CachePort {
     const l1 = this.metrics.l1;
     const l2 = this.metrics.l2;
     const l3 = this.metrics.l3;
-    
+
     const totalHits = l1.hits + l2.hits + l3.hits;
     const totalMisses = l1.misses + l2.misses + l3.misses;
     const totalRequests = totalHits + totalMisses;
@@ -226,35 +236,35 @@ export class MultiTierCache implements CachePort {
       l1: {
         hits: l1.hits,
         misses: l1.misses,
-        hitRate: totalRequests > 0 ? l1.hits / totalRequests : 0
+        hitRate: totalRequests > 0 ? l1.hits / totalRequests : 0,
       },
       l2: {
         hits: l2.hits,
         misses: l2.misses,
-        hitRate: totalRequests > 0 ? l2.hits / totalRequests : 0
+        hitRate: totalRequests > 0 ? l2.hits / totalRequests : 0,
       },
       l3: {
         hits: l3.hits,
         misses: l3.misses,
-        hitRate: totalRequests > 0 ? l3.hits / totalRequests : 0
+        hitRate: totalRequests > 0 ? l3.hits / totalRequests : 0,
       },
       overall: {
         hits: totalHits,
         misses: totalMisses,
-        hitRate: totalRequests > 0 ? totalHits / totalRequests : 0
-      }
+        hitRate: totalRequests > 0 ? totalHits / totalRequests : 0,
+      },
     };
   }
 
   private getFromL1<T>(key: string): T | null {
     const entry = this.l1Cache.get(key);
     if (!entry) return null;
-    
+
     if (Date.now() > entry.expiresAt) {
       this.l1Cache.delete(key);
       return null;
     }
-    
+
     return entry.value as T;
   }
 
@@ -269,7 +279,7 @@ export class MultiTierCache implements CachePort {
 
     this.l1Cache.set(key, {
       value,
-      expiresAt: Date.now() + ttl
+      expiresAt: Date.now() + ttl,
     });
   }
 
@@ -291,7 +301,7 @@ export class QueryOptimizer {
   generateQueryPlan(query: any): QueryPlan {
     const queryHash = this.hashQuery(query);
     const existingPlan = this.queryPlans.get(queryHash);
-    
+
     if (existingPlan && this.isPlanEffective(queryHash)) {
       return existingPlan;
     }
@@ -303,12 +313,12 @@ export class QueryOptimizer {
       estimatedCost: 0,
       cacheStrategy: this.determineCacheStrategy(query),
       parallelization: this.determineParallelization(query),
-      indexHints: this.generateIndexHints(query)
+      indexHints: this.generateIndexHints(query),
     };
 
     plan.estimatedCost = this.calculatePlanCost(plan);
     this.queryPlans.set(queryHash, plan);
-    
+
     return plan;
   }
 
@@ -317,7 +327,7 @@ export class QueryOptimizer {
       executions: 0,
       totalTime: 0,
       avgTime: 0,
-      lastUpdated: Date.now()
+      lastUpdated: Date.now(),
     };
 
     stats.executions++;
@@ -337,7 +347,7 @@ export class QueryOptimizer {
         type: 'vector_search',
         operation: 'similarity_search',
         optimizations: ['use_approximate_search', 'limit_early'],
-        estimatedTime: 5
+        estimatedTime: 5,
       });
     }
 
@@ -347,7 +357,7 @@ export class QueryOptimizer {
         type: 'filter',
         operation: 'apply_filters',
         optimizations: ['index_scan', 'early_termination'],
-        estimatedTime: 2
+        estimatedTime: 2,
       });
     }
 
@@ -356,7 +366,7 @@ export class QueryOptimizer {
       type: 'assembly',
       operation: 'build_results',
       optimizations: ['lazy_loading', 'batch_processing'],
-      estimatedTime: 3
+      estimatedTime: 3,
     });
 
     return steps;
@@ -378,7 +388,7 @@ export class QueryOptimizer {
       return {
         enabled: true,
         concurrency: 4,
-        chunkSize: Math.ceil(query.limit / 4)
+        chunkSize: Math.ceil(query.limit / 4),
       };
     }
     return { enabled: false, concurrency: 1, chunkSize: 0 };
@@ -386,11 +396,11 @@ export class QueryOptimizer {
 
   private generateIndexHints(query: any): string[] {
     const hints: string[] = [];
-    
+
     if (query.type) hints.push('use_type_index');
     if (query.agentId) hints.push('use_agent_index');
     if (query.timeRange) hints.push('use_time_index');
-    
+
     return hints;
   }
 
@@ -406,11 +416,11 @@ export class QueryOptimizer {
   private isPlanEffective(planId: string): boolean {
     const stats = this.planStats.get(planId);
     if (!stats) return false;
-    
+
     // Consider plan effective if average time is reasonable and recently used
     const isRecent = Date.now() - stats.lastUpdated < 3600000; // 1 hour
     const isEffective = stats.avgTime < 10; // Target 10ms
-    
+
     return isRecent && isEffective;
   }
 }
@@ -423,7 +433,7 @@ export class PerformanceOptimizer extends EventEmitter {
   private queryOptimizer: QueryOptimizer;
   private monitoring: MonitoringPort;
   private eventBus: AdvancedEventBus;
-  
+
   constructor(
     config: PerformanceConfig,
     l2Cache: CachePort,
@@ -438,7 +448,7 @@ export class PerformanceOptimizer extends EventEmitter {
     this.queryOptimizer = new QueryOptimizer();
     this.monitoring = monitoring;
     this.eventBus = eventBus;
-    
+
     this.setupEventListeners();
     this.startPerformanceMonitoring();
   }
@@ -449,15 +459,15 @@ export class PerformanceOptimizer extends EventEmitter {
     queryContext: any
   ): Promise<T> {
     const startTime = performance.now();
-    
+
     try {
       // Generate query plan
       const plan = this.queryOptimizer.generateQueryPlan(queryContext);
-      
+
       // Check cache first
       const cacheKey = this.generateCacheKey(queryContext);
       const cachedResult = await this.cache.get<T>(cacheKey);
-      
+
       if (cachedResult !== null) {
         const duration = performance.now() - startTime;
         this.recordQueryPerformance(duration, true);
@@ -466,27 +476,26 @@ export class PerformanceOptimizer extends EventEmitter {
 
       // Execute optimized query
       const result = await this.executeWithOptimizations(queryFn, plan);
-      
+
       // Cache result
       await this.cache.set(cacheKey, result, plan.cacheStrategy.ttl);
-      
+
       const duration = performance.now() - startTime;
       this.recordQueryPerformance(duration, false);
       this.queryOptimizer.recordPlanExecution(plan.id, duration);
-      
+
       // Check if performance target is met
       if (duration > this.config.targetQueryTime) {
         await this.handleSlowQuery(queryContext, duration, plan);
       }
-      
+
       return result;
-      
     } catch (error) {
       const duration = performance.now() - startTime;
       await this.monitoring.recordError(error as Error, {
         operation: 'optimized_query',
         duration,
-        queryContext
+        queryContext,
       });
       throw error;
     }
@@ -496,19 +505,19 @@ export class PerformanceOptimizer extends EventEmitter {
   getPerformanceMetrics(): PerformanceMetrics {
     const queryMetrics = this.queryTracker.getMetrics();
     const cacheMetrics = this.cache.getCacheMetrics();
-    
+
     return {
       queryTime: queryMetrics,
       cacheMetrics,
       throughput: {
         queriesPerSecond: this.calculateQPS(),
-        operationsPerSecond: this.calculateOPS()
+        operationsPerSecond: this.calculateOPS(),
       },
       resourceUsage: {
         memoryUsage: process.memoryUsage().heapUsed / 1024 / 1024, // MB
         cpuUsage: process.cpuUsage().user / 1000, // ms
-        networkIO: 0 // Would be implemented with proper monitoring
-      }
+        networkIO: 0, // Would be implemented with proper monitoring
+      },
     };
   }
 
@@ -516,19 +525,23 @@ export class PerformanceOptimizer extends EventEmitter {
   generateOptimizationRecommendations(): string[] {
     const metrics = this.getPerformanceMetrics();
     const recommendations: string[] = [];
-    
+
     if (metrics.queryTime.p95 > this.config.targetQueryTime) {
-      recommendations.push('Query performance is below target - consider query optimization');
+      recommendations.push(
+        'Query performance is below target - consider query optimization'
+      );
     }
-    
+
     if (metrics.cacheMetrics.overall.hitRate < 0.7) {
       recommendations.push('Cache hit rate is low - review caching strategy');
     }
-    
+
     if (metrics.resourceUsage.memoryUsage > 500) {
-      recommendations.push('High memory usage detected - consider garbage collection tuning');
+      recommendations.push(
+        'High memory usage detected - consider garbage collection tuning'
+      );
     }
-    
+
     return recommendations;
   }
 
@@ -540,7 +553,7 @@ export class PerformanceOptimizer extends EventEmitter {
       // Execute with parallelization if beneficial
       return this.executeParallel(queryFn, plan.parallelization);
     }
-    
+
     // Standard execution with monitoring
     return queryFn();
   }
@@ -555,13 +568,13 @@ export class PerformanceOptimizer extends EventEmitter {
 
   private recordQueryPerformance(duration: number, fromCache: boolean): void {
     this.queryTracker.recordQuery(duration);
-    
+
     this.monitoring.recordMetric('query.duration', duration, {
-      cached: fromCache.toString()
+      cached: fromCache.toString(),
     });
-    
+
     this.monitoring.recordMetric('query.count', 1, {
-      cached: fromCache.toString()
+      cached: fromCache.toString(),
     });
   }
 
@@ -574,28 +587,31 @@ export class PerformanceOptimizer extends EventEmitter {
       duration,
       planId: plan.id,
       estimatedCost: plan.estimatedCost,
-      queryContext
+      queryContext,
     });
 
     this.emit('slow_query', {
       duration,
       queryContext,
       plan,
-      recommendations: this.generateQueryOptimizations(queryContext, plan)
+      recommendations: this.generateQueryOptimizations(queryContext, plan),
     });
   }
 
-  private generateQueryOptimizations(queryContext: any, plan: QueryPlan): string[] {
+  private generateQueryOptimizations(
+    queryContext: any,
+    plan: QueryPlan
+  ): string[] {
     const optimizations: string[] = [];
-    
+
     if (plan.estimatedCost > 20) {
       optimizations.push('Consider adding more specific filters');
     }
-    
+
     if (!plan.indexHints.length) {
       optimizations.push('Query could benefit from better indexing');
     }
-    
+
     return optimizations;
   }
 
@@ -605,9 +621,9 @@ export class PerformanceOptimizer extends EventEmitter {
       ...queryContext,
       // Remove non-deterministic fields
       timestamp: undefined,
-      requestId: undefined
+      requestId: undefined,
     };
-    
+
     return `query:${Buffer.from(JSON.stringify(normalized)).toString('base64')}`;
   }
 
@@ -623,7 +639,7 @@ export class PerformanceOptimizer extends EventEmitter {
   }
 
   private setupEventListeners(): void {
-    this.eventBus.subscribe(MemoryEventType.PERFORMANCE_METRIC, async (event) => {
+    this.eventBus.subscribe(MemoryEventType.PERFORMANCE_METRIC, async event => {
       const data = event.data as any;
       if (data?.metric === 'slow_query') {
         // Handle slow query events
@@ -635,12 +651,21 @@ export class PerformanceOptimizer extends EventEmitter {
   private startPerformanceMonitoring(): void {
     setInterval(() => {
       const metrics = this.getPerformanceMetrics();
-      
+
       // Record performance metrics
-      this.monitoring.recordMetric('performance.query_time.p95', metrics.queryTime.p95);
-      this.monitoring.recordMetric('performance.cache_hit_rate', metrics.cacheMetrics.overall.hitRate);
-      this.monitoring.recordMetric('performance.memory_usage', metrics.resourceUsage.memoryUsage);
-      
+      this.monitoring.recordMetric(
+        'performance.query_time.p95',
+        metrics.queryTime.p95
+      );
+      this.monitoring.recordMetric(
+        'performance.cache_hit_rate',
+        metrics.cacheMetrics.overall.hitRate
+      );
+      this.monitoring.recordMetric(
+        'performance.memory_usage',
+        metrics.resourceUsage.memoryUsage
+      );
+
       // Check performance thresholds
       if (metrics.queryTime.p95 > this.config.targetQueryTime * 2) {
         this.monitoring.createAlert(
@@ -648,14 +673,13 @@ export class PerformanceOptimizer extends EventEmitter {
           `Query latency P95 (${metrics.queryTime.p95}ms) exceeds threshold`
         );
       }
-      
     }, 30000); // Every 30 seconds
   }
 
   private async optimizeForSlowQueries(): Promise<void> {
     // Implement automatic optimization strategies
     const recommendations = this.generateOptimizationRecommendations();
-    
+
     for (const recommendation of recommendations) {
       this.emit('optimization_recommendation', recommendation);
     }

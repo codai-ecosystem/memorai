@@ -5,7 +5,11 @@
 
 import { EventEmitter } from 'events';
 import { nanoid } from 'nanoid';
-import { AdvancedEventBus, MemoryEvent, MemoryEventType } from '../events/EventDrivenArchitecture.js';
+import {
+  AdvancedEventBus,
+  MemoryEvent,
+  MemoryEventType,
+} from '../events/EventDrivenArchitecture.js';
 import { MemoryMetadata } from '../types/index.js';
 
 // Command Interfaces
@@ -79,7 +83,11 @@ export class ClassifyMemoryCommand extends Command {
 
 export class OptimizeMemoryCommand extends Command {
   constructor(
-    public readonly targetType: 'storage' | 'retrieval' | 'classification' | 'relationships',
+    public readonly targetType:
+      | 'storage'
+      | 'retrieval'
+      | 'classification'
+      | 'relationships',
     public readonly parameters: Record<string, any>,
     agentId: string,
     correlationId?: string
@@ -123,7 +131,11 @@ export class GetMemoryPatternsQuery extends Query {
 
 export class GetMemoryInsightsQuery extends Query {
   constructor(
-    public readonly insightType: 'classification' | 'pattern' | 'relationship' | 'optimization',
+    public readonly insightType:
+      | 'classification'
+      | 'pattern'
+      | 'relationship'
+      | 'optimization',
     public readonly memoryIds: string[],
     agentId: string
   ) {
@@ -169,7 +181,7 @@ export interface CommandHandler<T extends Command> {
   canHandle(command: Command): boolean;
 }
 
-// Query Handler Interface  
+// Query Handler Interface
 export interface QueryHandler<T extends Query, R = any> {
   handle(query: T): Promise<QueryResult<R>>;
   canHandle(query: Query): boolean;
@@ -204,18 +216,20 @@ export class CommandBus extends EventEmitter {
   // Execute command
   async execute<T extends Command>(command: T): Promise<CommandResult> {
     const startTime = Date.now();
-    
+
     try {
       // Apply middleware
       let processedCommand: T = command;
       for (const middleware of this.middlewares) {
-        processedCommand = await middleware.process(processedCommand) as T;
+        processedCommand = (await middleware.process(processedCommand)) as T;
       }
 
       // Find handler
       const handler = this.findHandler(processedCommand);
       if (!handler) {
-        throw new Error(`No handler found for command type: ${processedCommand.constructor.name}`);
+        throw new Error(
+          `No handler found for command type: ${processedCommand.constructor.name}`
+        );
       }
 
       // Execute command
@@ -237,23 +251,22 @@ export class CommandBus extends EventEmitter {
       this.emit('command.completed', {
         command: processedCommand,
         result,
-        executionTime: Date.now() - startTime
+        executionTime: Date.now() - startTime,
       });
 
       return result;
-
     } catch (error) {
       this.updateMetrics('commands.failed', 1);
-      
+
       const errorResult: CommandResult = {
         success: false,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       };
 
       this.emit('command.failed', {
         command,
         error,
-        executionTime: Date.now() - startTime
+        executionTime: Date.now() - startTime,
       });
 
       return errorResult;
@@ -263,7 +276,7 @@ export class CommandBus extends EventEmitter {
   private findHandler<T extends Command>(command: T): CommandHandler<T> | null {
     const commandType = command.constructor.name;
     const handler = this.handlers.get(commandType);
-    
+
     if (handler && handler.canHandle(command)) {
       return handler;
     }
@@ -286,7 +299,7 @@ export class CommandBus extends EventEmitter {
     const keys = [
       'commands.executed',
       'commands.failed',
-      'commands.execution_time'
+      'commands.execution_time',
     ];
     keys.forEach(key => this.metrics.set(key, 0));
   }
@@ -310,7 +323,7 @@ export class QueryBus extends EventEmitter {
       enabled: true,
       ttl: 300000, // 5 minutes
       maxSize: 1000,
-      ...cacheConfig
+      ...cacheConfig,
     };
     this.setupMetrics();
     this.startCacheCleanup();
@@ -332,37 +345,37 @@ export class QueryBus extends EventEmitter {
   // Execute query
   async execute<T extends Query, R>(query: T): Promise<QueryResult<R>> {
     const startTime = Date.now();
-    
+
     try {
       // Apply middleware
       let processedQuery: T = query;
       for (const middleware of this.middlewares) {
-        processedQuery = await middleware.process(processedQuery) as T;
+        processedQuery = (await middleware.process(processedQuery)) as T;
       }
 
       // Check cache first
       const cacheKey = this.generateCacheKey(processedQuery);
       const cachedResult = this.getFromCache<R>(cacheKey);
-      
+
       if (cachedResult && this.cacheConfig.enabled) {
         this.updateMetrics('queries.cache_hits', 1);
-        
+
         const result: QueryResult<R> = {
           success: cachedResult.success,
           data: cachedResult.data as R,
           metadata: {
             ...cachedResult.metadata,
             executionTime: Date.now() - startTime,
-            cacheHit: true
+            cacheHit: true,
           },
-          error: cachedResult.error
+          error: cachedResult.error,
         };
 
         this.emit('query.completed', {
           query: processedQuery,
           result,
           executionTime: Date.now() - startTime,
-          cacheHit: true
+          cacheHit: true,
         });
 
         return result;
@@ -371,12 +384,14 @@ export class QueryBus extends EventEmitter {
       // Find handler
       const handler = this.findHandler(processedQuery);
       if (!handler) {
-        throw new Error(`No handler found for query type: ${processedQuery.constructor.name}`);
+        throw new Error(
+          `No handler found for query type: ${processedQuery.constructor.name}`
+        );
       }
 
       // Execute query
-      const result = await handler.handle(processedQuery) as QueryResult<R>;
-      
+      const result = (await handler.handle(processedQuery)) as QueryResult<R>;
+
       // Cache result if successful
       if (result.success && this.cacheConfig.enabled) {
         this.setCache(cacheKey, result);
@@ -392,36 +407,35 @@ export class QueryBus extends EventEmitter {
       result.metadata = {
         ...result.metadata,
         executionTime: Date.now() - startTime,
-        cacheHit: false
+        cacheHit: false,
       };
 
       this.emit('query.completed', {
         query: processedQuery,
         result,
         executionTime: Date.now() - startTime,
-        cacheHit: false
+        cacheHit: false,
       });
 
       return result;
-
     } catch (error) {
       this.updateMetrics('queries.failed', 1);
-      
+
       const errorResult: QueryResult<R> = {
         success: false,
         data: null as any,
         metadata: {
           executionTime: Date.now() - startTime,
           cacheHit: false,
-          dataFreshness: new Date()
+          dataFreshness: new Date(),
         },
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       };
 
       this.emit('query.failed', {
         query,
         error,
-        executionTime: Date.now() - startTime
+        executionTime: Date.now() - startTime,
       });
 
       return errorResult;
@@ -448,7 +462,7 @@ export class QueryBus extends EventEmitter {
   private findHandler<T extends Query, R>(query: T): QueryHandler<T, R> | null {
     const queryType = query.constructor.name;
     const handler = this.handlers.get(queryType);
-    
+
     if (handler && handler.canHandle(query)) {
       return handler;
     }
@@ -466,31 +480,31 @@ export class QueryBus extends EventEmitter {
   private generateCacheKey(query: Query): string {
     const queryData = {
       type: query.constructor.name,
-      ...query
+      ...query,
     };
-    
+
     // Simple hash function for cache key
     const str = JSON.stringify(queryData);
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
       const char = str.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
+      hash = (hash << 5) - hash + char;
       hash = hash & hash; // Convert to 32-bit integer
     }
-    
+
     return `query_${Math.abs(hash)}`;
   }
 
   private getFromCache<R>(key: string): QueryResult<R> | null {
     const entry = this.cache.get(key);
-    
+
     if (!entry) return null;
-    
+
     if (Date.now() > entry.expiresAt) {
       this.cache.delete(key);
       return null;
     }
-    
+
     return entry.result as QueryResult<R>;
   }
 
@@ -505,7 +519,7 @@ export class QueryBus extends EventEmitter {
 
     this.cache.set(key, {
       result,
-      expiresAt: Date.now() + this.cacheConfig.ttl
+      expiresAt: Date.now() + this.cacheConfig.ttl,
     });
   }
 
@@ -532,7 +546,7 @@ export class QueryBus extends EventEmitter {
       'queries.cache_hits',
       'queries.cache_misses',
       'cache.full_clear',
-      'cache.pattern_clear'
+      'cache.pattern_clear',
     ];
     keys.forEach(key => this.metrics.set(key, 0));
   }
@@ -620,7 +634,7 @@ export class CQRSOrchestrator {
     return {
       commands: this.commandBus.getMetrics(),
       queries: this.queryBus.getMetrics(),
-      events: this.eventBus.getMetrics()
+      events: this.eventBus.getMetrics(),
     };
   }
 

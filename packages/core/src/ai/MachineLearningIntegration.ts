@@ -4,7 +4,7 @@
  */
 
 // Result type for consistent error handling
-type Result<T, E> = 
+type Result<T, E> =
   | { success: true; error: undefined; data: T }
   | { success: false; error: E; data: undefined };
 
@@ -12,7 +12,12 @@ type Result<T, E> =
 interface AIModel {
   id: string;
   name: string;
-  type: 'embedding' | 'classification' | 'generation' | 'recommendation' | 'anomaly-detection';
+  type:
+    | 'embedding'
+    | 'classification'
+    | 'generation'
+    | 'recommendation'
+    | 'anomaly-detection';
   version: string;
   provider: 'openai' | 'anthropic' | 'google' | 'local' | 'custom';
   endpoint?: string;
@@ -117,7 +122,9 @@ class VectorOperations {
   }
 
   static normalize(vector: number[]): number[] {
-    const magnitude = Math.sqrt(vector.reduce((sum, val) => sum + val * val, 0));
+    const magnitude = Math.sqrt(
+      vector.reduce((sum, val) => sum + val * val, 0)
+    );
     return magnitude === 0 ? vector : vector.map(val => val / magnitude);
   }
 
@@ -168,15 +175,15 @@ class EmbeddingService {
       config: {
         model: 'text-embedding-ada-002',
         dimensions: 1536,
-        maxTokens: 8191
+        maxTokens: 8191,
       },
       metrics: {
         latency: 150,
         throughput: 100,
         errorRate: 0.01,
-        lastUpdated: new Date()
+        lastUpdated: new Date(),
       },
-      status: 'active'
+      status: 'active',
     });
 
     // OpenAI 3-small
@@ -190,15 +197,15 @@ class EmbeddingService {
       config: {
         model: 'text-embedding-3-small',
         dimensions: 1536,
-        maxTokens: 8191
+        maxTokens: 8191,
       },
       metrics: {
         latency: 120,
         throughput: 120,
         errorRate: 0.005,
-        lastUpdated: new Date()
+        lastUpdated: new Date(),
       },
-      status: 'active'
+      status: 'active',
     });
 
     // Local embedding model (placeholder)
@@ -212,15 +219,15 @@ class EmbeddingService {
       config: {
         model: 'all-MiniLM-L6-v2',
         dimensions: 384,
-        maxTokens: 512
+        maxTokens: 512,
       },
       metrics: {
         latency: 50,
         throughput: 200,
         errorRate: 0.001,
-        lastUpdated: new Date()
+        lastUpdated: new Date(),
       },
-      status: 'active'
+      status: 'active',
     });
   }
 
@@ -231,7 +238,7 @@ class EmbeddingService {
   ): Promise<Result<EmbeddingResult, string>> {
     try {
       const { useCache = true } = options;
-      
+
       // Check cache first
       const cacheKey = `${modelId}:${this.hashText(text)}`;
       if (useCache && this.cache.has(cacheKey)) {
@@ -241,7 +248,11 @@ class EmbeddingService {
 
       const model = this.models.get(modelId);
       if (!model) {
-        return { success: false, error: `Model not found: ${modelId}`, data: undefined };
+        return {
+          success: false,
+          error: `Model not found: ${modelId}`,
+          data: undefined,
+        };
       }
 
       const startTime = Date.now();
@@ -255,7 +266,11 @@ class EmbeddingService {
           embedding = await this.generateLocalEmbedding(text, model);
           break;
         default:
-          return { success: false, error: `Unsupported provider: ${model.provider}`, data: undefined };
+          return {
+            success: false,
+            error: `Unsupported provider: ${model.provider}`,
+            data: undefined,
+          };
       }
 
       const endTime = Date.now();
@@ -266,7 +281,7 @@ class EmbeddingService {
         dimensions: embedding.length,
         model: modelId,
         timestamp: new Date(),
-        metadata: { latency, textLength: text.length }
+        metadata: { latency, textLength: text.length },
       };
 
       // Update model metrics
@@ -280,45 +295,55 @@ class EmbeddingService {
       return { success: true, error: undefined, data: result };
     } catch (error) {
       this.updateModelMetrics(modelId, 0, false);
-      return { 
-        success: false, 
+      return {
+        success: false,
         error: `Embedding generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        data: undefined 
+        data: undefined,
       };
     }
   }
 
-  private async generateOpenAIEmbedding(text: string, model: AIModel): Promise<number[]> {
+  private async generateOpenAIEmbedding(
+    text: string,
+    model: AIModel
+  ): Promise<number[]> {
     // Simulate OpenAI API call
     // In real implementation, use actual OpenAI SDK
     const response = await this.simulateAPICall(model.endpoint!, {
       model: model.config.model,
-      input: text
+      input: text,
     });
 
     return response.data[0].embedding;
   }
 
-  private async generateLocalEmbedding(text: string, model: AIModel): Promise<number[]> {
+  private async generateLocalEmbedding(
+    text: string,
+    model: AIModel
+  ): Promise<number[]> {
     // Simulate local model inference
     // In real implementation, use TensorFlow.js or similar
     const dimensions = model.config.dimensions;
-    const embedding = new Array(dimensions).fill(0).map(() => Math.random() * 2 - 1);
-    
+    const embedding = new Array(dimensions)
+      .fill(0)
+      .map(() => Math.random() * 2 - 1);
+
     // Simulate processing delay
     await new Promise(resolve => setTimeout(resolve, 50));
-    
+
     return VectorOperations.normalize(embedding);
   }
 
   private async simulateAPICall(endpoint: string, payload: any): Promise<any> {
     // Simulate API response
     await new Promise(resolve => setTimeout(resolve, 100));
-    
+
     return {
-      data: [{
-        embedding: new Array(1536).fill(0).map(() => Math.random() * 2 - 1)
-      }]
+      data: [
+        {
+          embedding: new Array(1536).fill(0).map(() => Math.random() * 2 - 1),
+        },
+      ],
     };
   }
 
@@ -327,28 +352,32 @@ class EmbeddingService {
     let hash = 0;
     for (let i = 0; i < text.length; i++) {
       const char = text.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
+      hash = (hash << 5) - hash + char;
       hash = hash & hash; // Convert to 32-bit integer
     }
     return hash.toString(36);
   }
 
-  private updateModelMetrics(modelId: string, latency: number, success: boolean): void {
+  private updateModelMetrics(
+    modelId: string,
+    latency: number,
+    success: boolean
+  ): void {
     const model = this.models.get(modelId);
     if (!model) return;
 
     const metrics = model.metrics;
-    
+
     // Update latency (moving average)
-    metrics.latency = (metrics.latency * 0.9) + (latency * 0.1);
-    
+    metrics.latency = metrics.latency * 0.9 + latency * 0.1;
+
     // Update error rate
     if (success) {
       metrics.errorRate = metrics.errorRate * 0.99;
     } else {
-      metrics.errorRate = (metrics.errorRate * 0.99) + 0.01;
+      metrics.errorRate = metrics.errorRate * 0.99 + 0.01;
     }
-    
+
     metrics.lastUpdated = new Date();
   }
 
@@ -358,14 +387,16 @@ class EmbeddingService {
   ): Promise<Result<EmbeddingResult[], string>> {
     try {
       const results: EmbeddingResult[] = [];
-      
+
       // Process in batches to respect rate limits
       const batchSize = 100;
       for (let i = 0; i < texts.length; i += batchSize) {
         const batch = texts.slice(i, i + batchSize);
-        const batchPromises = batch.map(text => this.generateEmbedding(text, modelId));
+        const batchPromises = batch.map(text =>
+          this.generateEmbedding(text, modelId)
+        );
         const batchResults = await Promise.all(batchPromises);
-        
+
         for (const result of batchResults) {
           if (result.success) {
             results.push(result.data!);
@@ -377,10 +408,10 @@ class EmbeddingService {
 
       return { success: true, error: undefined, data: results };
     } catch (error) {
-      return { 
-        success: false, 
+      return {
+        success: false,
         error: `Batch embedding failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        data: undefined 
+        data: undefined,
       };
     }
   }
@@ -418,7 +449,7 @@ class MemoryClassificationService {
       config: {
         threshold: 0.7,
         multiLabel: true,
-        maxCategories: 5
+        maxCategories: 5,
       },
       metrics: {
         accuracy: 0.89,
@@ -428,34 +459,61 @@ class MemoryClassificationService {
         latency: 75,
         throughput: 150,
         errorRate: 0.02,
-        lastUpdated: new Date()
+        lastUpdated: new Date(),
       },
-      status: 'active'
+      status: 'active',
     });
   }
 
   private initializeClassificationSchemes(): void {
     // Content type classification
     this.classificationSchemes.set('content-type', [
-      'personal', 'professional', 'educational', 'creative', 
-      'technical', 'social', 'entertainment', 'health', 'financial'
+      'personal',
+      'professional',
+      'educational',
+      'creative',
+      'technical',
+      'social',
+      'entertainment',
+      'health',
+      'financial',
     ]);
 
     // Emotion classification
     this.classificationSchemes.set('emotion', [
-      'positive', 'negative', 'neutral', 'excited', 'anxious',
-      'confident', 'uncertain', 'nostalgic', 'hopeful', 'concerned'
+      'positive',
+      'negative',
+      'neutral',
+      'excited',
+      'anxious',
+      'confident',
+      'uncertain',
+      'nostalgic',
+      'hopeful',
+      'concerned',
     ]);
 
     // Priority classification
     this.classificationSchemes.set('priority', [
-      'urgent', 'high', 'medium', 'low', 'reference'
+      'urgent',
+      'high',
+      'medium',
+      'low',
+      'reference',
     ]);
 
     // Topic classification
     this.classificationSchemes.set('topic', [
-      'work', 'family', 'health', 'finance', 'travel',
-      'technology', 'science', 'politics', 'sports', 'arts'
+      'work',
+      'family',
+      'health',
+      'finance',
+      'travel',
+      'technology',
+      'science',
+      'politics',
+      'sports',
+      'arts',
     ]);
   }
 
@@ -467,20 +525,28 @@ class MemoryClassificationService {
     try {
       const model = this.models.get(modelId);
       if (!model) {
-        return { success: false, error: `Model not found: ${modelId}`, data: undefined };
+        return {
+          success: false,
+          error: `Model not found: ${modelId}`,
+          data: undefined,
+        };
       }
 
       const categories = this.classificationSchemes.get(scheme);
       if (!categories) {
-        return { success: false, error: `Classification scheme not found: ${scheme}`, data: undefined };
+        return {
+          success: false,
+          error: `Classification scheme not found: ${scheme}`,
+          data: undefined,
+        };
       }
 
       const startTime = Date.now();
-      
+
       // Simulate classification (in real implementation, use trained model)
       const scores = categories.map(category => ({
         category,
-        confidence: Math.random()
+        confidence: Math.random(),
       }));
 
       // Sort by confidence
@@ -497,7 +563,7 @@ class MemoryClassificationService {
         confidence: primaryCategory.confidence,
         alternatives,
         model: modelId,
-        timestamp: new Date()
+        timestamp: new Date(),
       };
 
       this.updateModelMetrics(modelId, latency, true);
@@ -505,25 +571,29 @@ class MemoryClassificationService {
       return { success: true, error: undefined, data: result };
     } catch (error) {
       this.updateModelMetrics(modelId, 0, false);
-      return { 
-        success: false, 
+      return {
+        success: false,
         error: `Classification failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        data: undefined 
+        data: undefined,
       };
     }
   }
 
-  private updateModelMetrics(modelId: string, latency: number, success: boolean): void {
+  private updateModelMetrics(
+    modelId: string,
+    latency: number,
+    success: boolean
+  ): void {
     const model = this.models.get(modelId);
     if (!model) return;
 
     const metrics = model.metrics;
-    metrics.latency = (metrics.latency * 0.9) + (latency * 0.1);
-    
+    metrics.latency = metrics.latency * 0.9 + latency * 0.1;
+
     if (!success) {
-      metrics.errorRate = (metrics.errorRate * 0.99) + 0.01;
+      metrics.errorRate = metrics.errorRate * 0.99 + 0.01;
     }
-    
+
     metrics.lastUpdated = new Date();
   }
 
@@ -564,25 +634,38 @@ class RecommendationEngine {
     try {
       const userProfile = this.userProfiles.get(userId);
       if (!userProfile) {
-        return { success: false, error: 'User profile not found', data: undefined };
+        return {
+          success: false,
+          error: 'User profile not found',
+          data: undefined,
+        };
       }
 
       // Get user's recent memories
       const recentMemories = await this.getUserRecentMemories(userId, 50);
-      
+
       // Generate context embedding
       const contextText = this.buildContextText(context, recentMemories);
-      const contextEmbeddingResult = await this.embeddingService.generateEmbedding(contextText);
-      
+      const contextEmbeddingResult =
+        await this.embeddingService.generateEmbedding(contextText);
+
       if (!contextEmbeddingResult.success) {
-        return { success: false, error: contextEmbeddingResult.error, data: undefined };
+        return {
+          success: false,
+          error: contextEmbeddingResult.error,
+          data: undefined,
+        };
       }
 
       const contextEmbedding = contextEmbeddingResult.data!.vector;
 
       // Find similar memories
-      const similarities = await this.findSimilarMemories(contextEmbedding, userId, limit * 2);
-      
+      const similarities = await this.findSimilarMemories(
+        contextEmbedding,
+        userId,
+        limit * 2
+      );
+
       // Apply recommendation algorithms
       const recommendations = await this.applyRecommendationAlgorithms(
         similarities,
@@ -595,29 +678,34 @@ class RecommendationEngine {
         recommendations,
         model: 'hybrid-recommendation-v1',
         timestamp: new Date(),
-        context
+        context,
       };
 
       return { success: true, error: undefined, data: result };
     } catch (error) {
-      return { 
-        success: false, 
+      return {
+        success: false,
         error: `Recommendation generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        data: undefined 
+        data: undefined,
       };
     }
   }
 
-  private buildContextText(context: Record<string, any>, recentMemories: any[]): string {
+  private buildContextText(
+    context: Record<string, any>,
+    recentMemories: any[]
+  ): string {
     const contextParts = [];
-    
+
     // Add context information
     for (const [key, value] of Object.entries(context)) {
       contextParts.push(`${key}: ${value}`);
     }
 
     // Add recent memory summaries
-    const memoryTexts = recentMemories.slice(0, 10).map(memory => memory.content || '');
+    const memoryTexts = recentMemories
+      .slice(0, 10)
+      .map(memory => memory.content || '');
     contextParts.push(...memoryTexts);
 
     return contextParts.join(' ');
@@ -635,7 +723,10 @@ class RecommendationEngine {
       if (memory.userId !== userId) continue;
       if (!memory.embedding) continue;
 
-      const similarity = VectorOperations.cosineSimilarity(queryEmbedding, memory.embedding);
+      const similarity = VectorOperations.cosineSimilarity(
+        queryEmbedding,
+        memory.embedding
+      );
       similarities.push({ id: memoryId, score: similarity, memory });
     }
 
@@ -649,7 +740,14 @@ class RecommendationEngine {
     userProfile: any,
     context: Record<string, any>,
     limit: number
-  ): Promise<Array<{ id: string; score: number; reason: string; metadata: Record<string, any> }>> {
+  ): Promise<
+    Array<{
+      id: string;
+      score: number;
+      reason: string;
+      metadata: Record<string, any>;
+    }>
+  > {
     const recommendations = [];
 
     for (const { id, score, memory } of similarities) {
@@ -657,7 +755,8 @@ class RecommendationEngine {
       let reason = 'Similar content';
 
       // Apply recency boost
-      const daysSinceCreated = (Date.now() - memory.createdAt.getTime()) / (1000 * 60 * 60 * 24);
+      const daysSinceCreated =
+        (Date.now() - memory.createdAt.getTime()) / (1000 * 60 * 60 * 24);
       if (daysSinceCreated < 7) {
         finalScore *= 1.2;
         reason = 'Recent and similar content';
@@ -672,7 +771,7 @@ class RecommendationEngine {
       // Apply user preference boost
       if (userProfile.preferences && memory.category) {
         const preferenceScore = userProfile.preferences[memory.category] || 0;
-        finalScore *= (1 + preferenceScore * 0.3);
+        finalScore *= 1 + preferenceScore * 0.3;
         if (preferenceScore > 0.7) {
           reason = 'Matches your interests and similar content';
         }
@@ -692,8 +791,8 @@ class RecommendationEngine {
           originalSimilarity: score,
           category: memory.category,
           tags: memory.tags,
-          lastAccessed: memory.lastAccessed
-        }
+          lastAccessed: memory.lastAccessed,
+        },
       });
     }
 
@@ -702,7 +801,10 @@ class RecommendationEngine {
     return recommendations.slice(0, limit);
   }
 
-  private async getUserRecentMemories(userId: string, limit: number): Promise<any[]> {
+  private async getUserRecentMemories(
+    userId: string,
+    limit: number
+  ): Promise<any[]> {
     // In real implementation, query the actual memory database
     return Array.from(this.memoryDatabase.values())
       .filter(memory => memory.userId === userId)
@@ -715,17 +817,17 @@ class RecommendationEngine {
       preferences: {},
       interests: [],
       accessPatterns: {},
-      lastUpdated: new Date()
+      lastUpdated: new Date(),
     };
 
     // Update preferences based on interactions
     for (const interaction of interactions) {
       if (interaction.type === 'view' && interaction.category) {
-        profile.preferences[interaction.category] = 
+        profile.preferences[interaction.category] =
           (profile.preferences[interaction.category] || 0) + 0.1;
       }
       if (interaction.type === 'like' && interaction.category) {
-        profile.preferences[interaction.category] = 
+        profile.preferences[interaction.category] =
           (profile.preferences[interaction.category] || 0) + 0.3;
       }
     }
@@ -763,7 +865,12 @@ class AnomalyDetectionService {
       config: {
         contamination: 0.1,
         threshold: 0.6,
-        features: ['access_frequency', 'content_length', 'time_of_day', 'user_activity']
+        features: [
+          'access_frequency',
+          'content_length',
+          'time_of_day',
+          'user_activity',
+        ],
       },
       metrics: {
         precision: 0.85,
@@ -772,9 +879,9 @@ class AnomalyDetectionService {
         latency: 25,
         throughput: 400,
         errorRate: 0.01,
-        lastUpdated: new Date()
+        lastUpdated: new Date(),
       },
-      status: 'active'
+      status: 'active',
     });
   }
 
@@ -786,7 +893,11 @@ class AnomalyDetectionService {
     try {
       const model = this.models.get(modelId);
       if (!model) {
-        return { success: false, error: `Model not found: ${modelId}`, data: undefined };
+        return {
+          success: false,
+          error: `Model not found: ${modelId}`,
+          data: undefined,
+        };
       }
 
       const startTime = Date.now();
@@ -809,7 +920,7 @@ class AnomalyDetectionService {
         threshold: model.config.threshold,
         features,
         model: modelId,
-        timestamp: new Date()
+        timestamp: new Date(),
       };
 
       this.updateModelMetrics(modelId, latency, true);
@@ -820,17 +931,20 @@ class AnomalyDetectionService {
       return { success: true, error: undefined, data: result };
     } catch (error) {
       this.updateModelMetrics(modelId, 0, false);
-      return { 
-        success: false, 
+      return {
+        success: false,
         error: `Anomaly detection failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        data: undefined 
+        data: undefined,
       };
     }
   }
 
-  private async getOrCreateBaseline(userId: string, data: Record<string, number>): Promise<any> {
+  private async getOrCreateBaseline(
+    userId: string,
+    data: Record<string, number>
+  ): Promise<any> {
     let baseline = this.baselines.get(userId);
-    
+
     if (!baseline) {
       baseline = {
         means: {},
@@ -838,7 +952,7 @@ class AnomalyDetectionService {
         counts: {},
         history: [],
         created: new Date(),
-        lastUpdated: new Date()
+        lastUpdated: new Date(),
       };
 
       // Initialize with current data
@@ -854,7 +968,10 @@ class AnomalyDetectionService {
     return baseline;
   }
 
-  private extractFeatures(data: Record<string, number>, baseline: any): Record<string, number> {
+  private extractFeatures(
+    data: Record<string, number>,
+    baseline: any
+  ): Record<string, number> {
     const features: Record<string, number> = {};
 
     for (const [key, value] of Object.entries(data)) {
@@ -863,10 +980,11 @@ class AnomalyDetectionService {
 
       // Z-score normalization
       features[`${key}_zscore`] = stdDev > 0 ? (value - mean) / stdDev : 0;
-      
+
       // Percentage change from baseline
-      features[`${key}_pct_change`] = mean > 0 ? ((value - mean) / mean) * 100 : 0;
-      
+      features[`${key}_pct_change`] =
+        mean > 0 ? ((value - mean) / mean) * 100 : 0;
+
       // Raw value
       features[key] = value;
     }
@@ -874,10 +992,13 @@ class AnomalyDetectionService {
     return features;
   }
 
-  private calculateAnomalyScore(features: Record<string, number>, model: AIModel): number {
+  private calculateAnomalyScore(
+    features: Record<string, number>,
+    model: AIModel
+  ): number {
     // Simplified anomaly score calculation
     // In real implementation, use trained Isolation Forest or similar algorithm
-    
+
     let totalDeviation = 0;
     let featureCount = 0;
 
@@ -889,12 +1010,15 @@ class AnomalyDetectionService {
     }
 
     const avgDeviation = featureCount > 0 ? totalDeviation / featureCount : 0;
-    
+
     // Transform to 0-1 scale using sigmoid
     return 1 / (1 + Math.exp(-avgDeviation + 2));
   }
 
-  private async updateBaseline(userId: string, data: Record<string, number>): Promise<void> {
+  private async updateBaseline(
+    userId: string,
+    data: Record<string, number>
+  ): Promise<void> {
     const baseline = this.baselines.get(userId);
     if (!baseline) return;
 
@@ -904,11 +1028,15 @@ class AnomalyDetectionService {
       const oldMean = baseline.means[key] || 0;
       const newCount = count + 1;
       const newMean = (oldMean * count + value) / newCount;
-      
+
       // Update variance using Welford's online algorithm
       const oldVariance = Math.pow(baseline.stdDevs[key] || 0, 2);
-      const newVariance = count === 0 ? 0 : 
-        (oldVariance * (count - 1) + (value - oldMean) * (value - newMean)) / count;
+      const newVariance =
+        count === 0
+          ? 0
+          : (oldVariance * (count - 1) +
+              (value - oldMean) * (value - newMean)) /
+            count;
 
       baseline.means[key] = newMean;
       baseline.stdDevs[key] = Math.sqrt(newVariance);
@@ -924,17 +1052,21 @@ class AnomalyDetectionService {
     baseline.lastUpdated = new Date();
   }
 
-  private updateModelMetrics(modelId: string, latency: number, success: boolean): void {
+  private updateModelMetrics(
+    modelId: string,
+    latency: number,
+    success: boolean
+  ): void {
     const model = this.models.get(modelId);
     if (!model) return;
 
     const metrics = model.metrics;
-    metrics.latency = (metrics.latency * 0.9) + (latency * 0.1);
-    
+    metrics.latency = metrics.latency * 0.9 + latency * 0.1;
+
     if (!success) {
-      metrics.errorRate = (metrics.errorRate * 0.99) + 0.01;
+      metrics.errorRate = metrics.errorRate * 0.99 + 0.01;
     }
-    
+
     metrics.lastUpdated = new Date();
   }
 
@@ -949,9 +1081,9 @@ class AnomalyDetectionService {
 
 // Export all AI services
 export {
-  VectorOperations,
+  AnomalyDetectionService,
   EmbeddingService,
   MemoryClassificationService,
   RecommendationEngine,
-  AnomalyDetectionService
+  VectorOperations,
 };

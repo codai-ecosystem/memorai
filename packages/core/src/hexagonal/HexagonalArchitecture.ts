@@ -3,9 +3,14 @@
  * Implements clean architecture with dependency inversion
  */
 
-import { MemoryAggregate, MemoryId, AgentId, MemoryRepository, MemoryClassification } from '../domain/MemoryDomainModel.js';
+import {
+  AgentId,
+  MemoryAggregate,
+  MemoryClassification,
+  MemoryId,
+  MemoryRepository,
+} from '../domain/MemoryDomainModel.js';
 import { MemoryMetadata, MemoryQuery, MemoryResult } from '../types/index.js';
-import { Command, Query, CommandResult, QueryResult } from '../cqrs/CQRSImplementation.js';
 
 // Primary Ports (Driving Side - Application Core)
 
@@ -13,9 +18,22 @@ import { Command, Query, CommandResult, QueryResult } from '../cqrs/CQRSImplemen
  * Memory Management Port - Primary business operations
  */
 export interface MemoryManagementPort {
-  createMemory(content: string, importance: number, agentId: string, metadata?: any): Promise<string>;
-  updateMemory(memoryId: string, updates: Partial<MemoryMetadata>, agentId: string): Promise<boolean>;
-  deleteMemory(memoryId: string, agentId: string, reason: string): Promise<boolean>;
+  createMemory(
+    content: string,
+    importance: number,
+    agentId: string,
+    metadata?: any
+  ): Promise<string>;
+  updateMemory(
+    memoryId: string,
+    updates: Partial<MemoryMetadata>,
+    agentId: string
+  ): Promise<boolean>;
+  deleteMemory(
+    memoryId: string,
+    agentId: string,
+    reason: string
+  ): Promise<boolean>;
   getMemory(memoryId: string, agentId: string): Promise<MemoryMetadata | null>;
   searchMemories(query: MemoryQuery): Promise<MemoryResult[]>;
 }
@@ -24,10 +42,22 @@ export interface MemoryManagementPort {
  * Memory Intelligence Port - AI-powered operations
  */
 export interface MemoryIntelligencePort {
-  classifyMemory(memoryId: string, agentId: string): Promise<{ category: string; confidence: number; tags: string[] }>;
-  findSimilarMemories(memoryId: string, threshold?: number): Promise<MemoryResult[]>;
-  generateInsights(memoryIds: string[], agentId: string): Promise<{ insights: string[]; recommendations: string[] }>;
-  detectPatterns(agentId: string, timeRange?: { start: Date; end: Date }): Promise<{ patterns: any[]; confidence: number }>;
+  classifyMemory(
+    memoryId: string,
+    agentId: string
+  ): Promise<{ category: string; confidence: number; tags: string[] }>;
+  findSimilarMemories(
+    memoryId: string,
+    threshold?: number
+  ): Promise<MemoryResult[]>;
+  generateInsights(
+    memoryIds: string[],
+    agentId: string
+  ): Promise<{ insights: string[]; recommendations: string[] }>;
+  detectPatterns(
+    agentId: string,
+    timeRange?: { start: Date; end: Date }
+  ): Promise<{ patterns: any[]; confidence: number }>;
 }
 
 /**
@@ -46,16 +76,31 @@ export interface MemoryAnalyticsPort {
     memoryUtilization: number;
     errorRate: number;
   }>;
-  generateReport(agentId: string, reportType: string): Promise<{ report: any; generatedAt: Date }>;
+  generateReport(
+    agentId: string,
+    reportType: string
+  ): Promise<{ report: any; generatedAt: Date }>;
 }
 
 /**
  * Memory Collaboration Port - Multi-agent operations
  */
 export interface MemoryCollaborationPort {
-  shareMemory(memoryId: string, fromAgent: string, toAgent: string, permissions: string[]): Promise<boolean>;
-  mergeMemories(sourceId: string, targetId: string, agentId: string): Promise<string>;
-  synchronizeAgent(agentId: string, lastSync?: Date): Promise<{ synchronized: number; conflicts: any[] }>;
+  shareMemory(
+    memoryId: string,
+    fromAgent: string,
+    toAgent: string,
+    permissions: string[]
+  ): Promise<boolean>;
+  mergeMemories(
+    sourceId: string,
+    targetId: string,
+    agentId: string
+  ): Promise<string>;
+  synchronizeAgent(
+    agentId: string,
+    lastSync?: Date
+  ): Promise<{ synchronized: number; conflicts: any[] }>;
   createSharedContext(agentIds: string[], contextName: string): Promise<string>;
 }
 
@@ -77,8 +122,16 @@ export interface MemoryStoragePort {
  * Vector Storage Port - Embedding management
  */
 export interface VectorStoragePort {
-  storeEmbedding(id: string, embedding: number[], metadata?: any): Promise<void>;
-  searchSimilar(embedding: number[], limit: number, threshold?: number): Promise<Array<{ id: string; score: number }>>;
+  storeEmbedding(
+    id: string,
+    embedding: number[],
+    metadata?: any
+  ): Promise<void>;
+  searchSimilar(
+    embedding: number[],
+    limit: number,
+    threshold?: number
+  ): Promise<Array<{ id: string; score: number }>>;
   deleteEmbedding(id: string): Promise<void>;
   updateEmbedding(id: string, embedding: number[]): Promise<void>;
   getEmbedding(id: string): Promise<number[] | null>;
@@ -89,11 +142,15 @@ export interface VectorStoragePort {
  */
 export interface AIProcessingPort {
   generateEmbedding(text: string): Promise<number[]>;
-  classifyText(text: string): Promise<{ category: string; confidence: number; tags: string[] }>;
+  classifyText(
+    text: string
+  ): Promise<{ category: string; confidence: number; tags: string[] }>;
   extractKeywords(text: string): Promise<string[]>;
   summarizeText(text: string, maxLength?: number): Promise<string>;
   analyzeEmotion(text: string): Promise<{ emotion: string; intensity: number }>;
-  detectLanguage(text: string): Promise<{ language: string; confidence: number }>;
+  detectLanguage(
+    text: string
+  ): Promise<{ language: string; confidence: number }>;
 }
 
 /**
@@ -102,7 +159,10 @@ export interface AIProcessingPort {
 export interface EventPublishingPort {
   publishEvent(event: any): Promise<void>;
   publishBatch(events: any[]): Promise<void>;
-  subscribe(eventType: string, handler: (event: any) => Promise<void>): () => void;
+  subscribe(
+    eventType: string,
+    handler: (event: any) => Promise<void>
+  ): () => void;
 }
 
 /**
@@ -120,7 +180,11 @@ export interface CachePort {
  * Notification Port - External communication
  */
 export interface NotificationPort {
-  sendNotification(recipient: string, message: string, type: string): Promise<void>;
+  sendNotification(
+    recipient: string,
+    message: string,
+    type: string
+  ): Promise<void>;
   sendEmail(to: string, subject: string, body: string): Promise<void>;
   sendWebhook(url: string, payload: any): Promise<void>;
 }
@@ -129,19 +193,32 @@ export interface NotificationPort {
  * Security Port - Authentication and authorization
  */
 export interface SecurityPort {
-  authenticate(token: string): Promise<{ agentId: string; permissions: string[] }>;
-  authorize(agentId: string, resource: string, action: string): Promise<boolean>;
+  authenticate(
+    token: string
+  ): Promise<{ agentId: string; permissions: string[] }>;
+  authorize(
+    agentId: string,
+    resource: string,
+    action: string
+  ): Promise<boolean>;
   encrypt(data: string): Promise<string>;
   decrypt(encryptedData: string): Promise<string>;
   hash(data: string): Promise<string>;
-  validateInput(input: any, schema: any): Promise<{ valid: boolean; errors?: string[] }>;
+  validateInput(
+    input: any,
+    schema: any
+  ): Promise<{ valid: boolean; errors?: string[] }>;
 }
 
 /**
  * Monitoring Port - Observability
  */
 export interface MonitoringPort {
-  recordMetric(name: string, value: number, tags?: Record<string, string>): Promise<void>;
+  recordMetric(
+    name: string,
+    value: number,
+    tags?: Record<string, string>
+  ): Promise<void>;
   recordEvent(name: string, properties?: Record<string, any>): Promise<void>;
   recordError(error: Error, context?: Record<string, any>): Promise<void>;
   recordLatency(operation: string, duration: number): Promise<void>;
@@ -165,27 +242,35 @@ export class MemoryApplicationService implements MemoryManagementPort {
   ) {}
 
   async createMemory(
-    content: string, 
-    importance: number, 
-    agentId: string, 
+    content: string,
+    importance: number,
+    agentId: string,
     metadata: any = {}
   ): Promise<string> {
     const startTime = Date.now();
-    
+
     try {
       // Validate input
-      await this.security.validateInput({ content, importance, agentId }, {
-        content: { required: true, type: 'string', minLength: 1 },
-        importance: { required: true, type: 'number', min: 0, max: 1 },
-        agentId: { required: true, type: 'string' }
-      });
+      await this.security.validateInput(
+        { content, importance, agentId },
+        {
+          content: { required: true, type: 'string', minLength: 1 },
+          importance: { required: true, type: 'number', min: 0, max: 1 },
+          agentId: { required: true, type: 'string' },
+        }
+      );
 
       // Create domain aggregate
-      const memory = MemoryAggregate.create(content, importance, agentId, metadata);
-      
+      const memory = MemoryAggregate.create(
+        content,
+        importance,
+        agentId,
+        metadata
+      );
+
       // Generate embedding
       const embedding = await this.aiProcessing.generateEmbedding(content);
-      
+
       // Classify content
       const classification = await this.aiProcessing.classifyText(content);
       const memoryClassification = new MemoryClassification(
@@ -201,15 +286,15 @@ export class MemoryApplicationService implements MemoryManagementPort {
       // Save to repositories
       await this.memoryRepository.save(memory);
       await this.vectorStorage.storeEmbedding(
-        memory.getId().toString(), 
-        embedding, 
+        memory.getId().toString(),
+        embedding,
         { agentId, importance, type: classification.category }
       );
 
       // Cache the memory
       await this.cache.set(
-        `memory:${memory.getId().toString()}`, 
-        memory.toMemoryMetadata(), 
+        `memory:${memory.getId().toString()}`,
+        memory.toMemoryMetadata(),
         3600 // 1 hour TTL
       );
 
@@ -220,26 +305,33 @@ export class MemoryApplicationService implements MemoryManagementPort {
 
       // Record metrics
       await this.monitoring.recordMetric('memory.created', 1, { agentId });
-      await this.monitoring.recordLatency('memory.create', Date.now() - startTime);
+      await this.monitoring.recordLatency(
+        'memory.create',
+        Date.now() - startTime
+      );
 
       return memory.getId().toString();
-
     } catch (error) {
-      await this.monitoring.recordError(error as Error, { operation: 'createMemory', agentId });
+      await this.monitoring.recordError(error as Error, {
+        operation: 'createMemory',
+        agentId,
+      });
       throw error;
     }
   }
 
   async updateMemory(
-    memoryId: string, 
-    updates: Partial<MemoryMetadata>, 
+    memoryId: string,
+    updates: Partial<MemoryMetadata>,
     agentId: string
   ): Promise<boolean> {
     const startTime = Date.now();
-    
+
     try {
       // Load memory aggregate
-      const memory = await this.memoryRepository.findById(new MemoryId(memoryId));
+      const memory = await this.memoryRepository.findById(
+        new MemoryId(memoryId)
+      );
       if (!memory) {
         throw new Error(`Memory not found: ${memoryId}`);
       }
@@ -247,9 +339,11 @@ export class MemoryApplicationService implements MemoryManagementPort {
       // Apply updates
       if (updates.content) {
         memory.updateContent(updates.content, new AgentId(agentId));
-        
+
         // Update embedding if content changed
-        const newEmbedding = await this.aiProcessing.generateEmbedding(updates.content);
+        const newEmbedding = await this.aiProcessing.generateEmbedding(
+          updates.content
+        );
         await this.vectorStorage.updateEmbedding(memoryId, newEmbedding);
       }
 
@@ -268,19 +362,31 @@ export class MemoryApplicationService implements MemoryManagementPort {
       await this.eventPublishing.publishBatch(events);
       memory.markEventsAsCommitted();
 
-      await this.monitoring.recordLatency('memory.update', Date.now() - startTime);
+      await this.monitoring.recordLatency(
+        'memory.update',
+        Date.now() - startTime
+      );
       return true;
-
     } catch (error) {
-      await this.monitoring.recordError(error as Error, { operation: 'updateMemory', memoryId, agentId });
+      await this.monitoring.recordError(error as Error, {
+        operation: 'updateMemory',
+        memoryId,
+        agentId,
+      });
       throw error;
     }
   }
 
-  async deleteMemory(memoryId: string, agentId: string, reason: string): Promise<boolean> {
+  async deleteMemory(
+    memoryId: string,
+    agentId: string,
+    reason: string
+  ): Promise<boolean> {
     try {
       // Load and delete memory
-      const memory = await this.memoryRepository.findById(new MemoryId(memoryId));
+      const memory = await this.memoryRepository.findById(
+        new MemoryId(memoryId)
+      );
       if (!memory) {
         return false;
       }
@@ -296,16 +402,25 @@ export class MemoryApplicationService implements MemoryManagementPort {
       const events = memory.getUncommittedEvents();
       await this.eventPublishing.publishBatch(events);
 
-      await this.monitoring.recordMetric('memory.deleted', 1, { agentId, reason });
+      await this.monitoring.recordMetric('memory.deleted', 1, {
+        agentId,
+        reason,
+      });
       return true;
-
     } catch (error) {
-      await this.monitoring.recordError(error as Error, { operation: 'deleteMemory', memoryId, agentId });
+      await this.monitoring.recordError(error as Error, {
+        operation: 'deleteMemory',
+        memoryId,
+        agentId,
+      });
       throw error;
     }
   }
 
-  async getMemory(memoryId: string, agentId: string): Promise<MemoryMetadata | null> {
+  async getMemory(
+    memoryId: string,
+    agentId: string
+  ): Promise<MemoryMetadata | null> {
     try {
       // Check cache first
       const cached = await this.cache.get<MemoryMetadata>(`memory:${memoryId}`);
@@ -315,7 +430,9 @@ export class MemoryApplicationService implements MemoryManagementPort {
       }
 
       // Load from repository
-      const memory = await this.memoryRepository.findById(new MemoryId(memoryId));
+      const memory = await this.memoryRepository.findById(
+        new MemoryId(memoryId)
+      );
       if (!memory) {
         return null;
       }
@@ -325,53 +442,69 @@ export class MemoryApplicationService implements MemoryManagementPort {
       await this.memoryRepository.save(memory);
 
       const metadata = memory.toMemoryMetadata();
-      
+
       // Cache the result
       await this.cache.set(`memory:${memoryId}`, metadata, 3600);
       await this.monitoring.recordMetric('memory.cache.miss', 1);
 
       return metadata;
-
     } catch (error) {
-      await this.monitoring.recordError(error as Error, { operation: 'getMemory', memoryId, agentId });
+      await this.monitoring.recordError(error as Error, {
+        operation: 'getMemory',
+        memoryId,
+        agentId,
+      });
       throw error;
     }
   }
 
   async searchMemories(query: MemoryQuery): Promise<MemoryResult[]> {
     const startTime = Date.now();
-    
+
     try {
       // Generate query embedding for semantic search
-      const queryEmbedding = await this.aiProcessing.generateEmbedding(query.query);
-      
+      const queryEmbedding = await this.aiProcessing.generateEmbedding(
+        query.query
+      );
+
       // Search similar vectors
       const similarResults = await this.vectorStorage.searchSimilar(
-        queryEmbedding, 
-        query.limit || 10, 
+        queryEmbedding,
+        query.limit || 10,
         query.threshold || 0.7
       );
 
       // Load full memory data
       const results: MemoryResult[] = [];
       for (const result of similarResults) {
-        const memory = await this.getMemory(result.id, query.agent_id || 'system');
+        const memory = await this.getMemory(
+          result.id,
+          query.agent_id || 'system'
+        );
         if (memory) {
           results.push({
             memory,
             score: result.score,
-            relevance_reason: 'Semantic similarity match'
+            relevance_reason: 'Semantic similarity match',
           });
         }
       }
 
-      await this.monitoring.recordLatency('memory.search', Date.now() - startTime);
-      await this.monitoring.recordMetric('memory.search.results', results.length);
+      await this.monitoring.recordLatency(
+        'memory.search',
+        Date.now() - startTime
+      );
+      await this.monitoring.recordMetric(
+        'memory.search.results',
+        results.length
+      );
 
       return results;
-
     } catch (error) {
-      await this.monitoring.recordError(error as Error, { operation: 'searchMemories', query: query.query });
+      await this.monitoring.recordError(error as Error, {
+        operation: 'searchMemories',
+        query: query.query,
+      });
       throw error;
     }
   }
@@ -389,7 +522,7 @@ export class MemoryIntelligenceService implements MemoryIntelligencePort {
   ) {}
 
   async classifyMemory(
-    memoryId: string, 
+    memoryId: string,
     agentId: string
   ): Promise<{ category: string; confidence: number; tags: string[] }> {
     try {
@@ -398,23 +531,27 @@ export class MemoryIntelligenceService implements MemoryIntelligencePort {
         throw new Error(`Memory not found: ${memoryId}`);
       }
 
-      const classification = await this.aiProcessing.classifyText(memory.content);
-      
-      await this.monitoring.recordMetric('memory.classification', 1, { 
+      const classification = await this.aiProcessing.classifyText(
+        memory.content
+      );
+
+      await this.monitoring.recordMetric('memory.classification', 1, {
         category: classification.category,
-        confidence: classification.confidence.toString()
+        confidence: classification.confidence.toString(),
       });
 
       return classification;
-
     } catch (error) {
-      await this.monitoring.recordError(error as Error, { operation: 'classifyMemory', memoryId });
+      await this.monitoring.recordError(error as Error, {
+        operation: 'classifyMemory',
+        memoryId,
+      });
       throw error;
     }
   }
 
   async findSimilarMemories(
-    memoryId: string, 
+    memoryId: string,
     threshold: number = 0.8
   ): Promise<MemoryResult[]> {
     try {
@@ -425,8 +562,12 @@ export class MemoryIntelligenceService implements MemoryIntelligencePort {
       }
 
       // Find similar memories
-      const similar = await this.vectorStorage.searchSimilar(embedding, 10, threshold);
-      
+      const similar = await this.vectorStorage.searchSimilar(
+        embedding,
+        10,
+        threshold
+      );
+
       // Filter out the original memory
       const filtered = similar.filter(result => result.id !== memoryId);
 
@@ -438,21 +579,23 @@ export class MemoryIntelligenceService implements MemoryIntelligencePort {
           results.push({
             memory,
             score: result.score,
-            relevance_reason: `${(result.score * 100).toFixed(1)}% similarity`
+            relevance_reason: `${(result.score * 100).toFixed(1)}% similarity`,
           });
         }
       }
 
       return results;
-
     } catch (error) {
-      await this.monitoring.recordError(error as Error, { operation: 'findSimilarMemories', memoryId });
+      await this.monitoring.recordError(error as Error, {
+        operation: 'findSimilarMemories',
+        memoryId,
+      });
       throw error;
     }
   }
 
   async generateInsights(
-    memoryIds: string[], 
+    memoryIds: string[],
     agentId: string
   ): Promise<{ insights: string[]; recommendations: string[] }> {
     try {
@@ -480,55 +623,66 @@ export class MemoryIntelligenceService implements MemoryIntelligencePort {
       insights.push(...contentAnalysis.insights);
       recommendations.push(...contentAnalysis.recommendations);
 
-      await this.monitoring.recordMetric('memory.insights.generated', insights.length);
-      
-      return { insights, recommendations };
+      await this.monitoring.recordMetric(
+        'memory.insights.generated',
+        insights.length
+      );
 
+      return { insights, recommendations };
     } catch (error) {
-      await this.monitoring.recordError(error as Error, { operation: 'generateInsights', memoryCount: memoryIds.length });
+      await this.monitoring.recordError(error as Error, {
+        operation: 'generateInsights',
+        memoryCount: memoryIds.length,
+      });
       throw error;
     }
   }
 
   async detectPatterns(
-    agentId: string, 
+    agentId: string,
     timeRange?: { start: Date; end: Date }
   ): Promise<{ patterns: any[]; confidence: number }> {
     try {
       // This would implement sophisticated pattern detection
       // For now, return a simplified implementation
-      
+
       const patterns = [
         {
           type: 'temporal',
           description: 'Regular memory creation pattern detected',
           confidence: 0.85,
-          data: { frequency: 'daily', peak_hours: [9, 14, 18] }
+          data: { frequency: 'daily', peak_hours: [9, 14, 18] },
         },
         {
           type: 'semantic',
           description: 'Knowledge clustering around specific topics',
           confidence: 0.92,
-          data: { clusters: ['work', 'personal', 'learning'] }
-        }
+          data: { clusters: ['work', 'personal', 'learning'] },
+        },
       ];
 
-      await this.monitoring.recordMetric('memory.patterns.detected', patterns.length);
-      
+      await this.monitoring.recordMetric(
+        'memory.patterns.detected',
+        patterns.length
+      );
+
       return {
         patterns,
-        confidence: patterns.reduce((sum, p) => sum + p.confidence, 0) / patterns.length
+        confidence:
+          patterns.reduce((sum, p) => sum + p.confidence, 0) / patterns.length,
       };
-
     } catch (error) {
-      await this.monitoring.recordError(error as Error, { operation: 'detectPatterns', agentId });
+      await this.monitoring.recordError(error as Error, {
+        operation: 'detectPatterns',
+        agentId,
+      });
       throw error;
     }
   }
 
   private analyzeTimeSpan(memories: MemoryMetadata[]): { insights: string[] } {
     const insights: string[] = [];
-    
+
     if (memories.length === 0) return { insights };
 
     const dates = memories.map(m => m.createdAt).sort();
@@ -536,19 +690,24 @@ export class MemoryIntelligenceService implements MemoryIntelligencePort {
     const days = span / (1000 * 60 * 60 * 24);
 
     if (days > 30) {
-      insights.push(`Memory span covers ${Math.round(days)} days, showing long-term knowledge accumulation`);
+      insights.push(
+        `Memory span covers ${Math.round(days)} days, showing long-term knowledge accumulation`
+      );
     }
 
     return { insights };
   }
 
-  private async analyzeContent(memories: MemoryMetadata[]): Promise<{ insights: string[]; recommendations: string[] }> {
+  private async analyzeContent(
+    memories: MemoryMetadata[]
+  ): Promise<{ insights: string[]; recommendations: string[] }> {
     const insights: string[] = [];
     const recommendations: string[] = [];
 
     // Analyze content diversity
     const contentLengths = memories.map(m => m.content.length);
-    const avgLength = contentLengths.reduce((sum, len) => sum + len, 0) / contentLengths.length;
+    const avgLength =
+      contentLengths.reduce((sum, len) => sum + len, 0) / contentLengths.length;
 
     if (avgLength > 500) {
       insights.push('Memories contain detailed, comprehensive information');
@@ -602,12 +761,20 @@ export class SQLiteStorageAdapter implements MemoryStoragePort {
  * Example Vector Adapter - Implements vector storage port
  */
 export class QdrantVectorAdapter implements VectorStoragePort {
-  async storeEmbedding(id: string, embedding: number[], metadata?: any): Promise<void> {
+  async storeEmbedding(
+    id: string,
+    embedding: number[],
+    metadata?: any
+  ): Promise<void> {
     // Implementation would use Qdrant client
     throw new Error('Not implemented - would integrate with Qdrant');
   }
 
-  async searchSimilar(embedding: number[], limit: number, threshold?: number): Promise<Array<{ id: string; score: number }>> {
+  async searchSimilar(
+    embedding: number[],
+    limit: number,
+    threshold?: number
+  ): Promise<Array<{ id: string; score: number }>> {
     // Implementation would use Qdrant search
     throw new Error('Not implemented - would use Qdrant similarity search');
   }

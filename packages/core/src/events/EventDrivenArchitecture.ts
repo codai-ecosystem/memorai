@@ -23,7 +23,7 @@ export enum MemoryEventType {
   COLLABORATION_EVENT = 'collaboration.event',
   BACKUP_COMPLETED = 'backup.completed',
   CACHE_INVALIDATED = 'cache.invalidated',
-  ERROR_OCCURRED = 'error.occurred'
+  ERROR_OCCURRED = 'error.occurred',
 }
 
 // Event Base Interface
@@ -110,7 +110,7 @@ export interface PerformanceMetricEvent extends BaseMemoryEvent {
 }
 
 // Union type for all events
-export type MemoryEvent = 
+export type MemoryEvent =
   | MemoryCreatedEvent
   | MemoryUpdatedEvent
   | PatternDetectedEvent
@@ -122,10 +122,15 @@ export type MemoryEvent =
 export interface EventStore {
   append(events: MemoryEvent[]): Promise<void>;
   getEvents(streamId: string, fromVersion?: number): Promise<MemoryEvent[]>;
-  getEventsByType(eventType: MemoryEventType, limit?: number): Promise<MemoryEvent[]>;
+  getEventsByType(
+    eventType: MemoryEventType,
+    limit?: number
+  ): Promise<MemoryEvent[]>;
   getEventsByCorrelation(correlationId: string): Promise<MemoryEvent[]>;
   createSnapshot(streamId: string, version: number, state: any): Promise<void>;
-  getSnapshot(streamId: string): Promise<{ version: number; state: any } | null>;
+  getSnapshot(
+    streamId: string
+  ): Promise<{ version: number; state: any } | null>;
 }
 
 // Event Bus Configuration
@@ -162,9 +167,9 @@ export class AdvancedEventBus extends EventEmitter {
       enableMetrics: true,
       bufferSize: 100,
       flushInterval: 5000,
-      ...config
+      ...config,
     };
-    
+
     this.startFlushTimer();
     this.setupMetrics();
   }
@@ -180,7 +185,7 @@ export class AdvancedEventBus extends EventEmitter {
 
       // Add to buffer for batching
       this.eventBuffer.push(processedEvent);
-      
+
       // Emit for real-time listeners
       this.emit(event.type, processedEvent);
       this.emit('*', processedEvent);
@@ -193,7 +198,6 @@ export class AdvancedEventBus extends EventEmitter {
       // Update metrics
       this.updateMetrics('events.published', 1);
       this.updateMetrics(`events.${event.type}`, 1);
-
     } catch (error) {
       this.handleError(error, event);
     }
@@ -214,7 +218,7 @@ export class AdvancedEventBus extends EventEmitter {
       handler,
       filter: options.filter,
       retry: options.retry ?? true,
-      priority: options.priority ?? 0
+      priority: options.priority ?? 0,
     };
 
     if (eventType === '*') {
@@ -227,7 +231,7 @@ export class AdvancedEventBus extends EventEmitter {
       if (!this.processors.has(eventType)) {
         this.processors.set(eventType, []);
       }
-      
+
       const processors = this.processors.get(eventType)!;
       processors.push(processor);
       processors.sort((a, b) => (b.priority || 0) - (a.priority || 0));
@@ -256,7 +260,7 @@ export class AdvancedEventBus extends EventEmitter {
 
   // Replay events for recovery/debugging
   async replayEvents(
-    streamId: string, 
+    streamId: string,
     fromVersion?: number,
     toVersion?: number
   ): Promise<void> {
@@ -265,10 +269,10 @@ export class AdvancedEventBus extends EventEmitter {
     }
 
     const events = await this.eventStore.getEvents(streamId, fromVersion);
-    
+
     for (const event of events) {
       if (toVersion && event.version > toVersion) break;
-      
+
       this.emit('replay', event);
       await new Promise(resolve => setTimeout(resolve, 10)); // Throttle replay
     }
@@ -304,7 +308,10 @@ export class AdvancedEventBus extends EventEmitter {
     }, this.config.flushInterval);
   }
 
-  private async processEvent(event: MemoryEvent, processor: EventProcessor): Promise<void> {
+  private async processEvent(
+    event: MemoryEvent,
+    processor: EventProcessor
+  ): Promise<void> {
     try {
       // Apply filter if provided
       if (processor.filter && !processor.filter(event)) {
@@ -313,10 +320,9 @@ export class AdvancedEventBus extends EventEmitter {
 
       await processor.handler(event);
       this.updateMetrics('events.processed', 1);
-
     } catch (error) {
       console.error(`Event processing failed for ${event.type}:`, error);
-      
+
       if (processor.retry) {
         // Implement retry logic
         await this.retryEventProcessing(event, processor);
@@ -325,7 +331,7 @@ export class AdvancedEventBus extends EventEmitter {
   }
 
   private async retryEventProcessing(
-    event: MemoryEvent, 
+    event: MemoryEvent,
     processor: EventProcessor,
     attempt: number = 1
   ): Promise<void> {
@@ -336,7 +342,7 @@ export class AdvancedEventBus extends EventEmitter {
       return;
     }
 
-    await new Promise(resolve => 
+    await new Promise(resolve =>
       setTimeout(resolve, this.config.retryDelay * attempt)
     );
 
@@ -357,7 +363,7 @@ export class AdvancedEventBus extends EventEmitter {
 
   private updateMetrics(key: string, value: number): void {
     if (!this.config.enableMetrics) return;
-    
+
     this.metrics.set(key, (this.metrics.get(key) || 0) + value);
   }
 
@@ -371,7 +377,7 @@ export class AdvancedEventBus extends EventEmitter {
       'events.persisted',
       'events.errors',
       'events.retried.success',
-      'events.retried.failed'
+      'events.retried.failed',
     ];
 
     keys.forEach(key => this.metrics.set(key, 0));
@@ -383,7 +389,7 @@ export class AdvancedEventBus extends EventEmitter {
       clearInterval(this.flushTimer);
       this.flushTimer = null;
     }
-    
+
     this.removeAllListeners();
     this.eventBuffer = [];
     this.processors.clear();
@@ -423,13 +429,13 @@ export class MemoryEventFactory {
       metadata: {
         source,
         memoryType: memory.type,
-        importance: memory.importance || 0.5
+        importance: memory.importance || 0.5,
       },
       data: {
         memory,
         source,
-        validation
-      }
+        validation,
+      },
     };
   }
 
@@ -452,7 +458,7 @@ export class MemoryEventFactory {
       metadata: {
         patternType,
         confidence,
-        memoryCount: affectedMemories.length
+        memoryCount: affectedMemories.length,
       },
       data: {
         patternId,
@@ -460,8 +466,8 @@ export class MemoryEventFactory {
         confidence,
         affectedMemories,
         insights,
-        predictions
-      }
+        predictions,
+      },
     };
   }
 
@@ -483,7 +489,7 @@ export class MemoryEventFactory {
       metadata: {
         insightType,
         confidence,
-        targetCount: targetMemories.length
+        targetCount: targetMemories.length,
       },
       data: {
         insightType,
@@ -491,8 +497,8 @@ export class MemoryEventFactory {
         targetMemories,
         insights,
         recommendations,
-        automationTriggers: []
-      }
+        automationTriggers: [],
+      },
     };
   }
 
@@ -513,7 +519,7 @@ export class MemoryEventFactory {
       metadata: {
         severity,
         alertType,
-        resourceCount: affectedResources.length
+        resourceCount: affectedResources.length,
       },
       data: {
         severity,
@@ -521,8 +527,8 @@ export class MemoryEventFactory {
         description,
         affectedResources,
         mitigation: [],
-        autoResolved: false
-      }
+        autoResolved: false,
+      },
     };
   }
 
@@ -544,15 +550,15 @@ export class MemoryEventFactory {
         metric,
         value,
         trend,
-        hasThreshold: threshold !== undefined
+        hasThreshold: threshold !== undefined,
       },
       data: {
         metric,
         value,
         threshold,
         trend,
-        recommendations: []
-      }
+        recommendations: [],
+      },
     };
   }
 }

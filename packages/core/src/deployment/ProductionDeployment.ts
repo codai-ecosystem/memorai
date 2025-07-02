@@ -4,7 +4,7 @@
  */
 
 // Result type for consistent error handling
-type Result<T, E> = 
+type Result<T, E> =
   | { success: true; error: undefined; data: T }
   | { success: false; error: E; data: undefined };
 
@@ -150,7 +150,7 @@ class ContainerOrchestrationService {
           targetCPU: 70,
           targetMemory: 80,
           autoScaling: true,
-          loadBalancer: true
+          loadBalancer: true,
         },
         networking: {
           vpc: 'vpc-prod-12345',
@@ -158,7 +158,7 @@ class ContainerOrchestrationService {
           securityGroups: ['sg-memorai-prod'],
           loadBalancerType: 'application',
           ssl: true,
-          cdn: true
+          cdn: true,
         },
         storage: {
           primaryDatabase: {
@@ -168,7 +168,7 @@ class ContainerOrchestrationService {
             database: 'memorai_prod',
             ssl: true,
             poolSize: 20,
-            backupEnabled: true
+            backupEnabled: true,
           },
           vectorDatabase: {
             type: 'qdrant',
@@ -176,27 +176,27 @@ class ContainerOrchestrationService {
             port: 6333,
             collection: 'memories_prod',
             dimensions: 1536,
-            similarity: 'cosine'
+            similarity: 'cosine',
           },
           cache: {
             type: 'redis',
             host: 'memorai-prod.cache.amazonaws.com',
             port: 6379,
             ttl: 3600,
-            maxSize: 1000000
+            maxSize: 1000000,
           },
           fileStorage: {
             type: 's3',
             bucket: 'memorai-prod-files',
             region: 'us-east-1',
-            encryption: true
+            encryption: true,
           },
           backup: {
             enabled: true,
             frequency: 'daily',
             retention: 30,
-            crossRegion: true
-          }
+            crossRegion: true,
+          },
         },
         security: {
           authentication: true,
@@ -204,7 +204,7 @@ class ContainerOrchestrationService {
           encryption: true,
           audit: true,
           firewall: true,
-          ddosProtection: true
+          ddosProtection: true,
         },
         monitoring: {
           metrics: true,
@@ -212,8 +212,8 @@ class ContainerOrchestrationService {
           tracing: true,
           alerting: true,
           dashboards: true,
-          synthetics: true
-        }
+          synthetics: true,
+        },
       },
       status: 'active',
       version: '2.1.0',
@@ -222,8 +222,8 @@ class ContainerOrchestrationService {
         overall: 'healthy',
         services: new Map(),
         lastCheck: new Date(),
-        uptime: 99.9
-      }
+        uptime: 99.9,
+      },
     });
 
     // Staging Environment
@@ -238,7 +238,7 @@ class ContainerOrchestrationService {
           targetCPU: 80,
           targetMemory: 85,
           autoScaling: true,
-          loadBalancer: true
+          loadBalancer: true,
         },
         networking: {
           vpc: 'vpc-staging-67890',
@@ -246,7 +246,7 @@ class ContainerOrchestrationService {
           securityGroups: ['sg-memorai-staging'],
           loadBalancerType: 'application',
           ssl: true,
-          cdn: false
+          cdn: false,
         },
         storage: {
           primaryDatabase: {
@@ -256,7 +256,7 @@ class ContainerOrchestrationService {
             database: 'memorai_staging',
             ssl: true,
             poolSize: 10,
-            backupEnabled: true
+            backupEnabled: true,
           },
           vectorDatabase: {
             type: 'qdrant',
@@ -264,27 +264,27 @@ class ContainerOrchestrationService {
             port: 6333,
             collection: 'memories_staging',
             dimensions: 1536,
-            similarity: 'cosine'
+            similarity: 'cosine',
           },
           cache: {
             type: 'redis',
             host: 'memorai-staging.cache.amazonaws.com',
             port: 6379,
             ttl: 1800,
-            maxSize: 100000
+            maxSize: 100000,
           },
           fileStorage: {
             type: 's3',
             bucket: 'memorai-staging-files',
             region: 'us-west-2',
-            encryption: true
+            encryption: true,
           },
           backup: {
             enabled: true,
             frequency: 'daily',
             retention: 7,
-            crossRegion: false
-          }
+            crossRegion: false,
+          },
         },
         security: {
           authentication: true,
@@ -292,7 +292,7 @@ class ContainerOrchestrationService {
           encryption: true,
           audit: true,
           firewall: true,
-          ddosProtection: false
+          ddosProtection: false,
         },
         monitoring: {
           metrics: true,
@@ -300,8 +300,8 @@ class ContainerOrchestrationService {
           tracing: true,
           alerting: false,
           dashboards: true,
-          synthetics: false
-        }
+          synthetics: false,
+        },
       },
       status: 'active',
       version: '2.1.0-staging',
@@ -310,8 +310,8 @@ class ContainerOrchestrationService {
         overall: 'healthy',
         services: new Map(),
         lastCheck: new Date(),
-        uptime: 99.5
-      }
+        uptime: 99.5,
+      },
     });
   }
 
@@ -323,7 +323,11 @@ class ContainerOrchestrationService {
     try {
       const env = this.environments.get(environment);
       if (!env) {
-        return { success: false, error: `Environment not found: ${environment}`, data: undefined };
+        return {
+          success: false,
+          error: `Environment not found: ${environment}`,
+          data: undefined,
+        };
       }
 
       // Generate deployment ID
@@ -343,7 +347,9 @@ class ContainerOrchestrationService {
           startTime: Date;
           endTime?: Date;
         }>,
-        configuration: config ? { ...env.configuration, ...config } : env.configuration
+        configuration: config
+          ? { ...env.configuration, ...config }
+          : env.configuration,
       };
 
       this.deployments.set(deploymentId, deployment);
@@ -365,10 +371,10 @@ class ContainerOrchestrationService {
 
       return { success: true, error: undefined, data: deploymentId };
     } catch (error) {
-      return { 
-        success: false, 
+      return {
+        success: false,
         error: `Deployment failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        data: undefined 
+        data: undefined,
       };
     }
   }
@@ -382,14 +388,14 @@ class ContainerOrchestrationService {
       'Rolling out services',
       'Running health checks',
       'Updating load balancer',
-      'Verifying deployment'
+      'Verifying deployment',
     ];
 
     for (const step of steps) {
       deployment.steps.push({
         name: step,
         status: 'in-progress',
-        startTime: new Date()
+        startTime: new Date(),
       });
 
       // Simulate step execution
@@ -401,24 +407,32 @@ class ContainerOrchestrationService {
     }
   }
 
-  async rollback(environment: string, targetVersion?: string): Promise<Result<string, string>> {
+  async rollback(
+    environment: string,
+    targetVersion?: string
+  ): Promise<Result<string, string>> {
     try {
       const env = this.environments.get(environment);
       if (!env) {
-        return { success: false, error: `Environment not found: ${environment}`, data: undefined };
+        return {
+          success: false,
+          error: `Environment not found: ${environment}`,
+          data: undefined,
+        };
       }
 
       // Get previous deployment or use target version
-      const rollbackVersion = targetVersion || this.getPreviousVersion(environment);
-      
+      const rollbackVersion =
+        targetVersion || this.getPreviousVersion(environment);
+
       const rollbackId = await this.deploy(environment, rollbackVersion);
-      
+
       return rollbackId;
     } catch (error) {
-      return { 
-        success: false, 
+      return {
+        success: false,
         error: `Rollback failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        data: undefined 
+        data: undefined,
       };
     }
   }
@@ -436,16 +450,20 @@ class ContainerOrchestrationService {
     try {
       const env = this.environments.get(environment);
       if (!env) {
-        return { success: false, error: `Environment not found: ${environment}`, data: undefined };
+        return {
+          success: false,
+          error: `Environment not found: ${environment}`,
+          data: undefined,
+        };
       }
 
       // Validate scaling limits
       const { minInstances, maxInstances } = env.configuration.scaling;
       if (instances < minInstances || instances > maxInstances) {
-        return { 
-          success: false, 
+        return {
+          success: false,
           error: `Instance count must be between ${minInstances} and ${maxInstances}`,
-          data: undefined 
+          data: undefined,
         };
       }
 
@@ -454,10 +472,10 @@ class ContainerOrchestrationService {
 
       return { success: true, error: undefined, data: true };
     } catch (error) {
-      return { 
-        success: false, 
+      return {
+        success: false,
         error: `Scaling failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        data: undefined 
+        data: undefined,
       };
     }
   }
@@ -498,7 +516,7 @@ class InfrastructureAsCodeService {
       kind: 'Deployment',
       metadata: {
         name: 'memorai-api',
-        labels: { app: 'memorai-api' }
+        labels: { app: 'memorai-api' },
       },
       spec: {
         replicas: 3,
@@ -506,51 +524,60 @@ class InfrastructureAsCodeService {
         template: {
           metadata: { labels: { app: 'memorai-api' } },
           spec: {
-            containers: [{
-              name: 'memorai-api',
-              image: 'memorai/api:latest',
-              ports: [{ containerPort: 3000 }],
-              env: [
-                { name: 'NODE_ENV', value: 'production' },
-                { name: 'DATABASE_URL', valueFrom: { secretKeyRef: { name: 'db-secret', key: 'url' } } }
-              ],
-              resources: {
-                requests: { cpu: '100m', memory: '128Mi' },
-                limits: { cpu: '500m', memory: '512Mi' }
+            containers: [
+              {
+                name: 'memorai-api',
+                image: 'memorai/api:latest',
+                ports: [{ containerPort: 3000 }],
+                env: [
+                  { name: 'NODE_ENV', value: 'production' },
+                  {
+                    name: 'DATABASE_URL',
+                    valueFrom: {
+                      secretKeyRef: { name: 'db-secret', key: 'url' },
+                    },
+                  },
+                ],
+                resources: {
+                  requests: { cpu: '100m', memory: '128Mi' },
+                  limits: { cpu: '500m', memory: '512Mi' },
+                },
+                livenessProbe: {
+                  httpGet: { path: '/health', port: 3000 },
+                  initialDelaySeconds: 30,
+                  periodSeconds: 10,
+                },
+                readinessProbe: {
+                  httpGet: { path: '/ready', port: 3000 },
+                  initialDelaySeconds: 5,
+                  periodSeconds: 5,
+                },
               },
-              livenessProbe: {
-                httpGet: { path: '/health', port: 3000 },
-                initialDelaySeconds: 30,
-                periodSeconds: 10
-              },
-              readinessProbe: {
-                httpGet: { path: '/ready', port: 3000 },
-                initialDelaySeconds: 5,
-                periodSeconds: 5
-              }
-            }]
-          }
-        }
-      }
+            ],
+          },
+        },
+      },
     });
 
     // Terraform template
     this.templates.set('terraform', {
       provider: {
         aws: {
-          region: 'us-east-1'
-        }
+          region: 'us-east-1',
+        },
       },
       resource: {
         aws_ecs_cluster: {
           memorai: {
             name: 'memorai-cluster',
             capacity_providers: ['FARGATE'],
-            default_capacity_provider_strategy: [{
-              capacity_provider: 'FARGATE',
-              weight: 1
-            }]
-          }
+            default_capacity_provider_strategy: [
+              {
+                capacity_provider: 'FARGATE',
+                weight: 1,
+              },
+            ],
+          },
         },
         aws_ecs_service: {
           memorai_api: {
@@ -562,16 +589,16 @@ class InfrastructureAsCodeService {
             network_configuration: {
               subnets: ['${aws_subnet.private.*.id}'],
               security_groups: ['${aws_security_group.memorai_api.id}'],
-              assign_public_ip: false
+              assign_public_ip: false,
             },
             load_balancer: {
               target_group_arn: '${aws_lb_target_group.memorai_api.arn}',
               container_name: 'memorai-api',
-              container_port: 3000
-            }
-          }
-        }
-      }
+              container_port: 3000,
+            },
+          },
+        },
+      },
     });
 
     // Docker Compose template
@@ -583,7 +610,7 @@ class InfrastructureAsCodeService {
           ports: ['3000:3000'],
           environment: [
             'NODE_ENV=production',
-            'DATABASE_URL=postgresql://user:pass@db:5432/memorai'
+            'DATABASE_URL=postgresql://user:pass@db:5432/memorai',
           ],
           depends_on: ['db', 'redis', 'qdrant'],
           restart: 'unless-stopped',
@@ -591,43 +618,43 @@ class InfrastructureAsCodeService {
             test: ['CMD', 'curl', '-f', 'http://localhost:3000/health'],
             interval: '30s',
             timeout: '10s',
-            retries: 3
-          }
+            retries: 3,
+          },
         },
         dashboard: {
           image: 'memorai/dashboard:latest',
           ports: ['6366:3000'],
           environment: ['NEXT_PUBLIC_API_URL=http://api:3000'],
           depends_on: ['api'],
-          restart: 'unless-stopped'
+          restart: 'unless-stopped',
         },
         db: {
           image: 'postgres:15',
           environment: [
             'POSTGRES_DB=memorai',
             'POSTGRES_USER=user',
-            'POSTGRES_PASSWORD=pass'
+            'POSTGRES_PASSWORD=pass',
           ],
           volumes: ['postgres_data:/var/lib/postgresql/data'],
-          restart: 'unless-stopped'
+          restart: 'unless-stopped',
         },
         redis: {
           image: 'redis:7-alpine',
           volumes: ['redis_data:/data'],
-          restart: 'unless-stopped'
+          restart: 'unless-stopped',
         },
         qdrant: {
           image: 'qdrant/qdrant:latest',
           ports: ['6333:6333'],
           volumes: ['qdrant_data:/qdrant/storage'],
-          restart: 'unless-stopped'
-        }
+          restart: 'unless-stopped',
+        },
       },
       volumes: {
         postgres_data: null,
         redis_data: null,
-        qdrant_data: null
-      }
+        qdrant_data: null,
+      },
     });
   }
 
@@ -639,11 +666,15 @@ class InfrastructureAsCodeService {
     try {
       const templateData = this.templates.get(template);
       if (!templateData) {
-        return { success: false, error: `Template not found: ${template}`, data: undefined };
+        return {
+          success: false,
+          error: `Template not found: ${template}`,
+          data: undefined,
+        };
       }
 
       const stackId = `stack-${name}-${Date.now()}`;
-      
+
       const stack = {
         id: stackId,
         name,
@@ -658,7 +689,7 @@ class InfrastructureAsCodeService {
           createdAt: Date;
           updatedAt?: Date;
         }>,
-        outputs: {} as Record<string, any>
+        outputs: {} as Record<string, any>,
       };
 
       this.stacks.set(stackId, stack);
@@ -671,10 +702,10 @@ class InfrastructureAsCodeService {
 
       return { success: true, error: undefined, data: stackId };
     } catch (error) {
-      return { 
-        success: false, 
+      return {
+        success: false,
         error: `Stack creation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        data: undefined 
+        data: undefined,
       };
     }
   }
@@ -689,14 +720,14 @@ class InfrastructureAsCodeService {
       'ECS Service',
       'RDS Instance',
       'ElastiCache',
-      'S3 Bucket'
+      'S3 Bucket',
     ];
 
     for (const resource of resources) {
       stack.resources.push({
         type: resource,
         status: 'creating',
-        createdAt: new Date()
+        createdAt: new Date(),
       });
 
       await new Promise(resolve => setTimeout(resolve, 500));
@@ -711,7 +742,7 @@ class InfrastructureAsCodeService {
       api_url: 'https://api.memorai.com',
       dashboard_url: 'https://dashboard.memorai.com',
       database_endpoint: 'memorai-prod.cluster-xyz.rds.amazonaws.com',
-      cache_endpoint: 'memorai-prod.cache.amazonaws.com'
+      cache_endpoint: 'memorai-prod.cache.amazonaws.com',
     };
   }
 
@@ -722,7 +753,11 @@ class InfrastructureAsCodeService {
     try {
       const stack = this.stacks.get(stackId);
       if (!stack) {
-        return { success: false, error: `Stack not found: ${stackId}`, data: undefined };
+        return {
+          success: false,
+          error: `Stack not found: ${stackId}`,
+          data: undefined,
+        };
       }
 
       stack.status = 'updating';
@@ -736,10 +771,10 @@ class InfrastructureAsCodeService {
 
       return { success: true, error: undefined, data: true };
     } catch (error) {
-      return { 
-        success: false, 
+      return {
+        success: false,
         error: `Stack update failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        data: undefined 
+        data: undefined,
       };
     }
   }
@@ -748,7 +783,11 @@ class InfrastructureAsCodeService {
     try {
       const stack = this.stacks.get(stackId);
       if (!stack) {
-        return { success: false, error: `Stack not found: ${stackId}`, data: undefined };
+        return {
+          success: false,
+          error: `Stack not found: ${stackId}`,
+          data: undefined,
+        };
       }
 
       stack.status = 'deleting';
@@ -760,10 +799,10 @@ class InfrastructureAsCodeService {
 
       return { success: true, error: undefined, data: true };
     } catch (error) {
-      return { 
-        success: false, 
+      return {
+        success: false,
         error: `Stack deletion failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        data: undefined 
+        data: undefined,
       };
     }
   }
@@ -802,57 +841,70 @@ class CICDPipelineService {
       trigger: {
         type: 'git',
         branch: 'main',
-        webhook: true
+        webhook: true,
       },
       stages: [
         {
           name: 'Build',
           steps: [
             { name: 'Checkout Code', type: 'git' },
-            { name: 'Install Dependencies', type: 'npm', command: 'pnpm install' },
+            {
+              name: 'Install Dependencies',
+              type: 'npm',
+              command: 'pnpm install',
+            },
             { name: 'Build Packages', type: 'npm', command: 'pnpm build' },
-            { name: 'Run Tests', type: 'npm', command: 'pnpm test' }
-          ]
+            { name: 'Run Tests', type: 'npm', command: 'pnpm test' },
+          ],
         },
         {
           name: 'Security',
           steps: [
             { name: 'Dependency Scan', type: 'security', tool: 'snyk' },
             { name: 'SAST Scan', type: 'security', tool: 'sonarqube' },
-            { name: 'License Check', type: 'security', tool: 'fossa' }
-          ]
+            { name: 'License Check', type: 'security', tool: 'fossa' },
+          ],
         },
         {
           name: 'Package',
           steps: [
             { name: 'Build Docker Images', type: 'docker' },
             { name: 'Security Scan Images', type: 'security', tool: 'trivy' },
-            { name: 'Push to Registry', type: 'docker' }
-          ]
+            { name: 'Push to Registry', type: 'docker' },
+          ],
         },
         {
           name: 'Deploy Staging',
           steps: [
-            { name: 'Deploy to Staging', type: 'deploy', environment: 'staging' },
+            {
+              name: 'Deploy to Staging',
+              type: 'deploy',
+              environment: 'staging',
+            },
             { name: 'Integration Tests', type: 'test', suite: 'integration' },
-            { name: 'Performance Tests', type: 'test', suite: 'performance' }
-          ]
+            { name: 'Performance Tests', type: 'test', suite: 'performance' },
+          ],
         },
         {
           name: 'Deploy Production',
           steps: [
             { name: 'Manual Approval', type: 'approval' },
-            { name: 'Blue-Green Deploy', type: 'deploy', environment: 'production', strategy: 'blue-green' },
+            {
+              name: 'Blue-Green Deploy',
+              type: 'deploy',
+              environment: 'production',
+              strategy: 'blue-green',
+            },
             { name: 'Smoke Tests', type: 'test', suite: 'smoke' },
-            { name: 'Health Check', type: 'health-check' }
-          ]
-        }
+            { name: 'Health Check', type: 'health-check' },
+          ],
+        },
       ],
       notifications: {
         slack: { channel: '#deployments', onFailure: true, onSuccess: true },
-        email: { recipients: ['devops@memorai.com'], onFailure: true }
+        email: { recipients: ['devops@memorai.com'], onFailure: true },
       },
-      retention: { builds: 50, artifacts: 30 }
+      retention: { builds: 50, artifacts: 30 },
     });
 
     // Feature branch pipeline
@@ -862,32 +914,36 @@ class CICDPipelineService {
       trigger: {
         type: 'git',
         branch: 'feature/*',
-        pullRequest: true
+        pullRequest: true,
       },
       stages: [
         {
           name: 'Validate',
           steps: [
             { name: 'Checkout Code', type: 'git' },
-            { name: 'Install Dependencies', type: 'npm', command: 'pnpm install' },
+            {
+              name: 'Install Dependencies',
+              type: 'npm',
+              command: 'pnpm install',
+            },
             { name: 'Lint Code', type: 'npm', command: 'pnpm lint' },
             { name: 'Type Check', type: 'npm', command: 'pnpm type-check' },
             { name: 'Build Packages', type: 'npm', command: 'pnpm build' },
-            { name: 'Unit Tests', type: 'npm', command: 'pnpm test:unit' }
-          ]
+            { name: 'Unit Tests', type: 'npm', command: 'pnpm test:unit' },
+          ],
         },
         {
           name: 'Security',
           steps: [
             { name: 'Dependency Scan', type: 'security', tool: 'snyk' },
-            { name: 'Code Quality', type: 'quality', tool: 'sonarqube' }
-          ]
-        }
+            { name: 'Code Quality', type: 'quality', tool: 'sonarqube' },
+          ],
+        },
       ],
       notifications: {
         github: { pullRequestComments: true },
-        slack: { channel: '#development', onFailure: true }
-      }
+        slack: { channel: '#development', onFailure: true },
+      },
     });
   }
 
@@ -898,11 +954,15 @@ class CICDPipelineService {
     try {
       const pipeline = this.pipelines.get(pipelineName);
       if (!pipeline) {
-        return { success: false, error: `Pipeline not found: ${pipelineName}`, data: undefined };
+        return {
+          success: false,
+          error: `Pipeline not found: ${pipelineName}`,
+          data: undefined,
+        };
       }
 
       const buildId = `build-${pipelineName}-${Date.now()}`;
-      
+
       const build = {
         id: buildId,
         pipeline: pipelineName,
@@ -911,7 +971,7 @@ class CICDPipelineService {
         parameters,
         stages: [],
         artifacts: [],
-        logs: []
+        logs: [],
       };
 
       this.builds.set(buildId, build);
@@ -921,10 +981,10 @@ class CICDPipelineService {
 
       return { success: true, error: undefined, data: buildId };
     } catch (error) {
-      return { 
-        success: false, 
+      return {
+        success: false,
         error: `Pipeline trigger failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        data: undefined 
+        data: undefined,
       };
     }
   }
@@ -943,7 +1003,7 @@ class CICDPipelineService {
             status: string;
             startTime: Date;
             endTime?: Date;
-          }>
+          }>,
         };
 
         build.stages.push(stageExecution);
@@ -954,7 +1014,7 @@ class CICDPipelineService {
             type: step.type,
             status: 'running' as string,
             startTime: new Date(),
-            endTime: undefined as Date | undefined
+            endTime: undefined as Date | undefined,
           };
 
           stageExecution.steps.push(stepExecution);
@@ -989,7 +1049,7 @@ class CICDPipelineService {
       timestamp: new Date(),
       level: 'info',
       message: `Executing ${step.name}`,
-      step: step.name
+      step: step.name,
     });
 
     // Handle different step types
@@ -999,7 +1059,7 @@ class CICDPipelineService {
           timestamp: new Date(),
           level: 'info',
           message: `Running: ${step.command}`,
-          step: step.name
+          step: step.name,
         });
         break;
       case 'docker':
@@ -1008,7 +1068,7 @@ class CICDPipelineService {
             type: 'docker-image',
             name: 'memorai/api:latest',
             size: '245MB',
-            created: new Date()
+            created: new Date(),
           });
         }
         break;
@@ -1017,7 +1077,7 @@ class CICDPipelineService {
           timestamp: new Date(),
           level: 'info',
           message: `Deploying to ${step.environment}`,
-          step: step.name
+          step: step.name,
         });
         break;
     }
@@ -1025,13 +1085,13 @@ class CICDPipelineService {
 
   private getStepExecutionTime(stepType: string): number {
     const baseTimes: Record<string, number> = {
-      'git': 5000,
-      'npm': 30000,
-      'docker': 60000,
-      'security': 45000,
-      'test': 20000,
-      'deploy': 90000,
-      'approval': 0
+      git: 5000,
+      npm: 30000,
+      docker: 60000,
+      security: 45000,
+      test: 20000,
+      deploy: 90000,
+      approval: 0,
     };
 
     return baseTimes[stepType] || 10000;
@@ -1045,7 +1105,11 @@ class CICDPipelineService {
     try {
       const build = this.builds.get(buildId);
       if (!build) {
-        return { success: false, error: `Build not found: ${buildId}`, data: undefined };
+        return {
+          success: false,
+          error: `Build not found: ${buildId}`,
+          data: undefined,
+        };
       }
 
       if (build.status === 'running') {
@@ -1055,10 +1119,10 @@ class CICDPipelineService {
 
       return { success: true, error: undefined, data: true };
     } catch (error) {
-      return { 
-        success: false, 
+      return {
+        success: false,
         error: `Build cancellation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        data: undefined 
+        data: undefined,
       };
     }
   }
@@ -1081,7 +1145,7 @@ class CICDPipelineService {
 
 // Export all deployment services
 export {
+  CICDPipelineService,
   ContainerOrchestrationService,
   InfrastructureAsCodeService,
-  CICDPipelineService
 };

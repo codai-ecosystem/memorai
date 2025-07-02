@@ -27,5 +27,6 @@
     "resolveJsonModule": true
   },
   "include": ["src/**/*"],
+  "exclude": ["src/nextjs.disabled/**/*", "**/*.test.ts", "**/*.spec.ts"],
   "references": []
 }

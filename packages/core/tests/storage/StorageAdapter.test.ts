@@ -1,10 +1,44 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   InMemoryStorageAdapter,
   PostgreSQLStorageAdapter,
   RedisStorageAdapter,
 } from '../../src/storage/StorageAdapter';
 import type { MemoryMetadata } from '../../src/types/index';
+
+// Mock Redis module to avoid connection issues
+vi.mock('ioredis', () => {
+  const mockRedisClient = {
+    status: 'ready',
+    connect: vi.fn().mockResolvedValue(undefined),
+    disconnect: vi.fn().mockResolvedValue(undefined),
+    set: vi.fn().mockResolvedValue('OK'),
+    setex: vi.fn().mockResolvedValue('OK'),
+    get: vi.fn().mockImplementation((key: string) => {
+      if (key === 'memory:test-123') {
+        return Promise.resolve(JSON.stringify({
+          id: 'test-123',
+          content: 'Test content',
+          tenant_id: 'tenant-1',
+          agent_id: 'agent-1',
+        }));
+      }
+      return Promise.resolve(null);
+    }),
+    del: vi.fn().mockResolvedValue(1),
+    keys: vi.fn().mockResolvedValue(['memory:test-123']),
+    mget: vi.fn().mockResolvedValue(['{"id":"test-123","content":"Test"}', null]),
+    sadd: vi.fn().mockResolvedValue(1),
+    srem: vi.fn().mockResolvedValue(1),
+    smembers: vi.fn().mockResolvedValue(['test-123']),
+    on: vi.fn(),
+    off: vi.fn(),
+  };
+
+  return {
+    default: vi.fn(() => mockRedisClient),
+  };
+});
 
 describe('StorageAdapter', () => {
   describe('InMemoryStorageAdapter', () => {
@@ -428,16 +462,14 @@ describe('StorageAdapter', () => {
 
   describe('RedisStorageAdapter', () => {
     let adapter: RedisStorageAdapter;
+    let sampleMemory: MemoryMetadata;
 
     beforeEach(() => {
       adapter = new RedisStorageAdapter('redis://localhost:6379');
-    });
-
-    it('should handle basic store operation', async () => {
-      const memory = {
-        id: 'test',
+      sampleMemory = {
+        id: 'test-123',
         type: 'fact' as const,
-        content: 'test content',
+        content: 'Test content',
         confidence: 0.8,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -448,78 +480,84 @@ describe('StorageAdapter', () => {
         tenant_id: 'tenant-1',
         agent_id: 'agent-1',
       } as MemoryMetadata;
+    });
 
-      // Mock Redis operations for testing - real Redis not required
-      try {
-        await adapter.store(memory);
-        // If no error thrown, test passes
-        expect(true).toBe(true);
-      } catch (error) {
-        // Accept Redis connection errors in test environment
-        expect(error.message).toContain('Connection is closed');
-      }
+    it('should store memory successfully', async () => {
+      await adapter.store(sampleMemory);
+      // Mocked Redis should handle the store operation
+      expect(true).toBe(true);
+    });
+
+    it('should retrieve stored memory', async () => {
+      const result = await adapter.retrieve('test-123');
+      expect(result).toBeTruthy();
+      expect(result?.id).toBe('test-123');
+      expect(result?.content).toBe('Test content');
     });
 
     it('should return null for non-existent memory', async () => {
-      try {
-        const result = await adapter.retrieve('non-existent');
-        expect(result).toBeNull();
-      } catch (error) {
-        // Accept Redis connection errors in test environment
-        expect(error.message).toContain('Connection is closed');
-      }
+      const result = await adapter.retrieve('non-existent');
+      expect(result).toBeNull();
+    });
+
+    it('should update existing memory', async () => {
+      await adapter.store(sampleMemory);
+      await adapter.update('test-123', { content: 'Updated content' });
+      // Verify the update operation completes without error
+      expect(true).toBe(true);
     });
 
     it('should handle update operation for non-existent memory', async () => {
-      try {
-        await expect(adapter.update('test-id', {})).rejects.toThrow();
-      } catch (error) {
-        // Accept Redis connection errors in test environment  
-        expect(error.message).toContain('Connection is closed');
-      }
+      await expect(adapter.update('non-existent', { content: 'test' })).rejects.toThrow();
     });
 
-    it('should handle delete operation gracefully', async () => {
-      try {
-        await adapter.delete('test-id');
-        // If no error thrown, test passes
-        expect(true).toBe(true);
-      } catch (error) {
-        // Accept Redis connection errors in test environment
-        expect(error.message).toContain('Connection is closed');
-      }
+    it('should delete memory successfully', async () => {
+      await adapter.store(sampleMemory);
+      await adapter.delete('test-123');
+      // Verify the delete operation completes without error
+      expect(true).toBe(true);
     });
 
-    it('should handle list operation', async () => {
-      try {
-        const result = await adapter.list();
-        expect(Array.isArray(result)).toBe(true);
-      } catch (error) {
-        // Accept Redis connection errors in test environment
-        expect(error.message).toContain('Connection is closed');
-      }
+    it('should list stored memories', async () => {
+      const result = await adapter.list();
+      expect(Array.isArray(result)).toBe(true);
     });
 
-    it('should handle clear operation', async () => {
-      try {
-        await adapter.clear();
-        // If no error thrown, test passes
-        expect(true).toBe(true);
-      } catch (error) {
-        // Accept Redis connection errors in test environment
-        expect(error.message).toContain('Connection is closed');
-      }
+    it('should list memories with filters', async () => {
+      const result = await adapter.list({ tenantId: 'tenant-1' });
+      expect(Array.isArray(result)).toBe(true);
     });
 
-    it('should handle clear operation with tenantId', async () => {
-      try {
-        await adapter.clear('tenant-1');
-        // If no error thrown, test passes
-        expect(true).toBe(true);
-      } catch (error) {
-        // Accept Redis connection errors in test environment
-        expect(error.message).toContain('Connection is closed');
-      }
+    it('should clear all memories', async () => {
+      await adapter.store(sampleMemory);
+      await adapter.clear();
+      // Verify the clear operation completes without error
+      expect(true).toBe(true);
+    });
+
+    it('should clear memories for specific tenant', async () => {
+      await adapter.store(sampleMemory);
+      await adapter.clear('tenant-1');
+      // Verify the tenant-specific clear operation completes without error
+      expect(true).toBe(true);
+    });
+
+    it('should handle store operation with TTL', async () => {
+      const memoryWithTtl = {
+        ...sampleMemory,
+        ttl: new Date(Date.now() + 3600000), // 1 hour from now
+      };
+      await adapter.store(memoryWithTtl);
+      expect(true).toBe(true);
+    });
+
+    it('should handle store operation with expired TTL', async () => {
+      const memoryWithExpiredTtl = {
+        ...sampleMemory,
+        ttl: new Date(Date.now() - 3600000), // 1 hour ago (expired)
+      };
+      await adapter.store(memoryWithExpiredTtl);
+      expect(true).toBe(true);
     });
   });
 });

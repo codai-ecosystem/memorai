@@ -3,13 +3,11 @@
  * Advanced Authentication, Authorization, and Security Features
  */
 
-import { createHash, pbkdf2Sync, randomBytes, timingSafeEqual } from 'crypto';
-import { MemoryMetadata, MemoryQuery } from '../types/index.js';
-import { createAgentId, AgentId, Result } from '../typescript/TypeScriptAdvanced.js';
+import { createHash, randomBytes, timingSafeEqual } from 'crypto';
+import { Result } from '../typescript/TypeScriptAdvanced.js';
 
 // Advanced Authentication System
 export namespace EnterpriseAuthentication {
-  
   /**
    * JWT Token Management with Enterprise Features
    */
@@ -55,7 +53,9 @@ export namespace EnterpriseAuthentication {
     }
 
     // Simplified JWT implementation for demo
-    async generateTokenPair(payload: Omit<JWTPayload, 'iss' | 'aud' | 'iat' | 'exp' | 'jti'>): Promise<TokenPair> {
+    async generateTokenPair(
+      payload: Omit<JWTPayload, 'iss' | 'aud' | 'iat' | 'exp' | 'jti'>
+    ): Promise<TokenPair> {
       const now = Math.floor(Date.now() / 1000);
       const jti = randomBytes(16).toString('hex');
 
@@ -65,7 +65,7 @@ export namespace EnterpriseAuthentication {
         aud: this.audience,
         iat: now,
         exp: now + 3600, // 1 hour
-        jti
+        jti,
       };
 
       const refreshPayload = {
@@ -75,7 +75,7 @@ export namespace EnterpriseAuthentication {
         iat: now,
         exp: now + 604800, // 7 days
         jti: jti + '_refresh',
-        type: 'refresh'
+        type: 'refresh',
       };
 
       // Simplified token generation (in production, use proper JWT library)
@@ -86,27 +86,33 @@ export namespace EnterpriseAuthentication {
         accessToken,
         refreshToken,
         expiresIn: 3600,
-        tokenType: 'Bearer'
+        tokenType: 'Bearer',
       };
     }
 
     private createToken(payload: any): string {
-      const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
+      const header = Buffer.from(
+        JSON.stringify({ alg: 'HS256', typ: 'JWT' })
+      ).toString('base64url');
       const body = Buffer.from(JSON.stringify(payload)).toString('base64url');
       const signature = createHash('sha256')
         .update(`${header}.${body}`)
         .update(this.secretKey)
         .digest('base64url');
-      
+
       return `${header}.${body}.${signature}`;
     }
 
     async verifyToken(token: string): Promise<Result<JWTPayload, string>> {
       try {
         const [headerB64, payloadB64, signature] = token.split('.');
-        
+
         if (!headerB64 || !payloadB64 || !signature) {
-          return { success: false, error: 'Invalid token format', data: undefined };
+          return {
+            success: false,
+            error: 'Invalid token format',
+            data: undefined,
+          };
         }
 
         // Verify signature
@@ -115,11 +121,22 @@ export namespace EnterpriseAuthentication {
           .update(this.secretKey)
           .digest('base64url');
 
-        if (!timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature))) {
-          return { success: false, error: 'Invalid token signature', data: undefined };
+        if (
+          !timingSafeEqual(
+            Buffer.from(signature),
+            Buffer.from(expectedSignature)
+          )
+        ) {
+          return {
+            success: false,
+            error: 'Invalid token signature',
+            data: undefined,
+          };
         }
 
-        const payload: JWTPayload = JSON.parse(Buffer.from(payloadB64, 'base64url').toString());
+        const payload: JWTPayload = JSON.parse(
+          Buffer.from(payloadB64, 'base64url').toString()
+        );
 
         // Check expiration
         if (payload.exp < Math.floor(Date.now() / 1000)) {
@@ -128,31 +145,48 @@ export namespace EnterpriseAuthentication {
 
         // Check issuer and audience
         if (payload.iss !== this.issuer || payload.aud !== this.audience) {
-          return { success: false, error: 'Invalid token claims', data: undefined };
+          return {
+            success: false,
+            error: 'Invalid token claims',
+            data: undefined,
+          };
         }
 
         return { success: true, data: payload, error: undefined };
       } catch (error) {
-        return { 
-          success: false, 
-          error: error instanceof Error ? error.message : 'Token verification failed',
-          data: undefined 
+        return {
+          success: false,
+          error:
+            error instanceof Error
+              ? error.message
+              : 'Token verification failed',
+          data: undefined,
         };
       }
     }
 
-    async refreshTokenPair(refreshToken: string): Promise<Result<TokenPair, string>> {
+    async refreshTokenPair(
+      refreshToken: string
+    ): Promise<Result<TokenPair, string>> {
       const verificationResult = await this.verifyToken(refreshToken);
-      
+
       if (!verificationResult.success) {
-        return { success: false, error: 'Invalid refresh token', data: undefined };
+        return {
+          success: false,
+          error: 'Invalid refresh token',
+          data: undefined,
+        };
       }
 
       const payload = verificationResult.data;
-      
+
       // Ensure it's a refresh token
       if ((payload as any).type !== 'refresh') {
-        return { success: false, error: 'Not a refresh token', data: undefined };
+        return {
+          success: false,
+          error: 'Not a refresh token',
+          data: undefined,
+        };
       }
 
       // Generate new token pair
@@ -165,7 +199,7 @@ export namespace EnterpriseAuthentication {
         securityLevel: payload.securityLevel,
         mfaVerified: payload.mfaVerified,
         lastPasswordChange: payload.lastPasswordChange,
-        allowedOrigins: payload.allowedOrigins
+        allowedOrigins: payload.allowedOrigins,
       });
 
       return { success: true, data: newTokenPair, error: undefined };
@@ -191,7 +225,7 @@ export namespace EnterpriseAuthentication {
       const secret = this.generateTOTPSecret();
       this.totpSecrets.set(agentId, secret);
 
-      const backupCodes = Array.from({ length: 10 }, () => 
+      const backupCodes = Array.from({ length: 10 }, () =>
         randomBytes(4).toString('hex').toUpperCase()
       );
       this.backupCodes.set(agentId, backupCodes);
@@ -208,9 +242,9 @@ export namespace EnterpriseAuthentication {
       // Simplified TOTP verification (use proper TOTP library in production)
       const timeWindow = Math.floor(Date.now() / 30000);
       const expectedToken = this.generateTOTP(secret, timeWindow);
-      
+
       return timingSafeEqual(
-        Buffer.from(token.padStart(6, '0')), 
+        Buffer.from(token.padStart(6, '0')),
         Buffer.from(expectedToken)
       );
     }
@@ -221,13 +255,14 @@ export namespace EnterpriseAuthentication {
         .update(secret)
         .update(timeWindow.toString())
         .digest();
-      
+
       const offset = hash[hash.length - 1] & 0xf;
-      const code = ((hash[offset] & 0x7f) << 24) |
-                   ((hash[offset + 1] & 0xff) << 16) |
-                   ((hash[offset + 2] & 0xff) << 8) |
-                   (hash[offset + 3] & 0xff);
-      
+      const code =
+        ((hash[offset] & 0x7f) << 24) |
+        ((hash[offset + 1] & 0xff) << 16) |
+        ((hash[offset + 2] & 0xff) << 8) |
+        (hash[offset + 3] & 0xff);
+
       return (code % 1000000).toString().padStart(6, '0');
     }
 
@@ -235,10 +270,9 @@ export namespace EnterpriseAuthentication {
       const codes = this.backupCodes.get(agentId);
       if (!codes) return false;
 
-      const index = codes.findIndex(c => timingSafeEqual(
-        Buffer.from(c), 
-        Buffer.from(code.toUpperCase())
-      ));
+      const index = codes.findIndex(c =>
+        timingSafeEqual(Buffer.from(c), Buffer.from(code.toUpperCase()))
+      );
 
       if (index !== -1) {
         // Remove used backup code
@@ -297,7 +331,7 @@ export namespace EnterpriseAuthentication {
         securityLevel: params.securityLevel,
         mfaVerified: params.mfaVerified,
         permissions: params.permissions,
-        metadata: params.metadata || {}
+        metadata: params.metadata || {},
       };
 
       this.sessions.set(sessionId, session);
@@ -306,7 +340,7 @@ export namespace EnterpriseAuthentication {
       if (!this.sessionsByAgent.has(params.agentId)) {
         this.sessionsByAgent.set(params.agentId, new Set());
       }
-      
+
       const agentSessions = this.sessionsByAgent.get(params.agentId)!;
       agentSessions.add(sessionId);
 
@@ -323,7 +357,7 @@ export namespace EnterpriseAuthentication {
 
     async getSession(sessionId: string): Promise<Session | null> {
       const session = this.sessions.get(sessionId);
-      
+
       if (!session) return null;
 
       // Check expiration
@@ -343,7 +377,7 @@ export namespace EnterpriseAuthentication {
       const session = this.sessions.get(sessionId);
       if (session) {
         this.sessions.delete(sessionId);
-        
+
         const agentSessions = this.sessionsByAgent.get(session.agentId);
         if (agentSessions) {
           agentSessions.delete(sessionId);
@@ -392,7 +426,6 @@ export namespace EnterpriseAuthentication {
 
 // Authorization and Access Control
 export namespace EnterpriseAuthorization {
-  
   /**
    * Role-Based Access Control (RBAC)
    */
@@ -437,8 +470,8 @@ export namespace EnterpriseAuthorization {
         permissions: [
           { resource: 'memory', action: '*' },
           { resource: 'agent', action: 'read' },
-          { resource: 'system', action: 'monitor' }
-        ]
+          { resource: 'system', action: 'monitor' },
+        ],
       });
 
       // Memory User Role
@@ -450,8 +483,8 @@ export namespace EnterpriseAuthorization {
           { resource: 'memory', action: 'create', conditions: { owner: true } },
           { resource: 'memory', action: 'read', conditions: { owner: true } },
           { resource: 'memory', action: 'update', conditions: { owner: true } },
-          { resource: 'memory', action: 'delete', conditions: { owner: true } }
-        ]
+          { resource: 'memory', action: 'delete', conditions: { owner: true } },
+        ],
       });
 
       // Read-Only Role
@@ -460,8 +493,8 @@ export namespace EnterpriseAuthorization {
         name: 'Memory Read-Only',
         description: 'Read-only access to memories',
         permissions: [
-          { resource: 'memory', action: 'read', conditions: { owner: true } }
-        ]
+          { resource: 'memory', action: 'read', conditions: { owner: true } },
+        ],
       });
 
       // Service Role
@@ -473,8 +506,8 @@ export namespace EnterpriseAuthorization {
           { resource: 'memory', action: 'create' },
           { resource: 'memory', action: 'read' },
           { resource: 'memory', action: 'search' },
-          { resource: 'system', action: 'health-check' }
-        ]
+          { resource: 'system', action: 'health-check' },
+        ],
       });
     }
 
@@ -515,7 +548,7 @@ export namespace EnterpriseAuthorization {
 
       for (const role of roles) {
         permissions.push(...role.permissions);
-        
+
         // Handle role inheritance
         if (role.inherits) {
           for (const inheritedRoleId of role.inherits) {
@@ -531,15 +564,17 @@ export namespace EnterpriseAuthorization {
     }
 
     checkPermission(
-      agentId: string, 
-      resource: string, 
-      action: string, 
+      agentId: string,
+      resource: string,
+      action: string,
       context?: Record<string, any>
     ): boolean {
       const permissions = this.getUserPermissions(agentId);
 
       for (const permission of permissions) {
-        if (this.matchesPermission(permission, resource, action, agentId, context)) {
+        if (
+          this.matchesPermission(permission, resource, action, agentId, context)
+        ) {
           return true;
         }
       }
@@ -588,14 +623,19 @@ export namespace EnterpriseAuthorization {
       context?: Record<string, any>
     ): boolean {
       const applicablePolicies = this.policies
-        .filter(policy => 
-          policy.principals.includes(agentId) || policy.principals.includes('*')
+        .filter(
+          policy =>
+            policy.principals.includes(agentId) ||
+            policy.principals.includes('*')
         )
-        .filter(policy =>
-          policy.resources.includes(resource) || policy.resources.includes('*')
+        .filter(
+          policy =>
+            policy.resources.includes(resource) ||
+            policy.resources.includes('*')
         )
-        .filter(policy =>
-          policy.actions.includes(action) || policy.actions.includes('*')
+        .filter(
+          policy =>
+            policy.actions.includes(action) || policy.actions.includes('*')
         )
         .sort((a, b) => b.priority - a.priority);
 
@@ -673,12 +713,12 @@ export namespace EnterpriseAuthorization {
         description: 'Allow owners to access their own resources',
         condition: JSON.stringify({
           and: [
-            { "==": [{ var: "subject.agentId" }, { var: "resource.ownerId" }] },
-            { in: [{ var: "action.type" }, ["read", "update", "delete"]] }
-          ]
+            { '==': [{ var: 'subject.agentId' }, { var: 'resource.ownerId' }] },
+            { in: [{ var: 'action.type' }, ['read', 'update', 'delete']] },
+          ],
         }),
         effect: 'permit',
-        priority: 100
+        priority: 100,
       });
 
       this.addRule({
@@ -687,12 +727,12 @@ export namespace EnterpriseAuthorization {
         description: 'Allow admins to access all resources',
         condition: JSON.stringify({
           and: [
-            { in: ["memory-admin", { var: "subject.roles" }] },
-            { "==": [{ var: "subject.securityLevel" }, "admin"] }
-          ]
+            { in: ['memory-admin', { var: 'subject.roles' }] },
+            { '==': [{ var: 'subject.securityLevel' }, 'admin'] },
+          ],
         }),
         effect: 'permit',
-        priority: 200
+        priority: 200,
       });
 
       this.addRule({
@@ -701,12 +741,17 @@ export namespace EnterpriseAuthorization {
         description: 'Deny access to resources from different tenants',
         condition: JSON.stringify({
           and: [
-            { "!=": [{ var: "subject.tenantId" }, { var: "resource.attributes.tenantId" }] },
-            { "!=": [{ var: "subject.securityLevel" }, "admin"] }
-          ]
+            {
+              '!=': [
+                { var: 'subject.tenantId' },
+                { var: 'resource.attributes.tenantId' },
+              ],
+            },
+            { '!=': [{ var: 'subject.securityLevel' }, 'admin'] },
+          ],
         }),
         effect: 'deny',
-        priority: 300
+        priority: 300,
       });
 
       this.addRule({
@@ -715,18 +760,18 @@ export namespace EnterpriseAuthorization {
         description: 'Restrict access during certain hours',
         condition: JSON.stringify({
           and: [
-            { "==": [{ var: "subject.agentType" }, "human"] },
+            { '==': [{ var: 'subject.agentType' }, 'human'] },
             {
               or: [
-                { "<": [{ var: "environment.hour" }, 8] },
-                { ">": [{ var: "environment.hour" }, 18] }
-              ]
+                { '<': [{ var: 'environment.hour' }, 8] },
+                { '>': [{ var: 'environment.hour' }, 18] },
+              ],
             },
-            { "!=": [{ var: "action.type" }, "read"] }
-          ]
+            { '!=': [{ var: 'action.type' }, 'read'] },
+          ],
         }),
         effect: 'deny',
-        priority: 50
+        priority: 50,
       });
     }
 
@@ -741,36 +786,39 @@ export namespace EnterpriseAuthorization {
       appliedRules: string[];
     } {
       const appliedRules: string[] = [];
-      
+
       // Add environment context
       const enrichedContext = {
         ...context,
         environment: {
           ...context.environment,
-          hour: context.environment.timestamp.getHours()
-        }
+          hour: context.environment.timestamp.getHours(),
+        },
       };
 
       for (const rule of this.rules) {
         try {
-          const result = this.evaluateCondition(rule.condition, enrichedContext);
-          
+          const result = this.evaluateCondition(
+            rule.condition,
+            enrichedContext
+          );
+
           if (result) {
             appliedRules.push(rule.id);
-            
+
             if (rule.effect === 'deny') {
               return {
                 decision: 'deny',
                 reason: `Denied by rule: ${rule.name}`,
-                appliedRules
+                appliedRules,
               };
             }
-            
+
             if (rule.effect === 'permit') {
               return {
                 decision: 'permit',
                 reason: `Permitted by rule: ${rule.name}`,
-                appliedRules
+                appliedRules,
               };
             }
           }
@@ -782,11 +830,14 @@ export namespace EnterpriseAuthorization {
       return {
         decision: 'deny', // Default deny
         reason: 'No applicable rules found - default deny',
-        appliedRules
+        appliedRules,
       };
     }
 
-    private evaluateCondition(condition: string, context: AttributeContext): boolean {
+    private evaluateCondition(
+      condition: string,
+      context: AttributeContext
+    ): boolean {
       try {
         // Simplified condition evaluation (use proper JSON Logic library in production)
         const conditionObj = JSON.parse(condition);
@@ -804,11 +855,15 @@ export namespace EnterpriseAuthorization {
       }
 
       if ('and' in logic) {
-        return logic.and.every((condition: any) => this.evaluateJsonLogic(condition, data));
+        return logic.and.every((condition: any) =>
+          this.evaluateJsonLogic(condition, data)
+        );
       }
 
       if ('or' in logic) {
-        return logic.or.some((condition: any) => this.evaluateJsonLogic(condition, data));
+        return logic.or.some((condition: any) =>
+          this.evaluateJsonLogic(condition, data)
+        );
       }
 
       if ('==' in logic) {
@@ -825,7 +880,7 @@ export namespace EnterpriseAuthorization {
         const [needle, haystack] = logic.in;
         const needleValue = this.resolveVar(needle, data);
         const haystackValue = this.resolveVar(haystack, data);
-        
+
         if (Array.isArray(haystackValue)) {
           return haystackValue.includes(needleValue);
         }
@@ -834,22 +889,32 @@ export namespace EnterpriseAuthorization {
 
       if ('<' in logic) {
         const [left, right] = logic['<'];
-        return Number(this.resolveVar(left, data)) < Number(this.resolveVar(right, data));
+        return (
+          Number(this.resolveVar(left, data)) <
+          Number(this.resolveVar(right, data))
+        );
       }
 
       if ('>' in logic) {
         const [left, right] = logic['>'];
-        return Number(this.resolveVar(left, data)) > Number(this.resolveVar(right, data));
+        return (
+          Number(this.resolveVar(left, data)) >
+          Number(this.resolveVar(right, data))
+        );
       }
 
       return false;
     }
 
     private resolveVar(variable: any, data: any): any {
-      if (typeof variable === 'object' && variable !== null && 'var' in variable) {
+      if (
+        typeof variable === 'object' &&
+        variable !== null &&
+        'var' in variable
+      ) {
         const path = variable.var.split('.');
         let current = data;
-        
+
         for (const key of path) {
           if (current && typeof current === 'object' && key in current) {
             current = current[key];
@@ -857,10 +922,10 @@ export namespace EnterpriseAuthorization {
             return undefined;
           }
         }
-        
+
         return current;
       }
-      
+
       return variable;
     }
   }
@@ -868,11 +933,10 @@ export namespace EnterpriseAuthorization {
 
 // Security Monitoring and Audit
 export namespace SecurityMonitoring {
-  
   /**
    * Security Event Types
    */
-  export type SecurityEventType = 
+  export type SecurityEventType =
     | 'authentication_success'
     | 'authentication_failure'
     | 'authorization_denied'
@@ -918,7 +982,7 @@ export namespace SecurityMonitoring {
       const securityEvent: SecurityEvent = {
         ...event,
         id: randomBytes(16).toString('hex'),
-        timestamp: new Date()
+        timestamp: new Date(),
       };
 
       this.events.push(securityEvent);
@@ -937,17 +1001,20 @@ export namespace SecurityMonitoring {
       console.log(`[SECURITY] ${securityEvent.type}: ${securityEvent.result}`, {
         agentId: securityEvent.agentId,
         severity: securityEvent.severity,
-        details: securityEvent.details
+        details: securityEvent.details,
       });
     }
 
     private handleCriticalEvent(event: SecurityEvent): void {
       // In production, this would trigger alerts, notifications, etc.
       console.error('CRITICAL SECURITY EVENT:', event);
-      
+
       // Auto-block suspicious IPs
       if (event.type === 'suspicious_activity') {
-        this.blockIP(event.ipAddress, 'Automatic block due to suspicious activity');
+        this.blockIP(
+          event.ipAddress,
+          'Automatic block due to suspicious activity'
+        );
       }
     }
 
@@ -968,31 +1035,41 @@ export namespace SecurityMonitoring {
 
       if (filter) {
         if (filter.agentId) {
-          filteredEvents = filteredEvents.filter(e => e.agentId === filter.agentId);
+          filteredEvents = filteredEvents.filter(
+            e => e.agentId === filter.agentId
+          );
         }
-        
+
         if (filter.type) {
           filteredEvents = filteredEvents.filter(e => e.type === filter.type);
         }
-        
+
         if (filter.severity) {
-          filteredEvents = filteredEvents.filter(e => e.severity === filter.severity);
+          filteredEvents = filteredEvents.filter(
+            e => e.severity === filter.severity
+          );
         }
-        
+
         if (filter.startTime) {
-          filteredEvents = filteredEvents.filter(e => e.timestamp >= filter.startTime!);
+          filteredEvents = filteredEvents.filter(
+            e => e.timestamp >= filter.startTime!
+          );
         }
-        
+
         if (filter.endTime) {
-          filteredEvents = filteredEvents.filter(e => e.timestamp <= filter.endTime!);
+          filteredEvents = filteredEvents.filter(
+            e => e.timestamp <= filter.endTime!
+          );
         }
-        
+
         if (filter.limit) {
           filteredEvents = filteredEvents.slice(-filter.limit);
         }
       }
 
-      return filteredEvents.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+      return filteredEvents.sort(
+        (a, b) => b.timestamp.getTime() - a.timestamp.getTime()
+      );
     }
 
     generateSecurityReport(): {
@@ -1015,26 +1092,40 @@ export namespace SecurityMonitoring {
       const last24h = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
       const recentEvents = events.filter(e => e.timestamp >= last24h);
-      
+
       const summary = {
         totalEvents: recentEvents.length,
-        criticalEvents: recentEvents.filter(e => e.severity === 'critical').length,
-        failedAuthentications: recentEvents.filter(e => 
-          e.type === 'authentication_failure' || e.type === 'authorization_denied'
+        criticalEvents: recentEvents.filter(e => e.severity === 'critical')
+          .length,
+        failedAuthentications: recentEvents.filter(
+          e =>
+            e.type === 'authentication_failure' ||
+            e.type === 'authorization_denied'
         ).length,
-        suspiciousActivities: recentEvents.filter(e => e.type === 'suspicious_activity').length,
-        blockedActions: recentEvents.filter(e => e.result === 'blocked').length
+        suspiciousActivities: recentEvents.filter(
+          e => e.type === 'suspicious_activity'
+        ).length,
+        blockedActions: recentEvents.filter(e => e.result === 'blocked').length,
       };
 
       // Calculate top risks
-      const eventCounts = new Map<SecurityEventType, { count: number; lastOccurrence: Date }>();
-      
+      const eventCounts = new Map<
+        SecurityEventType,
+        { count: number; lastOccurrence: Date }
+      >();
+
       for (const event of recentEvents) {
         if (['high', 'critical'].includes(event.severity)) {
-          const current = eventCounts.get(event.type) || { count: 0, lastOccurrence: new Date(0) };
+          const current = eventCounts.get(event.type) || {
+            count: 0,
+            lastOccurrence: new Date(0),
+          };
           eventCounts.set(event.type, {
             count: current.count + 1,
-            lastOccurrence: event.timestamp > current.lastOccurrence ? event.timestamp : current.lastOccurrence
+            lastOccurrence:
+              event.timestamp > current.lastOccurrence
+                ? event.timestamp
+                : current.lastOccurrence,
           });
         }
       }
@@ -1046,17 +1137,23 @@ export namespace SecurityMonitoring {
 
       // Generate recommendations
       const recommendations: string[] = [];
-      
+
       if (summary.failedAuthentications > 10) {
-        recommendations.push('Consider implementing additional rate limiting for authentication attempts');
+        recommendations.push(
+          'Consider implementing additional rate limiting for authentication attempts'
+        );
       }
-      
+
       if (summary.criticalEvents > 0) {
-        recommendations.push('Review critical security events and enhance monitoring');
+        recommendations.push(
+          'Review critical security events and enhance monitoring'
+        );
       }
-      
+
       if (summary.suspiciousActivities > 5) {
-        recommendations.push('Investigate patterns in suspicious activity and update detection rules');
+        recommendations.push(
+          'Investigate patterns in suspicious activity and update detection rules'
+        );
       }
 
       return { summary, topRisks, recommendations };
@@ -1067,15 +1164,21 @@ export namespace SecurityMonitoring {
    * Anomaly Detection System
    */
   export class SecurityAnomalyDetector {
-    private baselineMetrics = new Map<string, {
-      avgRequestsPerHour: number;
-      avgDataAccess: number;
-      commonIPs: Set<string>;
-      commonUserAgents: Set<string>;
-      lastUpdated: Date;
-    }>();
+    private baselineMetrics = new Map<
+      string,
+      {
+        avgRequestsPerHour: number;
+        avgDataAccess: number;
+        commonIPs: Set<string>;
+        commonUserAgents: Set<string>;
+        lastUpdated: Date;
+      }
+    >();
 
-    analyzeAgentBehavior(agentId: string, events: SecurityEvent[]): {
+    analyzeAgentBehavior(
+      agentId: string,
+      events: SecurityEvent[]
+    ): {
       anomalies: {
         type: string;
         severity: 'low' | 'medium' | 'high';
@@ -1086,21 +1189,24 @@ export namespace SecurityMonitoring {
     } {
       const anomalies: any[] = [];
       const now = new Date();
-      const recentEvents = events.filter(e => 
-        e.agentId === agentId && 
-        e.timestamp >= new Date(now.getTime() - 24 * 60 * 60 * 1000)
+      const recentEvents = events.filter(
+        e =>
+          e.agentId === agentId &&
+          e.timestamp >= new Date(now.getTime() - 24 * 60 * 60 * 1000)
       );
 
       // Check for unusual access patterns
       const hourlyRequests = this.groupEventsByHour(recentEvents);
-      const avgRequests = Array.from(hourlyRequests.values()).reduce((a, b) => a + b, 0) / 24;
-      
-      if (avgRequests > 100) { // Threshold for unusual activity
+      const avgRequests =
+        Array.from(hourlyRequests.values()).reduce((a, b) => a + b, 0) / 24;
+
+      if (avgRequests > 100) {
+        // Threshold for unusual activity
         anomalies.push({
           type: 'high_request_volume',
           severity: 'medium',
           description: `Unusually high request volume: ${avgRequests.toFixed(1)} requests/hour`,
-          evidence: { hourlyRequests: Object.fromEntries(hourlyRequests) }
+          evidence: { hourlyRequests: Object.fromEntries(hourlyRequests) },
         });
       }
 
@@ -1111,7 +1217,7 @@ export namespace SecurityMonitoring {
           type: 'multiple_ip_addresses',
           severity: 'high',
           description: `Access from ${ipAddresses.size} different IP addresses`,
-          evidence: { ipAddresses: Array.from(ipAddresses) }
+          evidence: { ipAddresses: Array.from(ipAddresses) },
         });
       }
 
@@ -1120,27 +1226,27 @@ export namespace SecurityMonitoring {
         const hour = e.timestamp.getHours();
         return hour < 6 || hour > 22;
       });
-      
+
       if (nightTimeEvents.length > 10) {
         anomalies.push({
           type: 'unusual_timing',
           severity: 'medium',
           description: `${nightTimeEvents.length} events during unusual hours`,
-          evidence: { nightTimeEventCount: nightTimeEvents.length }
+          evidence: { nightTimeEventCount: nightTimeEvents.length },
         });
       }
 
       // Check for failed authentication spikes
-      const failedAuths = recentEvents.filter(e => 
-        e.type === 'authentication_failure' || e.result === 'failure'
+      const failedAuths = recentEvents.filter(
+        e => e.type === 'authentication_failure' || e.result === 'failure'
       );
-      
+
       if (failedAuths.length > 5) {
         anomalies.push({
           type: 'authentication_failures',
           severity: 'high',
           description: `${failedAuths.length} authentication failures`,
-          evidence: { failureCount: failedAuths.length }
+          evidence: { failureCount: failedAuths.length },
         });
       }
 
@@ -1152,7 +1258,7 @@ export namespace SecurityMonitoring {
 
     private groupEventsByHour(events: SecurityEvent[]): Map<number, number> {
       const hourlyCount = new Map<number, number>();
-      
+
       for (let hour = 0; hour < 24; hour++) {
         hourlyCount.set(hour, 0);
       }
@@ -1167,12 +1273,18 @@ export namespace SecurityMonitoring {
 
     private calculateRiskScore(anomalies: any[]): number {
       let score = 0;
-      
+
       for (const anomaly of anomalies) {
         switch (anomaly.severity) {
-          case 'low': score += 10; break;
-          case 'medium': score += 25; break;
-          case 'high': score += 50; break;
+          case 'low':
+            score += 10;
+            break;
+          case 'medium':
+            score += 25;
+            break;
+          case 'high':
+            score += 50;
+            break;
         }
       }
 
@@ -1180,5 +1292,3 @@ export namespace SecurityMonitoring {
     }
   }
 }
-
-

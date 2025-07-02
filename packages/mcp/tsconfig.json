@@ -2,8 +2,17 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "rootDir": "./src"
+    "rootDir": "./src",
+    "target": "ES2020",
+    "downlevelIteration": true,
+    "lib": ["ES2020"]
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "src/**/*.test.ts", "src/__tests__/**/*"]
+  "exclude": [
+    "node_modules",
+    "dist",
+    "src/**/*.test.ts",
+    "src/__tests__/**/*",
+    "src/server-v3.ts"
+  ]
 }

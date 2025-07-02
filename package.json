@@ -8,12 +8,12 @@
     "apps/*"
   ],
   "scripts": {
-    "build": "turbo build",
-    "lint": "turbo lint",
+    "build": "next build",
+    "lint": "next lint --fix",
     "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "clean": "turbo clean && rm -rf node_modules",
     "publish-packages": "node scripts/publish-packages.js",
-    "dev": "turbo dev",
+    "dev": "next dev -p 4002",
     "test": "turbo test",
     "test:watch": "turbo test:watch",
     "test:ui": "turbo test:ui",
@@ -22,7 +22,9 @@
     "test:mcp": "node tests/mcp/run-mcp-tests.js",
     "start:dashboard": "turbo start --filter=@codai/memorai-dashboard",
     "start:api": "turbo start --filter=@codai/memorai-api",
-    "start:mcp": "turbo start --filter=@codai/memorai-mcp"
+    "start:mcp": "turbo start --filter=@codai/memorai-mcp",
+    "start": "next start -p 4002",
+    "type-check": "tsc --noEmit"
   },
   "devDependencies": {
     "@playwright/test": "^1.49.1",

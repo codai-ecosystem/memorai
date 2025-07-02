@@ -4,7 +4,7 @@
  */
 
 // Result type for consistent error handling
-type Result<T, E> = 
+type Result<T, E> =
   | { success: true; error: undefined; data: T }
   | { success: false; error: E; data: undefined };
 
@@ -87,13 +87,13 @@ class EntityRecognitionService {
   private initializePatterns(): void {
     // Email patterns
     this.patterns.set('EMAIL', [
-      /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g
+      /\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g,
     ]);
 
     // Phone patterns
     this.patterns.set('PHONE', [
       /\b\+?1?[-.\s]?\(?([0-9]{3})\)?[-.\s]?([0-9]{3})[-.\s]?([0-9]{4})\b/g,
-      /\b\(?([0-9]{3})\)?[-.\s]?([0-9]{3})[-.\s]?([0-9]{4})\b/g
+      /\b\(?([0-9]{3})\)?[-.\s]?([0-9]{3})[-.\s]?([0-9]{4})\b/g,
     ]);
 
     // Date patterns
@@ -101,71 +101,164 @@ class EntityRecognitionService {
       /\b(\d{1,2})\/(\d{1,2})\/(\d{4})\b/g,
       /\b(\d{4})-(\d{1,2})-(\d{1,2})\b/g,
       /\b(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2}),?\s+(\d{4})\b/gi,
-      /\b(\d{1,2})\s+(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{4})\b/gi
+      /\b(\d{1,2})\s+(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{4})\b/gi,
     ]);
 
     // Time patterns
     this.patterns.set('TIME', [
       /\b(\d{1,2}):(\d{2})\s?(AM|PM|am|pm)\b/g,
-      /\b(\d{1,2}):(\d{2}):(\d{2})\b/g
+      /\b(\d{1,2}):(\d{2}):(\d{2})\b/g,
     ]);
 
     // URL patterns
     this.patterns.set('URL', [
-      /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/g
+      /https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/g,
     ]);
 
     // Money patterns
     this.patterns.set('MONEY', [
       /\$\s?(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)/g,
-      /(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)\s?(dollars?|USD|usd)/gi
+      /(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)\s?(dollars?|USD|usd)/gi,
     ]);
 
     // Number patterns
-    this.patterns.set('NUMBER', [
-      /\b\d+(?:,\d{3})*(?:\.\d+)?\b/g
-    ]);
+    this.patterns.set('NUMBER', [/\b\d+(?:,\d{3})*(?:\.\d+)?\b/g]);
 
     // Percentage patterns
     this.patterns.set('PERCENTAGE', [
       /\b(\d+(?:\.\d+)?)\s?%/g,
-      /\b(\d+(?:\.\d+)?)\s?percent/gi
+      /\b(\d+(?:\.\d+)?)\s?percent/gi,
     ]);
   }
 
   private initializeGazetteers(): void {
     // Person names (simplified)
-    this.gazetteers.set('PERSON', new Set([
-      'John', 'Jane', 'Michael', 'Sarah', 'David', 'Emma', 'Robert', 'Lisa',
-      'James', 'Mary', 'William', 'Jennifer', 'Richard', 'Linda', 'Thomas', 'Elizabeth'
-    ]));
+    this.gazetteers.set(
+      'PERSON',
+      new Set([
+        'John',
+        'Jane',
+        'Michael',
+        'Sarah',
+        'David',
+        'Emma',
+        'Robert',
+        'Lisa',
+        'James',
+        'Mary',
+        'William',
+        'Jennifer',
+        'Richard',
+        'Linda',
+        'Thomas',
+        'Elizabeth',
+      ])
+    );
 
     // Organizations
-    this.gazetteers.set('ORG', new Set([
-      'Microsoft', 'Google', 'Apple', 'Amazon', 'Meta', 'Tesla', 'Netflix',
-      'OpenAI', 'Anthropic', 'GitHub', 'Stack Overflow', 'Reddit', 'Twitter', 'LinkedIn'
-    ]));
+    this.gazetteers.set(
+      'ORG',
+      new Set([
+        'Microsoft',
+        'Google',
+        'Apple',
+        'Amazon',
+        'Meta',
+        'Tesla',
+        'Netflix',
+        'OpenAI',
+        'Anthropic',
+        'GitHub',
+        'Stack Overflow',
+        'Reddit',
+        'Twitter',
+        'LinkedIn',
+      ])
+    );
 
     // Locations
-    this.gazetteers.set('GPE', new Set([
-      'New York', 'Los Angeles', 'Chicago', 'Houston', 'Phoenix', 'Philadelphia',
-      'San Antonio', 'San Diego', 'Dallas', 'San Jose', 'Austin', 'Jacksonville',
-      'California', 'Texas', 'Florida', 'New York', 'Pennsylvania', 'Illinois',
-      'United States', 'Canada', 'Mexico', 'Brazil', 'Argentina', 'Chile',
-      'United Kingdom', 'France', 'Germany', 'Italy', 'Spain', 'Netherlands',
-      'China', 'Japan', 'South Korea', 'India', 'Australia', 'New Zealand'
-    ]));
+    this.gazetteers.set(
+      'GPE',
+      new Set([
+        'New York',
+        'Los Angeles',
+        'Chicago',
+        'Houston',
+        'Phoenix',
+        'Philadelphia',
+        'San Antonio',
+        'San Diego',
+        'Dallas',
+        'San Jose',
+        'Austin',
+        'Jacksonville',
+        'California',
+        'Texas',
+        'Florida',
+        'New York',
+        'Pennsylvania',
+        'Illinois',
+        'United States',
+        'Canada',
+        'Mexico',
+        'Brazil',
+        'Argentina',
+        'Chile',
+        'United Kingdom',
+        'France',
+        'Germany',
+        'Italy',
+        'Spain',
+        'Netherlands',
+        'China',
+        'Japan',
+        'South Korea',
+        'India',
+        'Australia',
+        'New Zealand',
+      ])
+    );
 
     // Technologies
-    this.gazetteers.set('TECHNOLOGY', new Set([
-      'JavaScript', 'TypeScript', 'Python', 'Java', 'C++', 'C#', 'Ruby', 'Go',
-      'React', 'Angular', 'Vue', 'Node.js', 'Django', 'Flask', 'Spring', 'Express',
-      'MongoDB', 'PostgreSQL', 'MySQL', 'Redis', 'Elasticsearch', 'Docker', 'Kubernetes',
-      'AWS', 'Azure', 'Google Cloud', 'Firebase', 'Vercel', 'Netlify'
-    ]));
+    this.gazetteers.set(
+      'TECHNOLOGY',
+      new Set([
+        'JavaScript',
+        'TypeScript',
+        'Python',
+        'Java',
+        'C++',
+        'C#',
+        'Ruby',
+        'Go',
+        'React',
+        'Angular',
+        'Vue',
+        'Node.js',
+        'Django',
+        'Flask',
+        'Spring',
+        'Express',
+        'MongoDB',
+        'PostgreSQL',
+        'MySQL',
+        'Redis',
+        'Elasticsearch',
+        'Docker',
+        'Kubernetes',
+        'AWS',
+        'Azure',
+        'Google Cloud',
+        'Firebase',
+        'Vercel',
+        'Netlify',
+      ])
+    );
   }
 
-  async extractEntities(text: string): Promise<Result<EntityExtraction, string>> {
+  async extractEntities(
+    text: string
+  ): Promise<Result<EntityExtraction, string>> {
     try {
       const entities: Entity[] = [];
 
@@ -181,7 +274,7 @@ class EntityRecognitionService {
                 start: match.index,
                 end: match.index + match[0].length,
                 confidence: 0.9,
-                metadata: { method: 'pattern' }
+                metadata: { method: 'pattern' },
               });
             }
           }
@@ -204,7 +297,7 @@ class EntityRecognitionService {
                 start: startIndex,
                 end: startIndex + word.length,
                 confidence: 0.8,
-                metadata: { method: 'gazetteer' }
+                metadata: { method: 'gazetteer' },
               });
             }
           }
@@ -217,18 +310,21 @@ class EntityRecognitionService {
 
       const result: EntityExtraction = {
         entities: filteredEntities,
-        confidence: filteredEntities.length > 0 ? 
-          filteredEntities.reduce((sum, e) => sum + e.confidence, 0) / filteredEntities.length : 0,
+        confidence:
+          filteredEntities.length > 0
+            ? filteredEntities.reduce((sum, e) => sum + e.confidence, 0) /
+              filteredEntities.length
+            : 0,
         model: 'pattern-gazetteer-v1',
-        timestamp: new Date()
+        timestamp: new Date(),
       };
 
       return { success: true, error: undefined, data: result };
     } catch (error) {
-      return { 
-        success: false, 
+      return {
+        success: false,
         error: `Entity extraction failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        data: undefined 
+        data: undefined,
       };
     }
   }
@@ -240,18 +336,18 @@ class EntityRecognitionService {
 
     for (const entity of sorted) {
       // Check if this entity overlaps with any already added entity
-      const overlaps = filtered.some(existing => 
-        (entity.start < existing.end && entity.end > existing.start)
+      const overlaps = filtered.some(
+        existing => entity.start < existing.end && entity.end > existing.start
       );
 
       if (!overlaps) {
         filtered.push(entity);
       } else {
         // If it overlaps, keep the one with higher confidence
-        const overlapping = filtered.find(existing => 
-          entity.start < existing.end && entity.end > existing.start
+        const overlapping = filtered.find(
+          existing => entity.start < existing.end && entity.end > existing.start
         );
-        
+
         if (overlapping && entity.confidence > overlapping.confidence) {
           const index = filtered.indexOf(overlapping);
           filtered[index] = entity;
@@ -265,8 +361,14 @@ class EntityRecognitionService {
 
 // Intent Classification Service
 class IntentClassificationService {
-  private readonly intentPatterns: Map<string, Array<{ pattern: RegExp; weight: number }>> = new Map();
-  private readonly intentKeywords: Map<string, Array<{ keyword: string; weight: number }>> = new Map();
+  private readonly intentPatterns: Map<
+    string,
+    Array<{ pattern: RegExp; weight: number }>
+  > = new Map();
+  private readonly intentKeywords: Map<
+    string,
+    Array<{ keyword: string; weight: number }>
+  > = new Map();
 
   constructor() {
     this.initializeIntentPatterns();
@@ -277,82 +379,87 @@ class IntentClassificationService {
     this.intentPatterns.set('search', [
       { pattern: /find|search|look\s+for|locate|discover/i, weight: 0.9 },
       { pattern: /what\s+is|where\s+is|show\s+me/i, weight: 0.8 },
-      { pattern: /\?\s*$/i, weight: 0.3 }
+      { pattern: /\?\s*$/i, weight: 0.3 },
     ]);
 
     this.intentKeywords.set('search', [
       { keyword: 'find', weight: 0.8 },
       { keyword: 'search', weight: 0.9 },
       { keyword: 'lookup', weight: 0.7 },
-      { keyword: 'query', weight: 0.6 }
+      { keyword: 'query', weight: 0.6 },
     ]);
 
     // Create intent
     this.intentPatterns.set('create', [
       { pattern: /create|make|add|new|generate|build/i, weight: 0.9 },
-      { pattern: /can\s+you\s+(create|make|add)/i, weight: 0.8 }
+      { pattern: /can\s+you\s+(create|make|add)/i, weight: 0.8 },
     ]);
 
     this.intentKeywords.set('create', [
       { keyword: 'create', weight: 0.9 },
       { keyword: 'add', weight: 0.8 },
       { keyword: 'new', weight: 0.7 },
-      { keyword: 'make', weight: 0.6 }
+      { keyword: 'make', weight: 0.6 },
     ]);
 
     // Update intent
     this.intentPatterns.set('update', [
       { pattern: /update|modify|change|edit|alter/i, weight: 0.9 },
-      { pattern: /can\s+you\s+(update|modify|change)/i, weight: 0.8 }
+      { pattern: /can\s+you\s+(update|modify|change)/i, weight: 0.8 },
     ]);
 
     this.intentKeywords.set('update', [
       { keyword: 'update', weight: 0.9 },
       { keyword: 'modify', weight: 0.8 },
       { keyword: 'change', weight: 0.8 },
-      { keyword: 'edit', weight: 0.7 }
+      { keyword: 'edit', weight: 0.7 },
     ]);
 
     // Delete intent
     this.intentPatterns.set('delete', [
       { pattern: /delete|remove|erase|clear|eliminate/i, weight: 0.9 },
-      { pattern: /can\s+you\s+(delete|remove)/i, weight: 0.8 }
+      { pattern: /can\s+you\s+(delete|remove)/i, weight: 0.8 },
     ]);
 
     this.intentKeywords.set('delete', [
       { keyword: 'delete', weight: 0.9 },
       { keyword: 'remove', weight: 0.8 },
       { keyword: 'erase', weight: 0.7 },
-      { keyword: 'clear', weight: 0.6 }
+      { keyword: 'clear', weight: 0.6 },
     ]);
 
     // Help intent
     this.intentPatterns.set('help', [
       { pattern: /help|assist|support|guide|how\s+to/i, weight: 0.9 },
-      { pattern: /can\s+you\s+help/i, weight: 0.8 }
+      { pattern: /can\s+you\s+help/i, weight: 0.8 },
     ]);
 
     this.intentKeywords.set('help', [
       { keyword: 'help', weight: 0.9 },
       { keyword: 'assist', weight: 0.7 },
       { keyword: 'support', weight: 0.6 },
-      { keyword: 'guide', weight: 0.5 }
+      { keyword: 'guide', weight: 0.5 },
     ]);
 
     // Greeting intent
     this.intentPatterns.set('greeting', [
-      { pattern: /^(hi|hello|hey|good\s+(morning|afternoon|evening))/i, weight: 0.9 }
+      {
+        pattern: /^(hi|hello|hey|good\s+(morning|afternoon|evening))/i,
+        weight: 0.9,
+      },
     ]);
 
     this.intentKeywords.set('greeting', [
       { keyword: 'hello', weight: 0.9 },
       { keyword: 'hi', weight: 0.8 },
       { keyword: 'hey', weight: 0.7 },
-      { keyword: 'greetings', weight: 0.6 }
+      { keyword: 'greetings', weight: 0.6 },
     ]);
   }
 
-  async classifyIntent(text: string): Promise<Result<IntentClassification, string>> {
+  async classifyIntent(
+    text: string
+  ): Promise<Result<IntentClassification, string>> {
     try {
       const intentScores: Map<string, number> = new Map();
 
@@ -383,7 +490,10 @@ class IntentClassificationService {
 
       // Convert to sorted array
       const sortedIntents = Array.from(intentScores.entries())
-        .map(([intent, score]) => ({ intent, confidence: Math.min(score, 1.0) }))
+        .map(([intent, score]) => ({
+          intent,
+          confidence: Math.min(score, 1.0),
+        }))
         .sort((a, b) => b.confidence - a.confidence);
 
       if (sortedIntents.length === 0) {
@@ -399,15 +509,15 @@ class IntentClassificationService {
         confidence: primaryIntent.confidence,
         alternatives,
         model: 'rule-based-intent-v1',
-        timestamp: new Date()
+        timestamp: new Date(),
       };
 
       return { success: true, error: undefined, data: result };
     } catch (error) {
-      return { 
-        success: false, 
+      return {
+        success: false,
         error: `Intent classification failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        data: undefined 
+        data: undefined,
       };
     }
   }
@@ -427,19 +537,61 @@ class SentimentAnalysisService {
   private initializeLexicons(): void {
     // Positive words
     const positiveWords = [
-      'excellent', 'amazing', 'wonderful', 'fantastic', 'great', 'good', 'nice',
-      'awesome', 'brilliant', 'outstanding', 'superb', 'marvelous', 'terrific',
-      'love', 'like', 'enjoy', 'appreciate', 'happy', 'pleased', 'satisfied',
-      'perfect', 'beautiful', 'incredible', 'impressive', 'remarkable'
+      'excellent',
+      'amazing',
+      'wonderful',
+      'fantastic',
+      'great',
+      'good',
+      'nice',
+      'awesome',
+      'brilliant',
+      'outstanding',
+      'superb',
+      'marvelous',
+      'terrific',
+      'love',
+      'like',
+      'enjoy',
+      'appreciate',
+      'happy',
+      'pleased',
+      'satisfied',
+      'perfect',
+      'beautiful',
+      'incredible',
+      'impressive',
+      'remarkable',
     ];
     positiveWords.forEach(word => this.positiveWords.add(word));
 
     // Negative words
     const negativeWords = [
-      'terrible', 'awful', 'horrible', 'bad', 'poor', 'worse', 'worst',
-      'hate', 'dislike', 'disgusting', 'annoying', 'frustrating', 'disappointing',
-      'sad', 'angry', 'upset', 'mad', 'furious', 'devastated', 'disappointed',
-      'useless', 'worthless', 'pathetic', 'ridiculous', 'stupid'
+      'terrible',
+      'awful',
+      'horrible',
+      'bad',
+      'poor',
+      'worse',
+      'worst',
+      'hate',
+      'dislike',
+      'disgusting',
+      'annoying',
+      'frustrating',
+      'disappointing',
+      'sad',
+      'angry',
+      'upset',
+      'mad',
+      'furious',
+      'devastated',
+      'disappointed',
+      'useless',
+      'worthless',
+      'pathetic',
+      'ridiculous',
+      'stupid',
     ];
     negativeWords.forEach(word => this.negativeWords.add(word));
 
@@ -470,7 +622,9 @@ class SentimentAnalysisService {
     this.negators.add('barely');
   }
 
-  async analyzeSentiment(text: string): Promise<Result<SentimentAnalysis, string>> {
+  async analyzeSentiment(
+    text: string
+  ): Promise<Result<SentimentAnalysis, string>> {
     try {
       const words = text.toLowerCase().split(/\s+/);
       let sentimentScore = 0;
@@ -517,7 +671,8 @@ class SentimentAnalysisService {
       }
 
       // Normalize score
-      const normalizedScore = sentimentCount > 0 ? sentimentScore / sentimentCount : 0;
+      const normalizedScore =
+        sentimentCount > 0 ? sentimentScore / sentimentCount : 0;
       const clampedScore = Math.max(-1, Math.min(1, normalizedScore));
 
       // Determine sentiment category
@@ -531,7 +686,10 @@ class SentimentAnalysisService {
       }
 
       // Calculate confidence based on absolute score and word count
-      const confidence = Math.min(Math.abs(clampedScore) + (sentimentCount / words.length), 1.0);
+      const confidence = Math.min(
+        Math.abs(clampedScore) + sentimentCount / words.length,
+        1.0
+      );
 
       // Generate emotions (simplified)
       const emotions = this.generateEmotions(clampedScore, text);
@@ -542,20 +700,23 @@ class SentimentAnalysisService {
         confidence,
         emotions,
         model: 'lexicon-based-sentiment-v1',
-        timestamp: new Date()
+        timestamp: new Date(),
       };
 
       return { success: true, error: undefined, data: result };
     } catch (error) {
-      return { 
-        success: false, 
+      return {
+        success: false,
         error: `Sentiment analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        data: undefined 
+        data: undefined,
       };
     }
   }
 
-  private generateEmotions(score: number, text: string): Array<{ emotion: string; intensity: number }> {
+  private generateEmotions(
+    score: number,
+    text: string
+  ): Array<{ emotion: string; intensity: number }> {
     const emotions: Array<{ emotion: string; intensity: number }> = [];
     const lowerText = text.toLowerCase();
 
@@ -598,51 +759,142 @@ class TopicExtractionService {
 
   private initializeTopicKeywords(): void {
     this.topicKeywords.set('technology', [
-      'computer', 'software', 'programming', 'code', 'algorithm', 'data',
-      'artificial intelligence', 'ai', 'machine learning', 'api', 'database',
-      'javascript', 'python', 'react', 'node', 'docker', 'kubernetes'
+      'computer',
+      'software',
+      'programming',
+      'code',
+      'algorithm',
+      'data',
+      'artificial intelligence',
+      'ai',
+      'machine learning',
+      'api',
+      'database',
+      'javascript',
+      'python',
+      'react',
+      'node',
+      'docker',
+      'kubernetes',
     ]);
 
     this.topicKeywords.set('business', [
-      'company', 'business', 'market', 'sales', 'revenue', 'profit', 'customer',
-      'strategy', 'management', 'team', 'project', 'budget', 'finance', 'investment'
+      'company',
+      'business',
+      'market',
+      'sales',
+      'revenue',
+      'profit',
+      'customer',
+      'strategy',
+      'management',
+      'team',
+      'project',
+      'budget',
+      'finance',
+      'investment',
     ]);
 
     this.topicKeywords.set('health', [
-      'health', 'medical', 'doctor', 'hospital', 'medicine', 'treatment',
-      'exercise', 'fitness', 'nutrition', 'wellness', 'therapy', 'diagnosis'
+      'health',
+      'medical',
+      'doctor',
+      'hospital',
+      'medicine',
+      'treatment',
+      'exercise',
+      'fitness',
+      'nutrition',
+      'wellness',
+      'therapy',
+      'diagnosis',
     ]);
 
     this.topicKeywords.set('education', [
-      'school', 'university', 'course', 'learning', 'study', 'education',
-      'student', 'teacher', 'class', 'lesson', 'homework', 'exam', 'degree'
+      'school',
+      'university',
+      'course',
+      'learning',
+      'study',
+      'education',
+      'student',
+      'teacher',
+      'class',
+      'lesson',
+      'homework',
+      'exam',
+      'degree',
     ]);
 
     this.topicKeywords.set('travel', [
-      'travel', 'trip', 'vacation', 'flight', 'hotel', 'destination',
-      'tourism', 'journey', 'adventure', 'explore', 'visit', 'sightseeing'
+      'travel',
+      'trip',
+      'vacation',
+      'flight',
+      'hotel',
+      'destination',
+      'tourism',
+      'journey',
+      'adventure',
+      'explore',
+      'visit',
+      'sightseeing',
     ]);
 
     this.topicKeywords.set('food', [
-      'food', 'recipe', 'cooking', 'restaurant', 'meal', 'dinner', 'lunch',
-      'breakfast', 'cuisine', 'ingredient', 'kitchen', 'chef', 'delicious'
+      'food',
+      'recipe',
+      'cooking',
+      'restaurant',
+      'meal',
+      'dinner',
+      'lunch',
+      'breakfast',
+      'cuisine',
+      'ingredient',
+      'kitchen',
+      'chef',
+      'delicious',
     ]);
 
     this.topicKeywords.set('entertainment', [
-      'movie', 'film', 'music', 'song', 'game', 'book', 'entertainment',
-      'show', 'concert', 'theater', 'artist', 'performance', 'fun'
+      'movie',
+      'film',
+      'music',
+      'song',
+      'game',
+      'book',
+      'entertainment',
+      'show',
+      'concert',
+      'theater',
+      'artist',
+      'performance',
+      'fun',
     ]);
 
     this.topicKeywords.set('sports', [
-      'sport', 'game', 'team', 'player', 'match', 'competition', 'tournament',
-      'football', 'basketball', 'baseball', 'soccer', 'tennis', 'golf'
+      'sport',
+      'game',
+      'team',
+      'player',
+      'match',
+      'competition',
+      'tournament',
+      'football',
+      'basketball',
+      'baseball',
+      'soccer',
+      'tennis',
+      'golf',
     ]);
   }
 
   async extractTopics(text: string): Promise<Result<TopicExtraction, string>> {
     try {
       const lowerText = text.toLowerCase();
-      const topicScores: Map<string, { score: number; keywords: string[] }> = new Map();
+      const topicScores: Map<string, { score: number; keywords: string[] }> =
+        new Map();
 
       // Calculate topic scores based on keyword matches
       for (const [topic, keywords] of this.topicKeywords.entries()) {
@@ -658,8 +910,13 @@ class TopicExtractionService {
 
         if (score > 0) {
           // Normalize by keyword count and text length
-          const normalizedScore = score / keywords.length * (foundKeywords.length / text.split(' ').length * 100);
-          topicScores.set(topic, { score: normalizedScore, keywords: foundKeywords });
+          const normalizedScore =
+            (score / keywords.length) *
+            ((foundKeywords.length / text.split(' ').length) * 100);
+          topicScores.set(topic, {
+            score: normalizedScore,
+            keywords: foundKeywords,
+          });
         }
       }
 
@@ -668,7 +925,7 @@ class TopicExtractionService {
         .map(([topic, { score, keywords }]) => ({
           topic,
           relevance: Math.min(score, 1.0),
-          keywords
+          keywords,
         }))
         .sort((a, b) => b.relevance - a.relevance);
 
@@ -678,15 +935,15 @@ class TopicExtractionService {
         topics,
         primaryTopic,
         model: 'keyword-based-topic-v1',
-        timestamp: new Date()
+        timestamp: new Date(),
       };
 
       return { success: true, error: undefined, data: result };
     } catch (error) {
-      return { 
-        success: false, 
+      return {
+        success: false,
         error: `Topic extraction failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        data: undefined 
+        data: undefined,
       };
     }
   }
@@ -694,10 +951,13 @@ class TopicExtractionService {
 
 // Text Summarization Service
 class TextSummarizationService {
-  async summarizeText(text: string, maxLength: number = 200): Promise<Result<TextSummary, string>> {
+  async summarizeText(
+    text: string,
+    maxLength: number = 200
+  ): Promise<Result<TextSummary, string>> {
     try {
       const sentences = this.splitIntoSentences(text);
-      
+
       if (sentences.length <= 3) {
         // Text is already short enough
         return {
@@ -710,8 +970,8 @@ class TextSummarizationService {
             summaryLength: text.length,
             compressionRatio: 1.0,
             model: 'extractive-summary-v1',
-            timestamp: new Date()
-          }
+            timestamp: new Date(),
+          },
         };
       }
 
@@ -740,15 +1000,15 @@ class TextSummarizationService {
         summaryLength: summary.length,
         compressionRatio: summary.length / text.length,
         model: 'extractive-summary-v1',
-        timestamp: new Date()
+        timestamp: new Date(),
       };
 
       return { success: true, error: undefined, data: result };
     } catch (error) {
-      return { 
-        success: false, 
+      return {
+        success: false,
         error: `Text summarization failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        data: undefined 
+        data: undefined,
       };
     }
   }
@@ -760,9 +1020,13 @@ class TextSummarizationService {
       .filter(s => s.length > 0);
   }
 
-  private scoreSentences(sentences: string[], fullText: string): Array<{ sentence: string; score: number; position: number }> {
+  private scoreSentences(
+    sentences: string[],
+    fullText: string
+  ): Array<{ sentence: string; score: number; position: number }> {
     const wordFreq = this.calculateWordFrequency(fullText);
-    const scores: Array<{ sentence: string; score: number; position: number }> = [];
+    const scores: Array<{ sentence: string; score: number; position: number }> =
+      [];
 
     sentences.forEach((sentence, index) => {
       let score = 0;
@@ -771,7 +1035,8 @@ class TextSummarizationService {
       // Score based on word frequency
       for (const word of words) {
         const cleanWord = word.replace(/[^\w]/g, '');
-        if (cleanWord.length > 3) { // Ignore short words
+        if (cleanWord.length > 3) {
+          // Ignore short words
           score += wordFreq.get(cleanWord) || 0;
         }
       }
@@ -780,7 +1045,8 @@ class TextSummarizationService {
       score = score / words.length;
 
       // Position bonus (earlier sentences get higher scores)
-      const positionBonus = (sentences.length - index) / sentences.length * 0.3;
+      const positionBonus =
+        ((sentences.length - index) / sentences.length) * 0.3;
       score += positionBonus;
 
       // Length penalty for very short or very long sentences
@@ -813,7 +1079,11 @@ class TextSummarizationService {
     maxLength: number
   ): Array<{ sentence: string; score: number; position: number }> {
     const sorted = scores.sort((a, b) => b.score - a.score);
-    const selected: Array<{ sentence: string; score: number; position: number }> = [];
+    const selected: Array<{
+      sentence: string;
+      score: number;
+      position: number;
+    }> = [];
     let currentLength = 0;
 
     for (const item of sorted) {
@@ -832,6 +1102,6 @@ export {
   EntityRecognitionService,
   IntentClassificationService,
   SentimentAnalysisService,
+  TextSummarizationService,
   TopicExtractionService,
-  TextSummarizationService
 };

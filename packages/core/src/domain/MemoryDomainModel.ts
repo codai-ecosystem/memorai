@@ -4,7 +4,12 @@
  */
 
 import { nanoid } from 'nanoid';
-import { EventSourcedAggregate, MemoryEvent, MemoryEventFactory, MemoryEventType } from '../events/EventDrivenArchitecture.js';
+import {
+  EventSourcedAggregate,
+  MemoryEvent,
+  MemoryEventFactory,
+  MemoryEventType,
+} from '../events/EventDrivenArchitecture.js';
 import { MemoryMetadata, MemoryType } from '../types/index.js';
 
 // Value Objects
@@ -59,7 +64,8 @@ export class MemoryContent {
     if (!this.value || this.value.trim().length === 0) {
       throw new Error('MemoryContent cannot be empty');
     }
-    if (this.value.length > 1000000) { // 1MB text limit
+    if (this.value.length > 1000000) {
+      // 1MB text limit
       throw new Error('MemoryContent too large');
     }
   }
@@ -188,16 +194,26 @@ export class MemoryRelationship {
 
 // Domain Services
 export interface MemoryClassificationService {
-  classifyMemory(content: MemoryContent, agentId: AgentId): Promise<MemoryClassification>;
-  reclassifyMemory(memoryId: MemoryId, content: MemoryContent, agentId: AgentId): Promise<MemoryClassification>;
+  classifyMemory(
+    content: MemoryContent,
+    agentId: AgentId
+  ): Promise<MemoryClassification>;
+  reclassifyMemory(
+    memoryId: MemoryId,
+    content: MemoryContent,
+    agentId: AgentId
+  ): Promise<MemoryClassification>;
 }
 
 export interface MemoryRelationshipService {
-  findRelationships(memoryId: MemoryId, content: MemoryContent): Promise<MemoryRelationship[]>;
+  findRelationships(
+    memoryId: MemoryId,
+    content: MemoryContent
+  ): Promise<MemoryRelationship[]>;
   createRelationship(
-    sourceId: MemoryId, 
-    targetId: MemoryId, 
-    type: string, 
+    sourceId: MemoryId,
+    targetId: MemoryId,
+    type: string,
     strength: number,
     agentId: AgentId
   ): Promise<MemoryRelationship>;
@@ -206,7 +222,11 @@ export interface MemoryRelationshipService {
 export interface MemorySearchService {
   searchSemantic(query: string, limit: number): Promise<MemoryAggregate[]>;
   searchByTags(tags: string[], limit: number): Promise<MemoryAggregate[]>;
-  searchByTimeRange(start: Date, end: Date, limit: number): Promise<MemoryAggregate[]>;
+  searchByTimeRange(
+    start: Date,
+    end: Date,
+    limit: number
+  ): Promise<MemoryAggregate[]>;
 }
 
 // Memory Aggregate Root
@@ -250,7 +270,12 @@ export class MemoryAggregate extends EventSourcedAggregate {
     const importanceScore = new ImportanceScore(importance);
     const agentIdVo = new AgentId(agentId);
 
-    const aggregate = new MemoryAggregate(memoryId, memoryContent, importanceScore, agentIdVo);
+    const aggregate = new MemoryAggregate(
+      memoryId,
+      memoryContent,
+      importanceScore,
+      agentIdVo
+    );
 
     // Create domain event
     const event = MemoryEventFactory.createMemoryCreatedEvent(
@@ -267,7 +292,7 @@ export class MemoryAggregate extends EventSourcedAggregate {
         accessCount: 0,
         tenant_id: metadata.tenant_id || 'default',
         agent_id: agentId,
-        ...metadata
+        ...metadata,
       },
       agentId
     );
@@ -287,7 +312,8 @@ export class MemoryAggregate extends EventSourcedAggregate {
     this.updatedAt = new Date();
 
     // Create domain event
-    const event = MemoryEventFactory.createMemoryCreatedEvent( // Simplified for now
+    const event = MemoryEventFactory.createMemoryCreatedEvent(
+      // Simplified for now
       this.toMemoryMetadata(),
       updatedBy.toString()
     );
@@ -312,8 +338,12 @@ export class MemoryAggregate extends EventSourcedAggregate {
     }
 
     // Remove existing classification from same agent for same category
-    this.classifications = this.classifications.filter(c => 
-      !(c.category === classification.category && c.agentId.equals(classification.agentId))
+    this.classifications = this.classifications.filter(
+      c =>
+        !(
+          c.category === classification.category &&
+          c.agentId.equals(classification.agentId)
+        )
     );
 
     this.classifications.push(classification);
@@ -338,9 +368,10 @@ export class MemoryAggregate extends EventSourcedAggregate {
     }
 
     // Prevent duplicate relationships
-    const exists = this.relationships.some(r => 
-      r.targetMemoryId.equals(relationship.targetMemoryId) && 
-      r.relationshipType === relationship.relationshipType
+    const exists = this.relationships.some(
+      r =>
+        r.targetMemoryId.equals(relationship.targetMemoryId) &&
+        r.relationshipType === relationship.relationshipType
     );
 
     if (!exists) {
@@ -441,8 +472,8 @@ export class MemoryAggregate extends EventSourcedAggregate {
 
   isRecentlyAccessed(withinHours: number = 24): boolean {
     if (!this.lastAccessedAt) return false;
-    
-    const threshold = new Date(Date.now() - (withinHours * 60 * 60 * 1000));
+
+    const threshold = new Date(Date.now() - withinHours * 60 * 60 * 1000);
     return this.lastAccessedAt > threshold;
   }
 
@@ -472,13 +503,12 @@ export class MemoryAggregate extends EventSourcedAggregate {
       lastAccessedAt: this.lastAccessedAt || this.createdAt,
       accessCount: this.accessCount,
       tenant_id: 'default',
-      agent_id: this.createdBy.toString()
+      agent_id: this.createdBy.toString(),
     };
   }
 
   private getMainClassification(): MemoryClassification | undefined {
-    return this.classifications
-      .sort((a, b) => b.confidence - a.confidence)[0];
+    return this.classifications.sort((a, b) => b.confidence - a.confidence)[0];
   }
 
   private getAllTags(): string[] {
@@ -517,8 +547,14 @@ export interface MemoryRepository {
   save(aggregate: MemoryAggregate): Promise<void>;
   findById(id: MemoryId): Promise<MemoryAggregate | null>;
   findByAgentId(agentId: AgentId, limit?: number): Promise<MemoryAggregate[]>;
-  findByImportance(minImportance: number, limit?: number): Promise<MemoryAggregate[]>;
-  findRecentlyUpdated(sinceDate: Date, limit?: number): Promise<MemoryAggregate[]>;
+  findByImportance(
+    minImportance: number,
+    limit?: number
+  ): Promise<MemoryAggregate[]>;
+  findRecentlyUpdated(
+    sinceDate: Date,
+    limit?: number
+  ): Promise<MemoryAggregate[]>;
   delete(id: MemoryId): Promise<void>;
 }
 
@@ -539,15 +575,15 @@ export interface MemoryDomainEvent {
 // Specification Pattern for complex queries
 export abstract class MemorySpecification {
   abstract isSatisfiedBy(memory: MemoryAggregate): boolean;
-  
+
   and(other: MemorySpecification): MemorySpecification {
     return new AndSpecification(this, other);
   }
-  
+
   or(other: MemorySpecification): MemorySpecification {
     return new OrSpecification(this, other);
   }
-  
+
   not(): MemorySpecification {
     return new NotSpecification(this);
   }
@@ -563,7 +599,7 @@ export class RecentlyAccessedSpecification extends MemorySpecification {
   constructor(private withinHours: number = 24) {
     super();
   }
-  
+
   isSatisfiedBy(memory: MemoryAggregate): boolean {
     return memory.isRecentlyAccessed(this.withinHours);
   }
@@ -573,7 +609,7 @@ export class HasClassificationSpecification extends MemorySpecification {
   constructor(private category: string) {
     super();
   }
-  
+
   isSatisfiedBy(memory: MemoryAggregate): boolean {
     return memory.hasClassification(this.category);
   }
@@ -587,7 +623,7 @@ class AndSpecification extends MemorySpecification {
   ) {
     super();
   }
-  
+
   isSatisfiedBy(memory: MemoryAggregate): boolean {
     return this.left.isSatisfiedBy(memory) && this.right.isSatisfiedBy(memory);
   }
@@ -600,7 +636,7 @@ class OrSpecification extends MemorySpecification {
   ) {
     super();
   }
-  
+
   isSatisfiedBy(memory: MemoryAggregate): boolean {
     return this.left.isSatisfiedBy(memory) || this.right.isSatisfiedBy(memory);
   }
@@ -610,7 +646,7 @@ class NotSpecification extends MemorySpecification {
   constructor(private spec: MemorySpecification) {
     super();
   }
-  
+
   isSatisfiedBy(memory: MemoryAggregate): boolean {
     return !this.spec.isSatisfiedBy(memory);
   }

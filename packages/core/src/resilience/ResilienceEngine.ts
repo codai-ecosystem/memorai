@@ -4,7 +4,7 @@
  */
 
 import { EventEmitter } from 'events';
-import { AdvancedEventBus, MemoryEventType } from '../events/EventDrivenArchitecture.js';
+import { AdvancedEventBus } from '../events/EventDrivenArchitecture.js';
 import { MonitoringPort } from '../hexagonal/HexagonalArchitecture.js';
 
 // Resilience Configuration
@@ -60,7 +60,7 @@ export interface ChaosScenario {
 export enum CircuitState {
   CLOSED = 'closed',
   OPEN = 'open',
-  HALF_OPEN = 'half_open'
+  HALF_OPEN = 'half_open',
 }
 
 // Circuit Breaker Implementation
@@ -72,17 +72,26 @@ export class CircuitBreaker extends EventEmitter {
   private config: ResilienceConfig['circuitBreaker'];
   private monitoring: MonitoringPort;
 
-  constructor(config: ResilienceConfig['circuitBreaker'], monitoring: MonitoringPort) {
+  constructor(
+    config: ResilienceConfig['circuitBreaker'],
+    monitoring: MonitoringPort
+  ) {
     super();
     this.config = config;
     this.monitoring = monitoring;
   }
 
-  async execute<T>(operation: () => Promise<T>, operationName: string): Promise<T> {
+  async execute<T>(
+    operation: () => Promise<T>,
+    operationName: string
+  ): Promise<T> {
     if (this.state === CircuitState.OPEN) {
       if (Date.now() - this.lastFailureTime < this.config.timeout) {
         const error = new Error(`Circuit breaker is OPEN for ${operationName}`);
-        await this.monitoring.recordError(error, { circuitState: this.state, operationName });
+        await this.monitoring.recordError(error, {
+          circuitState: this.state,
+          operationName,
+        });
         throw error;
       } else {
         // Transition to half-open
@@ -110,27 +119,30 @@ export class CircuitBreaker extends EventEmitter {
       state: this.state,
       failures: this.failures,
       successCount: this.successCount,
-      lastFailureTime: this.lastFailureTime
+      lastFailureTime: this.lastFailureTime,
     };
   }
 
   private async onSuccess(operationName: string): Promise<void> {
     if (this.state === CircuitState.HALF_OPEN) {
       this.successCount++;
-      if (this.successCount >= 3) { // Require multiple successes
+      if (this.successCount >= 3) {
+        // Require multiple successes
         this.state = CircuitState.CLOSED;
         this.failures = 0;
         this.successCount = 0;
         this.emit('state_change', { state: this.state, operationName });
-        await this.monitoring.recordEvent('circuit_breaker_closed', { operationName });
+        await this.monitoring.recordEvent('circuit_breaker_closed', {
+          operationName,
+        });
       }
     } else if (this.state === CircuitState.CLOSED) {
       this.failures = Math.max(0, this.failures - 1); // Gradually recover
     }
 
-    await this.monitoring.recordMetric('circuit_breaker.success', 1, { 
+    await this.monitoring.recordMetric('circuit_breaker.success', 1, {
       operation: operationName,
-      state: this.state 
+      state: this.state,
     });
   }
 
@@ -142,19 +154,22 @@ export class CircuitBreaker extends EventEmitter {
       this.state = CircuitState.OPEN;
       this.successCount = 0;
       this.emit('state_change', { state: this.state, operationName, error });
-    } else if (this.state === CircuitState.CLOSED && this.failures >= this.config.failureThreshold) {
+    } else if (
+      this.state === CircuitState.CLOSED &&
+      this.failures >= this.config.failureThreshold
+    ) {
       this.state = CircuitState.OPEN;
       this.emit('state_change', { state: this.state, operationName, error });
-      await this.monitoring.recordEvent('circuit_breaker_opened', { 
-        operationName, 
+      await this.monitoring.recordEvent('circuit_breaker_opened', {
+        operationName,
         failures: this.failures,
-        error: error.message 
+        error: error.message,
       });
     }
 
-    await this.monitoring.recordMetric('circuit_breaker.failure', 1, { 
+    await this.monitoring.recordMetric('circuit_breaker.failure', 1, {
       operation: operationName,
-      state: this.state 
+      state: this.state,
     });
   }
 }
@@ -175,29 +190,29 @@ export class RetryManager {
     isRetryableError?: (error: Error) => boolean
   ): Promise<T> {
     let lastError: Error;
-    
+
     for (let attempt = 0; attempt <= this.config.maxRetries; attempt++) {
       try {
         const result = await operation();
-        
+
         if (attempt > 0) {
           await this.monitoring.recordEvent('retry_success', {
             operationName,
             attempt,
-            totalAttempts: attempt + 1
+            totalAttempts: attempt + 1,
           });
         }
-        
+
         return result;
       } catch (error) {
         lastError = error as Error;
-        
+
         // Check if error is retryable
         if (isRetryableError && !isRetryableError(lastError)) {
           await this.monitoring.recordEvent('retry_skipped_non_retryable', {
             operationName,
             error: lastError.message,
-            attempt
+            attempt,
           });
           throw lastError;
         }
@@ -206,14 +221,15 @@ export class RetryManager {
           await this.monitoring.recordEvent('retry_exhausted', {
             operationName,
             totalAttempts: attempt + 1,
-            finalError: lastError.message
+            finalError: lastError.message,
           });
           break;
         }
 
         // Calculate delay with exponential backoff
         const delay = Math.min(
-          this.config.baseDelay * Math.pow(this.config.backoffMultiplier, attempt),
+          this.config.baseDelay *
+            Math.pow(this.config.backoffMultiplier, attempt),
           this.config.maxDelay
         );
 
@@ -221,7 +237,7 @@ export class RetryManager {
           operationName,
           attempt: attempt + 1,
           delay,
-          error: lastError.message
+          error: lastError.message,
         });
 
         await this.sleep(delay);
@@ -242,7 +258,10 @@ export class BulkheadManager {
   private config: ResilienceConfig['bulkhead'];
   private monitoring: MonitoringPort;
 
-  constructor(config: ResilienceConfig['bulkhead'], monitoring: MonitoringPort) {
+  constructor(
+    config: ResilienceConfig['bulkhead'],
+    monitoring: MonitoringPort
+  ) {
     this.config = config;
     this.monitoring = monitoring;
   }
@@ -253,12 +272,14 @@ export class BulkheadManager {
     operationName: string
   ): Promise<T> {
     const semaphore = this.getSemaphore(resourceType);
-    
+
     const startTime = Date.now();
     const acquired = await semaphore.acquire(this.config.timeout);
-    
+
     if (!acquired) {
-      const error = new Error(`Bulkhead timeout for ${resourceType}:${operationName}`);
+      const error = new Error(
+        `Bulkhead timeout for ${resourceType}:${operationName}`
+      );
       await this.monitoring.recordError(error, { resourceType, operationName });
       throw error;
     }
@@ -266,20 +287,20 @@ export class BulkheadManager {
     const waitTime = Date.now() - startTime;
     await this.monitoring.recordMetric('bulkhead.wait_time', waitTime, {
       resourceType,
-      operation: operationName
+      operation: operationName,
     });
 
     try {
       const result = await operation();
       await this.monitoring.recordMetric('bulkhead.success', 1, {
         resourceType,
-        operation: operationName
+        operation: operationName,
       });
       return result;
     } catch (error) {
       await this.monitoring.recordMetric('bulkhead.failure', 1, {
         resourceType,
-        operation: operationName
+        operation: operationName,
       });
       throw error;
     } finally {
@@ -289,21 +310,24 @@ export class BulkheadManager {
 
   getBulkheadMetrics(): Record<string, any> {
     const metrics: Record<string, any> = {};
-    
+
     for (const [resourceType, semaphore] of this.semaphores) {
       metrics[resourceType] = {
         available: semaphore.available(),
         total: semaphore.total(),
-        waiting: semaphore.waiting()
+        waiting: semaphore.waiting(),
       };
     }
-    
+
     return metrics;
   }
 
   private getSemaphore(resourceType: string): Semaphore {
     if (!this.semaphores.has(resourceType)) {
-      this.semaphores.set(resourceType, new Semaphore(this.config.maxConcurrency));
+      this.semaphores.set(
+        resourceType,
+        new Semaphore(this.config.maxConcurrency)
+      );
     }
     return this.semaphores.get(resourceType)!;
   }
@@ -313,7 +337,8 @@ export class BulkheadManager {
 class Semaphore {
   private permits: number;
   private readonly maxPermits: number;
-  private waitQueue: Array<{ resolve: () => void; timeout: NodeJS.Timeout }> = [];
+  private waitQueue: Array<{ resolve: () => void; timeout: NodeJS.Timeout }> =
+    [];
 
   constructor(permits: number) {
     this.permits = permits;
@@ -326,21 +351,25 @@ class Semaphore {
       return true;
     }
 
-    return new Promise((resolve) => {
-      const timeoutHandle = timeoutMs ? setTimeout(() => {
-        const index = this.waitQueue.findIndex(item => item.resolve === resolve);
-        if (index >= 0) {
-          this.waitQueue.splice(index, 1);
-          resolve(false);
-        }
-      }, timeoutMs) : null;
+    return new Promise(resolve => {
+      const timeoutHandle = timeoutMs
+        ? setTimeout(() => {
+            const index = this.waitQueue.findIndex(
+              item => item.resolve === resolve
+            );
+            if (index >= 0) {
+              this.waitQueue.splice(index, 1);
+              resolve(false);
+            }
+          }, timeoutMs)
+        : null;
 
       this.waitQueue.push({
         resolve: () => {
           if (timeoutHandle) clearTimeout(timeoutHandle);
           resolve(true);
         },
-        timeout: timeoutHandle!
+        timeout: timeoutHandle!,
       });
     });
   }
@@ -374,7 +403,10 @@ export class HealthCheckManager extends EventEmitter {
   private monitoring: MonitoringPort;
   private checkInterval: NodeJS.Timeout | null = null;
 
-  constructor(config: ResilienceConfig['healthCheck'], monitoring: MonitoringPort) {
+  constructor(
+    config: ResilienceConfig['healthCheck'],
+    monitoring: MonitoringPort
+  ) {
     super();
     this.config = config;
     this.monitoring = monitoring;
@@ -395,26 +427,33 @@ export class HealthCheckManager extends EventEmitter {
         const startTime = Date.now();
         const result = await Promise.race([
           healthCheck.check(),
-          this.timeoutPromise(this.config.timeout)
+          this.timeoutPromise(this.config.timeout),
         ]);
-        
+
         const duration = Date.now() - startTime;
         results[name] = result.healthy;
         details[name] = { ...result, duration };
-        
+
         if (!result.healthy) {
           overallHealthy = false;
         }
 
-        await this.monitoring.recordMetric('health_check.duration', duration, { check: name });
-        await this.monitoring.recordMetric('health_check.status', result.healthy ? 1 : 0, { check: name });
-
+        await this.monitoring.recordMetric('health_check.duration', duration, {
+          check: name,
+        });
+        await this.monitoring.recordMetric(
+          'health_check.status',
+          result.healthy ? 1 : 0,
+          { check: name }
+        );
       } catch (error) {
         results[name] = false;
         details[name] = { healthy: false, error: (error as Error).message };
         overallHealthy = false;
 
-        await this.monitoring.recordError(error as Error, { healthCheck: name });
+        await this.monitoring.recordError(error as Error, {
+          healthCheck: name,
+        });
       }
     }
 
@@ -422,7 +461,7 @@ export class HealthCheckManager extends EventEmitter {
       healthy: overallHealthy,
       checks: results,
       details,
-      timestamp: new Date()
+      timestamp: new Date(),
     };
 
     this.emit('health_check_completed', status);
@@ -440,7 +479,9 @@ export class HealthCheckManager extends EventEmitter {
       try {
         await this.runHealthChecks();
       } catch (error) {
-        await this.monitoring.recordError(error as Error, { operation: 'health_check_interval' });
+        await this.monitoring.recordError(error as Error, {
+          operation: 'health_check_interval',
+        });
       }
     }, this.config.interval);
   }
@@ -459,7 +500,10 @@ export class ChaosEngineeringEngine extends EventEmitter {
   private monitoring: MonitoringPort;
   private activeScenarios: Map<string, ChaosScenarioExecution> = new Map();
 
-  constructor(config: ResilienceConfig['chaosEngineering'], monitoring: MonitoringPort) {
+  constructor(
+    config: ResilienceConfig['chaosEngineering'],
+    monitoring: MonitoringPort
+  ) {
     super();
     this.config = config;
     this.monitoring = monitoring;
@@ -491,12 +535,12 @@ export class ChaosEngineeringEngine extends EventEmitter {
     const execution: ChaosScenarioExecution = {
       scenario,
       startTime: Date.now(),
-      endTime: Date.now() + scenario.duration
+      endTime: Date.now() + scenario.duration,
     };
 
     this.activeScenarios.set(scenarioName, execution);
     this.emit('chaos_scenario_started', { scenario, execution });
-    
+
     // Auto-stop after duration
     setTimeout(() => {
       this.stopChaosScenario(scenarioName);
@@ -507,7 +551,10 @@ export class ChaosEngineeringEngine extends EventEmitter {
     const execution = this.activeScenarios.get(scenarioName);
     if (execution) {
       this.activeScenarios.delete(scenarioName);
-      this.emit('chaos_scenario_stopped', { scenario: execution.scenario, execution });
+      this.emit('chaos_scenario_stopped', {
+        scenario: execution.scenario,
+        execution,
+      });
     }
   }
 
@@ -521,7 +568,7 @@ export class ChaosEngineeringEngine extends EventEmitter {
     }
 
     // Filter scenarios by conditions
-    const applicableScenarios = this.config.scenarios.filter(scenario => 
+    const applicableScenarios = this.config.scenarios.filter(scenario =>
       this.isScenarioApplicable(scenario, operationName)
     );
 
@@ -530,7 +577,10 @@ export class ChaosEngineeringEngine extends EventEmitter {
     }
 
     // Weighted random selection
-    const totalProbability = applicableScenarios.reduce((sum, s) => sum + s.probability, 0);
+    const totalProbability = applicableScenarios.reduce(
+      (sum, s) => sum + s.probability,
+      0
+    );
     let random = Math.random() * totalProbability;
 
     for (const scenario of applicableScenarios) {
@@ -543,20 +593,38 @@ export class ChaosEngineeringEngine extends EventEmitter {
     return null;
   }
 
-  private isScenarioApplicable(scenario: ChaosScenario, operationName: string): boolean {
+  private isScenarioApplicable(
+    scenario: ChaosScenario,
+    operationName: string
+  ): boolean {
     const now = new Date();
-    
+
     // Check time conditions
     if (scenario.conditions.timeOfDay) {
       const hour = now.getHours();
-      const timeOfDay = hour < 6 ? 'night' : hour < 12 ? 'morning' : hour < 18 ? 'afternoon' : 'evening';
+      const timeOfDay =
+        hour < 6
+          ? 'night'
+          : hour < 12
+            ? 'morning'
+            : hour < 18
+              ? 'afternoon'
+              : 'evening';
       if (!scenario.conditions.timeOfDay.includes(timeOfDay)) {
         return false;
       }
     }
 
     if (scenario.conditions.dayOfWeek) {
-      const dayOfWeek = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][now.getDay()];
+      const dayOfWeek = [
+        'sunday',
+        'monday',
+        'tuesday',
+        'wednesday',
+        'thursday',
+        'friday',
+        'saturday',
+      ][now.getDay()];
       if (!scenario.conditions.dayOfWeek.includes(dayOfWeek)) {
         return false;
       }
@@ -574,7 +642,7 @@ export class ChaosEngineeringEngine extends EventEmitter {
       scenario: scenario.name,
       impact: scenario.impact,
       severity: scenario.severity,
-      operationName
+      operationName,
     });
 
     switch (scenario.impact) {
@@ -582,12 +650,15 @@ export class ChaosEngineeringEngine extends EventEmitter {
         await this.injectLatency(scenario.severity);
         break;
       case 'error':
-        if (Math.random() < 0.5) { // 50% chance to actually throw error
+        if (Math.random() < 0.5) {
+          // 50% chance to actually throw error
           throw new Error(`Chaos Engineering: ${scenario.description}`);
         }
         break;
       case 'unavailable':
-        throw new Error(`Service unavailable due to chaos engineering: ${scenario.description}`);
+        throw new Error(
+          `Service unavailable due to chaos engineering: ${scenario.description}`
+        );
       case 'data_corruption':
         // In a real implementation, this might corrupt response data
         break;
@@ -601,7 +672,7 @@ export class ChaosEngineeringEngine extends EventEmitter {
       low: 100,
       medium: 500,
       high: 2000,
-      critical: 5000
+      critical: 5000,
     };
 
     const delay = delays[severity as keyof typeof delays] || 100;
@@ -629,12 +700,18 @@ export class ResilienceManager extends EventEmitter {
     this.config = config;
     this.monitoring = monitoring;
     this.eventBus = eventBus;
-    
+
     this.retryManager = new RetryManager(config.retry, monitoring);
     this.bulkheadManager = new BulkheadManager(config.bulkhead, monitoring);
-    this.healthCheckManager = new HealthCheckManager(config.healthCheck, monitoring);
-    this.chaosEngine = new ChaosEngineeringEngine(config.chaosEngineering, monitoring);
-    
+    this.healthCheckManager = new HealthCheckManager(
+      config.healthCheck,
+      monitoring
+    );
+    this.chaosEngine = new ChaosEngineeringEngine(
+      config.chaosEngineering,
+      monitoring
+    );
+
     this.setupEventListeners();
   }
 
@@ -658,40 +735,44 @@ export class ResilienceManager extends EventEmitter {
       retry = true,
       bulkhead = true,
       chaos = true,
-      timeout = this.config.timeout.default
+      timeout = this.config.timeout.default,
     } = options;
 
     let wrappedOperation = operation;
 
     // Apply chaos engineering
     if (chaos) {
-      wrappedOperation = () => this.chaosEngine.injectChaos(operation, operationName);
+      wrappedOperation = () =>
+        this.chaosEngine.injectChaos(operation, operationName);
     }
 
     // Apply timeout
     if (timeout > 0) {
       const originalOperation = wrappedOperation;
-      wrappedOperation = () => Promise.race([
-        originalOperation(),
-        this.timeoutPromise<T>(timeout, operationName)
-      ]);
+      wrappedOperation = () =>
+        Promise.race([
+          originalOperation(),
+          this.timeoutPromise<T>(timeout, operationName),
+        ]);
     }
 
     // Apply bulkhead
     if (bulkhead) {
       const bulkheadOperation = wrappedOperation;
-      wrappedOperation = () => this.bulkheadManager.execute(
-        bulkheadOperation,
-        resourceType,
-        operationName
-      );
+      wrappedOperation = () =>
+        this.bulkheadManager.execute(
+          bulkheadOperation,
+          resourceType,
+          operationName
+        );
     }
 
     // Apply circuit breaker
     if (circuitBreaker) {
       const circuitOperation = wrappedOperation;
       const circuitBreaker = this.getCircuitBreaker(operationName);
-      wrappedOperation = () => circuitBreaker.execute(circuitOperation, operationName);
+      wrappedOperation = () =>
+        circuitBreaker.execute(circuitOperation, operationName);
     }
 
     // Apply retry
@@ -722,7 +803,7 @@ export class ResilienceManager extends EventEmitter {
       circuitBreakers: circuitBreakerMetrics,
       bulkheads: this.bulkheadManager.getBulkheadMetrics(),
       chaosScenarios: this.chaosEngine.getActiveChaosScenarios(),
-      lastHealthCheck: null // Would store last health check result
+      lastHealthCheck: null, // Would store last health check result
     };
   }
 
@@ -737,22 +818,33 @@ export class ResilienceManager extends EventEmitter {
 
   private getCircuitBreaker(operationName: string): CircuitBreaker {
     if (!this.circuitBreakers.has(operationName)) {
-      const cb = new CircuitBreaker(this.config.circuitBreaker, this.monitoring);
+      const cb = new CircuitBreaker(
+        this.config.circuitBreaker,
+        this.monitoring
+      );
       this.circuitBreakers.set(operationName, cb);
-      
-      cb.on('state_change', (data) => {
+
+      cb.on('state_change', data => {
         this.emit('circuit_breaker_state_change', { operationName, ...data });
       });
     }
-    
+
     return this.circuitBreakers.get(operationName)!;
   }
 
-  private async timeoutPromise<T>(timeoutMs: number, operationName: string): Promise<T> {
+  private async timeoutPromise<T>(
+    timeoutMs: number,
+    operationName: string
+  ): Promise<T> {
     return new Promise((_, reject) => {
       setTimeout(() => {
-        const error = new Error(`Operation timeout: ${operationName} (${timeoutMs}ms)`);
-        this.monitoring.recordError(error, { operationName, timeout: timeoutMs });
+        const error = new Error(
+          `Operation timeout: ${operationName} (${timeoutMs}ms)`
+        );
+        this.monitoring.recordError(error, {
+          operationName,
+          timeout: timeoutMs,
+        });
         reject(error);
       }, timeoutMs);
     }) as Promise<T>;
@@ -765,25 +857,27 @@ export class ResilienceManager extends EventEmitter {
       /connection/i,
       /network/i,
       /temporary/i,
-      /unavailable/i
+      /unavailable/i,
     ];
 
     return retryablePatterns.some(pattern => pattern.test(error.message));
   }
 
   private setupEventListeners(): void {
-    this.healthCheckManager.on('health_check_completed', (status) => {
+    this.healthCheckManager.on('health_check_completed', status => {
       this.emit('health_status_change', status);
-      
+
       if (!status.healthy) {
         this.monitoring.createAlert(
           'system_unhealthy',
-          `System health check failed: ${Object.keys(status.checks).filter(k => !status.checks[k]).join(', ')}`
+          `System health check failed: ${Object.keys(status.checks)
+            .filter(k => !status.checks[k])
+            .join(', ')}`
         );
       }
     });
 
-    this.chaosEngine.on('chaos_scenario_started', (data) => {
+    this.chaosEngine.on('chaos_scenario_started', data => {
       this.emit('chaos_scenario_active', data);
     });
   }

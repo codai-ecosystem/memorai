@@ -4,7 +4,7 @@
  */
 
 // Result type for consistent error handling
-type Result<T, E> = 
+type Result<T, E> =
   | { success: true; error: undefined; data: T }
   | { success: false; error: E; data: undefined };
 
@@ -23,7 +23,12 @@ interface ComplianceRequirement {
   id: string;
   title: string;
   description: string;
-  category: 'data-protection' | 'access-control' | 'audit-logging' | 'retention' | 'encryption';
+  category:
+    | 'data-protection'
+    | 'access-control'
+    | 'audit-logging'
+    | 'retention'
+    | 'encryption';
   criticality: 'low' | 'medium' | 'high' | 'critical';
   implemented: boolean;
   lastVerified: Date;
@@ -44,7 +49,13 @@ interface DataProcessingRecord {
   dataSubject: string;
   dataTypes: string[];
   processingPurpose: string;
-  legalBasis: 'consent' | 'contract' | 'legal-obligation' | 'vital-interests' | 'public-task' | 'legitimate-interests';
+  legalBasis:
+    | 'consent'
+    | 'contract'
+    | 'legal-obligation'
+    | 'vital-interests'
+    | 'public-task'
+    | 'legitimate-interests';
   retention: RetentionPolicy;
   thirdParties: string[];
   crossBorderTransfers: boolean;
@@ -76,7 +87,13 @@ interface ConsentRecord {
 
 interface DataSubjectRequest {
   id: string;
-  type: 'access' | 'rectification' | 'erasure' | 'portability' | 'restriction' | 'objection';
+  type:
+    | 'access'
+    | 'rectification'
+    | 'erasure'
+    | 'portability'
+    | 'restriction'
+    | 'objection';
   dataSubject: string;
   email: string;
   requestDate: Date;
@@ -89,9 +106,11 @@ interface DataSubjectRequest {
 
 // GDPR Compliance Manager
 class GDPRCompliance {
-  private readonly dataProcessingRecords: Map<string, DataProcessingRecord> = new Map();
+  private readonly dataProcessingRecords: Map<string, DataProcessingRecord> =
+    new Map();
   private readonly consentRecords: Map<string, ConsentRecord[]> = new Map();
-  private readonly dataSubjectRequests: Map<string, DataSubjectRequest> = new Map();
+  private readonly dataSubjectRequests: Map<string, DataSubjectRequest> =
+    new Map();
   private readonly retentionPolicies: Map<string, RetentionPolicy> = new Map();
 
   constructor() {
@@ -107,7 +126,7 @@ class GDPRCompliance {
       deletionMethod: 'hard',
       archiveRequired: true,
       legalHold: false,
-      reviewDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
+      reviewDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
     });
 
     // Memory data
@@ -117,7 +136,7 @@ class GDPRCompliance {
       deletionMethod: 'soft',
       archiveRequired: false,
       legalHold: false,
-      reviewDate: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000)
+      reviewDate: new Date(Date.now() + 180 * 24 * 60 * 60 * 1000),
     });
 
     // Session logs
@@ -127,7 +146,7 @@ class GDPRCompliance {
       deletionMethod: 'hard',
       archiveRequired: false,
       legalHold: false,
-      reviewDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+      reviewDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
     });
 
     // Audit logs (compliance)
@@ -137,28 +156,32 @@ class GDPRCompliance {
       deletionMethod: 'hard',
       archiveRequired: true,
       legalHold: true,
-      reviewDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
+      reviewDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
     });
   }
 
-  async recordDataProcessing(record: Omit<DataProcessingRecord, 'id' | 'timestamp'>): Promise<string> {
+  async recordDataProcessing(
+    record: Omit<DataProcessingRecord, 'id' | 'timestamp'>
+  ): Promise<string> {
     const id = `dpr-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const processingRecord: DataProcessingRecord = {
       ...record,
       id,
-      timestamp: new Date()
+      timestamp: new Date(),
     };
 
     this.dataProcessingRecords.set(id, processingRecord);
     return id;
   }
 
-  async recordConsent(consent: Omit<ConsentRecord, 'id' | 'timestamp'>): Promise<string> {
+  async recordConsent(
+    consent: Omit<ConsentRecord, 'id' | 'timestamp'>
+  ): Promise<string> {
     const id = `consent-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const consentRecord: ConsentRecord = {
       ...consent,
       id,
-      timestamp: new Date()
+      timestamp: new Date(),
     };
 
     const existingConsents = this.consentRecords.get(consent.dataSubject) || [];
@@ -168,11 +191,18 @@ class GDPRCompliance {
     return id;
   }
 
-  async withdrawConsent(dataSubject: string, consentId?: string): Promise<Result<boolean, string>> {
+  async withdrawConsent(
+    dataSubject: string,
+    consentId?: string
+  ): Promise<Result<boolean, string>> {
     try {
       const consents = this.consentRecords.get(dataSubject);
       if (!consents || consents.length === 0) {
-        return { success: false, error: 'No consent records found', data: undefined };
+        return {
+          success: false,
+          error: 'No consent records found',
+          data: undefined,
+        };
       }
 
       let updated = false;
@@ -186,21 +216,28 @@ class GDPRCompliance {
       }
 
       if (!updated) {
-        return { success: false, error: 'No matching consent found or already withdrawn', data: undefined };
+        return {
+          success: false,
+          error: 'No matching consent found or already withdrawn',
+          data: undefined,
+        };
       }
 
       return { success: true, error: undefined, data: true };
     } catch (error) {
-      return { 
-        success: false, 
+      return {
+        success: false,
         error: `Failed to withdraw consent: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        data: undefined 
+        data: undefined,
       };
     }
   }
 
   async createDataSubjectRequest(
-    request: Omit<DataSubjectRequest, 'id' | 'requestDate' | 'deadline' | 'status' | 'evidence'>
+    request: Omit<
+      DataSubjectRequest,
+      'id' | 'requestDate' | 'deadline' | 'status' | 'evidence'
+    >
   ): Promise<string> {
     const id = `dsr-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const now = new Date();
@@ -212,14 +249,16 @@ class GDPRCompliance {
       requestDate: now,
       deadline,
       status: 'received',
-      evidence: []
+      evidence: [],
     };
 
     this.dataSubjectRequests.set(id, dataSubjectRequest);
     return id;
   }
 
-  async processDataSubjectRequest(requestId: string): Promise<Result<any, string>> {
+  async processDataSubjectRequest(
+    requestId: string
+  ): Promise<Result<any, string>> {
     try {
       const request = this.dataSubjectRequests.get(requestId);
       if (!request) {
@@ -249,7 +288,11 @@ class GDPRCompliance {
           result = await this.processObjectionRequest(request);
           break;
         default:
-          return { success: false, error: 'Unknown request type', data: undefined };
+          return {
+            success: false,
+            error: 'Unknown request type',
+            data: undefined,
+          };
       }
 
       request.status = 'completed';
@@ -257,52 +300,64 @@ class GDPRCompliance {
 
       return { success: true, error: undefined, data: result };
     } catch (error) {
-      return { 
-        success: false, 
+      return {
+        success: false,
         error: `Failed to process request: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        data: undefined 
+        data: undefined,
       };
     }
   }
 
-  private async processAccessRequest(request: DataSubjectRequest): Promise<any> {
+  private async processAccessRequest(
+    request: DataSubjectRequest
+  ): Promise<any> {
     // Collect all data for the data subject
     const userData = {
       personalData: await this.getPersonalData(request.dataSubject),
       processingRecords: this.getProcessingRecords(request.dataSubject),
       consentHistory: this.consentRecords.get(request.dataSubject) || [],
-      retentionInfo: this.getRetentionInformation(request.dataSubject)
+      retentionInfo: this.getRetentionInformation(request.dataSubject),
     };
 
     return userData;
   }
 
-  private async processRectificationRequest(request: DataSubjectRequest): Promise<any> {
+  private async processRectificationRequest(
+    request: DataSubjectRequest
+  ): Promise<any> {
     // Update incorrect data - implementation depends on data structure
     return { message: 'Data rectification completed', requestId: request.id };
   }
 
-  private async processErasureRequest(request: DataSubjectRequest): Promise<any> {
+  private async processErasureRequest(
+    request: DataSubjectRequest
+  ): Promise<any> {
     // Right to be forgotten - careful implementation needed
     return { message: 'Data erasure completed', requestId: request.id };
   }
 
-  private async processPortabilityRequest(request: DataSubjectRequest): Promise<any> {
+  private async processPortabilityRequest(
+    request: DataSubjectRequest
+  ): Promise<any> {
     // Export data in structured format
     const exportData = await this.getPersonalData(request.dataSubject);
     return {
       format: 'JSON',
       data: exportData,
-      exportDate: new Date().toISOString()
+      exportDate: new Date().toISOString(),
     };
   }
 
-  private async processRestrictionRequest(request: DataSubjectRequest): Promise<any> {
+  private async processRestrictionRequest(
+    request: DataSubjectRequest
+  ): Promise<any> {
     // Restrict processing - mark data as restricted
     return { message: 'Processing restriction applied', requestId: request.id };
   }
 
-  private async processObjectionRequest(request: DataSubjectRequest): Promise<any> {
+  private async processObjectionRequest(
+    request: DataSubjectRequest
+  ): Promise<any> {
     // Stop processing based on legitimate interests
     return { message: 'Processing objection processed', requestId: request.id };
   }
@@ -312,48 +367,62 @@ class GDPRCompliance {
     return {
       dataSubject,
       collected: new Date().toISOString(),
-      note: 'Actual implementation would retrieve real data'
+      note: 'Actual implementation would retrieve real data',
     };
   }
 
   private getProcessingRecords(dataSubject: string): DataProcessingRecord[] {
-    return Array.from(this.dataProcessingRecords.values())
-      .filter(record => record.dataSubject === dataSubject);
+    return Array.from(this.dataProcessingRecords.values()).filter(
+      record => record.dataSubject === dataSubject
+    );
   }
 
   private getRetentionInformation(dataSubject: string): any {
     return {
       policies: Array.from(this.retentionPolicies.values()),
-      applicableRetention: 'Implementation specific'
+      applicableRetention: 'Implementation specific',
     };
   }
 
   private startRetentionMonitoring(): void {
     // Check retention policies daily
-    setInterval(async () => {
-      await this.enforceRetentionPolicies();
-    }, 24 * 60 * 60 * 1000);
+    setInterval(
+      async () => {
+        await this.enforceRetentionPolicies();
+      },
+      24 * 60 * 60 * 1000
+    );
   }
 
   private async enforceRetentionPolicies(): Promise<void> {
     for (const [category, policy] of this.retentionPolicies.entries()) {
       if (policy.legalHold) continue;
 
-      const cutoffDate = new Date(Date.now() - policy.retentionPeriod * 24 * 60 * 60 * 1000);
-      
+      const cutoffDate = new Date(
+        Date.now() - policy.retentionPeriod * 24 * 60 * 60 * 1000
+      );
+
       // Implementation would identify and handle expired data based on category
-      console.log(`Enforcing retention policy for ${category}, cutoff: ${cutoffDate.toISOString()}`);
+      console.log(
+        `Enforcing retention policy for ${category}, cutoff: ${cutoffDate.toISOString()}`
+      );
     }
   }
 }
 
 // CCPA Compliance Manager
 class CCPACompliance {
-  private readonly consumerRequests: Map<string, DataSubjectRequest> = new Map();
+  private readonly consumerRequests: Map<string, DataSubjectRequest> =
+    new Map();
   private readonly salesRecords: Map<string, any> = new Map();
   private readonly doNotSellRegistry: Set<string> = new Set();
 
-  async recordSale(consumerId: string, dataTypes: string[], thirdParty: string, value?: number): Promise<string> {
+  async recordSale(
+    consumerId: string,
+    dataTypes: string[],
+    thirdParty: string,
+    value?: number
+  ): Promise<string> {
     const id = `sale-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const saleRecord = {
       id,
@@ -362,7 +431,7 @@ class CCPACompliance {
       thirdParty,
       value,
       timestamp: new Date(),
-      doNotSell: this.doNotSellRegistry.has(consumerId)
+      doNotSell: this.doNotSellRegistry.has(consumerId),
     };
 
     this.salesRecords.set(id, saleRecord);
@@ -382,8 +451,9 @@ class CCPACompliance {
   }
 
   async getSalesReport(consumerId: string): Promise<any[]> {
-    return Array.from(this.salesRecords.values())
-      .filter(record => record.consumerId === consumerId);
+    return Array.from(this.salesRecords.values()).filter(
+      record => record.consumerId === consumerId
+    );
   }
 }
 
@@ -405,7 +475,7 @@ class SOXCompliance {
       accessControl: 'role-based',
       retentionPeriod: 2555, // 7 years
       auditFrequency: 'monthly',
-      segregationOfDuties: true
+      segregationOfDuties: true,
     });
 
     this.financialControls.set('customer-financial', {
@@ -413,7 +483,7 @@ class SOXCompliance {
       accessControl: 'attribute-based',
       retentionPeriod: 2555, // 7 years
       auditFrequency: 'monthly',
-      segregationOfDuties: true
+      segregationOfDuties: true,
     });
   }
 
@@ -424,7 +494,7 @@ class SOXCompliance {
       resource,
       timestamp: new Date(),
       action: 'financial-access',
-      approved: true // Implementation would check actual authorization
+      approved: true, // Implementation would check actual authorization
     };
 
     this.auditTrails.set(auditRecord.id, auditRecord);
@@ -432,9 +502,12 @@ class SOXCompliance {
 
   private startQuarterlyReviews(): void {
     // Quarterly access reviews for SOX compliance
-    setInterval(async () => {
-      await this.performQuarterlyReview();
-    }, 90 * 24 * 60 * 60 * 1000); // 90 days
+    setInterval(
+      async () => {
+        await this.performQuarterlyReview();
+      },
+      90 * 24 * 60 * 60 * 1000
+    ); // 90 days
   }
 
   private async performQuarterlyReview(): Promise<void> {
@@ -444,7 +517,7 @@ class SOXCompliance {
       timestamp: new Date(),
       type: 'quarterly-access-review',
       findings: [],
-      status: 'in-progress'
+      status: 'in-progress',
     };
 
     // Implementation would perform actual access review
@@ -474,21 +547,33 @@ class PrivacyImpactAssessment {
       timestamp: new Date(),
       status: 'completed',
       reviewer: 'privacy-officer',
-      approved: true
+      approved: true,
     };
 
     this.assessments.set(id, assessment);
     return id;
   }
 
-  private calculateRiskLevel(risks: string[]): 'low' | 'medium' | 'high' | 'critical' {
-    if (risks.some(risk => risk.includes('biometric') || risk.includes('health'))) {
+  private calculateRiskLevel(
+    risks: string[]
+  ): 'low' | 'medium' | 'high' | 'critical' {
+    if (
+      risks.some(risk => risk.includes('biometric') || risk.includes('health'))
+    ) {
       return 'critical';
     }
-    if (risks.some(risk => risk.includes('financial') || risk.includes('location'))) {
+    if (
+      risks.some(
+        risk => risk.includes('financial') || risk.includes('location')
+      )
+    ) {
       return 'high';
     }
-    if (risks.some(risk => risk.includes('profile') || risk.includes('behavioral'))) {
+    if (
+      risks.some(
+        risk => risk.includes('profile') || risk.includes('behavioral')
+      )
+    ) {
       return 'medium';
     }
     return 'low';
@@ -496,7 +581,7 @@ class PrivacyImpactAssessment {
 
   private suggestMitigations(risks: string[]): string[] {
     const mitigations = [];
-    
+
     if (risks.some(risk => risk.includes('encryption'))) {
       mitigations.push('Implement end-to-end encryption');
     }
@@ -531,11 +616,12 @@ class DataBreachResponse {
       description,
       discoveredAt: new Date(),
       containedAt: null,
-      notificationRequired: this.determineNotificationRequirement(severity, affectedRecords),
+      notificationRequired: this.determineNotificationRequirement(
+        severity,
+        affectedRecords
+      ),
       status: 'discovered',
-      timeline: [
-        { event: 'discovered', timestamp: new Date() }
-      ]
+      timeline: [{ event: 'discovered', timestamp: new Date() }],
     };
 
     this.breaches.set(id, breach);
@@ -548,10 +634,15 @@ class DataBreachResponse {
     return id;
   }
 
-  private determineNotificationRequirement(severity: string, affectedRecords: number): boolean {
+  private determineNotificationRequirement(
+    severity: string,
+    affectedRecords: number
+  ): boolean {
     // GDPR: Must notify within 72 hours if likely to result in high risk
     // CCPA: Must notify without unreasonable delay
-    return severity === 'high' || severity === 'critical' || affectedRecords > 250;
+    return (
+      severity === 'high' || severity === 'critical' || affectedRecords > 250
+    );
   }
 
   private async scheduleNotifications(breachId: string): Promise<void> {
@@ -564,7 +655,7 @@ class DataBreachResponse {
       type: 'regulatory',
       breachId,
       deadline: new Date(Date.now() + 72 * 60 * 60 * 1000), // 72 hours
-      status: 'scheduled'
+      status: 'scheduled',
     };
 
     this.notifications.set(regulatoryNotification.id, regulatoryNotification);
@@ -576,7 +667,7 @@ class DataBreachResponse {
         type: 'individual',
         breachId,
         deadline: new Date(Date.now() + 72 * 60 * 60 * 1000), // Without undue delay
-        status: 'scheduled'
+        status: 'scheduled',
       };
 
       this.notifications.set(individualNotification.id, individualNotification);
@@ -599,7 +690,7 @@ class ComplianceMonitoring {
     this.sox = new SOXCompliance();
     this.pia = new PrivacyImpactAssessment();
     this.breach = new DataBreachResponse();
-    
+
     this.initializeFrameworks();
   }
 
@@ -617,7 +708,7 @@ class ComplianceMonitoring {
           criticality: 'critical',
           implemented: true,
           lastVerified: new Date(),
-          controls: []
+          controls: [],
         },
         {
           id: 'gdpr-2',
@@ -627,13 +718,13 @@ class ComplianceMonitoring {
           criticality: 'critical',
           implemented: true,
           lastVerified: new Date(),
-          controls: []
-        }
+          controls: [],
+        },
       ],
       auditFrequency: 'quarterly',
       lastAudit: new Date(),
       nextAudit: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
-      status: 'compliant'
+      status: 'compliant',
     });
 
     // CCPA Framework
@@ -649,13 +740,13 @@ class ComplianceMonitoring {
           criticality: 'high',
           implemented: true,
           lastVerified: new Date(),
-          controls: []
-        }
+          controls: [],
+        },
       ],
       auditFrequency: 'quarterly',
       lastAudit: new Date(),
       nextAudit: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
-      status: 'compliant'
+      status: 'compliant',
     });
 
     // SOX Framework
@@ -671,13 +762,13 @@ class ComplianceMonitoring {
           criticality: 'critical',
           implemented: true,
           lastVerified: new Date(),
-          controls: []
-        }
+          controls: [],
+        },
       ],
       auditFrequency: 'quarterly',
       lastAudit: new Date(),
       nextAudit: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
-      status: 'compliant'
+      status: 'compliant',
     });
   }
 
@@ -687,7 +778,7 @@ class ComplianceMonitoring {
       frameworks: {} as Record<string, any>,
       recentActivities: [],
       upcomingDeadlines: [],
-      riskAreas: []
+      riskAreas: [],
     };
 
     for (const [key, framework] of this.frameworks.entries()) {
@@ -696,8 +787,10 @@ class ComplianceMonitoring {
         status: framework.status,
         lastAudit: framework.lastAudit,
         nextAudit: framework.nextAudit,
-        implementedRequirements: framework.requirements.filter(r => r.implemented).length,
-        totalRequirements: framework.requirements.length
+        implementedRequirements: framework.requirements.filter(
+          r => r.implemented
+        ).length,
+        totalRequirements: framework.requirements.length,
       };
     }
 
@@ -727,10 +820,10 @@ class ComplianceMonitoring {
 
 // Export all compliance services
 export {
-  GDPRCompliance,
   CCPACompliance,
-  SOXCompliance,
-  PrivacyImpactAssessment,
+  ComplianceMonitoring,
   DataBreachResponse,
-  ComplianceMonitoring
+  GDPRCompliance,
+  PrivacyImpactAssessment,
+  SOXCompliance,
 };

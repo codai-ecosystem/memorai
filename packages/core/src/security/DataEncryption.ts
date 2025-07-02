@@ -3,10 +3,17 @@
  * Part of Phase 3.2: Data Encryption for Memorai Ultimate Completion Plan
  */
 
-import { createCipher, createDecipher, createHash, randomBytes, scrypt, pbkdf2 } from 'crypto';
+import {
+  createCipher,
+  createDecipher,
+  createHash,
+  pbkdf2,
+  randomBytes,
+  scrypt,
+} from 'crypto';
 import { promisify } from 'util';
 // Result type for consistent error handling
-type Result<T, E> = 
+type Result<T, E> =
   | { success: true; error: undefined; data: T }
   | { success: false; error: E; data: undefined };
 
@@ -74,7 +81,7 @@ class FieldLevelEncryption {
       ivSize: 16,
       tagSize: 16,
       saltSize: 32,
-      iterations: 100000
+      iterations: 100000,
     });
 
     // Standard config for regular data
@@ -84,7 +91,7 @@ class FieldLevelEncryption {
       ivSize: 16,
       tagSize: 0,
       saltSize: 16,
-      iterations: 50000
+      iterations: 50000,
     });
 
     // High-performance config for bulk data
@@ -94,7 +101,7 @@ class FieldLevelEncryption {
       ivSize: 12,
       tagSize: 16,
       saltSize: 16,
-      iterations: 10000
+      iterations: 10000,
     });
   }
 
@@ -106,31 +113,46 @@ class FieldLevelEncryption {
     try {
       const config = this.config.get(fieldType);
       if (!config) {
-        return { success: false, error: `Unknown field type: ${fieldType}`, data: undefined };
+        return {
+          success: false,
+          error: `Unknown field type: ${fieldType}`,
+          data: undefined,
+        };
       }
 
-      const effectiveKeyId = keyId || await this.getOrCreateKey(fieldType);
+      const effectiveKeyId = keyId || (await this.getOrCreateKey(fieldType));
       const key = this.keys.get(effectiveKeyId);
       if (!key) {
-        return { success: false, error: `Key not found: ${effectiveKeyId}`, data: undefined };
+        return {
+          success: false,
+          error: `Key not found: ${effectiveKeyId}`,
+          data: undefined,
+        };
       }
 
       const salt = randomBytes(config.saltSize);
       const iv = randomBytes(config.ivSize);
-      
+
       // Derive encryption key
-      const derivedKey = await scryptAsync(key.key, salt, config.keySize) as Buffer;
+      const derivedKey = (await scryptAsync(
+        key.key,
+        salt,
+        config.keySize
+      )) as Buffer;
 
       // Encrypt data
       const cipher = createCipher(config.algorithm, derivedKey);
       cipher.setAutoPadding(true);
-      
+
       let ciphertext = cipher.update(data, 'utf8', 'base64');
       ciphertext += cipher.final('base64');
 
       // Get authentication tag for authenticated encryption
       let tag: string | undefined;
-      if (config.algorithm === 'aes-256-gcm' || config.algorithm === 'chacha20-poly1305') {
+      if (
+        config.algorithm === 'aes-256-gcm' ||
+        config.algorithm === 'chacha20-poly1305'
+      ) {
         tag = (cipher as any).getAuthTag().toString('base64');
       }
 
@@ -148,49 +170,67 @@ class FieldLevelEncryption {
         metadata: {
           keyId: effectiveKeyId,
           fieldType,
-          encrypted: new Date().toISOString()
-        }
+          encrypted: new Date().toISOString(),
+        },
       };
 
       return { success: true, error: undefined, data: encryptedData };
     } catch (error) {
-      return { 
-        success: false, 
+      return {
+        success: false,
         error: `Encryption failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        data: undefined 
+        data: undefined,
       };
     }
   }
 
-  async decryptField(encryptedData: EncryptedData): Promise<Result<string, string>> {
+  async decryptField(
+    encryptedData: EncryptedData
+  ): Promise<Result<string, string>> {
     try {
       const keyId = encryptedData.metadata?.keyId;
       if (!keyId) {
-        return { success: false, error: 'Key ID not found in metadata', data: undefined };
+        return {
+          success: false,
+          error: 'Key ID not found in metadata',
+          data: undefined,
+        };
       }
 
       const key = this.keys.get(keyId);
       if (!key) {
-        return { success: false, error: `Key not found: ${keyId}`, data: undefined };
+        return {
+          success: false,
+          error: `Key not found: ${keyId}`,
+          data: undefined,
+        };
       }
 
       const salt = Buffer.from(encryptedData.salt, 'base64');
       const iv = Buffer.from(encryptedData.iv, 'base64');
-      
+
       // Derive decryption key
       const config = this.getConfigForAlgorithm(encryptedData.algorithm);
-      const derivedKey = await scryptAsync(key.key, salt, config.keySize) as Buffer;
+      const derivedKey = (await scryptAsync(
+        key.key,
+        salt,
+        config.keySize
+      )) as Buffer;
 
       // Decrypt data
       const decipher = createDecipher(encryptedData.algorithm, derivedKey);
-      
+
       // Set authentication tag for authenticated encryption
       if (encryptedData.tag) {
         const tag = Buffer.from(encryptedData.tag, 'base64');
         (decipher as any).setAuthTag(tag);
       }
 
-      let plaintext = decipher.update(encryptedData.ciphertext, 'base64', 'utf8');
+      let plaintext = decipher.update(
+        encryptedData.ciphertext,
+        'base64',
+        'utf8'
+      );
       plaintext += decipher.final('utf8');
 
       // Update key usage
@@ -199,15 +239,17 @@ class FieldLevelEncryption {
 
       return { success: true, error: undefined, data: plaintext };
     } catch (error) {
-      return { 
-        success: false, 
+      return {
+        success: false,
         error: `Decryption failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        data: undefined 
+        data: undefined,
       };
     }
   }
 
-  private getConfigForAlgorithm(algorithm: EncryptionAlgorithm): EncryptionConfig {
+  private getConfigForAlgorithm(
+    algorithm: EncryptionAlgorithm
+  ): EncryptionConfig {
     for (const config of this.config.values()) {
       if (config.algorithm === algorithm) {
         return config;
@@ -228,7 +270,7 @@ class FieldLevelEncryption {
     // Create new key
     const keyId = `key-${fieldType}-${Date.now()}-${randomBytes(8).toString('hex')}`;
     const config = this.config.get(fieldType)!;
-    
+
     const encryptionKey: EncryptionKey = {
       id: keyId,
       key: randomBytes(config.keySize),
@@ -236,7 +278,7 @@ class FieldLevelEncryption {
       created: new Date(),
       lastUsed: new Date(),
       operations: 0,
-      metadata: { fieldType }
+      metadata: { fieldType },
     };
 
     this.keys.set(keyId, encryptionKey);
@@ -275,7 +317,7 @@ class DatabaseEncryption {
       ivSize: 16,
       tagSize: 16,
       saltSize: 32,
-      iterations: 100000
+      iterations: 100000,
     });
 
     // User data - sensitive
@@ -285,7 +327,7 @@ class DatabaseEncryption {
       ivSize: 16,
       tagSize: 16,
       saltSize: 32,
-      iterations: 100000
+      iterations: 100000,
     });
 
     // Session data - standard
@@ -295,12 +337,18 @@ class DatabaseEncryption {
       ivSize: 16,
       tagSize: 0,
       saltSize: 16,
-      iterations: 50000
+      iterations: 50000,
     });
 
     // Define encrypted columns
-    this.columnEncryption.set('memories', new Set(['content', 'metadata', 'context']));
-    this.columnEncryption.set('users', new Set(['email', 'profile', 'preferences']));
+    this.columnEncryption.set(
+      'memories',
+      new Set(['content', 'metadata', 'context'])
+    );
+    this.columnEncryption.set(
+      'users',
+      new Set(['email', 'profile', 'preferences'])
+    );
     this.columnEncryption.set('sessions', new Set(['data', 'payload']));
   }
 
@@ -316,7 +364,11 @@ class DatabaseEncryption {
 
       const config = this.tableConfigs.get(table);
       if (!config) {
-        return { success: false, error: `No encryption config for table: ${table}`, data: undefined };
+        return {
+          success: false,
+          error: `No encryption config for table: ${table}`,
+          data: undefined,
+        };
       }
 
       const encryptedRow = { ...row };
@@ -330,10 +382,10 @@ class DatabaseEncryption {
           );
 
           if (!encryptResult.success) {
-            return { 
-              success: false, 
+            return {
+              success: false,
               error: `Failed to encrypt column ${column}: ${encryptResult.error}`,
-              data: undefined 
+              data: undefined,
             };
           }
 
@@ -343,10 +395,10 @@ class DatabaseEncryption {
 
       return { success: true, error: undefined, data: encryptedRow };
     } catch (error) {
-      return { 
-        success: false, 
+      return {
+        success: false,
         error: `Row encryption failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        data: undefined 
+        data: undefined,
       };
     }
   }
@@ -364,17 +416,21 @@ class DatabaseEncryption {
       const decryptedRow = { ...encryptedRow };
 
       for (const column of encryptedColumns) {
-        if (encryptedRow[column] !== undefined && encryptedRow[column] !== null) {
+        if (
+          encryptedRow[column] !== undefined &&
+          encryptedRow[column] !== null
+        ) {
           try {
             const encryptedData = JSON.parse(encryptedRow[column]);
             const fieldEncryption = new FieldLevelEncryption();
-            const decryptResult = await fieldEncryption.decryptField(encryptedData);
+            const decryptResult =
+              await fieldEncryption.decryptField(encryptedData);
 
             if (!decryptResult.success) {
-              return { 
-                success: false, 
+              return {
+                success: false,
                 error: `Failed to decrypt column ${column}: ${decryptResult.error}`,
-                data: undefined 
+                data: undefined,
               };
             }
 
@@ -389,10 +445,10 @@ class DatabaseEncryption {
 
       return { success: true, error: undefined, data: decryptedRow };
     } catch (error) {
-      return { 
-        success: false, 
+      return {
+        success: false,
         error: `Row decryption failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        data: undefined 
+        data: undefined,
       };
     }
   }
@@ -415,7 +471,7 @@ class EnterpriseKeyManagement {
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
       maxOperations: 1000000,
       autoRotate: true,
-      rotationSchedule: '0 0 * * 0' // Weekly check
+      rotationSchedule: '0 0 * * 0', // Weekly check
     });
 
     // Standard data - rotate every 90 days
@@ -423,7 +479,7 @@ class EnterpriseKeyManagement {
       maxAge: 90 * 24 * 60 * 60 * 1000, // 90 days
       maxOperations: 10000000,
       autoRotate: true,
-      rotationSchedule: '0 0 1 * *' // Monthly check
+      rotationSchedule: '0 0 1 * *', // Monthly check
     });
 
     // Bulk data - rotate every 180 days
@@ -431,7 +487,7 @@ class EnterpriseKeyManagement {
       maxAge: 180 * 24 * 60 * 60 * 1000, // 180 days
       maxOperations: 100000000,
       autoRotate: true,
-      rotationSchedule: '0 0 1 */3 *' // Quarterly check
+      rotationSchedule: '0 0 1 */3 *', // Quarterly check
     });
   }
 
@@ -443,7 +499,7 @@ class EnterpriseKeyManagement {
     try {
       const keyId = `${keyType}-${Date.now()}-${randomBytes(16).toString('hex')}`;
       const keySize = this.getKeySizeForAlgorithm(algorithm);
-      
+
       const encryptionKey: EncryptionKey = {
         id: keyId,
         key: randomBytes(keySize),
@@ -451,17 +507,17 @@ class EnterpriseKeyManagement {
         created: new Date(),
         lastUsed: new Date(),
         operations: 0,
-        metadata: { ...metadata, keyType }
+        metadata: { ...metadata, keyType },
       };
 
       this.keys.set(keyId, encryptionKey);
 
       return { success: true, error: undefined, data: keyId };
     } catch (error) {
-      return { 
-        success: false, 
+      return {
+        success: false,
         error: `Key generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        data: undefined 
+        data: undefined,
       };
     }
   }
@@ -470,7 +526,11 @@ class EnterpriseKeyManagement {
     try {
       const oldKey = this.keys.get(keyId);
       if (!oldKey) {
-        return { success: false, error: `Key not found: ${keyId}`, data: undefined };
+        return {
+          success: false,
+          error: `Key not found: ${keyId}`,
+          data: undefined,
+        };
       }
 
       // Generate new key
@@ -490,10 +550,10 @@ class EnterpriseKeyManagement {
 
       return { success: true, error: undefined, data: newKeyResult.data! };
     } catch (error) {
-      return { 
-        success: false, 
+      return {
+        success: false,
         error: `Key rotation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        data: undefined 
+        data: undefined,
       };
     }
   }
@@ -511,9 +571,12 @@ class EnterpriseKeyManagement {
 
   private startKeyRotationService(): void {
     // Check for key rotation every hour
-    this.rotationInterval = setInterval(async () => {
-      await this.checkAndRotateKeys();
-    }, 60 * 60 * 1000);
+    this.rotationInterval = setInterval(
+      async () => {
+        await this.checkAndRotateKeys();
+      },
+      60 * 60 * 1000
+    );
   }
 
   private async checkAndRotateKeys(): Promise<void> {
@@ -522,7 +585,8 @@ class EnterpriseKeyManagement {
       if (!policy || !policy.autoRotate) continue;
 
       const age = Date.now() - key.created.getTime();
-      const shouldRotate = age > policy.maxAge || key.operations > policy.maxOperations;
+      const shouldRotate =
+        age > policy.maxAge || key.operations > policy.maxOperations;
 
       if (shouldRotate && !key.metadata.rotated) {
         await this.rotateKey(keyId);
@@ -539,26 +603,39 @@ class EnterpriseKeyManagement {
 
 // Secure Hash Functions
 class SecureHashManager {
-  static async hashPassword(password: string, saltRounds: number = 12): Promise<string> {
+  static async hashPassword(
+    password: string,
+    saltRounds: number = 12
+  ): Promise<string> {
     const salt = randomBytes(32);
     const hash = await pbkdf2Async(password, salt, 100000, 64, 'sha512');
     return `${salt.toString('hex')}:${hash.toString('hex')}`;
   }
 
-  static async verifyPassword(password: string, hashedPassword: string): Promise<boolean> {
+  static async verifyPassword(
+    password: string,
+    hashedPassword: string
+  ): Promise<boolean> {
     const [saltHex, hashHex] = hashedPassword.split(':');
     const salt = Buffer.from(saltHex, 'hex');
     const hash = Buffer.from(hashHex, 'hex');
-    
+
     const verifyHash = await pbkdf2Async(password, salt, 100000, 64, 'sha512');
     return hash.equals(verifyHash);
   }
 
-  static createSecureHash(data: string, algorithm: HashAlgorithm = 'sha256'): string {
+  static createSecureHash(
+    data: string,
+    algorithm: HashAlgorithm = 'sha256'
+  ): string {
     return createHash(algorithm).update(data).digest('hex');
   }
 
-  static createHMAC(data: string, key: string, algorithm: HashAlgorithm = 'sha256'): string {
+  static createHMAC(
+    data: string,
+    key: string,
+    algorithm: HashAlgorithm = 'sha256'
+  ): string {
     const hmac = createHash(algorithm);
     hmac.update(key + data);
     return hmac.digest('hex');
@@ -578,8 +655,12 @@ class DataAnonymization {
     this.fieldMasks.set('email', (email: string) => {
       if (!email || !email.includes('@')) return '***@***.***';
       const [local, domain] = email.split('@');
-      const maskedLocal = local.substring(0, 2) + '*'.repeat(Math.max(0, local.length - 2));
-      const maskedDomain = domain.substring(0, 1) + '*'.repeat(Math.max(0, domain.length - 4)) + domain.slice(-3);
+      const maskedLocal =
+        local.substring(0, 2) + '*'.repeat(Math.max(0, local.length - 2));
+      const maskedDomain =
+        domain.substring(0, 1) +
+        '*'.repeat(Math.max(0, domain.length - 4)) +
+        domain.slice(-3);
       return `${maskedLocal}@${maskedDomain}`;
     });
 
@@ -607,7 +688,12 @@ class DataAnonymization {
     this.fieldMasks.set('name', (name: string) => {
       if (!name) return '***';
       const parts = name.split(' ');
-      return parts.map(part => part.substring(0, 1) + '*'.repeat(Math.max(0, part.length - 1))).join(' ');
+      return parts
+        .map(
+          part =>
+            part.substring(0, 1) + '*'.repeat(Math.max(0, part.length - 1))
+        )
+        .join(' ');
     });
   }
 
@@ -616,9 +702,12 @@ class DataAnonymization {
     return mask ? mask(value) : value;
   }
 
-  anonymizeObject(obj: Record<string, any>, fieldMappings: Record<string, string>): Record<string, any> {
+  anonymizeObject(
+    obj: Record<string, any>,
+    fieldMappings: Record<string, string>
+  ): Record<string, any> {
     const anonymized = { ...obj };
-    
+
     for (const [field, fieldType] of Object.entries(fieldMappings)) {
       if (anonymized[field] !== undefined) {
         anonymized[field] = this.anonymizeField(fieldType, anonymized[field]);
@@ -631,9 +720,9 @@ class DataAnonymization {
 
 // Export all encryption services
 export {
-  FieldLevelEncryption,
+  DataAnonymization,
   DatabaseEncryption,
   EnterpriseKeyManagement,
+  FieldLevelEncryption,
   SecureHashManager,
-  DataAnonymization
 };

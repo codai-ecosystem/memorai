@@ -3,10 +3,8 @@
  * Part of Phase 3.4: Security Testing for Memorai Ultimate Completion Plan
  */
 
-import { randomBytes, createHash } from 'crypto';
-
 // Result type for consistent error handling
-type Result<T, E> = 
+type Result<T, E> =
   | { success: true; error: undefined; data: T }
   | { success: false; error: E; data: undefined };
 
@@ -14,7 +12,14 @@ type Result<T, E> =
 interface SecurityTest {
   id: string;
   name: string;
-  category: 'authentication' | 'authorization' | 'encryption' | 'injection' | 'xss' | 'csrf' | 'dos';
+  category:
+    | 'authentication'
+    | 'authorization'
+    | 'encryption'
+    | 'injection'
+    | 'xss'
+    | 'csrf'
+    | 'dos';
   severity: 'low' | 'medium' | 'high' | 'critical';
   description: string;
   automated: boolean;
@@ -80,7 +85,7 @@ class SecurityTestingEngine {
       automated: true,
       frequency: 'daily',
       lastRun: new Date(),
-      status: 'not-run'
+      status: 'not-run',
     });
 
     this.tests.set('auth-2', {
@@ -92,7 +97,7 @@ class SecurityTestingEngine {
       automated: true,
       frequency: 'daily',
       lastRun: new Date(),
-      status: 'not-run'
+      status: 'not-run',
     });
 
     this.tests.set('auth-3', {
@@ -104,7 +109,7 @@ class SecurityTestingEngine {
       automated: true,
       frequency: 'daily',
       lastRun: new Date(),
-      status: 'not-run'
+      status: 'not-run',
     });
 
     // Authorization Tests
@@ -117,7 +122,7 @@ class SecurityTestingEngine {
       automated: true,
       frequency: 'daily',
       lastRun: new Date(),
-      status: 'not-run'
+      status: 'not-run',
     });
 
     this.tests.set('authz-2', {
@@ -125,11 +130,11 @@ class SecurityTestingEngine {
       name: 'Horizontal Access Control',
       category: 'authorization',
       severity: 'high',
-      description: 'Test access to other users\' data',
+      description: "Test access to other users' data",
       automated: true,
       frequency: 'daily',
       lastRun: new Date(),
-      status: 'not-run'
+      status: 'not-run',
     });
 
     // Encryption Tests
@@ -142,7 +147,7 @@ class SecurityTestingEngine {
       automated: true,
       frequency: 'weekly',
       lastRun: new Date(),
-      status: 'not-run'
+      status: 'not-run',
     });
 
     this.tests.set('enc-2', {
@@ -154,7 +159,7 @@ class SecurityTestingEngine {
       automated: true,
       frequency: 'daily',
       lastRun: new Date(),
-      status: 'not-run'
+      status: 'not-run',
     });
 
     // Injection Tests
@@ -167,7 +172,7 @@ class SecurityTestingEngine {
       automated: true,
       frequency: 'daily',
       lastRun: new Date(),
-      status: 'not-run'
+      status: 'not-run',
     });
 
     this.tests.set('inj-2', {
@@ -179,7 +184,7 @@ class SecurityTestingEngine {
       automated: true,
       frequency: 'daily',
       lastRun: new Date(),
-      status: 'not-run'
+      status: 'not-run',
     });
 
     // XSS Tests
@@ -192,7 +197,7 @@ class SecurityTestingEngine {
       automated: true,
       frequency: 'daily',
       lastRun: new Date(),
-      status: 'not-run'
+      status: 'not-run',
     });
 
     this.tests.set('xss-2', {
@@ -204,7 +209,7 @@ class SecurityTestingEngine {
       automated: true,
       frequency: 'daily',
       lastRun: new Date(),
-      status: 'not-run'
+      status: 'not-run',
     });
   }
 
@@ -218,7 +223,7 @@ class SecurityTestingEngine {
 
   private scheduleTest(test: SecurityTest): void {
     const intervalMs = this.getIntervalMs(test.frequency);
-    
+
     const interval = setInterval(async () => {
       await this.runTest(test.id);
     }, intervalMs);
@@ -249,9 +254,9 @@ class SecurityTestingEngine {
       }
 
       const startTime = Date.now();
-      
+
       let testResult: Partial<SecurityTestResult>;
-      
+
       switch (test.category) {
         case 'authentication':
           testResult = await this.runAuthenticationTest(test);
@@ -275,11 +280,15 @@ class SecurityTestingEngine {
           testResult = await this.runDosTest(test);
           break;
         default:
-          return { success: false, error: 'Unknown test category', data: undefined };
+          return {
+            success: false,
+            error: 'Unknown test category',
+            data: undefined,
+          };
       }
 
       const endTime = Date.now();
-      
+
       const result: SecurityTestResult = {
         testId,
         timestamp: new Date(),
@@ -287,7 +296,7 @@ class SecurityTestingEngine {
         status: testResult.status || 'pass',
         findings: testResult.findings || [],
         evidence: testResult.evidence || [],
-        recommendations: testResult.recommendations || []
+        recommendations: testResult.recommendations || [],
       };
 
       // Store result
@@ -302,15 +311,17 @@ class SecurityTestingEngine {
 
       return { success: true, error: undefined, data: result };
     } catch (error) {
-      return { 
-        success: false, 
+      return {
+        success: false,
         error: `Test execution failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        data: undefined 
+        data: undefined,
       };
     }
   }
 
-  private async runAuthenticationTest(test: SecurityTest): Promise<Partial<SecurityTestResult>> {
+  private async runAuthenticationTest(
+    test: SecurityTest
+  ): Promise<Partial<SecurityTestResult>> {
     const findings: SecurityFinding[] = [];
     const evidence: string[] = [];
     const recommendations: string[] = [];
@@ -324,19 +335,20 @@ class SecurityTestingEngine {
           requireLowercase: true,
           requireNumbers: true,
           requireSpecialChars: true,
-          preventCommonPasswords: true
+          preventCommonPasswords: true,
         };
 
         if (passwordRequirements.minLength < 12) {
           findings.push({
             id: 'pwd-1',
             title: 'Weak Password Minimum Length',
-            description: 'Password minimum length is below recommended 12 characters',
+            description:
+              'Password minimum length is below recommended 12 characters',
             severity: 'medium',
             cwe: 'CWE-521',
             location: 'Authentication Service',
             remediation: 'Increase minimum password length to 12 characters',
-            verified: true
+            verified: true,
           });
         }
 
@@ -348,7 +360,7 @@ class SecurityTestingEngine {
         const rateLimitConfig = {
           maxAttempts: 5,
           lockoutDuration: 300, // 5 minutes
-          progressiveDelay: true
+          progressiveDelay: true,
         };
 
         if (rateLimitConfig.maxAttempts > 5) {
@@ -360,7 +372,7 @@ class SecurityTestingEngine {
             cwe: 'CWE-307',
             location: 'Login Endpoint',
             remediation: 'Reduce maximum login attempts to 5 or fewer',
-            verified: true
+            verified: true,
           });
         }
 
@@ -373,7 +385,7 @@ class SecurityTestingEngine {
           timeout: 3600, // 1 hour
           httpsOnly: true,
           httpOnly: true,
-          sameSite: 'strict'
+          sameSite: 'strict',
         };
 
         if (sessionConfig.timeout > 3600) {
@@ -385,7 +397,7 @@ class SecurityTestingEngine {
             cwe: 'CWE-613',
             location: 'Session Manager',
             remediation: 'Reduce session timeout to 1 hour or less',
-            verified: true
+            verified: true,
           });
         }
 
@@ -393,26 +405,34 @@ class SecurityTestingEngine {
         break;
     }
 
-    const status = findings.length === 0 ? 'pass' : 
-                   findings.some(f => f.severity === 'critical' || f.severity === 'high') ? 'fail' : 'warning';
+    const status =
+      findings.length === 0
+        ? 'pass'
+        : findings.some(f => f.severity === 'critical' || f.severity === 'high')
+          ? 'fail'
+          : 'warning';
 
     return { status, findings, evidence, recommendations };
   }
 
-  private async runAuthorizationTest(test: SecurityTest): Promise<Partial<SecurityTestResult>> {
+  private async runAuthorizationTest(
+    test: SecurityTest
+  ): Promise<Partial<SecurityTestResult>> {
     const findings: SecurityFinding[] = [];
     const evidence: string[] = [];
 
     switch (test.id) {
       case 'authz-1': // Privilege Escalation
         // Simulate privilege escalation test
-        evidence.push('Attempted privilege escalation through role manipulation');
+        evidence.push(
+          'Attempted privilege escalation through role manipulation'
+        );
         evidence.push('Tested parameter tampering for role elevation');
         break;
 
       case 'authz-2': // Horizontal Access Control
         // Simulate horizontal access test
-        evidence.push('Tested access to other users\' resources');
+        evidence.push("Tested access to other users' resources");
         evidence.push('Verified ID-based access controls');
         break;
     }
@@ -421,7 +441,9 @@ class SecurityTestingEngine {
     return { status, findings, evidence };
   }
 
-  private async runEncryptionTest(test: SecurityTest): Promise<Partial<SecurityTestResult>> {
+  private async runEncryptionTest(
+    test: SecurityTest
+  ): Promise<Partial<SecurityTestResult>> {
     const findings: SecurityFinding[] = [];
     const evidence: string[] = [];
 
@@ -441,7 +463,9 @@ class SecurityTestingEngine {
     return { status, findings, evidence };
   }
 
-  private async runInjectionTest(test: SecurityTest): Promise<Partial<SecurityTestResult>> {
+  private async runInjectionTest(
+    test: SecurityTest
+  ): Promise<Partial<SecurityTestResult>> {
     const findings: SecurityFinding[] = [];
     const evidence: string[] = [];
 
@@ -449,8 +473,8 @@ class SecurityTestingEngine {
       "' OR '1'='1",
       "'; DROP TABLE users; --",
       "1' UNION SELECT NULL,NULL,NULL--",
-      "{\"$gt\": \"\"}",
-      "{\"$where\": \"function() { return true; }\"}"
+      '{"$gt": ""}',
+      '{"$where": "function() { return true; }"}',
     ];
 
     evidence.push(`Tested ${injectionPayloads.length} injection payloads`);
@@ -460,7 +484,9 @@ class SecurityTestingEngine {
     return { status, findings, evidence };
   }
 
-  private async runXSSTest(test: SecurityTest): Promise<Partial<SecurityTestResult>> {
+  private async runXSSTest(
+    test: SecurityTest
+  ): Promise<Partial<SecurityTestResult>> {
     const findings: SecurityFinding[] = [];
     const evidence: string[] = [];
 
@@ -469,7 +495,7 @@ class SecurityTestingEngine {
       "javascript:alert('XSS')",
       "<img src=x onerror=alert('XSS')>",
       "'\"><script>alert('XSS')</script>",
-      "<svg onload=alert('XSS')>"
+      "<svg onload=alert('XSS')>",
     ];
 
     evidence.push(`Tested ${xssPayloads.length} XSS payloads`);
@@ -479,7 +505,9 @@ class SecurityTestingEngine {
     return { status, findings, evidence };
   }
 
-  private async runCSRFTest(test: SecurityTest): Promise<Partial<SecurityTestResult>> {
+  private async runCSRFTest(
+    test: SecurityTest
+  ): Promise<Partial<SecurityTestResult>> {
     const findings: SecurityFinding[] = [];
     const evidence: string[] = [];
 
@@ -490,7 +518,9 @@ class SecurityTestingEngine {
     return { status, findings, evidence };
   }
 
-  private async runDosTest(test: SecurityTest): Promise<Partial<SecurityTestResult>> {
+  private async runDosTest(
+    test: SecurityTest
+  ): Promise<Partial<SecurityTestResult>> {
     const findings: SecurityFinding[] = [];
     const evidence: string[] = [];
 
@@ -505,7 +535,7 @@ class SecurityTestingEngine {
     if (testId) {
       return this.results.get(testId) || [];
     }
-    
+
     // Return all results
     const allResults: SecurityTestResult[] = [];
     for (const results of this.results.values()) {
@@ -517,18 +547,28 @@ class SecurityTestingEngine {
   getSecurityMetrics(): any {
     const allResults = this.getTestResults();
     const totalTests = this.tests.size;
-    const passedTests = Array.from(this.tests.values()).filter(t => t.status === 'pass').length;
-    const failedTests = Array.from(this.tests.values()).filter(t => t.status === 'fail').length;
-    const warningTests = Array.from(this.tests.values()).filter(t => t.status === 'warning').length;
+    const passedTests = Array.from(this.tests.values()).filter(
+      t => t.status === 'pass'
+    ).length;
+    const failedTests = Array.from(this.tests.values()).filter(
+      t => t.status === 'fail'
+    ).length;
+    const warningTests = Array.from(this.tests.values()).filter(
+      t => t.status === 'warning'
+    ).length;
 
     const allFindings: SecurityFinding[] = [];
     for (const result of allResults) {
       allFindings.push(...result.findings);
     }
 
-    const criticalFindings = allFindings.filter(f => f.severity === 'critical').length;
+    const criticalFindings = allFindings.filter(
+      f => f.severity === 'critical'
+    ).length;
     const highFindings = allFindings.filter(f => f.severity === 'high').length;
-    const mediumFindings = allFindings.filter(f => f.severity === 'medium').length;
+    const mediumFindings = allFindings.filter(
+      f => f.severity === 'medium'
+    ).length;
     const lowFindings = allFindings.filter(f => f.severity === 'low').length;
 
     return {
@@ -537,23 +577,33 @@ class SecurityTestingEngine {
         passedTests,
         failedTests,
         warningTests,
-        passRate: totalTests > 0 ? (passedTests / totalTests) * 100 : 0
+        passRate: totalTests > 0 ? (passedTests / totalTests) * 100 : 0,
       },
       findings: {
         critical: criticalFindings,
         high: highFindings,
         medium: mediumFindings,
         low: lowFindings,
-        total: allFindings.length
+        total: allFindings.length,
       },
-      riskScore: this.calculateRiskScore(criticalFindings, highFindings, mediumFindings, lowFindings),
-      lastUpdate: new Date()
+      riskScore: this.calculateRiskScore(
+        criticalFindings,
+        highFindings,
+        mediumFindings,
+        lowFindings
+      ),
+      lastUpdate: new Date(),
     };
   }
 
-  private calculateRiskScore(critical: number, high: number, medium: number, low: number): number {
+  private calculateRiskScore(
+    critical: number,
+    high: number,
+    medium: number,
+    low: number
+  ): number {
     // Calculate risk score based on finding severity weights
-    const score = (critical * 10) + (high * 7) + (medium * 4) + (low * 1);
+    const score = critical * 10 + high * 7 + medium * 4 + low * 1;
     return Math.min(100, score); // Cap at 100
   }
 
@@ -579,7 +629,7 @@ class PenetrationTestingManager {
   ): Promise<string> {
     const id = `pentest-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const now = new Date();
-    
+
     const plan: PenetrationTestPlan = {
       id,
       scope,
@@ -589,7 +639,7 @@ class PenetrationTestingManager {
       endDate: new Date(now.getTime() + duration * 24 * 60 * 60 * 1000),
       tester,
       status: 'planned',
-      findings: []
+      findings: [],
     };
 
     this.testPlans.set(id, plan);
@@ -600,7 +650,11 @@ class PenetrationTestingManager {
     try {
       const plan = this.testPlans.get(planId);
       if (!plan) {
-        return { success: false, error: 'Test plan not found', data: undefined };
+        return {
+          success: false,
+          error: 'Test plan not found',
+          data: undefined,
+        };
       }
 
       plan.status = 'in-progress';
@@ -608,10 +662,10 @@ class PenetrationTestingManager {
 
       return { success: true, error: undefined, data: true };
     } catch (error) {
-      return { 
-        success: false, 
+      return {
+        success: false,
         error: `Failed to start penetration test: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        data: undefined 
+        data: undefined,
       };
     }
   }
@@ -623,7 +677,11 @@ class PenetrationTestingManager {
     try {
       const plan = this.testPlans.get(planId);
       if (!plan) {
-        return { success: false, error: 'Test plan not found', data: undefined };
+        return {
+          success: false,
+          error: 'Test plan not found',
+          data: undefined,
+        };
       }
 
       plan.status = 'completed';
@@ -635,17 +693,19 @@ class PenetrationTestingManager {
 
       return { success: true, error: undefined, data: reportId };
     } catch (error) {
-      return { 
-        success: false, 
+      return {
+        success: false,
         error: `Failed to complete penetration test: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        data: undefined 
+        data: undefined,
       };
     }
   }
 
-  private async generatePentestReport(plan: PenetrationTestPlan): Promise<string> {
+  private async generatePentestReport(
+    plan: PenetrationTestPlan
+  ): Promise<string> {
     const reportId = `report-${plan.id}`;
-    
+
     const report = {
       id: reportId,
       planId: plan.id,
@@ -654,7 +714,7 @@ class PenetrationTestingManager {
         methodology: plan.methodology,
         duration: plan.duration,
         findingsCount: plan.findings.length,
-        riskLevel: this.assessOverallRisk(plan.findings)
+        riskLevel: this.assessOverallRisk(plan.findings),
       },
       findings: plan.findings,
       recommendations: this.generateRecommendations(plan.findings),
@@ -663,17 +723,19 @@ class PenetrationTestingManager {
         tools_used: ['Automated security scanner', 'Manual testing'],
         timeline: {
           start: plan.startDate,
-          end: plan.endDate
-        }
+          end: plan.endDate,
+        },
       },
-      generated: new Date()
+      generated: new Date(),
     };
 
     this.reports.set(reportId, report);
     return reportId;
   }
 
-  private assessOverallRisk(findings: SecurityFinding[]): 'low' | 'medium' | 'high' | 'critical' {
+  private assessOverallRisk(
+    findings: SecurityFinding[]
+  ): 'low' | 'medium' | 'high' | 'critical' {
     if (findings.some(f => f.severity === 'critical')) return 'critical';
     if (findings.some(f => f.severity === 'high')) return 'high';
     if (findings.some(f => f.severity === 'medium')) return 'medium';
@@ -682,15 +744,19 @@ class PenetrationTestingManager {
 
   private generateRecommendations(findings: SecurityFinding[]): string[] {
     const recommendations = [];
-    
+
     if (findings.some(f => f.cwe?.includes('CWE-79'))) {
-      recommendations.push('Implement comprehensive input validation and output encoding');
+      recommendations.push(
+        'Implement comprehensive input validation and output encoding'
+      );
     }
     if (findings.some(f => f.cwe?.includes('CWE-89'))) {
       recommendations.push('Use parameterized queries and stored procedures');
     }
     if (findings.some(f => f.cwe?.includes('CWE-287'))) {
-      recommendations.push('Strengthen authentication mechanisms and implement MFA');
+      recommendations.push(
+        'Strengthen authentication mechanisms and implement MFA'
+      );
     }
 
     return recommendations;
@@ -712,13 +778,13 @@ class VulnerabilityManagement {
 
   async scanForVulnerabilities(): Promise<string> {
     const scanId = `scan-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    
+
     const scan = {
       id: scanId,
       timestamp: new Date(),
       status: 'running',
       targets: ['application', 'infrastructure', 'dependencies'],
-      findings: []
+      findings: [],
     };
 
     this.scanResults.set(scanId, scan);
@@ -745,8 +811,8 @@ class VulnerabilityManagement {
         cvss: 5.3,
         cve: 'CVE-2023-12345',
         affected_component: 'lodash@4.17.20',
-        remediation: 'Update to lodash@4.17.21 or later'
-      }
+        remediation: 'Update to lodash@4.17.21 or later',
+      },
     ];
 
     scan.status = 'completed';
@@ -759,7 +825,7 @@ class VulnerabilityManagement {
         ...finding,
         discoveredAt: new Date(),
         status: 'open',
-        scanId
+        scanId,
       });
     }
   }
@@ -769,7 +835,7 @@ class VulnerabilityManagement {
       const result = this.scanResults.get(scanId);
       return result ? [result] : [];
     }
-    
+
     return Array.from(this.scanResults.values());
   }
 
@@ -781,7 +847,7 @@ class VulnerabilityManagement {
 
 // Export all security testing services
 export {
-  SecurityTestingEngine,
   PenetrationTestingManager,
-  VulnerabilityManagement
+  SecurityTestingEngine,
+  VulnerabilityManagement,
 };

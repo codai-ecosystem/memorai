@@ -4,7 +4,7 @@
  */
 
 import { MemoryMetadata, MemoryQuery, MemoryResult } from '../types/index.js';
-import { createMemoryId, createAgentId, Result } from '../typescript/TypeScriptAdvanced.js';
+import { createMemoryId } from '../typescript/TypeScriptAdvanced.js';
 
 // React 19 Hook Types (when available)
 interface UseActionStateReturn<T, P> {
@@ -49,7 +49,7 @@ const mockUseFormStatus = (): UseFormStatusReturn => ({
   pending: false,
   data: null,
   method: null,
-  action: null
+  action: null,
 });
 
 const mockUseTransition = (): UseTransitionReturn => [false, () => {}];
@@ -62,7 +62,6 @@ const useTransition = mockUseTransition;
 
 // React 19 Component Patterns
 export namespace React19Patterns {
-  
   /**
    * Memory Form with React 19 Form Actions and Optimistic Updates
    */
@@ -83,7 +82,7 @@ export namespace React19Patterns {
     private agentId: string;
     private onMemoryCreated?: (memoryId: string) => void;
     private onError?: (error: string) => void;
-    
+
     constructor(props: MemoryFormProps) {
       this.agentId = props.agentId;
       this.onMemoryCreated = props.onMemoryCreated;
@@ -103,26 +102,30 @@ export namespace React19Patterns {
       try {
         // Simulate API call
         const memoryId = `mem_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        
+
         // Simulate delay
         await new Promise(resolve => setTimeout(resolve, 500));
-        
+
         this.onMemoryCreated?.(memoryId);
-        
-        return { 
-          success: true, 
-          error: null, 
+
+        return {
+          success: true,
+          error: null,
           pending: false,
-          lastCreatedId: memoryId 
+          lastCreatedId: memoryId,
         };
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        const errorMessage =
+          error instanceof Error ? error.message : 'Unknown error';
         this.onError?.(errorMessage);
         return { success: false, error: errorMessage, pending: false };
       }
     }
 
-    createOptimisticMemory(content: string, importance: number): MemoryMetadata {
+    createOptimisticMemory(
+      content: string,
+      importance: number
+    ): MemoryMetadata {
       return {
         id: createMemoryId(`temp_${Date.now()}`),
         content,
@@ -135,7 +138,7 @@ export namespace React19Patterns {
         accessCount: 0,
         tags: [],
         tenant_id: 'default',
-        agent_id: this.agentId
+        agent_id: this.agentId,
       };
     }
   }
@@ -167,17 +170,20 @@ export namespace React19Patterns {
     async loadMemories(): Promise<MemoryMetadata[]> {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 200));
-      
+
       // In real implementation, would call the memory service
       // return await MemoryService.getByAgent(this.agentId, {
       //   limit: this.limit,
       //   filter: this.filter
       // });
-      
+
       return [];
     }
 
-    async loadMemoryBatch(offset: number, batchSize: number): Promise<MemoryMetadata[]> {
+    async loadMemoryBatch(
+      offset: number,
+      batchSize: number
+    ): Promise<MemoryMetadata[]> {
       // Simulate batched loading
       await new Promise(resolve => setTimeout(resolve, 100));
       return [];
@@ -192,7 +198,7 @@ export namespace React19Patterns {
         }
 
         if (this.filter?.tags && this.filter.tags.length > 0) {
-          const hasMatchingTag = this.filter.tags.some(tag => 
+          const hasMatchingTag = this.filter.tags.some(tag =>
             memory.tags.includes(tag)
           );
           if (!hasMatchingTag) return false;
@@ -239,24 +245,25 @@ export namespace React19Patterns {
       try {
         // Simulate streaming search results
         const results: MemoryResult[] = [];
-        
+
         // Simulate chunks of results
         for (let i = 0; i < 3; i++) {
           if (this.abortController.signal.aborted) break;
-          
+
           await new Promise(resolve => setTimeout(resolve, 200));
-          
+
           // Add some mock results
           const chunkResults: MemoryResult[] = [
             // In real implementation, would be actual search results
           ];
-          
+
           results.push(...chunkResults);
           this.onResults?.(results);
         }
       } catch (error) {
         if (!this.abortController.signal.aborted) {
-          const errorMessage = error instanceof Error ? error.message : 'Search failed';
+          const errorMessage =
+            error instanceof Error ? error.message : 'Search failed';
           this.onError?.(errorMessage);
         }
       }
@@ -302,7 +309,10 @@ export namespace React19Patterns {
 
     async loadInsights(): Promise<MemoryInsights> {
       // Check cache first
-      if (this.cache && Date.now() - this.cache.timestamp < this.refreshInterval) {
+      if (
+        this.cache &&
+        Date.now() - this.cache.timestamp < this.refreshInterval
+      ) {
         return this.cache.data;
       }
 
@@ -313,30 +323,30 @@ export namespace React19Patterns {
         insights: [
           `Agent ${this.agentId} has created memories with consistent patterns`,
           'Most memories are tagged as "important" or "work-related"',
-          'Memory creation peaks during morning hours'
+          'Memory creation peaks during morning hours',
         ],
         patterns: [
           { type: 'fact', frequency: 0.6, trend: 'increasing' },
           { type: 'task', frequency: 0.3, trend: 'stable' },
-          { type: 'emotion', frequency: 0.1, trend: 'decreasing' }
+          { type: 'emotion', frequency: 0.1, trend: 'decreasing' },
         ],
         recommendations: [
           {
             action: 'Consider creating more procedural memories',
             reason: 'Low frequency of procedure-type memories detected',
-            priority: 'medium'
+            priority: 'medium',
           },
           {
             action: 'Review and cleanup old temporary memories',
             reason: 'Several memories have low access counts',
-            priority: 'low'
-          }
-        ]
+            priority: 'low',
+          },
+        ],
       };
 
       // Update cache
       this.cache = { data: insights, timestamp: Date.now() };
-      
+
       return insights;
     }
 
@@ -362,7 +372,6 @@ export namespace React19Patterns {
 
 // Concurrent Component Patterns
 export namespace ConcurrentPatterns {
-  
   /**
    * Memory Suspense boundary for loading states
    */
@@ -378,8 +387,8 @@ export namespace ConcurrentPatterns {
         type: 'Suspense',
         props: {
           fallback: props.fallback,
-          children: props.children
-        }
+          children: props.children,
+        },
       };
     }
   }
@@ -451,22 +460,22 @@ export namespace ConcurrentPatterns {
       if (this.isLoading || !this.hasMore) return [];
 
       this.isLoading = true;
-      
+
       try {
         // Simulate API call
         await new Promise(resolve => setTimeout(resolve, 300));
-        
+
         // In real implementation:
         // const newMemories = await MemoryService.getByAgent(this.agentId, {
         //   offset: this.loadedMemories.length,
         //   limit: this.batchSize
         // });
-        
+
         const newMemories: MemoryMetadata[] = [];
-        
+
         this.loadedMemories.push(...newMemories);
         this.hasMore = newMemories.length === this.batchSize;
-        
+
         return newMemories;
       } finally {
         this.isLoading = false;
@@ -489,7 +498,6 @@ export namespace ConcurrentPatterns {
 
 // Performance Optimization Patterns
 export namespace PerformancePatterns {
-  
   /**
    * Memory virtualization for large lists
    */
@@ -520,11 +528,13 @@ export namespace PerformancePatterns {
 
     getVisibleRange(): { start: number; end: number } {
       const visibleStart = Math.floor(this.scrollTop / this.itemHeight);
-      const visibleEnd = Math.ceil((this.scrollTop + this.containerHeight) / this.itemHeight);
-      
+      const visibleEnd = Math.ceil(
+        (this.scrollTop + this.containerHeight) / this.itemHeight
+      );
+
       return {
         start: Math.max(0, visibleStart - this.overscan),
-        end: Math.min(this.memories.length, visibleEnd + this.overscan)
+        end: Math.min(this.memories.length, visibleEnd + this.overscan),
       };
     }
 
@@ -554,14 +564,14 @@ export namespace PerformancePatterns {
     ): T {
       return ((...args: Parameters<T>) => {
         const key = keyFn ? keyFn(...args) : JSON.stringify(args);
-        
+
         if (this.cache.has(key)) {
           return this.cache.get(key);
         }
 
         const result = fn(...args);
         this.cache.set(key, result);
-        
+
         return result;
       }) as T;
     }
@@ -600,7 +610,9 @@ export namespace PerformancePatterns {
           const result = await searchFn();
           callback(result);
         } catch (error) {
-          errorCallback?.(error instanceof Error ? error : new Error('Search failed'));
+          errorCallback?.(
+            error instanceof Error ? error : new Error('Search failed')
+          );
         }
       }, this.delay);
     }
@@ -616,7 +628,6 @@ export namespace PerformancePatterns {
 
 // Advanced State Management
 export namespace StateManagement {
-  
   /**
    * Memory state manager with optimistic updates
    */
@@ -627,13 +638,16 @@ export namespace StateManagement {
     optimisticUpdates: Map<string, MemoryMetadata>;
   }
 
-  export type MemoryAction = 
+  export type MemoryAction =
     | { type: 'LOAD_START' }
     | { type: 'LOAD_SUCCESS'; payload: MemoryMetadata[] }
     | { type: 'LOAD_ERROR'; payload: string }
     | { type: 'ADD_OPTIMISTIC'; payload: MemoryMetadata }
     | { type: 'REMOVE_OPTIMISTIC'; payload: string }
-    | { type: 'UPDATE_MEMORY'; payload: { id: string; updates: Partial<MemoryMetadata> } }
+    | {
+        type: 'UPDATE_MEMORY';
+        payload: { id: string; updates: Partial<MemoryMetadata> };
+      }
     | { type: 'DELETE_MEMORY'; payload: string }
     | { type: 'CLEAR_ERROR' };
 
@@ -642,28 +656,28 @@ export namespace StateManagement {
       switch (action.type) {
         case 'LOAD_START':
           return { ...state, loading: true, error: undefined };
-        
+
         case 'LOAD_SUCCESS':
-          return { 
-            ...state, 
-            loading: false, 
+          return {
+            ...state,
+            loading: false,
             memories: action.payload,
-            error: undefined 
+            error: undefined,
           };
-        
+
         case 'LOAD_ERROR':
           return { ...state, loading: false, error: action.payload };
-        
+
         case 'ADD_OPTIMISTIC':
           const newOptimistic = new Map(state.optimisticUpdates);
           newOptimistic.set(action.payload.id, action.payload);
           return { ...state, optimisticUpdates: newOptimistic };
-        
+
         case 'REMOVE_OPTIMISTIC':
           const updatedOptimistic = new Map(state.optimisticUpdates);
           updatedOptimistic.delete(action.payload);
           return { ...state, optimisticUpdates: updatedOptimistic };
-        
+
         case 'UPDATE_MEMORY':
           return {
             ...state,
@@ -671,18 +685,20 @@ export namespace StateManagement {
               memory.id === action.payload.id
                 ? { ...memory, ...action.payload.updates }
                 : memory
-            )
+            ),
           };
-        
+
         case 'DELETE_MEMORY':
           return {
             ...state,
-            memories: state.memories.filter(memory => memory.id !== action.payload)
+            memories: state.memories.filter(
+              memory => memory.id !== action.payload
+            ),
           };
-        
+
         case 'CLEAR_ERROR':
           return { ...state, error: undefined };
-        
+
         default:
           return state;
       }
@@ -692,7 +708,7 @@ export namespace StateManagement {
       return {
         memories: [],
         loading: false,
-        optimisticUpdates: new Map()
+        optimisticUpdates: new Map(),
       };
     }
 

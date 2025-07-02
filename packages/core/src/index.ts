@@ -28,22 +28,22 @@ export * from './resilience/ResilienceManager.js';
 export * from './security/SecurityManager.js';
 
 // Event-Driven Architecture (Phase 1.1)
-export * from './events/EventDrivenArchitecture.js';
 export * from './cqrs/CQRSImplementation.js';
 export {
-  MemoryAggregate,
-  MemoryId,
-  MemoryContent,
-  ImportanceScore,
   AgentId,
   MemoryClassification as DomainMemoryClassification,
   MemoryRelationship as DomainMemoryRelationship,
+  HasClassificationSpecification,
+  HighImportanceSpecification,
+  ImportanceScore,
+  MemoryAggregate,
+  MemoryContent,
+  MemoryId,
   MemoryRepository,
   MemorySpecification,
-  HighImportanceSpecification,
   RecentlyAccessedSpecification,
-  HasClassificationSpecification
 } from './domain/MemoryDomainModel.js';
+export * from './events/EventDrivenArchitecture.js';
 export * from './hexagonal/HexagonalArchitecture.js';
 
 // High Performance Components
@@ -64,22 +64,33 @@ export { MemoryRelationshipManager } from './relationships/MemoryRelationshipMan
 export * from './ai/index.js';
 
 // Advanced Architecture Patterns (Phase 1.1-1.3) - Individual Exports
-export { AdvancedEventBus, EventSourcedAggregate } from './events/EventDrivenArchitecture.js';
-export { CQRSOrchestrator, CommandBus, QueryBus } from './cqrs/CQRSImplementation.js';
+export {
+  CQRSOrchestrator,
+  CommandBus,
+  QueryBus,
+} from './cqrs/CQRSImplementation.js';
+export {
+  AdvancedEventBus,
+  EventSourcedAggregate,
+} from './events/EventDrivenArchitecture.js';
 export { MemoryApplicationService } from './hexagonal/HexagonalArchitecture.js';
 
 // Modern Technology Stack (Phase 2.1-2.4) - Specific Exports to Avoid Conflicts
-export { 
-  createMemoryId as createAdvancedMemoryId,
-  createAgentId as createAdvancedAgentId,
-  Result as AdvancedResult,
-  Ok as AdvancedOk,
+export {
+  AgentId as AdvancedAgentId,
   Err as AdvancedErr,
-  Brand,
   MemoryId as AdvancedMemoryId,
-  AgentId as AdvancedAgentId
+  Ok as AdvancedOk,
+  Result as AdvancedResult,
+  Brand,
+  createAgentId as createAdvancedAgentId,
+  createMemoryId as createAdvancedMemoryId,
 } from './typescript/TypeScriptAdvanced.js';
 
-export { NextJSServerActions, NextJSCache, NextJSDataFetching } from './nextjs/NextJSUtilities.js';
-export { React19Patterns, ConcurrentPatterns, PerformancePatterns } from './react/React19Features.js';
+// export { NextJSServerActions, NextJSCache, NextJSDataFetching } from './nextjs/NextJSUtilities.js';
 export { NodeJS22Features } from './nodejs/NodeJS22Features.js';
+export {
+  ConcurrentPatterns,
+  PerformancePatterns,
+  React19Patterns,
+} from './react/React19Features.js';

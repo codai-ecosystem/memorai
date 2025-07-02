@@ -4,7 +4,7 @@
  */
 
 import { MemoryMetadata, MemoryQuery, MemoryResult } from '../types/index.js';
-import { createMemoryId, createAgentId, Result, Ok, Err } from '../typescript/TypeScriptAdvanced.js';
+import { Err, Result } from '../typescript/TypeScriptAdvanced.js';
 
 // Next.js Server Actions (TypeScript Implementation)
 export namespace NextJSServerActions {
@@ -29,7 +29,7 @@ export namespace NextJSServerActions {
 
       // Create memory ID (simple string generation)
       const memoryId = `mem_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      
+
       // In real implementation, would call the memory service
       // const result = await MemoryService.create({
       //   id: createMemoryId(memoryId),
@@ -44,9 +44,14 @@ export namespace NextJSServerActions {
       NextJSCache.revalidatePath('/memories');
       NextJSCache.revalidatePath(`/agents/${agentId}/memories`);
 
-      return { success: true, data: memoryId, error: undefined } as Result<string, string>;
+      return { success: true, data: memoryId, error: undefined } as Result<
+        string,
+        string
+      >;
     } catch (error) {
-      return Err(`Failed to create memory: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      return Err(
+        `Failed to create memory: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -67,9 +72,14 @@ export namespace NextJSServerActions {
       NextJSCache.revalidateTag('memories');
       NextJSCache.revalidatePath(`/memories/${memoryId}`);
 
-      return { success: true, data: true, error: undefined } as Result<boolean, string>;
+      return { success: true, data: true, error: undefined } as Result<
+        boolean,
+        string
+      >;
     } catch (error) {
-      return Err(`Failed to update memory: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      return Err(
+        `Failed to update memory: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -83,14 +93,19 @@ export namespace NextJSServerActions {
     try {
       // In real implementation, would call the memory service
       // const result = await MemoryService.delete(memoryId);
-      
+
       // Simulate cache invalidation
       NextJSCache.revalidateTag('memories');
       NextJSCache.revalidatePath('/memories');
-      
-      return { success: true, data: true, error: undefined } as Result<boolean, string>;
+
+      return { success: true, data: true, error: undefined } as Result<
+        boolean,
+        string
+      >;
     } catch (error) {
-      return Err(`Failed to delete memory: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      return Err(
+        `Failed to delete memory: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -104,23 +119,31 @@ export namespace NextJSServerActions {
       // In real implementation, would call the memory service
       // const results = await MemoryService.search(query);
       const results: MemoryResult[] = [];
-      
-      return { success: true, data: results, error: undefined } as Result<MemoryResult[], string>;
+
+      return { success: true, data: results, error: undefined } as Result<
+        MemoryResult[],
+        string
+      >;
     } catch (error) {
-      return Err(`Search failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      return Err(
+        `Search failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 }
 
 // Caching utilities
 export namespace NextJSCache {
-  const cacheStore = new Map<string, { data: any; timestamp: number; ttl: number }>();
+  const cacheStore = new Map<
+    string,
+    { data: any; timestamp: number; ttl: number }
+  >();
 
   export function cache<T extends (...args: any[]) => Promise<any>>(fn: T): T {
     return (async (...args: Parameters<T>) => {
       const key = JSON.stringify(args);
       const cached = cacheStore.get(key);
-      
+
       if (cached && Date.now() - cached.timestamp < cached.ttl) {
         return cached.data;
       }
@@ -129,7 +152,7 @@ export namespace NextJSCache {
       cacheStore.set(key, {
         data: result,
         timestamp: Date.now(),
-        ttl: 60000 // 1 minute default
+        ttl: 60000, // 1 minute default
       });
 
       return result;
@@ -145,7 +168,7 @@ export namespace NextJSCache {
       const key = keys.join(':') + ':' + JSON.stringify(args);
       const cached = cacheStore.get(key);
       const ttl = (options.revalidate || 60) * 1000;
-      
+
       if (cached && Date.now() - cached.timestamp < ttl) {
         return cached.data;
       }
@@ -154,7 +177,7 @@ export namespace NextJSCache {
       cacheStore.set(key, {
         data: result,
         timestamp: Date.now(),
-        ttl
+        ttl,
       });
 
       return result;
@@ -164,7 +187,7 @@ export namespace NextJSCache {
   export function revalidateTag(tag: string): void {
     // In real Next.js environment, this would invalidate cache
     console.log(`Revalidating cache tag: ${tag}`);
-    
+
     // Clear all cache entries with this tag
     for (const [key, value] of cacheStore.entries()) {
       if (key.includes(tag)) {
@@ -176,7 +199,7 @@ export namespace NextJSCache {
   export function revalidatePath(path: string): void {
     // In real Next.js environment, this would invalidate cache
     console.log(`Revalidating cache path: ${path}`);
-    
+
     // Clear all cache entries for this path
     for (const [key, value] of cacheStore.entries()) {
       if (key.includes(path)) {
@@ -221,7 +244,7 @@ export namespace NextJSDataFetching {
     ['memories-by-agent'],
     {
       tags: ['memories'],
-      revalidate: 60 // 1 minute
+      revalidate: 60, // 1 minute
     }
   );
 
@@ -229,7 +252,9 @@ export namespace NextJSDataFetching {
    * Get memory insights with longer cache duration
    */
   export const getMemoryInsights = NextJSCache.unstableCache(
-    async (agentId: string): Promise<{ insights: string[]; patterns: any[] }> => {
+    async (
+      agentId: string
+    ): Promise<{ insights: string[]; patterns: any[] }> => {
       try {
         // In real implementation, would call the AI service
         // return await AIService.generateInsights(agentId);
@@ -242,7 +267,7 @@ export namespace NextJSDataFetching {
     ['memory-insights'],
     {
       tags: ['insights'],
-      revalidate: 300 // 5 minutes
+      revalidate: 300, // 5 minutes
     }
   );
 }
@@ -281,10 +306,13 @@ export namespace NextJSRouteHandlers {
       const type = context.searchParams.type;
 
       // Get memories with pagination
-      const memories = await NextJSDataFetching.getMemoriesByAgent(agentId, limit);
-      
+      const memories = await NextJSDataFetching.getMemoriesByAgent(
+        agentId,
+        limit
+      );
+
       // Apply filters if needed
-      const filteredMemories = type 
+      const filteredMemories = type
         ? memories.filter(m => m.type === type)
         : memories;
 
@@ -296,14 +324,14 @@ export namespace NextJSRouteHandlers {
             limit,
             offset,
             total: filteredMemories.length,
-            hasMore: offset + limit < filteredMemories.length
-          }
-        }
+            hasMore: offset + limit < filteredMemories.length,
+          },
+        },
       };
     } catch (error) {
       return {
         status: 500,
-        data: { error: 'Failed to fetch memories' }
+        data: { error: 'Failed to fetch memories' },
       };
     }
   }
@@ -320,27 +348,32 @@ export namespace NextJSRouteHandlers {
       if (!agentId || !content) {
         return {
           status: 400,
-          data: { error: 'agentId and content are required' }
+          data: { error: 'agentId and content are required' },
         };
       }
 
-      const result = await NextJSServerActions.createMemory(agentId, content, importance, metadata);
-      
+      const result = await NextJSServerActions.createMemory(
+        agentId,
+        content,
+        importance,
+        metadata
+      );
+
       if (result.success) {
         return {
           status: 201,
-          data: { memoryId: result.data }
+          data: { memoryId: result.data },
         };
       } else {
         return {
           status: 400,
-          data: { error: result.error }
+          data: { error: result.error },
         };
       }
     } catch (error) {
       return {
         status: 400,
-        data: { error: 'Invalid request body' }
+        data: { error: 'Invalid request body' },
       };
     }
   }
@@ -363,9 +396,11 @@ export namespace NextJSMiddleware {
   /**
    * Authentication middleware for memory routes
    */
-  export function authMiddleware(request: MiddlewareRequest): MiddlewareResponse | null {
+  export function authMiddleware(
+    request: MiddlewareRequest
+  ): MiddlewareResponse | null {
     const agentId = request.headers['x-agent-id'];
-    
+
     if (!agentId) {
       return {
         status: 401,
@@ -377,15 +412,17 @@ export namespace NextJSMiddleware {
     return {
       headers: {
         'x-agent-id': agentId,
-        'x-authenticated': 'true'
-      }
+        'x-authenticated': 'true',
+      },
     };
   }
 
   /**
    * Rate limiting middleware
    */
-  export function rateLimitMiddleware(request: MiddlewareRequest): MiddlewareResponse | null {
+  export function rateLimitMiddleware(
+    request: MiddlewareRequest
+  ): MiddlewareResponse | null {
     // In real implementation, would check rate limits
     const rateLimitRemaining = 100;
     const rateLimitReset = Date.now() + 3600000; // 1 hour
@@ -393,21 +430,24 @@ export namespace NextJSMiddleware {
     return {
       headers: {
         'x-ratelimit-remaining': rateLimitRemaining.toString(),
-        'x-ratelimit-reset': rateLimitReset.toString()
-      }
+        'x-ratelimit-reset': rateLimitReset.toString(),
+      },
     };
   }
 
   /**
    * CORS middleware
    */
-  export function corsMiddleware(request: MiddlewareRequest): MiddlewareResponse | null {
+  export function corsMiddleware(
+    request: MiddlewareRequest
+  ): MiddlewareResponse | null {
     return {
       headers: {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-agent-id'
-      }
+        'Access-Control-Allow-Headers':
+          'Content-Type, Authorization, x-agent-id',
+      },
     };
   }
 }
@@ -447,7 +487,7 @@ export namespace NextJSMetadata {
     if (!memory) {
       return {
         title: 'Memory Not Found',
-        description: 'The requested memory could not be found.'
+        description: 'The requested memory could not be found.',
       };
     }
 

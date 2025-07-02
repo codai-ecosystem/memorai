@@ -42,7 +42,8 @@ export type ConfidenceScore = Brand<number, 'ConfidenceScore'>;
 // Create branded type constructors
 export const createMemoryId = (id: string): MemoryId => id as MemoryId;
 export const createAgentId = (id: string): AgentId => id as AgentId;
-export const createEmbeddingVector = (vector: number[]): EmbeddingVector => vector as EmbeddingVector;
+export const createEmbeddingVector = (vector: number[]): EmbeddingVector =>
+  vector as EmbeddingVector;
 export const createTimestamp = (ts: number): Timestamp => ts as Timestamp;
 export const createConfidenceScore = (score: number): ConfidenceScore => {
   if (score < 0 || score > 1) {
@@ -82,7 +83,7 @@ export type ExtractEventType<T> = T extends { type: infer U } ? U : never;
 export type FilterByType<T, U> = T extends { type: U } ? T : never;
 
 // Template Literal Types
-export type MemoryEventType = 
+export type MemoryEventType =
   | `memory.${string}`
   | `pattern.${string}`
   | `ai.${string}`
@@ -91,7 +92,8 @@ export type MemoryEventType =
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'fatal';
 
-export type LogMessage<T extends LogLevel = LogLevel> = `[${Uppercase<T>}] ${string}`;
+export type LogMessage<T extends LogLevel = LogLevel> =
+  `[${Uppercase<T>}] ${string}`;
 
 // Mapped Types with Key Remapping
 export type PrefixKeys<T, P extends string> = {
@@ -110,10 +112,16 @@ export type CamelToSnake<S extends string> = S extends `${infer T}${infer U}`
 export interface AdvancedMemoryStore {
   // Method overloads for different retrieval patterns
   get<T extends Identifiable>(id: T['id']): Promise<T | null>;
-  get<T extends Identifiable>(id: T['id'], options: { includeDeleted: true }): Promise<T | null>;
-  get<T extends Identifiable>(id: T['id'], options: { version: number }): Promise<T | null>;
   get<T extends Identifiable>(
-    id: T['id'], 
+    id: T['id'],
+    options: { includeDeleted: true }
+  ): Promise<T | null>;
+  get<T extends Identifiable>(
+    id: T['id'],
+    options: { version: number }
+  ): Promise<T | null>;
+  get<T extends Identifiable>(
+    id: T['id'],
     options: { includeDeleted?: boolean; version?: number }
   ): Promise<T | null>;
 
@@ -126,7 +134,10 @@ export interface AdvancedMemoryStore {
 
   // Query with dynamic typing
   query<T>(filter: QueryFilter<T>): Promise<QueryResult<T>>;
-  query<T, R>(filter: QueryFilter<T>, transform: (item: T) => R): Promise<QueryResult<R>>;
+  query<T, R>(
+    filter: QueryFilter<T>,
+    transform: (item: T) => R
+  ): Promise<QueryResult<R>>;
 }
 
 // Advanced Generic Constraints with Conditional Types
@@ -134,16 +145,16 @@ export type QueryFilter<T> = {
   [K in keyof T]?: T[K] extends string
     ? StringFilter
     : T[K] extends number
-    ? NumberFilter  
-    : T[K] extends Date
-    ? DateFilter
-    : T[K] extends boolean
-    ? boolean
-    : T[K] extends (infer U)[]
-    ? ArrayFilter<U>
-    : T[K] extends object
-    ? QueryFilter<T[K]>
-    : T[K];
+      ? NumberFilter
+      : T[K] extends Date
+        ? DateFilter
+        : T[K] extends boolean
+          ? boolean
+          : T[K] extends (infer U)[]
+            ? ArrayFilter<U>
+            : T[K] extends object
+              ? QueryFilter<T[K]>
+              : T[K];
 };
 
 export interface StringFilter {
@@ -198,7 +209,10 @@ export abstract class TypedEventEmitter<T extends Record<string, any>> {
     return this;
   }
 
-  emit<K extends keyof T>(event: K, ...args: T[K] extends readonly unknown[] ? T[K] : [T[K]]): boolean {
+  emit<K extends keyof T>(
+    event: K,
+    ...args: T[K] extends readonly unknown[] ? T[K] : [T[K]]
+  ): boolean {
     const listeners = this.listeners.get(event);
     if (!listeners || listeners.size === 0) {
       return false;
@@ -240,23 +254,30 @@ export abstract class TypedEventEmitter<T extends Record<string, any>> {
 // Memory-specific Events with Type Safety
 export interface MemoryEvents {
   'memory:created': [memory: MemoryMetadata, agentId: AgentId];
-  'memory:updated': [memoryId: MemoryId, changes: Partial<MemoryMetadata>, agentId: AgentId];
+  'memory:updated': [
+    memoryId: MemoryId,
+    changes: Partial<MemoryMetadata>,
+    agentId: AgentId,
+  ];
   'memory:deleted': [memoryId: MemoryId, agentId: AgentId];
   'memory:accessed': [memoryId: MemoryId, agentId: AgentId];
   'pattern:detected': [pattern: DetectedPattern, confidence: ConfidenceScore];
   'ai:insight': [insight: AIInsight, memoryIds: MemoryId[]];
   'performance:slow-query': [queryInfo: SlowQueryInfo];
-  'error': [error: Error, context?: Record<string, unknown>];
+  error: [error: Error, context?: Record<string, unknown>];
 }
 
 export class MemoryEventBus extends TypedEventEmitter<MemoryEvents> {
   // Additional memory-specific methods can be added here
-  
+
   emitMemoryCreated(memory: MemoryMetadata, agentId: AgentId): void {
     this.emit('memory:created', memory, agentId);
   }
 
-  emitPatternDetected(pattern: DetectedPattern, confidence: ConfidenceScore): void {
+  emitPatternDetected(
+    pattern: DetectedPattern,
+    confidence: ConfidenceScore
+  ): void {
     this.emit('pattern:detected', pattern, confidence);
   }
 
@@ -308,26 +329,35 @@ export function assertAgentId(value: unknown): asserts value is AgentId {
   }
 }
 
-export function assertConfidenceScore(value: unknown): asserts value is ConfidenceScore {
+export function assertConfidenceScore(
+  value: unknown
+): asserts value is ConfidenceScore {
   if (!isConfidenceScore(value)) {
     throw new Error(`Expected ConfidenceScore (0-1), got ${value}`);
   }
 }
 
 // Result Type for Error Handling
-export type Result<T, E = Error> = 
+export type Result<T, E = Error> =
   | { success: true; data: T; error?: never }
   | { success: false; data?: never; error: E };
 
 export const Ok = <T>(data: T): Result<T> => ({ success: true, data });
-export const Err = <E>(error: E): Result<never, E> => ({ success: false, error });
+export const Err = <E>(error: E): Result<never, E> => ({
+  success: false,
+  error,
+});
 
 // Result utility functions
-export function isOk<T, E>(result: Result<T, E>): result is { success: true; data: T } {
+export function isOk<T, E>(
+  result: Result<T, E>
+): result is { success: true; data: T } {
   return result.success;
 }
 
-export function isErr<T, E>(result: Result<T, E>): result is { success: false; error: E } {
+export function isErr<T, E>(
+  result: Result<T, E>
+): result is { success: false; error: E } {
   return !result.success;
 }
 
@@ -366,11 +396,11 @@ export function tryCatch<T>(fn: () => T): Result<T, Error> {
 import { MemoryType } from '../types/index.js';
 
 // Advanced Memory Types with Modern TypeScript
-export interface MemoryMetadata extends 
-  Identifiable<MemoryId>, 
-  Timestamped, 
-  Versioned, 
-  Auditable {
+export interface MemoryMetadata
+  extends Identifiable<MemoryId>,
+    Timestamped,
+    Versioned,
+    Auditable {
   readonly type: MemoryType;
   readonly content: string;
   readonly embedding?: EmbeddingVector;
@@ -468,11 +498,19 @@ export class ConfigurationBuilder {
   }
 
   build(): Result<TypedConfiguration, string> {
-    const requiredKeys: (keyof TypedConfiguration)[] = ['database', 'cache', 'ai', 'performance'];
-    
+    const requiredKeys: (keyof TypedConfiguration)[] = [
+      'database',
+      'cache',
+      'ai',
+      'performance',
+    ];
+
     for (const key of requiredKeys) {
       if (!this.config[key]) {
-        return { success: false, error: `Missing required configuration: ${key}` };
+        return {
+          success: false,
+          error: `Missing required configuration: ${key}`,
+        };
       }
     }
 
@@ -493,7 +531,7 @@ export class MemoryStream implements AsyncIterable<MemoryMetadata> {
 
   async *[Symbol.asyncIterator](): AsyncIterator<MemoryMetadata> {
     const generator = this.source();
-    
+
     try {
       while (true) {
         const { value, done } = await generator.next();
@@ -509,16 +547,16 @@ export class MemoryStream implements AsyncIterable<MemoryMetadata> {
 
   async *batch(): AsyncIterator<MemoryMetadata[]> {
     const batch: MemoryMetadata[] = [];
-    
+
     for await (const memory of this) {
       batch.push(memory);
-      
+
       if (batch.length >= this.batchSize) {
         yield [...batch];
         batch.length = 0;
       }
     }
-    
+
     if (batch.length > 0) {
       yield batch;
     }
@@ -547,11 +585,11 @@ export type { MemoryType } from '../types/index.js';
 
 // Re-export utilities
 export {
-  createMemoryId as memoryId,
   createAgentId as agentId,
+  createConfidenceScore as confidenceScore,
   createEmbeddingVector as embeddingVector,
+  createMemoryId as memoryId,
   createTimestamp as timestamp,
-  createConfidenceScore as confidenceScore
 } from './TypeScriptAdvanced.js';
 
 export default {
@@ -565,5 +603,5 @@ export default {
   tryCatch,
   ConfigurationBuilder,
   MemoryEventBus,
-  MemoryStream
+  MemoryStream,
 };
