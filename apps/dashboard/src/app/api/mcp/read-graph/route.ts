@@ -18,8 +18,10 @@ interface McpEntity {
 export async function GET() {
   try {
     // Connect to actual API server graph endpoint
-    const apiPort = process.env.API_PORT || '6367';
-    const response = await fetch(`http://localhost:${apiPort}/api/graph`, {
+    const apiUrl =
+      process.env.API_URL ||
+      `http://localhost:${process.env.API_PORT || '6367'}`;
+    const response = await fetch(`${apiUrl}/api/graph`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

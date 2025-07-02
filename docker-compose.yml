@@ -1,0 +1,143 @@
+services:
+  memorai-api:
+    image: node:20-alpine
+    container_name: memorai-api
+    command: sh -c "npm install -g @codai/memorai-api@1.2.1 && memorai-api"
+    ports:
+      - '6367:6367'
+    environment:
+      - NODE_ENV=production
+      - PORT=6367
+      - API_HOST=0.0.0.0
+      - REDIS_URL=redis://redis:6379
+      - MEMORAI_DATA_PATH=/app/data/memorai
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'wget',
+          '--no-verbose',
+          '--tries=1',
+          '--spider',
+          'http://localhost:6367/health',
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    networks:
+      - memorai-network
+    volumes:
+      - memorai-data:/app/data
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '10m'
+        max-file: '3'
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  memorai-dashboard:
+    image: node:20-alpine
+    container_name: memorai-dashboard
+    command: sh -c "npm install -g @codai/memorai-dashboard@2.1.3 && memorai-dashboard"
+    ports:
+      - '6366:6366'
+    environment:
+      - NODE_ENV=production
+      - PORT=6366
+      - API_URL=http://memorai-api:6367
+      - API_PORT=6367
+      - NEXT_PUBLIC_API_URL=http://localhost:6367
+    depends_on:
+      memorai-api:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'wget',
+          '--no-verbose',
+          '--tries=1',
+          '--spider',
+          'http://localhost:6366',
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+    networks:
+      - memorai-network
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '10m'
+        max-file: '3'
+
+  memorai-mcp:
+    image: node:20-alpine
+    container_name: memorai-mcp
+    command: sh -c "npm install -g @codai/memorai-mcp@5.2.5 && memorai-mcp-http --port 6368 --host 0.0.0.0 --verbose"
+    ports:
+      - '6368:6368'
+    environment:
+      - NODE_ENV=production
+      - PORT=6368
+      - MCP_HOST=0.0.0.0
+      - MEMORAI_DATA_PATH=/app/data/memorai
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'wget',
+          '--no-verbose',
+          '--tries=1',
+          '--spider',
+          'http://0.0.0.0:6368/health',
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - memorai-network
+    volumes:
+      - memorai-data:/app/data
+    logging:
+      driver: 'json-file'
+      options:
+        max-size: '10m'
+        max-file: '3'
+
+  # Optional: Redis for caching and session storage
+  redis:
+    image: redis:7-alpine
+    container_name: memorai-redis
+    ports:
+      - '6369:6379'
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    networks:
+      - memorai-network
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  memorai-network:
+    driver: bridge
+    name: memorai-network
+
+volumes:
+  memorai-data:
+    name: memorai-data
+  redis-data:
+    name: redis-data

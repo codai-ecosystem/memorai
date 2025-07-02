@@ -1,17 +1,17 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { DashboardHeader } from '../components/dashboard/header';
-import { DashboardSidebar } from '../components/dashboard/sidebar';
-import { MemoryOverview } from '../components/dashboard/memory-overview';
-import { MemoryActions } from '../components/dashboard/memory-actions';
-import { MemorySearch } from '../components/dashboard/memory-search';
-import { MemoryResults } from '../components/dashboard/memory-results';
+import { useEffect, useState } from 'react';
 import { AnalyticsDashboard } from '../components/dashboard/analytics';
+import { DashboardHeader } from '../components/dashboard/header';
+import { MemoryActions } from '../components/dashboard/memory-actions';
+import { MemoryOverview } from '../components/dashboard/memory-overview';
+import { MemoryResults } from '../components/dashboard/memory-results';
+import { MemorySearch } from '../components/dashboard/memory-search';
+import { DashboardSidebar } from '../components/dashboard/sidebar';
 import { SystemConfiguration } from '../components/dashboard/system-config';
-import { useMemoryStore } from '../stores/memory-store';
-import { useConfigStore } from '../stores/config-store';
 import { TailwindTest } from '../components/tailwind-test';
+import { useConfigStore } from '../stores/config-store';
+import { useMemoryStore } from '../stores/memory-store';
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState('overview');
@@ -58,6 +58,24 @@ export default function DashboardPage() {
     };
 
     initializeDashboard();
+
+    // Set up real-time updates every 5 seconds
+    const refreshInterval = setInterval(async () => {
+      try {
+        console.log('Auto-refreshing dashboard data...');
+        await Promise.allSettled([
+          fetchMemories(),
+          fetchStats(),
+        ]);
+      } catch (error) {
+        console.error('Auto-refresh failed:', error);
+      }
+    }, 5000); // Refresh every 5 seconds
+
+    // Cleanup interval on component unmount
+    return () => {
+      clearInterval(refreshInterval);
+    };
   }, [fetchMemories, fetchStats, fetchConfig]);
 
   if (isLoading) {

@@ -11,9 +11,9 @@ import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
 } from '@modelcontextprotocol/sdk/types.js';
-import { config } from 'dotenv';
 import { program } from 'commander';
-import { join, dirname } from 'path';
+import { config } from 'dotenv';
+import { dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 import { AdvancedMemoryEngine, type MemoryType } from '@codai/memorai-core';
@@ -33,14 +33,14 @@ if (options.envPath) {
   // Try default locations: current dir, parent dir, workspace-ai
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = dirname(__filename);
-  
+
   const envPaths = [
     '.env',
     '../.env',
     '../../.env',
-    'E:\\GitHub\\workspace-ai\\.env'
+    'E:\\GitHub\\workspace-ai\\.env',
   ];
-  
+
   let envLoaded = false;
   for (const envPath of envPaths) {
     try {
@@ -54,7 +54,7 @@ if (options.envPath) {
       // Continue to next path
     }
   }
-  
+
   if (!envLoaded) {
     config(); // Fallback to default behavior
   }
@@ -193,13 +193,17 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
 });
 
 // Tool handlers
-server.setRequestHandler(CallToolRequestSchema, async (request) => {
+server.setRequestHandler(CallToolRequestSchema, async request => {
   const { name, arguments: args } = request.params;
 
   try {
     switch (name) {
       case 'remember': {
-        const { agentId, content, metadata = {} } = args as {
+        const {
+          agentId,
+          content,
+          metadata = {},
+        } = args as {
           agentId: string;
           content: string;
           metadata?: MemoryMetadata;
@@ -232,7 +236,11 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case 'recall': {
-        const { agentId, query, limit = 10 } = args as {
+        const {
+          agentId,
+          query,
+          limit = 10,
+        } = args as {
           agentId: string;
           query: string;
           limit?: number;
@@ -330,7 +338,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 async function main() {
   try {
     debug.info('🎯 Starting simplified MCP server...');
-    
+
     // Initialize memory engine
     await memoryEngine.initialize();
     debug.info('🧠 Memory engine initialized');
@@ -338,11 +346,10 @@ async function main() {
     // Start server
     const transport = new StdioServerTransport();
     await server.connect(transport);
-    
+
     debug.info('✅ Memorai MCP Server ready!');
     debug.info('🔧 Configuration: Direct AdvancedMemoryEngine (no tiers)');
     debug.info('🎯 Ready to handle memory operations');
-    
   } catch (error) {
     debug.error('Failed to start server:', error);
     process.exit(1);

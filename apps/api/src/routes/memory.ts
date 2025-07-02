@@ -1,7 +1,7 @@
 import { Request, Response, Router } from 'express';
 import { z } from 'zod';
-import { asyncHandler, createApiError } from '../middleware/errorHandler';
-import { logger } from '../utils/logger';
+import { asyncHandler, createApiError } from '../middleware/errorHandler.js';
+import { logger } from '../utils/logger.js';
 
 // Zod error interfaces for proper typing
 interface ZodErrorItem {
@@ -401,10 +401,14 @@ router.get(
           400,
           'UNSUPPORTED_FORMAT'
         );
-      } // Get all memories for the agent
-      const memories = await memoryEngine.recall('', 'default', agentId, {
-        limit: 1000,
-      }); // Large limit for export
+      } // Get all memories for the agent using getContext instead of recall with empty query
+      const contextResponse = await memoryEngine.getContext({
+        tenant_id: 'default-tenant',
+        agent_id: agentId,
+        max_memories: 1000,
+      });
+
+      const memories = contextResponse?.memories || [];
 
       const exportData = {
         agentId,

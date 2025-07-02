@@ -6,7 +6,7 @@
 import { AdvancedMemoryEngine } from '@codai/memorai-core';
 import axios from 'axios';
 import { Request, Response, Router } from 'express';
-import { logger } from '../utils/logger';
+import { logger } from '../utils/logger.js';
 
 export const healthRouter: Router = Router();
 

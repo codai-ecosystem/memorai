@@ -12,7 +12,6 @@ import type {
   ContextResponse,
   MemoryConfig,
   MemoryMetadata,
-  MemoryQuery,
   MemoryResult,
   MemoryType,
 } from '../types/index.js';
@@ -42,7 +41,7 @@ export interface RecallOptions {
 export interface AdvancedMemoryConfig extends Partial<MemoryConfig> {
   // Data path for persistent storage
   dataPath?: string;
-  
+
   // Azure OpenAI configuration (primary)
   azureOpenAI?: {
     endpoint?: string;
@@ -50,11 +49,11 @@ export interface AdvancedMemoryConfig extends Partial<MemoryConfig> {
     deploymentName?: string;
     apiVersion?: string;
   };
-  
+
   // OpenAI fallback configuration
   apiKey?: string;
   model?: string;
-  
+
   // Local embedding fallback
   localEmbedding?: {
     model?: string;
@@ -72,9 +71,12 @@ export class AdvancedMemoryEngine {
   private embedding: EmbeddingService;
   private storage: FileStorageAdapter;
   private isInitialized = false;
-  
+
   // In-memory indices for fast retrieval
-  private semanticIndex: Map<string, { embedding: number[]; metadata: MemoryMetadata }> = new Map();
+  private semanticIndex: Map<
+    string,
+    { embedding: number[]; metadata: MemoryMetadata }
+  > = new Map();
   private keywordIndex: Map<string, Set<string>> = new Map();
   private typeIndex: Map<MemoryType, Set<string>> = new Map();
   private tagIndex: Map<string, Set<string>> = new Map();
@@ -84,7 +86,7 @@ export class AdvancedMemoryEngine {
       dataPath: this.getDefaultDataPath(),
       ...config,
     };
-    
+
     // Initialize embedding service with config
     this.embedding = new EmbeddingService({
       provider: this.detectEmbeddingProvider(),
@@ -92,7 +94,7 @@ export class AdvancedMemoryEngine {
       model: config.model || 'text-embedding-3-small',
       ...this.getAzureConfig(),
     });
-    
+
     // Initialize persistent storage
     this.storage = new FileStorageAdapter(this.config.dataPath);
   }
@@ -106,17 +108,18 @@ export class AdvancedMemoryEngine {
     try {
       // Load all existing memories from persistent storage
       const existingMemories = await this.storage.list();
-      
+
       logger.info(`🧠 Loading ${existingMemories.length} existing memories...`);
-      
+
       // Rebuild all indices
       for (const memory of existingMemories) {
         await this.indexMemory(memory);
       }
-      
+
       this.isInitialized = true;
-      logger.info(`✅ Advanced Memory Engine initialized with ${existingMemories.length} memories`);
-      
+      logger.info(
+        `✅ Advanced Memory Engine initialized with ${existingMemories.length} memories`
+      );
     } catch (error: unknown) {
       throw new MemoryError(
         `Failed to initialize memory engine: ${error instanceof Error ? error.message : 'Unknown error'}`,
@@ -149,7 +152,7 @@ export class AdvancedMemoryEngine {
     try {
       // Generate semantic embedding
       const embeddingResult = await this.embedding.embed(contentStr);
-      
+
       // Create memory metadata
       const memory: MemoryMetadata = {
         id: nanoid(),
@@ -172,13 +175,12 @@ export class AdvancedMemoryEngine {
 
       // Store persistently
       await this.storage.store(memory);
-      
+
       // Index in memory for fast access
       await this.indexMemory(memory);
-      
+
       logger.debug(`💾 Stored memory: ${memory.id} (${memory.type})`);
       return memory.id;
-      
     } catch (error: unknown) {
       throw this.handleError(error, 'REMEMBER_ERROR');
     }
@@ -208,14 +210,28 @@ export class AdvancedMemoryEngine {
     try {
       // Generate query embedding for semantic search
       const queryEmbedding = await this.embedding.embed(queryStr);
-      
+
       // Perform hybrid search: semantic + keyword
-      const semanticResults = await this.semanticSearch(queryEmbedding.embedding, tenantId, agentId, options);
-      const keywordResults = await this.keywordSearch(queryStr, tenantId, agentId, options);
-      
+      const semanticResults = await this.semanticSearch(
+        queryEmbedding.embedding,
+        tenantId,
+        agentId,
+        options
+      );
+      const keywordResults = await this.keywordSearch(
+        queryStr,
+        tenantId,
+        agentId,
+        options
+      );
+
       // Merge and rank results
-      const mergedResults = this.mergeSearchResults(semanticResults, keywordResults, options);
-      
+      const mergedResults = this.mergeSearchResults(
+        semanticResults,
+        keywordResults,
+        options
+      );
+
       // Update access statistics
       for (const result of mergedResults) {
         result.memory.lastAccessedAt = new Date();
@@ -225,7 +241,7 @@ export class AdvancedMemoryEngine {
           accessCount: result.memory.accessCount,
         });
       }
-      
+
       // Return results without embedding arrays to keep response concise
       return mergedResults.map(result => ({
         ...result,
@@ -234,7 +250,6 @@ export class AdvancedMemoryEngine {
           embedding: undefined, // Exclude embedding array to keep response concise
         },
       }));
-      
     } catch (error: unknown) {
       throw this.handleError(error, 'RECALL_ERROR');
     }
@@ -260,7 +275,7 @@ export class AdvancedMemoryEngine {
       });
 
       const contextSummary = this.generateContextSummary(recentMemories);
-      
+
       return {
         context: contextSummary,
         memories: recentMemories.map(memory => ({
@@ -277,7 +292,6 @@ export class AdvancedMemoryEngine {
         total_count: recentMemories.length,
         context_summary: contextSummary,
       };
-      
     } catch (error: unknown) {
       throw this.handleError(error, 'CONTEXT_ERROR');
     }
@@ -298,16 +312,15 @@ export class AdvancedMemoryEngine {
       // Get memory before deleting to clean up indices
       const memory = await this.storage.retrieve(memoryId);
       if (!memory) return false;
-      
+
       // Remove from persistent storage
       await this.storage.delete(memoryId);
-      
+
       // Remove from indices
       this.removeFromIndices(memory);
-      
+
       logger.debug(`🗑️  Deleted memory: ${memoryId}`);
       return true;
-      
     } catch (error: unknown) {
       logger.error('Forget error:', error);
       return false;
@@ -332,7 +345,7 @@ export class AdvancedMemoryEngine {
     };
   }> {
     const memories = await this.storage.list();
-    
+
     const memoryTypes: Record<MemoryType, number> = {
       fact: 0,
       procedure: 0,
@@ -365,7 +378,8 @@ export class AdvancedMemoryEngine {
         tags: this.tagIndex.size,
       },
       performance: {
-        avgImportance: memories.length > 0 ? totalImportance / memories.length : 0,
+        avgImportance:
+          memories.length > 0 ? totalImportance / memories.length : 0,
         recentActivity,
       },
     };
@@ -381,7 +395,7 @@ export class AdvancedMemoryEngine {
         metadata: { ...memory, embedding: undefined }, // Exclude embedding from metadata to keep responses concise
       });
     }
-    
+
     // Keyword index
     const keywords = this.extractKeywords(memory.content);
     for (const keyword of keywords) {
@@ -390,13 +404,13 @@ export class AdvancedMemoryEngine {
       }
       this.keywordIndex.get(keyword)!.add(memory.id);
     }
-    
+
     // Type index
     if (!this.typeIndex.has(memory.type)) {
       this.typeIndex.set(memory.type, new Set());
     }
     this.typeIndex.get(memory.type)!.add(memory.id);
-    
+
     // Tag index
     for (const tag of memory.tags) {
       const normalizedTag = tag.toLowerCase();
@@ -410,7 +424,7 @@ export class AdvancedMemoryEngine {
   private removeFromIndices(memory: MemoryMetadata): void {
     // Remove from semantic index
     this.semanticIndex.delete(memory.id);
-    
+
     // Remove from keyword index
     const keywords = this.extractKeywords(memory.content);
     for (const keyword of keywords) {
@@ -419,13 +433,13 @@ export class AdvancedMemoryEngine {
         this.keywordIndex.delete(keyword);
       }
     }
-    
+
     // Remove from type index
     this.typeIndex.get(memory.type)?.delete(memory.id);
     if (this.typeIndex.get(memory.type)?.size === 0) {
       this.typeIndex.delete(memory.type);
     }
-    
+
     // Remove from tag index
     for (const tag of memory.tags) {
       const normalizedTag = tag.toLowerCase();
@@ -443,18 +457,21 @@ export class AdvancedMemoryEngine {
     options: RecallOptions = {}
   ): Promise<MemoryResult[]> {
     const results: MemoryResult[] = [];
-    
+
     for (const [id, indexEntry] of this.semanticIndex.entries()) {
       const memory = indexEntry.metadata;
-      
+
       // Apply filters
       if (memory.tenant_id !== tenantId) continue;
       if (agentId && memory.agent_id !== agentId) continue;
       if (options.type && memory.type !== options.type) continue;
-      
+
       // Calculate cosine similarity
-      const similarity = this.cosineSimilarity(queryEmbedding, indexEntry.embedding);
-      
+      const similarity = this.cosineSimilarity(
+        queryEmbedding,
+        indexEntry.embedding
+      );
+
       if (similarity >= (options.threshold || 0.1)) {
         results.push({
           memory,
@@ -463,7 +480,7 @@ export class AdvancedMemoryEngine {
         });
       }
     }
-    
+
     return results.sort((a, b) => b.score - a.score);
   }
 
@@ -475,7 +492,7 @@ export class AdvancedMemoryEngine {
   ): Promise<MemoryResult[]> {
     const keywords = this.extractKeywords(query);
     const candidateIds = new Set<string>();
-    
+
     // Find memories containing search terms
     for (const keyword of keywords) {
       const matchingIds = this.keywordIndex.get(keyword.toLowerCase());
@@ -483,18 +500,18 @@ export class AdvancedMemoryEngine {
         matchingIds.forEach(id => candidateIds.add(id));
       }
     }
-    
+
     const results: MemoryResult[] = [];
-    
+
     for (const id of candidateIds) {
       const memory = await this.storage.retrieve(id);
       if (!memory) continue;
-      
+
       // Apply filters
       if (memory.tenant_id !== tenantId) continue;
       if (agentId && memory.agent_id !== agentId) continue;
       if (options.type && memory.type !== options.type) continue;
-      
+
       const score = this.calculateKeywordScore(memory, keywords);
       if (score >= (options.threshold || 0.1)) {
         results.push({
@@ -504,7 +521,7 @@ export class AdvancedMemoryEngine {
         });
       }
     }
-    
+
     return results.sort((a, b) => b.score - a.score);
   }
 
@@ -514,7 +531,7 @@ export class AdvancedMemoryEngine {
     options: RecallOptions
   ): MemoryResult[] {
     const mergedMap = new Map<string, MemoryResult>();
-    
+
     // Add semantic results (weighted higher)
     for (const result of semanticResults) {
       mergedMap.set(result.memory.id, {
@@ -522,13 +539,16 @@ export class AdvancedMemoryEngine {
         score: result.score * 0.7, // Semantic weight
       });
     }
-    
+
     // Add or boost keyword results
     for (const result of keywordResults) {
       const existing = mergedMap.get(result.memory.id);
       if (existing) {
         // Boost existing result
-        existing.score = Math.max(existing.score, existing.score + result.score * 0.3);
+        existing.score = Math.max(
+          existing.score,
+          existing.score + result.score * 0.3
+        );
         existing.relevance_reason = `${existing.relevance_reason} + ${result.relevance_reason}`;
       } else {
         mergedMap.set(result.memory.id, {
@@ -537,12 +557,12 @@ export class AdvancedMemoryEngine {
         });
       }
     }
-    
+
     // Convert to array, sort, and limit
     const results = Array.from(mergedMap.values())
       .sort((a, b) => b.score - a.score)
       .slice(0, options.limit || 10);
-    
+
     return results;
   }
 
@@ -557,28 +577,75 @@ export class AdvancedMemoryEngine {
 
   private isStopWord(word: string): boolean {
     const stopWords = new Set([
-      'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of',
-      'with', 'by', 'is', 'are', 'was', 'were', 'be', 'been', 'have', 'has', 'had',
-      'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might', 'can',
-      'this', 'that', 'these', 'those', 'i', 'you', 'he', 'she', 'it', 'we', 'they',
+      'the',
+      'a',
+      'an',
+      'and',
+      'or',
+      'but',
+      'in',
+      'on',
+      'at',
+      'to',
+      'for',
+      'of',
+      'with',
+      'by',
+      'is',
+      'are',
+      'was',
+      'were',
+      'be',
+      'been',
+      'have',
+      'has',
+      'had',
+      'do',
+      'does',
+      'did',
+      'will',
+      'would',
+      'could',
+      'should',
+      'may',
+      'might',
+      'can',
+      'this',
+      'that',
+      'these',
+      'those',
+      'i',
+      'you',
+      'he',
+      'she',
+      'it',
+      'we',
+      'they',
     ]);
     return stopWords.has(word);
   }
 
-  private calculateKeywordScore(memory: MemoryMetadata, searchTerms: string[]): number {
+  private calculateKeywordScore(
+    memory: MemoryMetadata,
+    searchTerms: string[]
+  ): number {
     const contentWords = this.extractKeywords(memory.content);
     let score = 0;
-    
+
     for (const term of searchTerms) {
       if (contentWords.includes(term)) score += 0.5;
       if (memory.content.toLowerCase().includes(term)) score += 0.3;
-      if (memory.tags.some(tag => tag.toLowerCase().includes(term))) score += 0.2;
+      if (memory.tags.some(tag => tag.toLowerCase().includes(term)))
+        score += 0.2;
     }
-    
+
     return searchTerms.length > 0 ? score / searchTerms.length : 0;
   }
 
-  private getKeywordRelevanceReason(memory: MemoryMetadata, searchTerms: string[]): string {
+  private getKeywordRelevanceReason(
+    memory: MemoryMetadata,
+    searchTerms: string[]
+  ): string {
     const reasons: string[] = [];
     for (const term of searchTerms) {
       if (memory.content.toLowerCase().includes(term)) {
@@ -590,60 +657,96 @@ export class AdvancedMemoryEngine {
 
   private cosineSimilarity(a: number[], b: number[]): number {
     if (a.length !== b.length) return 0;
-    
+
     let dotProduct = 0;
     let normA = 0;
     let normB = 0;
-    
+
     for (let i = 0; i < a.length; i++) {
       dotProduct += a[i] * b[i];
       normA += a[i] * a[i];
       normB += b[i] * b[i];
     }
-    
+
     if (normA === 0 || normB === 0) return 0;
     return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
   }
 
   private classifyMemoryType(content: string): MemoryType {
     const lower = content.toLowerCase();
-    
-    if (lower.includes('prefer') || lower.includes('like') || lower.includes('want')) {
+
+    if (
+      lower.includes('prefer') ||
+      lower.includes('like') ||
+      lower.includes('want')
+    ) {
       return 'preference';
     }
-    if (lower.includes('feel') || lower.includes('emotion') || lower.includes('mood')) {
+    if (
+      lower.includes('feel') ||
+      lower.includes('emotion') ||
+      lower.includes('mood')
+    ) {
       return 'emotion';
     }
-    if (lower.includes('procedure') || lower.includes('step') || lower.includes('process')) {
+    if (
+      lower.includes('procedure') ||
+      lower.includes('step') ||
+      lower.includes('process')
+    ) {
       return 'procedure';
     }
-    if (lower.includes('task') || lower.includes('todo') || lower.includes('assignment')) {
+    if (
+      lower.includes('task') ||
+      lower.includes('todo') ||
+      lower.includes('assignment')
+    ) {
       return 'task';
     }
-    if (lower.includes('personality') || lower.includes('characteristic') || lower.includes('trait')) {
+    if (
+      lower.includes('personality') ||
+      lower.includes('characteristic') ||
+      lower.includes('trait')
+    ) {
       return 'personality';
     }
-    if (lower.includes('conversation') || lower.includes('thread') || lower.includes('discussion')) {
+    if (
+      lower.includes('conversation') ||
+      lower.includes('thread') ||
+      lower.includes('discussion')
+    ) {
       return 'thread';
     }
-    
+
     return 'fact';
   }
 
   private calculateImportance(content: string): number {
     let importance = 0.5;
     const lower = content.toLowerCase();
-    
-    if (lower.includes('important') || lower.includes('critical') || lower.includes('urgent')) {
+
+    if (
+      lower.includes('important') ||
+      lower.includes('critical') ||
+      lower.includes('urgent')
+    ) {
       importance += 0.3;
     }
-    if (lower.includes('remember') || lower.includes('note') || lower.includes('key')) {
+    if (
+      lower.includes('remember') ||
+      lower.includes('note') ||
+      lower.includes('key')
+    ) {
       importance += 0.2;
     }
-    if (lower.includes('password') || lower.includes('secret') || lower.includes('private')) {
+    if (
+      lower.includes('password') ||
+      lower.includes('secret') ||
+      lower.includes('private')
+    ) {
       importance += 0.3;
     }
-    
+
     return Math.min(importance, 1.0);
   }
 
@@ -668,13 +771,13 @@ export class AdvancedMemoryEngine {
     if (process.env.MEMORAI_DATA_PATH) {
       return process.env.MEMORAI_DATA_PATH;
     }
-    
+
     const platform = process.platform;
     const userHome = process.env.HOME || process.env.USERPROFILE || '';
-    
+
     // Use simple path joining instead of importing path module
     const sep = platform === 'win32' ? '\\' : '/';
-    
+
     switch (platform) {
       case 'win32':
         return `${userHome}${sep}AppData${sep}Local${sep}Memorai${sep}data${sep}memory`;
@@ -696,10 +799,12 @@ export class AdvancedMemoryEngine {
   }
 
   private getEmbeddingApiKey(): string | undefined {
-    return this.config.apiKey || 
-           this.config.azureOpenAI?.apiKey || 
-           process.env.OPENAI_API_KEY || 
-           process.env.AZURE_OPENAI_API_KEY;
+    return (
+      this.config.apiKey ||
+      this.config.azureOpenAI?.apiKey ||
+      process.env.OPENAI_API_KEY ||
+      process.env.AZURE_OPENAI_API_KEY
+    );
   }
 
   private getAzureConfig(): any {

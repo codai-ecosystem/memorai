@@ -4,8 +4,8 @@
  */
 
 import { Request, Response, Router } from 'express';
-import { asyncHandler, createApiError } from '../middleware/errorHandler';
-import { logger } from '../utils/logger';
+import { asyncHandler, createApiError } from '../middleware/errorHandler.js';
+import { logger } from '../utils/logger.js';
 
 const router: Router = Router();
 
@@ -59,7 +59,6 @@ async function getMCPMemories(memoryEngine: any): Promise<any[]> {
       {
         tenantId,
         agentId,
-        tier: memoryEngine?.getTierInfo()?.currentTier,
         status: 'using_shared_memory_engine_with_correct_tenant',
       }
     );
@@ -78,7 +77,6 @@ async function getMCPMemories(memoryEngine: any): Promise<any[]> {
         status: 'shared_memory_success',
         memoriesCount: memories.length,
         tenantId,
-        tier: memoryEngine?.getTierInfo()?.currentTier,
       }
     );
 

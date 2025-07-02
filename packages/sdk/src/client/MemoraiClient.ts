@@ -2,19 +2,19 @@
  * @fileoverview Main Memorai SDK client for agent-native memory operations
  */
 
-import type {
-  ClientOptions,
-  MemoryOperation,
-  RememberOptions,
-  RecallOptions,
-  ForgetOptions,
-  ContextOptions,
-  AgentMemory,
-  MemorySession,
-} from '../types/index.js';
-import { MCPConnection } from '../connection/MCPConnection.js';
-import { SDKConfig } from '../config/SDKConfig.js';
 import { MemoryCache } from '../cache/MemoryCache.js';
+import { SDKConfig } from '../config/SDKConfig.js';
+import { MCPConnection } from '../connection/MCPConnection.js';
+import type {
+  AgentMemory,
+  ClientOptions,
+  ContextOptions,
+  ForgetOptions,
+  MemoryOperation,
+  MemorySession,
+  RecallOptions,
+  RememberOptions,
+} from '../types/index.js';
 
 /**
  * Main client class for interacting with Memorai memory system
@@ -75,28 +75,25 @@ export class MemoraiClient {
     content: string,
     options: Partial<RememberOptions> = {}
   ): Promise<AgentMemory> {
-    const operation: MemoryOperation = {
-      operation: 'remember',
-      data: {
-        content,
-        context: options.context,
-        metadata: {
-          agentId: this.agentId,
-          sessionId: this.sessionId,
-          tenantId: this.tenantId,
-          timestamp: new Date().toISOString(),
-          ...options.metadata,
-        },
-        tags: options.tags || [],
-        priority: options.priority || 1,
-        expires: options.expires,
+    const params = {
+      content,
+      agentId: this.agentId,
+      metadata: {
+        sessionId: this.sessionId,
+        tenantId: this.tenantId,
+        timestamp: new Date().toISOString(),
+        ...options.metadata,
       },
+      tags: options.tags || [],
+      priority: options.priority || 1,
+      expires: options.expires,
+      context: options.context,
     };
 
     const response = await this.connection.send({
       jsonrpc: '2.0',
       method: 'memory/remember',
-      params: operation,
+      params,
       id: this.generateRequestId(),
     });
 
@@ -129,26 +126,23 @@ export class MemoraiClient {
       }
     }
 
-    const operation: MemoryOperation = {
-      operation: 'recall',
-      data: {
-        query: options.query || query,
-        limit: options.limit || 10,
-        threshold: options.threshold || 0.7,
-        filters: options.filters,
-        context: {
-          agentId: this.agentId,
-          sessionId: this.sessionId,
-          tenantId: this.tenantId,
-          ...options.context,
-        },
+    const params = {
+      query: options.query || query,
+      agentId: this.agentId,
+      limit: options.limit || 10,
+      threshold: options.threshold || 0.7,
+      filters: options.filters,
+      context: {
+        sessionId: this.sessionId,
+        tenantId: this.tenantId,
+        ...options.context,
       },
     };
 
     const response = await this.connection.send({
       jsonrpc: '2.0',
       method: 'memory/recall',
-      params: operation,
+      params,
       id: this.generateRequestId(),
     });
 

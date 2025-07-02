@@ -51,7 +51,7 @@ describe('Config Routes', () => {
       const response = await request(app).get('/api/config').expect(200);
 
       const { config } = response.body;
-      expect(config.tier.level).toBe('basic');
+      expect(config.tier.level).toBe('advanced');
       expect(config.tier.capabilities).toBeDefined();
       expect(config.tier.message).toBeDefined();
     });
@@ -96,8 +96,8 @@ describe('Config Routes', () => {
     });
 
     it('should handle configuration retrieval failure', async () => {
-      mockMemoryEngine.getTierInfo.mockImplementation(() => {
-        throw new Error('Tier info failed');
+      mockMemoryEngine.getStats.mockImplementation(() => {
+        throw new Error('Stats retrieval failed');
       });
 
       const response = await request(app).get('/api/config').expect(500);

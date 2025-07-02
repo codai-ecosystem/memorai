@@ -1,14 +1,14 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { MemoraiClient } from '../src/client/MemoraiClient';
 import { MCPConnection } from '../src/connection/MCPConnection';
 import type {
-  ClientOptions,
-  RememberOptions,
-  RecallOptions,
-  ForgetOptions,
-  ContextOptions,
   AgentMemory,
+  ClientOptions,
+  ContextOptions,
+  ForgetOptions,
   MemorySession,
+  RecallOptions,
+  RememberOptions,
 } from '../src/types';
 
 // Mock the MCPConnection
@@ -108,20 +108,17 @@ describe('MemoraiClient', () => {
         jsonrpc: '2.0',
         method: 'memory/remember',
         params: {
-          operation: 'remember',
-          data: {
-            content: 'Test content',
-            context: undefined,
-            metadata: {
-              agentId: 'test-agent',
-              sessionId: 'test-session',
-              tenantId: 'test-tenant',
-              timestamp: expect.any(String),
-            },
-            tags: ['test'],
-            priority: 1,
-            expires: undefined,
+          content: 'Test content',
+          agentId: 'test-agent',
+          metadata: {
+            sessionId: 'test-session',
+            tenantId: 'test-tenant',
+            timestamp: expect.any(String),
           },
+          tags: ['test'],
+          priority: 1,
+          expires: undefined,
+          context: undefined,
         },
         id: expect.any(String),
       });
@@ -176,17 +173,14 @@ describe('MemoraiClient', () => {
         jsonrpc: '2.0',
         method: 'memory/recall',
         params: {
-          operation: 'recall',
-          data: {
-            query: 'Test query',
-            limit: 5,
-            threshold: 0.8,
-            filters: undefined,
-            context: {
-              agentId: 'test-agent',
-              sessionId: 'test-session',
-              tenantId: 'test-tenant',
-            },
+          query: 'Test query',
+          agentId: 'test-agent',
+          limit: 5,
+          threshold: 0.8,
+          filters: undefined,
+          context: {
+            sessionId: 'test-session',
+            tenantId: 'test-tenant',
           },
         },
         id: expect.any(String),

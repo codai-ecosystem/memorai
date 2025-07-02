@@ -1,0 +1,103 @@
+{
+  "timestamp": "2025-06-30T23:31:07.414Z",
+  "suite": {
+    "name": "Enterprise MCP Test Suite",
+    "description": "Comprehensive testing using MCP tools and direct API calls",
+    "tests": [
+      {
+        "test": "API Health Check",
+        "status": "passed",
+        "duration": 42
+      },
+      {
+        "test": "Dashboard Accessibility",
+        "status": "passed",
+        "duration": 49
+      },
+      {
+        "test": "Stats Endpoint",
+        "status": "passed",
+        "duration": 7
+      },
+      {
+        "test": "Invalid Endpoint Handling",
+        "status": "passed",
+        "duration": 12
+      },
+      {
+        "test": "Memory Creation",
+        "status": "passed",
+        "duration": 22
+      },
+      {
+        "test": "Memory Recall",
+        "status": "passed",
+        "duration": 147
+      },
+      {
+        "test": "Context Retrieval",
+        "status": "passed",
+        "duration": 155
+      },
+      {
+        "test": "Dashboard Loads",
+        "status": "passed",
+        "duration": 5
+      },
+      {
+        "test": "Dashboard Header Present",
+        "status": "passed",
+        "duration": 5
+      },
+      {
+        "test": "API Response Time",
+        "status": "passed",
+        "duration": 2,
+        "details": "2ms"
+      },
+      {
+        "test": "Concurrent Request Handling",
+        "status": "passed",
+        "duration": 8,
+        "details": "6ms for 5 requests"
+      },
+      {
+        "test": "SQL Injection Prevention",
+        "status": "failed",
+        "duration": 102,
+        "details": "Did not handle SQL injection attempt properly"
+      },
+      {
+        "test": "XSS Input Handling",
+        "status": "passed",
+        "duration": 118
+      },
+      {
+        "test": "Invalid JSON Handling",
+        "status": "passed",
+        "duration": 2
+      },
+      {
+        "test": "Missing Fields Validation",
+        "status": "passed",
+        "duration": 4
+      },
+      {
+        "test": "Data Integrity",
+        "status": "passed",
+        "duration": 151,
+        "details": "Special characters preserved"
+      }
+    ],
+    "totalDuration": 503,
+    "passRate": 93.75
+  },
+  "summary": {
+    "total": 16,
+    "passed": 15,
+    "failed": 1,
+    "skipped": 0,
+    "passRate": 93.75,
+    "duration": 503
+  }
+}

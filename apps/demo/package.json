@@ -7,13 +7,14 @@
   "main": "./dist/index.js",
   "scripts": {
     "build": "tsc",
-    "dev": "tsx src/index.ts",
+    "dev": "node ../../test-demo-api.js",
     "start": "node dist/index.js",
     "test": "echo \"No tests in demo package\"",
-    "demo:basic": "tsx src/demos/basic.ts",
-    "demo:agent": "tsx src/demos/agent.ts",
-    "demo:context": "tsx src/demos/context.ts",
-    "demo:performance": "tsx src/demos/performance.ts"
+    "demo:basic": "node ../../test-demo-api.js",
+    "demo:agent": "echo \"Agent demo: Use basic demo for now - node ../../test-demo-api.js\"",
+    "demo:context": "echo \"Context demo: Use basic demo for now - node ../../test-demo-api.js\"",
+    "demo:performance": "echo \"Performance demo: Use basic demo for now - node ../../test-demo-api.js\"",
+    "demo:simple": "node ../../test-demo-api.js"
   },
   "dependencies": {
     "@codai/memorai-core": "workspace:*",

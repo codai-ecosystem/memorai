@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
+
     // Connect to actual API server instead of using mock data
     const apiPort = process.env.API_PORT || '6367';
     const response = await fetch(
@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
         body: JSON.stringify({
           agentId: body.agentId || 'dashboard',
           content: body.content || '',
-          metadata: body.metadata || {}
+          metadata: body.metadata || {},
         }),
       }
     );
@@ -29,11 +29,11 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: result
+      data: result,
     });
   } catch (error) {
     console.error('Memory remember API error:', error);
-    
+
     // Get body for fallback
     let body;
     try {
@@ -41,10 +41,10 @@ export async function POST(request: NextRequest) {
     } catch {
       body = {};
     }
-    
+
     // Fallback to local storage if API server is not available
     return NextResponse.json(
-      { 
+      {
         success: false,
         error: 'Unable to connect to API server',
         fallback: {
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
           content: body?.content || '',
           metadata: body?.metadata || {},
           timestamp: new Date().toISOString(),
-        }
+        },
       },
       { status: 500 }
     );

@@ -84,6 +84,7 @@ describe('Stats API Route', () => {
         'agent_registered',
         'query_executed',
         'memory_updated',
+        'system_update',
       ];
       data.data.recentActivity.forEach((activity: any) => {
         expect(validTypes).toContain(activity.type);

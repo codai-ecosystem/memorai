@@ -1,7 +1,7 @@
-import { Server as SocketIOServer } from 'socket.io';
 import { AdvancedMemoryEngine } from '@codai/memorai-core';
-import { logger } from '../utils/logger';
-import { updateStats } from '../routes/stats';
+import { Server as SocketIOServer } from 'socket.io';
+import { updateStats } from '../routes/stats.js';
+import { logger } from '../utils/logger.js';
 
 export function setupWebSocket(
   io: SocketIOServer,

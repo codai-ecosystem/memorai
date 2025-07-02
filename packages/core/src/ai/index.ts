@@ -17,6 +17,7 @@ export {
 export {
   MemoryPattern,
   PatternAnalysisConfig,
+  PatternRecognition,
   PatternRecognitionEngine,
 } from './PatternRecognition.js';
 export {

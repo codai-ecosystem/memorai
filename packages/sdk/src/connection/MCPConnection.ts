@@ -1,8 +1,8 @@
 import type {
-  RecallOptions,
   AgentMemory,
-  ContextOptions,
   ConnectionOptions,
+  ContextOptions,
+  RecallOptions,
 } from '../types/index.js';
 
 export interface MCPConnectionOptions extends ConnectionOptions {
@@ -294,47 +294,8 @@ export class MCPConnection {
     error?: { code: number; message: string };
   }> {
     try {
-      let endpoint: string;
-      let body: unknown;
-
-      // Map JSON-RPC methods to HTTP endpoints
-      switch (request.method) {
-        case 'memory/initialize':
-          endpoint = '/memory/initialize';
-          body = request.params;
-          break;
-        case 'memory/remember':
-          endpoint = '/memory/remember';
-          body = request.params;
-          break;
-        case 'memory/recall':
-          endpoint = '/memory/recall';
-          body = request.params;
-          break;
-        case 'memory/forget':
-          endpoint = '/memory/forget';
-          body = request.params;
-          break;
-        case 'memory/context':
-          endpoint = '/memory/context';
-          body = request.params;
-          break;
-        case 'memory/session':
-          endpoint = '/memory/session';
-          body = request.params;
-          break;
-        default:
-          return {
-            jsonrpc: '2.0',
-            id: request.id,
-            error: {
-              code: -32603,
-              message: `Unsupported method: ${request.method}`,
-            },
-          };
-      }
-
-      const response = await this.makeRequest('POST', endpoint, body);
+      // Use the unified MCP endpoint for all JSON-RPC calls
+      const response = await this.makeRequest('POST', '/mcp', request);
 
       if (!response.ok) {
         return {
@@ -347,13 +308,14 @@ export class MCPConnection {
         };
       }
 
-      const result = await response.json();
+      const result = (await response.json()) as any;
 
       // Return JSON-RPC style response
       return {
         jsonrpc: '2.0',
         id: request.id,
-        result: result,
+        result: result.result,
+        error: result.error,
       };
     } catch (error) {
       return {

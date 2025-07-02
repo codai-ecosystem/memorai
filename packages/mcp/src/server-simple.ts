@@ -149,13 +149,17 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
 });
 
 // Tool handlers
-server.setRequestHandler(CallToolRequestSchema, async (request) => {
+server.setRequestHandler(CallToolRequestSchema, async request => {
   const { name, arguments: args } = request.params;
 
   try {
     switch (name) {
       case 'remember': {
-        const { agentId, content, metadata = {} } = args as {
+        const {
+          agentId,
+          content,
+          metadata = {},
+        } = args as {
           agentId: string;
           content: string;
           metadata?: MemoryMetadata;
@@ -188,7 +192,11 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case 'recall': {
-        const { agentId, query, limit = 10 } = args as {
+        const {
+          agentId,
+          query,
+          limit = 10,
+        } = args as {
           agentId: string;
           query: string;
           limit?: number;
@@ -286,7 +294,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 async function main() {
   try {
     debug.info('🎯 Starting simplified MCP server...');
-    
+
     // Initialize memory engine
     await memoryEngine.initialize();
     debug.info('🧠 Memory engine initialized');
@@ -294,11 +302,10 @@ async function main() {
     // Start server
     const transport = new StdioServerTransport();
     await server.connect(transport);
-    
+
     debug.info('✅ Memorai MCP Server ready!');
     debug.info('🔧 Configuration: Direct AdvancedMemoryEngine (no tiers)');
     debug.info('🎯 Ready to handle memory operations');
-    
   } catch (error) {
     debug.error('Failed to start server:', error);
     process.exit(1);

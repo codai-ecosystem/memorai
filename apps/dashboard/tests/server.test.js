@@ -24,7 +24,7 @@ describe('Web Dashboard', () => {
     const packageJsonContent = fs.readFileSync(packageJsonPath, 'utf8');
     const packageJson = JSON.parse(packageJsonContent);
     expect(packageJson.name).toBe('@codai/memorai-dashboard');
-    expect(packageJson.version).toBe('2.0.5');
+    expect(packageJson.version).toBe('2.1.3');
     expect(packageJson.main).toBe('next.config.js');
   });
 });

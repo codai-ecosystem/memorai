@@ -1,7 +1,8 @@
 {
   "name": "@codai/memorai-api",
-  "version": "1.1.0",
+  "version": "1.2.1",
   "description": "REST API server for Memorai web interface",
+  "type": "module",
   "main": "dist/index.js",
   "bin": {
     "memorai-api": "./scripts/start.js"
@@ -16,12 +17,12 @@
     "start": "node dist/index.js",
     "lint": "eslint src/**/*.ts",
     "type-check": "tsc --noEmit",
-    "dev": "echo 'ERROR: Local development disabled. Use published packages only.' && exit 1",
-    "test": "echo 'ERROR: Local testing disabled. Use MCP tools only.' && exit 1",
-    "test:coverage": "echo 'ERROR: Local testing disabled. Use MCP tools only.' && exit 1"
+    "dev": "tsx watch src/index.ts",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@codai/memorai-core": "^2.2.2",
+    "@codai/memorai-core": "^2.3.0",
     "axios": "^1.7.4",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",

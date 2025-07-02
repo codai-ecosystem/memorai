@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MCPConnection } from '../../src/connection/MCPConnection';
 import type { ConnectionOptions } from '../../src/types';
 
@@ -93,7 +93,10 @@ describe('MCPConnection - Simplified Tests', () => {
     });
 
     it('should send memory/remember request successfully', async () => {
-      const mockResponse = { success: true, id: 'mem123' };
+      const mockResponse = {
+        result: { success: true, id: 'mem123' },
+        error: undefined,
+      };
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
@@ -112,23 +115,36 @@ describe('MCPConnection - Simplified Tests', () => {
       expect(response).toEqual({
         jsonrpc: '2.0',
         id: '123',
-        result: mockResponse,
+        result: { success: true, id: 'mem123' },
       });
 
-      expect(mockFetch).toHaveBeenCalledWith(
-        'http://localhost:8080/memory/remember',
+      expect(mockFetch).toHaveBeenLastCalledWith(
+        'http://localhost:8080/mcp',
         expect.objectContaining({
           method: 'POST',
           headers: {
             Authorization: 'Bearer test-key',
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ agentId: 'test', content: 'test content' }),
+          body: JSON.stringify({
+            jsonrpc: '2.0',
+            method: 'memory/remember',
+            params: { agentId: 'test', content: 'test content' },
+            id: '123',
+          }),
         })
       );
     });
 
     it('should handle unsupported method error', async () => {
+      // Mock a failed response for unsupported method
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+        statusText: 'Not Found',
+        json: () => Promise.resolve({ error: 'Method not found' }),
+      });
+
       const request = {
         jsonrpc: '2.0' as const,
         method: 'unsupported-method',
@@ -141,8 +157,8 @@ describe('MCPConnection - Simplified Tests', () => {
         jsonrpc: '2.0',
         id: '123',
         error: {
-          code: -32603,
-          message: 'Unsupported method: unsupported-method',
+          code: 404,
+          message: 'HTTP 404: Not Found',
         },
       });
     });

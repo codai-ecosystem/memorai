@@ -107,6 +107,15 @@ export const createMockMemoryEngine = (config: Partial<any> = {}) => {
       recentActivity: 0,
       currentTier: 'mock',
     }),
+    getStats: vi.fn().mockResolvedValue({
+      totalMemories: memories.size,
+      memoryTypes: { semantic: 0, episodic: 0, procedural: 0, meta: 0 },
+      avgImportance: 0.8,
+      tenantCount: 1,
+      agentCount: 1,
+      storageSize: memories.size * 1024,
+      lastUpdated: new Date().toISOString(),
+    }),
     ...config,
   };
 };

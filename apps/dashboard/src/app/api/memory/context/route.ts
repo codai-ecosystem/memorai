@@ -40,16 +40,15 @@ export async function GET() {
     }
 
     // Connect to actual API server instead of using mock data
-    const apiPort = process.env.API_PORT || '6367';
-    const response = await fetch(
-      `http://localhost:${apiPort}/api/memory/context`,
-      {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
-    );
+    const apiUrl =
+      process.env.API_URL ||
+      `http://localhost:${process.env.API_PORT || '6367'}`;
+    const response = await fetch(`${apiUrl}/api/memory/context`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
 
     if (!response.ok) {
       throw new Error(`MCP Server error: ${response.status}`);
@@ -112,17 +111,16 @@ export async function POST(request: NextRequest) {
     }
 
     // Forward request to actual API server
-    const apiPort = process.env.API_PORT || '6367';
-    const response = await fetch(
-      `http://localhost:${apiPort}/api/memory/context`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
-      }
-    );
+    const apiUrl =
+      process.env.API_URL ||
+      `http://localhost:${process.env.API_PORT || '6367'}`;
+    const response = await fetch(`${apiUrl}/api/memory/context`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
 
     if (!response.ok) {
       throw new Error(`MCP Server error: ${response.status}`);
