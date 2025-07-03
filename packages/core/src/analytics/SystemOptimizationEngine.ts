@@ -1,12 +1,15 @@
 /**
  * System Optimization Engine
- * 
+ *
  * Intelligent system optimization for Memorai enterprise memory operations.
  * Provides automated performance tuning, resource optimization, and predictive scaling.
  */
 
 import { EventEmitter } from 'events';
-import type { PerformanceMetric, SystemHealthMetrics } from './AdvancedPerformanceMonitor';
+import type {
+  PerformanceMetric,
+  SystemHealthMetrics,
+} from './AdvancedPerformanceMonitor';
 
 export interface OptimizationRule {
   id: string;
@@ -109,7 +112,7 @@ export interface QueryOptimizationConfig {
 
 /**
  * System Optimization Engine
- * 
+ *
  * Intelligent optimization system that monitors performance and automatically
  * applies optimizations to improve system efficiency and user experience.
  */
@@ -135,7 +138,7 @@ export class SystemOptimizationEngine extends EventEmitter {
     this.autoScalingConfig = autoScalingConfig;
     this.cacheConfig = cacheConfig;
     this.queryConfig = queryConfig;
-    
+
     this.initializeOptimizationRules();
   }
 
@@ -144,9 +147,9 @@ export class SystemOptimizationEngine extends EventEmitter {
    */
   public start(): void {
     if (this.isRunning) return;
-    
+
     this.isRunning = true;
-    
+
     // Run optimization analysis every 30 seconds
     this.intervalId = setInterval(() => {
       this.runOptimizationCycle().catch(error => {
@@ -163,9 +166,9 @@ export class SystemOptimizationEngine extends EventEmitter {
    */
   public stop(): void {
     if (!this.isRunning) return;
-    
+
     this.isRunning = false;
-    
+
     if (this.intervalId) {
       clearInterval(this.intervalId);
       this.intervalId = null;
@@ -185,39 +188,45 @@ export class SystemOptimizationEngine extends EventEmitter {
       const context = await this.buildOptimizationContext(currentMetrics);
 
       // Evaluate optimization rules
-      const applicableRules = this.optimizationRules.filter(rule => 
+      const applicableRules = this.optimizationRules.filter(rule =>
         this.isRuleApplicable(rule, currentMetrics)
       );
 
       // Sort by priority and execute
       applicableRules.sort((a, b) => b.priority - a.priority);
 
-      for (const rule of applicableRules.slice(0, 3)) { // Limit to top 3 optimizations per cycle
+      for (const rule of applicableRules.slice(0, 3)) {
+        // Limit to top 3 optimizations per cycle
         if (this.canExecuteRule(rule)) {
           try {
             const result = await rule.action(context);
-            
+
             this.optimizationHistory.push({
               timestamp: new Date(),
               rule: rule.id,
-              result
+              result,
             });
 
             rule.lastExecuted = new Date();
-            
+
             this.emit('optimizationApplied', {
               rule: rule.name,
-              result
+              result,
             });
 
-            console.log(`[OptimizationEngine] Applied optimization: ${rule.name}`);
-            
+            console.log(
+              `[OptimizationEngine] Applied optimization: ${rule.name}`
+            );
+
             // Break if high-risk optimization was applied
             if (result.impact.riskLevel === 'high') {
               break;
             }
           } catch (error) {
-            console.error(`[OptimizationEngine] Failed to apply rule ${rule.name}:`, error);
+            console.error(
+              `[OptimizationEngine] Failed to apply rule ${rule.name}:`,
+              error
+            );
             this.emit('optimizationFailed', { rule: rule.name, error });
           }
         }
@@ -225,7 +234,6 @@ export class SystemOptimizationEngine extends EventEmitter {
 
       // Cleanup old history
       this.cleanupOptimizationHistory();
-      
     } catch (error) {
       console.error('[OptimizationEngine] Error in optimization cycle:', error);
       this.emit('error', error);
@@ -255,15 +263,19 @@ export class SystemOptimizationEngine extends EventEmitter {
   /**
    * Get optimization recommendations
    */
-  public async getOptimizationRecommendations(metrics: OptimizationMetrics): Promise<Array<{
-    category: string;
-    priority: 'low' | 'medium' | 'high' | 'critical';
-    title: string;
-    description: string;
-    estimatedImpact: string;
-    implementation: string;
-    automated: boolean;
-  }>> {
+  public async getOptimizationRecommendations(
+    metrics: OptimizationMetrics
+  ): Promise<
+    Array<{
+      category: string;
+      priority: 'low' | 'medium' | 'high' | 'critical';
+      title: string;
+      description: string;
+      estimatedImpact: string;
+      implementation: string;
+      automated: boolean;
+    }>
+  > {
     const recommendations: Array<{
       category: string;
       priority: 'low' | 'medium' | 'high' | 'critical';
@@ -282,8 +294,9 @@ export class SystemOptimizationEngine extends EventEmitter {
         title: 'Improve Cache Hit Ratio',
         description: `Current cache hit ratio is ${(metrics.cacheHitRatio * 100).toFixed(1)}%, below target of ${(this.cacheConfig.thresholds.hitRatioTarget * 100).toFixed(1)}%`,
         estimatedImpact: '20-30% response time improvement',
-        implementation: 'Enable preemptive loading and intelligent eviction strategies',
-        automated: this.cacheConfig.enabled
+        implementation:
+          'Enable preemptive loading and intelligent eviction strategies',
+        automated: this.cacheConfig.enabled,
       });
     }
 
@@ -295,8 +308,9 @@ export class SystemOptimizationEngine extends EventEmitter {
         title: 'High Memory Usage',
         description: `Memory usage at ${(metrics.memoryUsage * 100).toFixed(1)}% of capacity`,
         estimatedImpact: 'Prevent out-of-memory errors and improve stability',
-        implementation: 'Implement memory cleanup routines and optimize data structures',
-        automated: true
+        implementation:
+          'Implement memory cleanup routines and optimize data structures',
+        automated: true,
       });
     }
 
@@ -308,8 +322,9 @@ export class SystemOptimizationEngine extends EventEmitter {
         title: 'Response Time Degradation',
         description: `Response time has increased by ${(metrics.trendData.responseTimeGrowth * 100).toFixed(1)}% recently`,
         estimatedImpact: 'Restore baseline performance levels',
-        implementation: 'Analyze query patterns and optimize frequently used operations',
-        automated: this.queryConfig.enabled
+        implementation:
+          'Analyze query patterns and optimize frequently used operations',
+        automated: this.queryConfig.enabled,
       });
     }
 
@@ -321,8 +336,9 @@ export class SystemOptimizationEngine extends EventEmitter {
         title: 'High CPU Usage - Scale Up',
         description: `CPU usage at ${metrics.cpuUsage.toFixed(1)}% exceeds scaling threshold`,
         estimatedImpact: 'Improved throughput and reduced response times',
-        implementation: 'Add additional compute instances or optimize CPU-intensive operations',
-        automated: this.autoScalingConfig.enabled
+        implementation:
+          'Add additional compute instances or optimize CPU-intensive operations',
+        automated: this.autoScalingConfig.enabled,
       });
     }
 
@@ -334,8 +350,9 @@ export class SystemOptimizationEngine extends EventEmitter {
         title: 'Optimize Vector Search',
         description: `Vector search latency at ${metrics.vectorSearchLatency.toFixed(2)}ms is above optimal range`,
         estimatedImpact: '15-25% improvement in search response times',
-        implementation: 'Tune vector index parameters and implement search result caching',
-        automated: this.queryConfig.techniques.vectorSearchTuning
+        implementation:
+          'Tune vector index parameters and implement search result caching',
+        automated: this.queryConfig.techniques.vectorSearchTuning,
       });
     }
 
@@ -348,29 +365,34 @@ export class SystemOptimizationEngine extends EventEmitter {
   /**
    * Force execute specific optimization
    */
-  public async executeOptimization(ruleId: string, context?: OptimizationContext): Promise<OptimizationResult> {
+  public async executeOptimization(
+    ruleId: string,
+    context?: OptimizationContext
+  ): Promise<OptimizationResult> {
     const rule = this.optimizationRules.find(r => r.id === ruleId);
     if (!rule) {
       throw new Error(`Optimization rule not found: ${ruleId}`);
     }
 
-    const optimizationContext = context || await this.buildOptimizationContext(
-      await this.gatherOptimizationMetrics()
-    );
+    const optimizationContext =
+      context ||
+      (await this.buildOptimizationContext(
+        await this.gatherOptimizationMetrics()
+      ));
 
     const result = await rule.action(optimizationContext);
-    
+
     this.optimizationHistory.push({
       timestamp: new Date(),
       rule: rule.id,
-      result
+      result,
     });
 
     rule.lastExecuted = new Date();
-    
+
     this.emit('optimizationApplied', {
       rule: rule.name,
-      result
+      result,
     });
 
     return result;
@@ -385,26 +407,28 @@ export class SystemOptimizationEngine extends EventEmitter {
       id: 'cache-warming',
       name: 'Cache Warming Optimization',
       category: 'performance',
-      condition: (metrics) => metrics.cacheHitRatio < 0.8 && metrics.averageResponseTime > 50,
-      action: async (context) => {
+      condition: metrics =>
+        metrics.cacheHitRatio < 0.8 && metrics.averageResponseTime > 50,
+      action: async context => {
         // Implementation would trigger cache warming for frequently accessed data
         return {
           success: true,
           action: 'cache-warming',
-          description: 'Initiated cache warming for frequently accessed memories',
+          description:
+            'Initiated cache warming for frequently accessed memories',
           impact: {
             expectedImprovement: 0.25,
             affectedMetrics: ['cacheHitRatio', 'averageResponseTime'],
-            riskLevel: 'low' as const
+            riskLevel: 'low' as const,
           },
           changes: {
             cacheWarmingEnabled: true,
-            preloadPatterns: ['frequent-tenants', 'recent-access']
-          }
+            preloadPatterns: ['frequent-tenants', 'recent-access'],
+          },
         };
       },
       priority: 8,
-      cooldownMs: 300000 // 5 minutes
+      cooldownMs: 300000, // 5 minutes
     });
 
     // Memory cleanup optimization
@@ -412,8 +436,8 @@ export class SystemOptimizationEngine extends EventEmitter {
       id: 'memory-cleanup',
       name: 'Memory Cleanup Optimization',
       category: 'resource',
-      condition: (metrics) => metrics.memoryUsage > 0.75,
-      action: async (context) => {
+      condition: metrics => metrics.memoryUsage > 0.75,
+      action: async context => {
         // Implementation would trigger garbage collection and memory cleanup
         return {
           success: true,
@@ -422,16 +446,16 @@ export class SystemOptimizationEngine extends EventEmitter {
           impact: {
             expectedImprovement: 0.15,
             affectedMetrics: ['memoryUsage'],
-            riskLevel: 'low' as const
+            riskLevel: 'low' as const,
           },
           changes: {
             memoryCleanupTriggered: true,
-            garbageCollectionForced: true
-          }
+            garbageCollectionForced: true,
+          },
         };
       },
       priority: 9,
-      cooldownMs: 180000 // 3 minutes
+      cooldownMs: 180000, // 3 minutes
     });
 
     // Query optimization
@@ -439,27 +463,28 @@ export class SystemOptimizationEngine extends EventEmitter {
       id: 'query-optimization',
       name: 'Query Pattern Optimization',
       category: 'performance',
-      condition: (metrics) => metrics.averageResponseTime > 100 && metrics.vectorSearchLatency > 80,
-      action: async (context) => {
+      condition: metrics =>
+        metrics.averageResponseTime > 100 && metrics.vectorSearchLatency > 80,
+      action: async context => {
         // Implementation would optimize query patterns and indexes
         return {
           success: true,
           action: 'query-optimization',
           description: 'Optimized query patterns and vector search indexes',
           impact: {
-            expectedImprovement: 0.30,
+            expectedImprovement: 0.3,
             affectedMetrics: ['averageResponseTime', 'vectorSearchLatency'],
-            riskLevel: 'medium' as const
+            riskLevel: 'medium' as const,
           },
           changes: {
             indexOptimization: true,
             queryPlanUpdated: true,
-            vectorSearchTuned: true
-          }
+            vectorSearchTuned: true,
+          },
         };
       },
       priority: 7,
-      cooldownMs: 600000 // 10 minutes
+      cooldownMs: 600000, // 10 minutes
     });
 
     // Connection pooling optimization
@@ -467,27 +492,31 @@ export class SystemOptimizationEngine extends EventEmitter {
       id: 'connection-pooling',
       name: 'Connection Pool Optimization',
       category: 'resource',
-      condition: (metrics) => metrics.activeConnections > 50 && metrics.throughput < 100,
-      action: async (context) => {
+      condition: metrics =>
+        metrics.activeConnections > 50 && metrics.throughput < 100,
+      action: async context => {
         // Implementation would optimize database connection pooling
         return {
           success: true,
           action: 'connection-pooling',
           description: 'Optimized database connection pool configuration',
           impact: {
-            expectedImprovement: 0.20,
+            expectedImprovement: 0.2,
             affectedMetrics: ['throughput', 'activeConnections'],
-            riskLevel: 'low' as const
+            riskLevel: 'low' as const,
           },
           changes: {
-            connectionPoolSize: Math.min(context.currentMetrics.activeConnections * 1.2, 100),
+            connectionPoolSize: Math.min(
+              context.currentMetrics.activeConnections * 1.2,
+              100
+            ),
             connectionTimeout: 30000,
-            idleTimeout: 300000
-          }
+            idleTimeout: 300000,
+          },
         };
       },
       priority: 6,
-      cooldownMs: 900000 // 15 minutes
+      cooldownMs: 900000, // 15 minutes
     });
 
     // Auto-scaling optimization
@@ -495,14 +524,16 @@ export class SystemOptimizationEngine extends EventEmitter {
       id: 'auto-scaling',
       name: 'Auto-scaling Optimization',
       category: 'scaling',
-      condition: (metrics) => 
-        this.autoScalingConfig.enabled && (
-          metrics.cpuUsage > this.autoScalingConfig.triggers.cpuThreshold ||
-          metrics.memoryUsage > this.autoScalingConfig.triggers.memoryThreshold
-        ),
-      action: async (context) => {
+      condition: metrics =>
+        this.autoScalingConfig.enabled &&
+        (metrics.cpuUsage > this.autoScalingConfig.triggers.cpuThreshold ||
+          metrics.memoryUsage >
+            this.autoScalingConfig.triggers.memoryThreshold),
+      action: async context => {
         // Implementation would trigger auto-scaling
-        const scaleUp = context.currentMetrics.cpuUsage > this.autoScalingConfig.triggers.cpuThreshold;
+        const scaleUp =
+          context.currentMetrics.cpuUsage >
+          this.autoScalingConfig.triggers.cpuThreshold;
         return {
           success: true,
           action: scaleUp ? 'scale-up' : 'scale-down',
@@ -510,31 +541,47 @@ export class SystemOptimizationEngine extends EventEmitter {
           impact: {
             expectedImprovement: 0.35,
             affectedMetrics: ['cpuUsage', 'memoryUsage', 'throughput'],
-            riskLevel: 'medium' as const
+            riskLevel: 'medium' as const,
           },
           changes: {
             scalingAction: scaleUp ? 'up' : 'down',
-            targetInstances: scaleUp ? 
-              Math.min(context.resourceLimits.maxConnections * this.autoScalingConfig.scaling.scaleUpFactor, this.autoScalingConfig.scaling.maxInstances) :
-              Math.max(context.resourceLimits.maxConnections * this.autoScalingConfig.scaling.scaleDownFactor, this.autoScalingConfig.scaling.minInstances)
-          }
+            targetInstances: scaleUp
+              ? Math.min(
+                  context.resourceLimits.maxConnections *
+                    this.autoScalingConfig.scaling.scaleUpFactor,
+                  this.autoScalingConfig.scaling.maxInstances
+                )
+              : Math.max(
+                  context.resourceLimits.maxConnections *
+                    this.autoScalingConfig.scaling.scaleDownFactor,
+                  this.autoScalingConfig.scaling.minInstances
+                ),
+          },
         };
       },
       priority: 5,
-      cooldownMs: this.autoScalingConfig.scaling.cooldownPeriodMs
+      cooldownMs: this.autoScalingConfig.scaling.cooldownPeriodMs,
     });
 
-    console.log(`[OptimizationEngine] Initialized ${this.optimizationRules.length} optimization rules`);
+    console.log(
+      `[OptimizationEngine] Initialized ${this.optimizationRules.length} optimization rules`
+    );
   }
 
   /**
    * Check if optimization rule is applicable
    */
-  private isRuleApplicable(rule: OptimizationRule, metrics: OptimizationMetrics): boolean {
+  private isRuleApplicable(
+    rule: OptimizationRule,
+    metrics: OptimizationMetrics
+  ): boolean {
     try {
       return rule.condition(metrics);
     } catch (error) {
-      console.error(`[OptimizationEngine] Error evaluating rule ${rule.name}:`, error);
+      console.error(
+        `[OptimizationEngine] Error evaluating rule ${rule.name}:`,
+        error
+      );
       return false;
     }
   }
@@ -544,7 +591,7 @@ export class SystemOptimizationEngine extends EventEmitter {
    */
   private canExecuteRule(rule: OptimizationRule): boolean {
     if (!rule.lastExecuted) return true;
-    
+
     const timeSinceLastExecution = Date.now() - rule.lastExecuted.getTime();
     return timeSinceLastExecution >= rule.cooldownMs;
   }
@@ -567,29 +614,31 @@ export class SystemOptimizationEngine extends EventEmitter {
       systemHealth: null,
       trendData: {
         responseTimeGrowth: 0.05,
-        throughputChange: -0.10,
-        errorRateChange: 0.01
-      }
+        throughputChange: -0.1,
+        errorRateChange: 0.01,
+      },
     };
   }
 
   /**
    * Build optimization context
    */
-  private async buildOptimizationContext(metrics: OptimizationMetrics): Promise<OptimizationContext> {
+  private async buildOptimizationContext(
+    metrics: OptimizationMetrics
+  ): Promise<OptimizationContext> {
     return {
       currentMetrics: metrics,
       historicalData: [], // Would be populated from performance monitor
       systemConfig: {
         cacheEnabled: true,
         vectorSearch: true,
-        autoScaling: this.autoScalingConfig.enabled
+        autoScaling: this.autoScalingConfig.enabled,
       },
       resourceLimits: {
         maxMemory: 8 * 1024 * 1024 * 1024, // 8GB
         maxCpu: 100,
-        maxConnections: 200
-      }
+        maxConnections: 200,
+      },
     };
   }
 
@@ -598,6 +647,8 @@ export class SystemOptimizationEngine extends EventEmitter {
    */
   private cleanupOptimizationHistory(): void {
     const cutoff = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000); // 7 days
-    this.optimizationHistory = this.optimizationHistory.filter(h => h.timestamp >= cutoff);
+    this.optimizationHistory = this.optimizationHistory.filter(
+      h => h.timestamp >= cutoff
+    );
   }
 }

@@ -2,7 +2,7 @@
  * @fileoverview Development Environment Manager - Comprehensive management system
  * for development and staging environments with automated provisioning, configuration,
  * and lifecycle management.
- * 
+ *
  * Features:
  * - Multi-environment orchestration (dev, staging, testing, production)
  * - Automated environment provisioning and teardown
@@ -10,7 +10,7 @@
  * - Environment isolation and resource management
  * - Database seeding and migration management
  * - Service dependency orchestration
- * 
+ *
  * @author Memorai Development Team
  * @version 2.1.0
  * @since 2025-07-02
@@ -33,57 +33,69 @@ const EnvironmentConfigSchema = z.object({
     storage: z.number(),
     network: z.object({
       bandwidth: z.number(),
-      endpoints: z.array(z.string())
-    })
+      endpoints: z.array(z.string()),
+    }),
   }),
-  services: z.array(z.object({
-    name: z.string(),
-    type: z.enum(['api', 'database', 'cache', 'queue', 'worker', 'frontend']),
-    image: z.string(),
-    version: z.string(),
-    replicas: z.number(),
-    resources: z.object({
-      cpu: z.number(),
-      memory: z.number()
-    }),
-    environment: z.record(z.string()),
-    healthCheck: z.object({
-      path: z.string(),
-      interval: z.number(),
-      timeout: z.number(),
-      retries: z.number()
-    }).optional(),
-    dependencies: z.array(z.string())
-  })),
-  databases: z.array(z.object({
-    name: z.string(),
-    type: z.enum(['postgresql', 'mysql', 'mongodb', 'redis', 'elasticsearch']),
-    version: z.string(),
-    size: z.string(),
-    backup: z.object({
-      enabled: z.boolean(),
-      schedule: z.string(),
-      retention: z.number()
-    }),
-    migrations: z.object({
-      enabled: z.boolean(),
-      source: z.string()
+  services: z.array(
+    z.object({
+      name: z.string(),
+      type: z.enum(['api', 'database', 'cache', 'queue', 'worker', 'frontend']),
+      image: z.string(),
+      version: z.string(),
+      replicas: z.number(),
+      resources: z.object({
+        cpu: z.number(),
+        memory: z.number(),
+      }),
+      environment: z.record(z.string()),
+      healthCheck: z
+        .object({
+          path: z.string(),
+          interval: z.number(),
+          timeout: z.number(),
+          retries: z.number(),
+        })
+        .optional(),
+      dependencies: z.array(z.string()),
     })
-  })),
+  ),
+  databases: z.array(
+    z.object({
+      name: z.string(),
+      type: z.enum([
+        'postgresql',
+        'mysql',
+        'mongodb',
+        'redis',
+        'elasticsearch',
+      ]),
+      version: z.string(),
+      size: z.string(),
+      backup: z.object({
+        enabled: z.boolean(),
+        schedule: z.string(),
+        retention: z.number(),
+      }),
+      migrations: z.object({
+        enabled: z.boolean(),
+        source: z.string(),
+      }),
+    })
+  ),
   secrets: z.record(z.string()),
   features: z.object({
     ssl: z.boolean(),
     monitoring: z.boolean(),
     logging: z.boolean(),
     debugging: z.boolean(),
-    profiling: z.boolean()
+    profiling: z.boolean(),
   }),
   lifecycle: z.object({
     autoStart: z.boolean(),
     autoStop: z.boolean(),
     maxIdleTime: z.number(),
-    timeout: z.number()
-  })
+    timeout: z.number(),
+  }),
 });
 
 /**
@@ -91,57 +103,73 @@ const EnvironmentConfigSchema = z.object({
  */
 const EnvironmentStatusSchema = z.object({
   name: z.string(),
-  status: z.enum(['creating', 'starting', 'running', 'stopping', 'stopped', 'error', 'updating']),
+  status: z.enum([
+    'creating',
+    'starting',
+    'running',
+    'stopping',
+    'stopped',
+    'error',
+    'updating',
+  ]),
   health: z.enum(['healthy', 'degraded', 'unhealthy', 'unknown']),
   created: z.date(),
   lastUpdated: z.date(),
   uptime: z.number(),
-  services: z.array(z.object({
-    name: z.string(),
-    status: z.enum(['starting', 'running', 'stopping', 'stopped', 'error']),
-    health: z.enum(['healthy', 'unhealthy', 'unknown']),
-    url: z.string().optional(),
-    replicas: z.object({
-      desired: z.number(),
-      ready: z.number(),
-      available: z.number()
+  services: z.array(
+    z.object({
+      name: z.string(),
+      status: z.enum(['starting', 'running', 'stopping', 'stopped', 'error']),
+      health: z.enum(['healthy', 'unhealthy', 'unknown']),
+      url: z.string().optional(),
+      replicas: z.object({
+        desired: z.number(),
+        ready: z.number(),
+        available: z.number(),
+      }),
     })
-  })),
-  databases: z.array(z.object({
-    name: z.string(),
-    status: z.enum(['starting', 'running', 'stopping', 'stopped', 'error']),
-    connections: z.number(),
-    size: z.number()
-  })),
+  ),
+  databases: z.array(
+    z.object({
+      name: z.string(),
+      status: z.enum(['starting', 'running', 'stopping', 'stopped', 'error']),
+      connections: z.number(),
+      size: z.number(),
+    })
+  ),
   resources: z.object({
     cpu: z.object({
       used: z.number(),
       available: z.number(),
-      percentage: z.number()
+      percentage: z.number(),
     }),
     memory: z.object({
       used: z.number(),
       available: z.number(),
-      percentage: z.number()
+      percentage: z.number(),
     }),
     storage: z.object({
       used: z.number(),
       available: z.number(),
-      percentage: z.number()
-    })
+      percentage: z.number(),
+    }),
   }),
-  endpoints: z.array(z.object({
-    name: z.string(),
-    url: z.string(),
-    status: z.enum(['available', 'unavailable']),
-    responseTime: z.number()
-  })),
-  logs: z.array(z.object({
-    timestamp: z.date(),
-    level: z.enum(['debug', 'info', 'warn', 'error']),
-    service: z.string(),
-    message: z.string()
-  }))
+  endpoints: z.array(
+    z.object({
+      name: z.string(),
+      url: z.string(),
+      status: z.enum(['available', 'unavailable']),
+      responseTime: z.number(),
+    })
+  ),
+  logs: z.array(
+    z.object({
+      timestamp: z.date(),
+      level: z.enum(['debug', 'info', 'warn', 'error']),
+      service: z.string(),
+      message: z.string(),
+    })
+  ),
 });
 
 export type EnvironmentConfig = z.infer<typeof EnvironmentConfigSchema>;
@@ -212,7 +240,12 @@ export interface EnvironmentMetrics {
 export interface EnvironmentTemplate {
   name: string;
   description: string;
-  category: 'web-app' | 'microservices' | 'data-pipeline' | 'ml-pipeline' | 'custom';
+  category:
+    | 'web-app'
+    | 'microservices'
+    | 'data-pipeline'
+    | 'ml-pipeline'
+    | 'custom';
   config: EnvironmentConfig;
   documentation: string;
   prerequisites: string[];
@@ -225,7 +258,7 @@ export interface EnvironmentTemplate {
 
 /**
  * Development Environment Manager
- * 
+ *
  * Comprehensive system for managing development, staging, and testing environments
  * with automated provisioning, configuration management, and lifecycle control.
  */
@@ -254,24 +287,29 @@ export class DevelopmentEnvironmentManager extends EventEmitter {
   /**
    * Create new environment
    */
-  public async createEnvironment(config: EnvironmentConfig): Promise<DeploymentResult> {
+  public async createEnvironment(
+    config: EnvironmentConfig
+  ): Promise<DeploymentResult> {
     const startTime = Date.now();
     const deploymentId = `deploy_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
     try {
       const validatedConfig = EnvironmentConfigSchema.parse(config);
-      
+
       // Check resource availability
       await this.resourceManager.validateResources(validatedConfig.resources);
-      
+
       // Validate dependencies
       await this.validateDependencies(validatedConfig);
-      
+
       // Reserve resources
-      await this.resourceManager.reserveResources(validatedConfig.name, validatedConfig.resources);
-      
+      await this.resourceManager.reserveResources(
+        validatedConfig.name,
+        validatedConfig.resources
+      );
+
       this.environments.set(validatedConfig.name, validatedConfig);
-      
+
       // Initialize environment status
       const status: EnvironmentStatus = {
         name: validatedConfig.name,
@@ -283,37 +321,51 @@ export class DevelopmentEnvironmentManager extends EventEmitter {
         services: [],
         databases: [],
         resources: {
-          cpu: { used: 0, available: validatedConfig.resources.cpu, percentage: 0 },
-          memory: { used: 0, available: validatedConfig.resources.memory, percentage: 0 },
-          storage: { used: 0, available: validatedConfig.resources.storage, percentage: 0 }
+          cpu: {
+            used: 0,
+            available: validatedConfig.resources.cpu,
+            percentage: 0,
+          },
+          memory: {
+            used: 0,
+            available: validatedConfig.resources.memory,
+            percentage: 0,
+          },
+          storage: {
+            used: 0,
+            available: validatedConfig.resources.storage,
+            percentage: 0,
+          },
         },
         endpoints: [],
-        logs: []
+        logs: [],
       };
-      
+
       this.statuses.set(validatedConfig.name, status);
-      
+
       // Deploy environment
-      const deploymentResult = await this.deployEnvironment(validatedConfig, deploymentId);
-      
+      const deploymentResult = await this.deployEnvironment(
+        validatedConfig,
+        deploymentId
+      );
+
       // Store deployment history
       const history = this.deployments.get(validatedConfig.name) || [];
       history.push(deploymentResult);
       this.deployments.set(validatedConfig.name, history);
-      
+
       // Start monitoring if enabled
       if (validatedConfig.features.monitoring) {
         await this.monitoringService.startMonitoring(validatedConfig.name);
       }
-      
+
       this.emit('environment:created', {
         environmentName: validatedConfig.name,
         deploymentId,
-        config: validatedConfig
+        config: validatedConfig,
       });
-      
-      return deploymentResult;
 
+      return deploymentResult;
     } catch (error) {
       this.emit('environment:creation_failed', { config, deploymentId, error });
       throw error;
@@ -323,7 +375,10 @@ export class DevelopmentEnvironmentManager extends EventEmitter {
   /**
    * Update environment
    */
-  public async updateEnvironment(name: string, updates: Partial<EnvironmentConfig>): Promise<DeploymentResult> {
+  public async updateEnvironment(
+    name: string,
+    updates: Partial<EnvironmentConfig>
+  ): Promise<DeploymentResult> {
     const deploymentId = `update_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
     try {
@@ -334,33 +389,40 @@ export class DevelopmentEnvironmentManager extends EventEmitter {
 
       const updatedConfig = { ...currentConfig, ...updates };
       const validatedConfig = EnvironmentConfigSchema.parse(updatedConfig);
-      
+
       // Update environment status
       const status = this.statuses.get(name)!;
       status.status = 'updating';
       status.lastUpdated = new Date();
-      
+
       // Deploy updates
-      const deploymentResult = await this.deployEnvironment(validatedConfig, deploymentId);
-      
+      const deploymentResult = await this.deployEnvironment(
+        validatedConfig,
+        deploymentId
+      );
+
       // Update stored config
       this.environments.set(name, validatedConfig);
-      
+
       // Store deployment history
       const history = this.deployments.get(name) || [];
       history.push(deploymentResult);
       this.deployments.set(name, history);
-      
+
       this.emit('environment:updated', {
         environmentName: name,
         deploymentId,
-        updates
+        updates,
       });
-      
-      return deploymentResult;
 
+      return deploymentResult;
     } catch (error) {
-      this.emit('environment:update_failed', { name, updates, deploymentId, error });
+      this.emit('environment:update_failed', {
+        name,
+        updates,
+        deploymentId,
+        error,
+      });
       throw error;
     }
   }
@@ -378,24 +440,23 @@ export class DevelopmentEnvironmentManager extends EventEmitter {
       const status = this.statuses.get(name)!;
       status.status = 'starting';
       status.lastUpdated = new Date();
-      
+
       // Start services
       await this.orchestrator.startServices(config.services);
-      
+
       // Start databases
       await this.startDatabases(config.databases);
-      
+
       // Update status
       status.status = 'running';
       status.health = 'healthy';
-      
+
       // Start monitoring
       if (config.features.monitoring) {
         await this.monitoringService.startMonitoring(name);
       }
-      
-      this.emit('environment:started', { environmentName: name });
 
+      this.emit('environment:started', { environmentName: name });
     } catch (error) {
       this.emit('environment:start_failed', { name, error });
       throw error;
@@ -415,22 +476,21 @@ export class DevelopmentEnvironmentManager extends EventEmitter {
       const status = this.statuses.get(name)!;
       status.status = 'stopping';
       status.lastUpdated = new Date();
-      
+
       // Stop monitoring
       await this.monitoringService.stopMonitoring(name);
-      
+
       // Stop services
       await this.orchestrator.stopServices(config.services);
-      
+
       // Stop databases
       await this.stopDatabases(config.databases);
-      
+
       // Update status
       status.status = 'stopped';
       status.health = 'unknown';
-      
-      this.emit('environment:stopped', { environmentName: name });
 
+      this.emit('environment:stopped', { environmentName: name });
     } catch (error) {
       this.emit('environment:stop_failed', { name, error });
       throw error;
@@ -449,21 +509,20 @@ export class DevelopmentEnvironmentManager extends EventEmitter {
 
       // Stop environment first
       await this.stopEnvironment(name);
-      
+
       // Delete resources
       await this.orchestrator.deleteServices(config.services);
       await this.deleteDatabases(config.databases);
-      
+
       // Release resources
       await this.resourceManager.releaseResources(name);
-      
+
       // Clean up
       this.environments.delete(name);
       this.statuses.delete(name);
       this.deployments.delete(name);
-      
-      this.emit('environment:deleted', { environmentName: name });
 
+      this.emit('environment:deleted', { environmentName: name });
     } catch (error) {
       this.emit('environment:deletion_failed', { name, error });
       throw error;
@@ -484,21 +543,27 @@ export class DevelopmentEnvironmentManager extends EventEmitter {
   /**
    * Get all environments
    */
-  public getAllEnvironments(): Array<{ name: string; config: EnvironmentConfig; status: EnvironmentStatus }> {
+  public getAllEnvironments(): Array<{
+    name: string;
+    config: EnvironmentConfig;
+    status: EnvironmentStatus;
+  }> {
     const environments = [];
-    
+
     for (const [name, config] of this.environments) {
       const status = this.statuses.get(name)!;
       environments.push({ name, config, status });
     }
-    
+
     return environments;
   }
 
   /**
    * Get environment metrics
    */
-  public async getEnvironmentMetrics(name: string): Promise<EnvironmentMetrics> {
+  public async getEnvironmentMetrics(
+    name: string
+  ): Promise<EnvironmentMetrics> {
     try {
       const config = this.environments.get(name);
       if (!config) {
@@ -506,11 +571,13 @@ export class DevelopmentEnvironmentManager extends EventEmitter {
       }
 
       const metrics = await this.monitoringService.getMetrics(name);
-      
-      this.emit('environment:metrics_retrieved', { environmentName: name, metrics });
-      
-      return metrics;
 
+      this.emit('environment:metrics_retrieved', {
+        environmentName: name,
+        metrics,
+      });
+
+      return metrics;
     } catch (error) {
       this.emit('environment:metrics_failed', { name, error });
       throw error;
@@ -520,7 +587,11 @@ export class DevelopmentEnvironmentManager extends EventEmitter {
   /**
    * Clone environment
    */
-  public async cloneEnvironment(sourceName: string, targetName: string, modifications: Partial<EnvironmentConfig> = {}): Promise<DeploymentResult> {
+  public async cloneEnvironment(
+    sourceName: string,
+    targetName: string,
+    modifications: Partial<EnvironmentConfig> = {}
+  ): Promise<DeploymentResult> {
     try {
       const sourceConfig = this.environments.get(sourceName);
       if (!sourceConfig) {
@@ -531,20 +602,19 @@ export class DevelopmentEnvironmentManager extends EventEmitter {
       const newConfig: EnvironmentConfig = {
         ...sourceConfig,
         name: targetName,
-        ...modifications
+        ...modifications,
       };
 
       // Deploy cloned environment
       const result = await this.createEnvironment(newConfig);
-      
+
       this.emit('environment:cloned', {
         sourceName,
         targetName,
-        deploymentId: result.deploymentId
+        deploymentId: result.deploymentId,
       });
-      
-      return result;
 
+      return result;
     } catch (error) {
       this.emit('environment:clone_failed', { sourceName, targetName, error });
       throw error;
@@ -554,7 +624,11 @@ export class DevelopmentEnvironmentManager extends EventEmitter {
   /**
    * Create environment from template
    */
-  public async createFromTemplate(templateName: string, environmentName: string, customizations: Partial<EnvironmentConfig> = {}): Promise<DeploymentResult> {
+  public async createFromTemplate(
+    templateName: string,
+    environmentName: string,
+    customizations: Partial<EnvironmentConfig> = {}
+  ): Promise<DeploymentResult> {
     try {
       const template = this.templates.get(templateName);
       if (!template) {
@@ -564,21 +638,24 @@ export class DevelopmentEnvironmentManager extends EventEmitter {
       const config: EnvironmentConfig = {
         ...template.config,
         name: environmentName,
-        ...customizations
+        ...customizations,
       };
 
       const result = await this.createEnvironment(config);
-      
+
       this.emit('environment:created_from_template', {
         templateName,
         environmentName,
-        deploymentId: result.deploymentId
+        deploymentId: result.deploymentId,
       });
-      
-      return result;
 
+      return result;
     } catch (error) {
-      this.emit('environment:template_creation_failed', { templateName, environmentName, error });
+      this.emit('environment:template_creation_failed', {
+        templateName,
+        environmentName,
+        error,
+      });
       throw error;
     }
   }
@@ -604,7 +681,9 @@ export class DevelopmentEnvironmentManager extends EventEmitter {
   /**
    * Import environment configuration
    */
-  public async importEnvironmentConfig(config: EnvironmentConfig): Promise<DeploymentResult> {
+  public async importEnvironmentConfig(
+    config: EnvironmentConfig
+  ): Promise<DeploymentResult> {
     return await this.createEnvironment(config);
   }
 
@@ -618,7 +697,10 @@ export class DevelopmentEnvironmentManager extends EventEmitter {
   /**
    * Rollback environment
    */
-  public async rollbackEnvironment(name: string, deploymentId?: string): Promise<DeploymentResult> {
+  public async rollbackEnvironment(
+    name: string,
+    deploymentId?: string
+  ): Promise<DeploymentResult> {
     try {
       const history = this.deployments.get(name);
       if (!history || history.length === 0) {
@@ -626,7 +708,7 @@ export class DevelopmentEnvironmentManager extends EventEmitter {
       }
 
       let targetDeployment: DeploymentResult;
-      
+
       if (deploymentId) {
         const deployment = history.find(d => d.deploymentId === deploymentId);
         if (!deployment) {
@@ -648,11 +730,10 @@ export class DevelopmentEnvironmentManager extends EventEmitter {
 
       this.emit('environment:rolled_back', {
         environmentName: name,
-        targetDeploymentId: targetDeployment.deploymentId
+        targetDeploymentId: targetDeployment.deploymentId,
       });
 
       return targetDeployment;
-
     } catch (error) {
       this.emit('environment:rollback_failed', { name, deploymentId, error });
       throw error;
@@ -679,8 +760,8 @@ export class DevelopmentEnvironmentManager extends EventEmitter {
           storage: 20,
           network: {
             bandwidth: 100,
-            endpoints: []
-          }
+            endpoints: [],
+          },
         },
         services: [
           {
@@ -691,7 +772,7 @@ export class DevelopmentEnvironmentManager extends EventEmitter {
             replicas: 1,
             resources: { cpu: 1, memory: 2048 },
             environment: {},
-            dependencies: ['database']
+            dependencies: ['database'],
           },
           {
             name: 'frontend',
@@ -701,8 +782,8 @@ export class DevelopmentEnvironmentManager extends EventEmitter {
             replicas: 1,
             resources: { cpu: 1, memory: 1024 },
             environment: {},
-            dependencies: ['api']
-          }
+            dependencies: ['api'],
+          },
         ],
         databases: [
           {
@@ -711,8 +792,8 @@ export class DevelopmentEnvironmentManager extends EventEmitter {
             version: '15',
             size: '5GB',
             backup: { enabled: true, schedule: '0 2 * * *', retention: 7 },
-            migrations: { enabled: true, source: './migrations' }
-          }
+            migrations: { enabled: true, source: './migrations' },
+          },
         ],
         secrets: {},
         features: {
@@ -720,19 +801,20 @@ export class DevelopmentEnvironmentManager extends EventEmitter {
           monitoring: true,
           logging: true,
           debugging: true,
-          profiling: false
+          profiling: false,
         },
         lifecycle: {
           autoStart: true,
           autoStop: false,
           maxIdleTime: 3600,
-          timeout: 300
-        }
+          timeout: 300,
+        },
       },
-      documentation: 'Basic web application template with API, frontend, and PostgreSQL database',
+      documentation:
+        'Basic web application template with API, frontend, and PostgreSQL database',
       prerequisites: ['Docker', 'PostgreSQL'],
       estimatedCost: { daily: 5, monthly: 150 },
-      tags: ['web', 'api', 'postgresql', 'basic']
+      tags: ['web', 'api', 'postgresql', 'basic'],
     });
 
     // Add more templates...
@@ -748,19 +830,24 @@ export class DevelopmentEnvironmentManager extends EventEmitter {
   /**
    * Deploy environment
    */
-  private async deployEnvironment(config: EnvironmentConfig, deploymentId: string): Promise<DeploymentResult> {
+  private async deployEnvironment(
+    config: EnvironmentConfig,
+    deploymentId: string
+  ): Promise<DeploymentResult> {
     const startTime = Date.now();
-    
+
     try {
       // Deploy databases first
       const databaseResults = await this.deployDatabases(config.databases);
-      
+
       // Deploy services
-      const serviceResults = await this.orchestrator.deployServices(config.services);
-      
+      const serviceResults = await this.orchestrator.deployServices(
+        config.services
+      );
+
       // Configure networking
       const endpoints = await this.configureNetworking(config);
-      
+
       const result: DeploymentResult = {
         success: true,
         environmentName: config.name,
@@ -770,11 +857,10 @@ export class DevelopmentEnvironmentManager extends EventEmitter {
         services: serviceResults,
         databases: databaseResults,
         endpoints,
-        logs: []
+        logs: [],
       };
-      
-      return result;
 
+      return result;
     } catch (error) {
       return {
         success: false,
@@ -785,7 +871,7 @@ export class DevelopmentEnvironmentManager extends EventEmitter {
         services: [],
         databases: [],
         endpoints: [],
-        logs: [error instanceof Error ? error.message : 'Unknown error']
+        logs: [error instanceof Error ? error.message : 'Unknown error'],
       };
     }
   }
@@ -793,39 +879,55 @@ export class DevelopmentEnvironmentManager extends EventEmitter {
   /**
    * Deploy databases
    */
-  private async deployDatabases(databases: EnvironmentConfig['databases']): Promise<Array<{ name: string; status: 'created' | 'migrated' | 'seeded' | 'failed'; error?: string; }>> {
+  private async deployDatabases(
+    databases: EnvironmentConfig['databases']
+  ): Promise<
+    Array<{
+      name: string;
+      status: 'created' | 'migrated' | 'seeded' | 'failed';
+      error?: string;
+    }>
+  > {
     // Implementation would deploy databases
     return databases.map(db => ({
       name: db.name,
-      status: 'created' as const
+      status: 'created' as const,
     }));
   }
 
   /**
    * Start databases
    */
-  private async startDatabases(databases: EnvironmentConfig['databases']): Promise<void> {
+  private async startDatabases(
+    databases: EnvironmentConfig['databases']
+  ): Promise<void> {
     // Implementation would start databases
   }
 
   /**
    * Stop databases
    */
-  private async stopDatabases(databases: EnvironmentConfig['databases']): Promise<void> {
+  private async stopDatabases(
+    databases: EnvironmentConfig['databases']
+  ): Promise<void> {
     // Implementation would stop databases
   }
 
   /**
    * Delete databases
    */
-  private async deleteDatabases(databases: EnvironmentConfig['databases']): Promise<void> {
+  private async deleteDatabases(
+    databases: EnvironmentConfig['databases']
+  ): Promise<void> {
     // Implementation would delete databases
   }
 
   /**
    * Configure networking
    */
-  private async configureNetworking(config: EnvironmentConfig): Promise<string[]> {
+  private async configureNetworking(
+    config: EnvironmentConfig
+  ): Promise<string[]> {
     // Implementation would configure networking and return endpoints
     return [`https://${config.name}.memorai.dev`];
   }
@@ -833,7 +935,10 @@ export class DevelopmentEnvironmentManager extends EventEmitter {
   /**
    * Execute rollback
    */
-  private async executeRollback(name: string, rollbackPlan: { previousVersion: string; rollbackCommands: string[]; }): Promise<void> {
+  private async executeRollback(
+    name: string,
+    rollbackPlan: { previousVersion: string; rollbackCommands: string[] }
+  ): Promise<void> {
     // Implementation would execute rollback commands
   }
 }
@@ -873,12 +978,21 @@ class ContainerOrchestrator {
     // Implementation would stop services
   }
 
-  async deployServices(services: any[]): Promise<Array<{ name: string; status: 'deployed' | 'failed'; url?: string; error?: string; }>> {
+  async deployServices(
+    services: any[]
+  ): Promise<
+    Array<{
+      name: string;
+      status: 'deployed' | 'failed';
+      url?: string;
+      error?: string;
+    }>
+  > {
     // Implementation would deploy services
     return services.map(service => ({
       name: service.name,
       status: 'deployed' as const,
-      url: `http://${service.name}.local`
+      url: `http://${service.name}.local`,
     }));
   }
 
@@ -905,25 +1019,25 @@ class MonitoringService {
         averageResponseTime: 100,
         requestsPerSecond: 50,
         errorRate: 0.01,
-        throughput: 1000
+        throughput: 1000,
       },
       resources: {
         cpuUtilization: 25,
         memoryUtilization: 50,
         storageUtilization: 30,
-        networkUtilization: 15
+        networkUtilization: 15,
       },
       availability: {
         uptime: 99.9,
         healthCheckResults: new Map(),
-        serviceAvailability: new Map()
+        serviceAvailability: new Map(),
       },
       costs: {
         daily: 5,
         monthly: 150,
         projected: 1800,
-        breakdown: new Map()
-      }
+        breakdown: new Map(),
+      },
     };
   }
 }

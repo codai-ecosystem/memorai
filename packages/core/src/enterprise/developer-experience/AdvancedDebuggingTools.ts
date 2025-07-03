@@ -1,7 +1,7 @@
 /**
  * @fileoverview Advanced Debugging Tools - Comprehensive debugging and profiling toolkit
  * with real-time monitoring, performance analysis, and intelligent error detection.
- * 
+ *
  * Features:
  * - Multi-language debugging support
  * - Real-time performance profiling
@@ -9,7 +9,7 @@
  * - Distributed tracing
  * - Intelligent error analysis
  * - Interactive debugging session management
- * 
+ *
  * @author Memorai Development Team
  * @version 2.1.0
  * @since 2025-07-02
@@ -27,7 +27,7 @@ const DebugConfigSchema = z.object({
     type: z.enum(['process', 'browser', 'node', 'container', 'remote']),
     identifier: z.string(),
     platform: z.enum(['linux', 'windows', 'macos', 'docker']),
-    version: z.string().optional()
+    version: z.string().optional(),
   }),
   features: z.object({
     breakpoints: z.boolean(),
@@ -37,7 +37,7 @@ const DebugConfigSchema = z.object({
     performanceProfiling: z.boolean(),
     memoryProfiling: z.boolean(),
     networkTracing: z.boolean(),
-    distributedTracing: z.boolean()
+    distributedTracing: z.boolean(),
   }),
   settings: z.object({
     maxBreakpoints: z.number(),
@@ -45,8 +45,8 @@ const DebugConfigSchema = z.object({
     profilingInterval: z.number(),
     memorySnapshotInterval: z.number(),
     logLevel: z.enum(['trace', 'debug', 'info', 'warn', 'error']),
-    timeoutMs: z.number()
-  })
+    timeoutMs: z.number(),
+  }),
 });
 
 /**
@@ -66,8 +66,8 @@ const BreakpointSchema = z.object({
     name: z.string(),
     path: z.string(),
     checksumAlgorithm: z.string().optional(),
-    checksum: z.string().optional()
-  })
+    checksum: z.string().optional(),
+  }),
 });
 
 /**
@@ -78,14 +78,14 @@ const StackFrameSchema = z.object({
   name: z.string(),
   source: z.object({
     name: z.string(),
-    path: z.string()
+    path: z.string(),
   }),
   line: z.number(),
   column: z.number(),
   endLine: z.number().optional(),
   endColumn: z.number().optional(),
   canRestart: z.boolean(),
-  instructionPointerReference: z.string().optional()
+  instructionPointerReference: z.string().optional(),
 });
 
 /**
@@ -95,16 +95,48 @@ const VariableSchema = z.object({
   name: z.string(),
   value: z.string(),
   type: z.string().optional(),
-  presentationHint: z.object({
-    kind: z.enum(['property', 'method', 'class', 'data', 'event', 'baseClass', 'innerClass', 'interface', 'mostDerivedClass', 'virtual', 'dataBreakpoint']).optional(),
-    attributes: z.array(z.enum(['static', 'constant', 'readOnly', 'rawString', 'hasObjectId', 'canHaveObjectId', 'hasSideEffects', 'hasDataBreakpoint', 'canBreakOnDataChange'])).optional(),
-    visibility: z.enum(['public', 'private', 'protected', 'internal', 'final']).optional()
-  }).optional(),
+  presentationHint: z
+    .object({
+      kind: z
+        .enum([
+          'property',
+          'method',
+          'class',
+          'data',
+          'event',
+          'baseClass',
+          'innerClass',
+          'interface',
+          'mostDerivedClass',
+          'virtual',
+          'dataBreakpoint',
+        ])
+        .optional(),
+      attributes: z
+        .array(
+          z.enum([
+            'static',
+            'constant',
+            'readOnly',
+            'rawString',
+            'hasObjectId',
+            'canHaveObjectId',
+            'hasSideEffects',
+            'hasDataBreakpoint',
+            'canBreakOnDataChange',
+          ])
+        )
+        .optional(),
+      visibility: z
+        .enum(['public', 'private', 'protected', 'internal', 'final'])
+        .optional(),
+    })
+    .optional(),
   evaluateName: z.string().optional(),
   variablesReference: z.number(),
   namedVariables: z.number().optional(),
   indexedVariables: z.number().optional(),
-  memoryReference: z.string().optional()
+  memoryReference: z.string().optional(),
 });
 
 export type DebugConfig = z.infer<typeof DebugConfigSchema>;
@@ -164,11 +196,14 @@ export interface MemorySnapshot {
   heapTotal: number;
   external: number;
   arrayBuffers: number;
-  objectTypes: Map<string, {
-    count: number;
-    size: number;
-    retainedSize: number;
-  }>;
+  objectTypes: Map<
+    string,
+    {
+      count: number;
+      size: number;
+      retainedSize: number;
+    }
+  >;
   leaks: Array<{
     type: string;
     count: number;
@@ -181,7 +216,16 @@ export interface MemorySnapshot {
  * Debug Event
  */
 export interface DebugEvent {
-  type: 'stopped' | 'continued' | 'exited' | 'terminated' | 'thread' | 'output' | 'breakpoint' | 'exception' | 'profiler';
+  type:
+    | 'stopped'
+    | 'continued'
+    | 'exited'
+    | 'terminated'
+    | 'thread'
+    | 'output'
+    | 'breakpoint'
+    | 'exception'
+    | 'profiler';
   sessionId: string;
   timestamp: number;
   data: any;
@@ -217,7 +261,7 @@ export interface DistributedTrace {
 
 /**
  * Advanced Debugging Tools
- * 
+ *
  * Comprehensive debugging and profiling system providing deep insights
  * into application behavior, performance characteristics, and error patterns.
  */
@@ -244,7 +288,7 @@ export class AdvancedDebuggingTools extends EventEmitter {
   public async startSession(config: DebugConfig): Promise<DebugSessionState> {
     try {
       const validatedConfig = DebugConfigSchema.parse(config);
-      
+
       // Initialize session state
       const sessionState: DebugSessionState = {
         sessionId: validatedConfig.sessionId,
@@ -255,7 +299,7 @@ export class AdvancedDebuggingTools extends EventEmitter {
         watchExpressions: new Map(),
         evaluationResults: new Map(),
         performance: this.createEmptyPerformanceSnapshot(),
-        memory: this.createEmptyMemorySnapshot()
+        memory: this.createEmptyMemorySnapshot(),
       };
 
       this.sessions.set(validatedConfig.sessionId, sessionState);
@@ -286,11 +330,10 @@ export class AdvancedDebuggingTools extends EventEmitter {
 
       this.emit('debug:session_started', {
         sessionId: validatedConfig.sessionId,
-        config: validatedConfig
+        config: validatedConfig,
       });
 
       return sessionState;
-
     } catch (error) {
       this.emit('debug:session_start_failed', { config, error });
       throw error;
@@ -300,14 +343,17 @@ export class AdvancedDebuggingTools extends EventEmitter {
   /**
    * Set breakpoint
    */
-  public async setBreakpoint(sessionId: string, breakpoint: Omit<Breakpoint, 'id' | 'verified'>): Promise<Breakpoint> {
+  public async setBreakpoint(
+    sessionId: string,
+    breakpoint: Omit<Breakpoint, 'id' | 'verified'>
+  ): Promise<Breakpoint> {
     try {
       const session = this.getSession(sessionId);
-      
+
       const fullBreakpoint: Breakpoint = {
         ...breakpoint,
         id: `bp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        verified: false
+        verified: false,
       };
 
       // Verify breakpoint
@@ -318,13 +364,16 @@ export class AdvancedDebuggingTools extends EventEmitter {
 
       this.emit('debug:breakpoint_set', {
         sessionId,
-        breakpoint: fullBreakpoint
+        breakpoint: fullBreakpoint,
       });
 
       return fullBreakpoint;
-
     } catch (error) {
-      this.emit('debug:breakpoint_set_failed', { sessionId, breakpoint, error });
+      this.emit('debug:breakpoint_set_failed', {
+        sessionId,
+        breakpoint,
+        error,
+      });
       throw error;
     }
   }
@@ -332,10 +381,13 @@ export class AdvancedDebuggingTools extends EventEmitter {
   /**
    * Remove breakpoint
    */
-  public async removeBreakpoint(sessionId: string, breakpointId: string): Promise<void> {
+  public async removeBreakpoint(
+    sessionId: string,
+    breakpointId: string
+  ): Promise<void> {
     try {
       const session = this.getSession(sessionId);
-      
+
       const breakpoint = session.breakpoints.get(breakpointId);
       if (!breakpoint) {
         throw new Error(`Breakpoint not found: ${breakpointId}`);
@@ -345,11 +397,14 @@ export class AdvancedDebuggingTools extends EventEmitter {
 
       this.emit('debug:breakpoint_removed', {
         sessionId,
-        breakpointId
+        breakpointId,
       });
-
     } catch (error) {
-      this.emit('debug:breakpoint_remove_failed', { sessionId, breakpointId, error });
+      this.emit('debug:breakpoint_remove_failed', {
+        sessionId,
+        breakpointId,
+        error,
+      });
       throw error;
     }
   }
@@ -357,24 +412,26 @@ export class AdvancedDebuggingTools extends EventEmitter {
   /**
    * Step debugging
    */
-  public async step(sessionId: string, type: 'into' | 'over' | 'out' | 'continue'): Promise<DebugSessionState> {
+  public async step(
+    sessionId: string,
+    type: 'into' | 'over' | 'out' | 'continue'
+  ): Promise<DebugSessionState> {
     try {
       const session = this.getSession(sessionId);
-      
+
       // Execute step operation
       await this.executeStepOperation(sessionId, type);
-      
+
       // Update session state
       await this.updateSessionState(sessionId);
 
       this.emit('debug:step_executed', {
         sessionId,
         stepType: type,
-        currentFrame: session.currentFrame
+        currentFrame: session.currentFrame,
       });
 
       return session;
-
     } catch (error) {
       this.emit('debug:step_failed', { sessionId, type, error });
       throw error;
@@ -384,7 +441,11 @@ export class AdvancedDebuggingTools extends EventEmitter {
   /**
    * Evaluate expression
    */
-  public async evaluateExpression(sessionId: string, expression: string, frameId?: number): Promise<{
+  public async evaluateExpression(
+    sessionId: string,
+    expression: string,
+    frameId?: number
+  ): Promise<{
     result: any;
     type: string;
     variablesReference: number;
@@ -393,23 +454,30 @@ export class AdvancedDebuggingTools extends EventEmitter {
   }> {
     try {
       const session = this.getSession(sessionId);
-      
+
       // Evaluate expression in context
-      const result = await this.performEvaluation(sessionId, expression, frameId);
-      
+      const result = await this.performEvaluation(
+        sessionId,
+        expression,
+        frameId
+      );
+
       // Store result
       session.evaluationResults.set(expression, result);
 
       this.emit('debug:expression_evaluated', {
         sessionId,
         expression,
-        result: result.result
+        result: result.result,
       });
 
       return result;
-
     } catch (error) {
-      this.emit('debug:expression_evaluation_failed', { sessionId, expression, error });
+      this.emit('debug:expression_evaluation_failed', {
+        sessionId,
+        expression,
+        error,
+      });
       throw error;
     }
   }
@@ -417,10 +485,13 @@ export class AdvancedDebuggingTools extends EventEmitter {
   /**
    * Get variable details
    */
-  public async getVariables(sessionId: string, variablesReference: number): Promise<Variable[]> {
+  public async getVariables(
+    sessionId: string,
+    variablesReference: number
+  ): Promise<Variable[]> {
     try {
       const session = this.getSession(sessionId);
-      
+
       let variables = session.variables.get(variablesReference);
       if (!variables) {
         // Fetch variables from debugger
@@ -431,13 +502,16 @@ export class AdvancedDebuggingTools extends EventEmitter {
       this.emit('debug:variables_retrieved', {
         sessionId,
         variablesReference,
-        count: variables.length
+        count: variables.length,
       });
 
       return variables;
-
     } catch (error) {
-      this.emit('debug:variables_retrieval_failed', { sessionId, variablesReference, error });
+      this.emit('debug:variables_retrieval_failed', {
+        sessionId,
+        variablesReference,
+        error,
+      });
       throw error;
     }
   }
@@ -445,11 +519,14 @@ export class AdvancedDebuggingTools extends EventEmitter {
   /**
    * Start performance profiling
    */
-  public async startProfiling(sessionId: string, options: {
-    interval?: number;
-    duration?: number;
-    includeCallStack?: boolean;
-  } = {}): Promise<void> {
+  public async startProfiling(
+    sessionId: string,
+    options: {
+      interval?: number;
+      duration?: number;
+      includeCallStack?: boolean;
+    } = {}
+  ): Promise<void> {
     try {
       const profiler = this.profilers.get(sessionId);
       if (!profiler) {
@@ -460,9 +537,8 @@ export class AdvancedDebuggingTools extends EventEmitter {
 
       this.emit('debug:profiling_started', {
         sessionId,
-        options
+        options,
       });
-
     } catch (error) {
       this.emit('debug:profiling_start_failed', { sessionId, options, error });
       throw error;
@@ -480,18 +556,17 @@ export class AdvancedDebuggingTools extends EventEmitter {
       }
 
       const snapshot = await profiler.stopProfiling();
-      
+
       // Update session state
       const session = this.getSession(sessionId);
       session.performance = snapshot;
 
       this.emit('debug:profiling_stopped', {
         sessionId,
-        snapshot
+        snapshot,
       });
 
       return snapshot;
-
     } catch (error) {
       this.emit('debug:profiling_stop_failed', { sessionId, error });
       throw error;
@@ -509,18 +584,17 @@ export class AdvancedDebuggingTools extends EventEmitter {
       }
 
       const snapshot = await memoryAnalyzer.takeSnapshot();
-      
+
       // Update session state
       const session = this.getSession(sessionId);
       session.memory = snapshot;
 
       this.emit('debug:memory_snapshot_taken', {
         sessionId,
-        snapshot
+        snapshot,
       });
 
       return snapshot;
-
     } catch (error) {
       this.emit('debug:memory_snapshot_failed', { sessionId, error });
       throw error;
@@ -530,7 +604,10 @@ export class AdvancedDebuggingTools extends EventEmitter {
   /**
    * Analyze error patterns
    */
-  public async analyzeErrors(sessionId: string, errors: Error[]): Promise<{
+  public async analyzeErrors(
+    sessionId: string,
+    errors: Error[]
+  ): Promise<{
     patterns: Array<{
       type: string;
       frequency: number;
@@ -550,11 +627,10 @@ export class AdvancedDebuggingTools extends EventEmitter {
       this.emit('debug:errors_analyzed', {
         sessionId,
         errorCount: errors.length,
-        patternCount: analysis.patterns.length
+        patternCount: analysis.patterns.length,
       });
 
       return analysis;
-
     } catch (error) {
       this.emit('debug:error_analysis_failed', { sessionId, errors, error });
       throw error;
@@ -564,7 +640,10 @@ export class AdvancedDebuggingTools extends EventEmitter {
   /**
    * Start distributed tracing
    */
-  public async startDistributedTracing(sessionId: string, operation: string): Promise<DistributedTrace> {
+  public async startDistributedTracing(
+    sessionId: string,
+    operation: string
+  ): Promise<DistributedTrace> {
     try {
       const tracer = this.tracers.get(sessionId);
       if (!tracer) {
@@ -576,13 +655,16 @@ export class AdvancedDebuggingTools extends EventEmitter {
       this.emit('debug:distributed_trace_started', {
         sessionId,
         traceId: trace.traceId,
-        operation
+        operation,
       });
 
       return trace;
-
     } catch (error) {
-      this.emit('debug:distributed_trace_start_failed', { sessionId, operation, error });
+      this.emit('debug:distributed_trace_start_failed', {
+        sessionId,
+        operation,
+        error,
+      });
       throw error;
     }
   }
@@ -593,7 +675,7 @@ export class AdvancedDebuggingTools extends EventEmitter {
   public async stopSession(sessionId: string): Promise<void> {
     try {
       const session = this.getSession(sessionId);
-      
+
       // Stop profiling if active
       const profiler = this.profilers.get(sessionId);
       if (profiler) {
@@ -622,7 +704,6 @@ export class AdvancedDebuggingTools extends EventEmitter {
       this.sessions.delete(sessionId);
 
       this.emit('debug:session_stopped', { sessionId });
-
     } catch (error) {
       this.emit('debug:session_stop_failed', { sessionId, error });
       throw error;
@@ -660,9 +741,8 @@ export class AdvancedDebuggingTools extends EventEmitter {
         performance: session.performance,
         memory: session.memory,
         network: metrics.network,
-        errors: metrics.errors
+        errors: metrics.errors,
       };
-
     } catch (error) {
       this.emit('debug:metrics_retrieval_failed', { sessionId, error });
       throw error;
@@ -683,7 +763,10 @@ export class AdvancedDebuggingTools extends EventEmitter {
   /**
    * Verify breakpoint
    */
-  private async verifyBreakpoint(sessionId: string, breakpoint: Breakpoint): Promise<boolean> {
+  private async verifyBreakpoint(
+    sessionId: string,
+    breakpoint: Breakpoint
+  ): Promise<boolean> {
     // Implementation would verify breakpoint with debugger
     return true;
   }
@@ -691,7 +774,10 @@ export class AdvancedDebuggingTools extends EventEmitter {
   /**
    * Execute step operation
    */
-  private async executeStepOperation(sessionId: string, type: string): Promise<void> {
+  private async executeStepOperation(
+    sessionId: string,
+    type: string
+  ): Promise<void> {
     // Implementation would execute step operation
   }
 
@@ -705,19 +791,26 @@ export class AdvancedDebuggingTools extends EventEmitter {
   /**
    * Perform evaluation
    */
-  private async performEvaluation(sessionId: string, expression: string, frameId?: number): Promise<any> {
+  private async performEvaluation(
+    sessionId: string,
+    expression: string,
+    frameId?: number
+  ): Promise<any> {
     // Implementation would evaluate expression in debugger context
     return {
       result: 'evaluation result',
       type: 'string',
-      variablesReference: 0
+      variablesReference: 0,
     };
   }
 
   /**
    * Fetch variables
    */
-  private async fetchVariables(sessionId: string, variablesReference: number): Promise<Variable[]> {
+  private async fetchVariables(
+    sessionId: string,
+    variablesReference: number
+  ): Promise<Variable[]> {
     // Implementation would fetch variables from debugger
     return [];
   }
@@ -733,13 +826,13 @@ export class AdvancedDebuggingTools extends EventEmitter {
       gcActivity: {
         collections: 0,
         pauseTime: 0,
-        reclaimedMemory: 0
+        reclaimedMemory: 0,
       },
       eventLoop: {
         lag: 0,
-        utilization: 0
+        utilization: 0,
       },
-      hotFunctions: []
+      hotFunctions: [],
     };
   }
 
@@ -754,7 +847,7 @@ export class AdvancedDebuggingTools extends EventEmitter {
       external: 0,
       arrayBuffers: 0,
       objectTypes: new Map(),
-      leaks: []
+      leaks: [],
     };
   }
 }
@@ -783,13 +876,13 @@ class PerformanceProfiler {
       gcActivity: {
         collections: 5,
         pauseTime: 10,
-        reclaimedMemory: 1024
+        reclaimedMemory: 1024,
       },
       eventLoop: {
         lag: 5,
-        utilization: 0.8
+        utilization: 0.8,
       },
-      hotFunctions: []
+      hotFunctions: [],
     };
   }
 
@@ -814,7 +907,7 @@ class MemoryAnalyzer {
       external: 5 * 1024 * 1024,
       arrayBuffers: 1024 * 1024,
       objectTypes: new Map(),
-      leaks: []
+      leaks: [],
     };
   }
 
@@ -841,7 +934,7 @@ class DistributedTracer {
       logs: [],
       status: 'ok',
       service: 'memorai',
-      component: 'debug-tools'
+      component: 'debug-tools',
     };
   }
 
@@ -856,7 +949,7 @@ class ErrorAnalyzer {
     return {
       patterns: [],
       rootCauses: [],
-      recommendations: []
+      recommendations: [],
     };
   }
 }
@@ -878,7 +971,7 @@ class MetricsCollector {
     // Implementation would return collected metrics
     return {
       network: {},
-      errors: []
+      errors: [],
     };
   }
 }

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ThreatDetectionEngine } from '../../src/security/ThreatDetectionEngine.js';
 import type { SecurityConfig } from '../../src/types/Security.js';
 
@@ -31,7 +31,7 @@ describe('ThreatDetectionEngine - Zero Coverage Target', () => {
       },
     };
     threatEngine = new ThreatDetectionEngine(mockConfig);
-    
+
     // Mock console methods to avoid spam during testing
     vi.spyOn(console, 'log').mockImplementation(() => {});
     vi.spyOn(console, 'warn').mockImplementation(() => {});
@@ -48,7 +48,7 @@ describe('ThreatDetectionEngine - Zero Coverage Target', () => {
   describe('Constructor and Initialization', () => {
     it('should initialize with provided security configuration', () => {
       expect(threatEngine).toBeInstanceOf(ThreatDetectionEngine);
-      
+
       const stats = threatEngine.getSecurityStats();
       expect(stats.totalEvents).toBe(0);
       expect(stats.suspiciousIPs).toBe(0);
@@ -75,7 +75,7 @@ describe('ThreatDetectionEngine - Zero Coverage Target', () => {
         isThreat: false,
         threats: [],
         action: 'allow',
-        confidence: 0
+        confidence: 0,
       });
     });
   });
@@ -108,7 +108,8 @@ describe('ThreatDetectionEngine - Zero Coverage Target', () => {
     });
 
     it('should detect basic SQL injection patterns', async () => {
-      const maliciousContent = "SELECT * FROM users WHERE id = 1; DROP TABLE users;";
+      const maliciousContent =
+        'SELECT * FROM users WHERE id = 1; DROP TABLE users;';
       const result = await threatEngine.analyzeRequest(
         maliciousContent,
         '192.168.1.100',
@@ -123,7 +124,7 @@ describe('ThreatDetectionEngine - Zero Coverage Target', () => {
     });
 
     it('should detect SQL injection with URL encoding', async () => {
-      const maliciousContent = "id=1%27%20OR%201=1--";
+      const maliciousContent = 'id=1%27%20OR%201=1--';
       const result = await threatEngine.analyzeRequest(
         maliciousContent,
         '192.168.1.101',
@@ -137,7 +138,8 @@ describe('ThreatDetectionEngine - Zero Coverage Target', () => {
     });
 
     it('should handle safe content without false positives', async () => {
-      const safeContent = "Remember to buy groceries and select the best fruits";
+      const safeContent =
+        'Remember to buy groceries and select the best fruits';
       const result = await threatEngine.analyzeRequest(
         safeContent,
         '192.168.1.102',
@@ -321,7 +323,7 @@ describe('ThreatDetectionEngine - Zero Coverage Target', () => {
 
     it('should detect brute force attacks', async () => {
       const clientIP = '192.168.100.50';
-      
+
       // Simulate multiple failed attempts
       for (let i = 0; i < 6; i++) {
         await threatEngine.analyzeRequest(
@@ -350,16 +352,36 @@ describe('ThreatDetectionEngine - Zero Coverage Target', () => {
 
       // IP1 - below threshold
       for (let i = 0; i < 3; i++) {
-        await threatEngine.analyzeRequest('content', ip1, 'Mozilla/5.0', 'test-tenant');
+        await threatEngine.analyzeRequest(
+          'content',
+          ip1,
+          'Mozilla/5.0',
+          'test-tenant'
+        );
       }
 
       // IP2 - above threshold
       for (let i = 0; i < 7; i++) {
-        await threatEngine.analyzeRequest('content', ip2, 'Mozilla/5.0', 'test-tenant');
+        await threatEngine.analyzeRequest(
+          'content',
+          ip2,
+          'Mozilla/5.0',
+          'test-tenant'
+        );
       }
 
-      const result1 = await threatEngine.analyzeRequest('content', ip1, 'Mozilla/5.0', 'test-tenant');
-      const result2 = await threatEngine.analyzeRequest('content', ip2, 'Mozilla/5.0', 'test-tenant');
+      const result1 = await threatEngine.analyzeRequest(
+        'content',
+        ip1,
+        'Mozilla/5.0',
+        'test-tenant'
+      );
+      const result2 = await threatEngine.analyzeRequest(
+        'content',
+        ip2,
+        'Mozilla/5.0',
+        'test-tenant'
+      );
 
       expect(result1.threats).not.toContain('brute_force_attempt');
       expect(result2.threats).toContain('brute_force_attempt');
@@ -427,9 +449,24 @@ describe('ThreatDetectionEngine - Zero Coverage Target', () => {
 
     it('should provide accurate security statistics', async () => {
       // Generate some threat events
-      await threatEngine.analyzeRequest("<script>alert(1)</script>", '1.1.1.1', 'bot', 'tenant1');
-      await threatEngine.analyzeRequest("SELECT * FROM users", '2.2.2.2', 'curl', 'tenant1');
-      await threatEngine.analyzeRequest("normal content", '3.3.3.3', 'Mozilla/5.0', 'tenant1');
+      await threatEngine.analyzeRequest(
+        '<script>alert(1)</script>',
+        '1.1.1.1',
+        'bot',
+        'tenant1'
+      );
+      await threatEngine.analyzeRequest(
+        'SELECT * FROM users',
+        '2.2.2.2',
+        'curl',
+        'tenant1'
+      );
+      await threatEngine.analyzeRequest(
+        'normal content',
+        '3.3.3.3',
+        'Mozilla/5.0',
+        'tenant1'
+      );
 
       const stats = threatEngine.getSecurityStats();
 
@@ -442,12 +479,17 @@ describe('ThreatDetectionEngine - Zero Coverage Target', () => {
     it('should track top threat types', async () => {
       // Generate multiple XSS attempts
       for (let i = 0; i < 3; i++) {
-        await threatEngine.analyzeRequest(`<script>alert(${i})</script>`, `1.1.1.${i}`, 'Mozilla/5.0', 'tenant1');
+        await threatEngine.analyzeRequest(
+          `<script>alert(${i})</script>`,
+          `1.1.1.${i}`,
+          'Mozilla/5.0',
+          'tenant1'
+        );
       }
 
       const stats = threatEngine.getSecurityStats();
       const xssThreats = stats.topThreats.find(t => t.type === 'xss_attack');
-      
+
       expect(xssThreats).toBeDefined();
       expect(xssThreats!.count).toBe(3);
     });
@@ -460,28 +502,48 @@ describe('ThreatDetectionEngine - Zero Coverage Target', () => {
 
     it('should clear suspicious IPs when requested', async () => {
       const suspiciousIP = '192.168.100.100';
-      
+
       // Trigger brute force to add IP to suspicious list
       for (let i = 0; i < 7; i++) {
-        await threatEngine.analyzeRequest('content', suspiciousIP, 'Mozilla/5.0', 'test-tenant');
+        await threatEngine.analyzeRequest(
+          'content',
+          suspiciousIP,
+          'Mozilla/5.0',
+          'test-tenant'
+        );
       }
 
       // Verify IP is suspicious
-      let result = await threatEngine.analyzeRequest('content', suspiciousIP, 'Mozilla/5.0', 'test-tenant');
+      let result = await threatEngine.analyzeRequest(
+        'content',
+        suspiciousIP,
+        'Mozilla/5.0',
+        'test-tenant'
+      );
       expect(result.threats).toContain('suspicious_ip');
 
       // Clear the IP
       threatEngine.clearSuspiciousIP(suspiciousIP);
 
       // Verify IP is no longer suspicious
-      result = await threatEngine.analyzeRequest('content', suspiciousIP, 'Mozilla/5.0', 'test-tenant');
+      result = await threatEngine.analyzeRequest(
+        'content',
+        suspiciousIP,
+        'Mozilla/5.0',
+        'test-tenant'
+      );
       expect(result.threats).not.toContain('suspicious_ip');
     });
 
     it('should clear all security data when requested', async () => {
       // Generate some events
-      await threatEngine.analyzeRequest("<script>alert(1)</script>", '1.1.1.1', 'Mozilla/5.0', 'tenant1');
-      
+      await threatEngine.analyzeRequest(
+        '<script>alert(1)</script>',
+        '1.1.1.1',
+        'Mozilla/5.0',
+        'tenant1'
+      );
+
       let stats = threatEngine.getSecurityStats();
       expect(stats.totalEvents).toBeGreaterThan(0);
 
@@ -500,7 +562,8 @@ describe('ThreatDetectionEngine - Zero Coverage Target', () => {
     });
 
     it('should detect multiple threat types in single request', async () => {
-      const maliciousContent = "<script>alert('XSS')</script>; SELECT * FROM users; ../../../../etc/passwd";
+      const maliciousContent =
+        "<script>alert('XSS')</script>; SELECT * FROM users; ../../../../etc/passwd";
       const result = await threatEngine.analyzeRequest(
         maliciousContent,
         '192.168.300.1',
@@ -516,7 +579,8 @@ describe('ThreatDetectionEngine - Zero Coverage Target', () => {
     });
 
     it('should calculate confidence based on multiple threats', async () => {
-      const maliciousContent = "<script>alert(1)</script> UNION SELECT password FROM users";
+      const maliciousContent =
+        '<script>alert(1)</script> UNION SELECT password FROM users';
       const result = await threatEngine.analyzeRequest(
         maliciousContent,
         '192.168.300.2',
@@ -665,7 +729,7 @@ describe('ThreatDetectionEngine - Zero Coverage Target', () => {
     });
 
     it('should handle concurrent analysis requests', async () => {
-      const promises = Array.from({ length: 10 }, (_, i) => 
+      const promises = Array.from({ length: 10 }, (_, i) =>
         threatEngine.analyzeRequest(
           `test content ${i}`,
           `192.168.500.${i}`,
@@ -675,7 +739,7 @@ describe('ThreatDetectionEngine - Zero Coverage Target', () => {
       );
 
       const results = await Promise.all(promises);
-      
+
       expect(results).toHaveLength(10);
       results.forEach(result => {
         expect(result).toBeDefined();
@@ -686,7 +750,7 @@ describe('ThreatDetectionEngine - Zero Coverage Target', () => {
 
     it('should maintain performance with large content', async () => {
       const largeContent = 'safe content '.repeat(1000);
-      
+
       const startTime = Date.now();
       const result = await threatEngine.analyzeRequest(
         largeContent,

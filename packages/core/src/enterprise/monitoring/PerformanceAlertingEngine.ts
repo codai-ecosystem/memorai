@@ -1,9 +1,9 @@
 /**
  * Performance Alerting and Anomaly Detection Engine for Memorai Enterprise
- * 
+ *
  * Implements comprehensive performance monitoring with intelligent alerting,
  * anomaly detection, and automated response systems.
- * 
+ *
  * Features:
  * - Real-time performance threshold monitoring
  * - Machine learning-based anomaly detection
@@ -19,7 +19,7 @@ export enum AlertSeverity {
   INFO = 'info',
   WARNING = 'warning',
   CRITICAL = 'critical',
-  EMERGENCY = 'emergency'
+  EMERGENCY = 'emergency',
 }
 
 /**
@@ -29,13 +29,13 @@ export enum AlertStatus {
   ACTIVE = 'active',
   ACKNOWLEDGED = 'acknowledged',
   RESOLVED = 'resolved',
-  SUPPRESSED = 'suppressed'
+  SUPPRESSED = 'suppressed',
 }
 
 /**
  * Performance metric types
  */
-export type MetricType = 
+export type MetricType =
   | 'response_time'
   | 'error_rate'
   | 'throughput'
@@ -237,13 +237,13 @@ class BaselineEngine {
       if (values.length < this.MIN_DATA_POINTS) continue;
 
       const statistics = this.calculateStatistics(values);
-      
+
       const baseline: PerformanceBaseline = {
         metric: metricType,
         statistics,
         dataPoints: values.length,
         timeWindow: 60, // 1 hour window
-        lastUpdated: Date.now()
+        lastUpdated: Date.now(),
       };
 
       this.baselines.set(key, baseline);
@@ -277,7 +277,7 @@ class BaselineEngine {
    * Analyze single metric for anomaly
    */
   private analyzeMetricForAnomaly(
-    metric: MetricDataPoint, 
+    metric: MetricDataPoint,
     baseline: PerformanceBaseline
   ): AnomalyDetection | null {
     const { statistics } = baseline;
@@ -285,28 +285,31 @@ class BaselineEngine {
 
     // Calculate z-score for statistical anomaly detection
     const zScore = Math.abs(value - statistics.mean) / (statistics.stdDev || 1);
-    
+
     // Calculate percentile-based bounds
     const iqr = statistics.p95 - statistics.median;
-    const lowerBound = statistics.median - (2 * iqr);
-    const upperBound = statistics.median + (2 * iqr);
+    const lowerBound = statistics.median - 2 * iqr;
+    const upperBound = statistics.median + 2 * iqr;
 
     // Determine if anomalous
     const isStatisticalAnomaly = zScore > 2.5;
     const isPercentileAnomaly = value < lowerBound || value > upperBound;
-    
+
     if (!isStatisticalAnomaly && !isPercentileAnomaly) {
       return null;
     }
 
     // Calculate anomaly score (0-1)
-    const anomalyScore = Math.min(1, Math.max(
-      zScore / 5, // Statistical component
+    const anomalyScore = Math.min(
+      1,
       Math.max(
-        (value - upperBound) / (statistics.max - upperBound),
-        (lowerBound - value) / (lowerBound - statistics.min)
-      ) // Percentile component
-    ));
+        zScore / 5, // Statistical component
+        Math.max(
+          (value - upperBound) / (statistics.max - upperBound),
+          (lowerBound - value) / (lowerBound - statistics.min)
+        ) // Percentile component
+      )
+    );
 
     // Determine severity based on anomaly score
     let severity: AlertSeverity;
@@ -322,20 +325,22 @@ class BaselineEngine {
       actualValue: value,
       expectedRange: {
         min: lowerBound,
-        max: upperBound
+        max: upperBound,
       },
       timestamp: metric.timestamp,
       description: `${metric.metric} anomaly: ${value.toFixed(2)} (expected ${lowerBound.toFixed(2)}-${upperBound.toFixed(2)})`,
-      confidence: Math.min(1, baseline.dataPoints / 100) // More data = higher confidence
+      confidence: Math.min(1, baseline.dataPoints / 100), // More data = higher confidence
     };
   }
 
   /**
    * Group metrics by type
    */
-  private groupMetricsByType(metrics: MetricDataPoint[]): Map<MetricType, MetricDataPoint[]> {
+  private groupMetricsByType(
+    metrics: MetricDataPoint[]
+  ): Map<MetricType, MetricDataPoint[]> {
     const grouped = new Map<MetricType, MetricDataPoint[]>();
-    
+
     for (const metric of metrics) {
       if (!grouped.has(metric.metric)) {
         grouped.set(metric.metric, []);
@@ -349,21 +354,25 @@ class BaselineEngine {
   /**
    * Calculate statistical measures
    */
-  private calculateStatistics(values: number[]): PerformanceBaseline['statistics'] {
+  private calculateStatistics(
+    values: number[]
+  ): PerformanceBaseline['statistics'] {
     const sorted = [...values].sort((a, b) => a - b);
     const len = sorted.length;
-    
+
     const mean = values.reduce((sum, val) => sum + val, 0) / len;
-    const median = len % 2 === 0 
-      ? (sorted[len / 2 - 1] + sorted[len / 2]) / 2 
-      : sorted[Math.floor(len / 2)];
-    
-    const variance = values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / len;
+    const median =
+      len % 2 === 0
+        ? (sorted[len / 2 - 1] + sorted[len / 2]) / 2
+        : sorted[Math.floor(len / 2)];
+
+    const variance =
+      values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / len;
     const stdDev = Math.sqrt(variance);
-    
+
     const p95Index = Math.floor(len * 0.95);
     const p99Index = Math.floor(len * 0.99);
-    
+
     return {
       mean,
       median,
@@ -371,7 +380,7 @@ class BaselineEngine {
       p95: sorted[p95Index],
       p99: sorted[p99Index],
       min: sorted[0],
-      max: sorted[len - 1]
+      max: sorted[len - 1],
     };
   }
 
@@ -386,13 +395,16 @@ class BaselineEngine {
    * Check if baseline is stale
    */
   private isBaselineStale(baseline: PerformanceBaseline): boolean {
-    return (Date.now() - baseline.lastUpdated) > this.MAX_BASELINE_AGE;
+    return Date.now() - baseline.lastUpdated > this.MAX_BASELINE_AGE;
   }
 
   /**
    * Get baseline for metric
    */
-  getBaseline(metric: MetricType, component?: string): PerformanceBaseline | undefined {
+  getBaseline(
+    metric: MetricType,
+    component?: string
+  ): PerformanceBaseline | undefined {
     const key = this.getBaselineKey(metric, component);
     return this.baselines.get(key);
   }
@@ -422,7 +434,10 @@ class AlertDeliveryEngine {
       if (!target.enabled) continue;
 
       // Check severity filter
-      if (target.severityFilter && !target.severityFilter.includes(alert.severity)) {
+      if (
+        target.severityFilter &&
+        !target.severityFilter.includes(alert.severity)
+      ) {
         continue;
       }
 
@@ -432,19 +447,22 @@ class AlertDeliveryEngine {
 
     // Store receipts
     this.deliveryReceipts.set(alert.id, receipts);
-    
+
     return receipts;
   }
 
   /**
    * Deliver alert to specific target
    */
-  private async deliverToTarget(alert: Alert, target: AlertTarget): Promise<AlertDeliveryReceipt> {
+  private async deliverToTarget(
+    alert: Alert,
+    target: AlertTarget
+  ): Promise<AlertDeliveryReceipt> {
     const receipt: AlertDeliveryReceipt = {
       alertId: alert.id,
       target,
       status: 'pending',
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
 
     try {
@@ -480,17 +498,27 @@ class AlertDeliveryEngine {
   /**
    * Deliver to email (mock implementation)
    */
-  private async deliverToEmail(alert: Alert, target: AlertTarget): Promise<void> {
+  private async deliverToEmail(
+    alert: Alert,
+    target: AlertTarget
+  ): Promise<void> {
     // Mock implementation - would integrate with actual email service
-    console.log(`[EMAIL] Alert ${alert.id} sent to ${target.config.emails?.join(', ')}`);
-    console.log(`Subject: [${alert.severity.toUpperCase()}] ${alert.rule.name}`);
+    console.log(
+      `[EMAIL] Alert ${alert.id} sent to ${target.config.emails?.join(', ')}`
+    );
+    console.log(
+      `Subject: [${alert.severity.toUpperCase()}] ${alert.rule.name}`
+    );
     console.log(`Message: ${alert.message}`);
   }
 
   /**
    * Deliver to Slack (mock implementation)
    */
-  private async deliverToSlack(alert: Alert, target: AlertTarget): Promise<void> {
+  private async deliverToSlack(
+    alert: Alert,
+    target: AlertTarget
+  ): Promise<void> {
     // Mock implementation - would use Slack API
     const message = this.formatSlackMessage(alert);
     console.log(`[SLACK] Alert ${alert.id} sent to ${target.config.channel}`);
@@ -500,7 +528,10 @@ class AlertDeliveryEngine {
   /**
    * Deliver to webhook (mock implementation)
    */
-  private async deliverToWebhook(alert: Alert, target: AlertTarget): Promise<void> {
+  private async deliverToWebhook(
+    alert: Alert,
+    target: AlertTarget
+  ): Promise<void> {
     // Mock implementation - would make HTTP POST request
     const payload = {
       alert_id: alert.id,
@@ -508,27 +539,39 @@ class AlertDeliveryEngine {
       message: alert.message,
       rule: alert.rule.name,
       timestamp: alert.timestamps.triggered,
-      details: alert.details
+      details: alert.details,
     };
-    
-    console.log(`[WEBHOOK] Alert ${alert.id} sent to ${target.config.webhook_url}`);
+
+    console.log(
+      `[WEBHOOK] Alert ${alert.id} sent to ${target.config.webhook_url}`
+    );
     console.log(`Payload: ${JSON.stringify(payload, null, 2)}`);
   }
 
   /**
    * Deliver to PagerDuty (mock implementation)
    */
-  private async deliverToPagerDuty(alert: Alert, target: AlertTarget): Promise<void> {
+  private async deliverToPagerDuty(
+    alert: Alert,
+    target: AlertTarget
+  ): Promise<void> {
     // Mock implementation - would use PagerDuty API
-    console.log(`[PAGERDUTY] Alert ${alert.id} sent to service ${target.config.service_key}`);
+    console.log(
+      `[PAGERDUTY] Alert ${alert.id} sent to service ${target.config.service_key}`
+    );
   }
 
   /**
    * Deliver to Microsoft Teams (mock implementation)
    */
-  private async deliverToTeams(alert: Alert, target: AlertTarget): Promise<void> {
+  private async deliverToTeams(
+    alert: Alert,
+    target: AlertTarget
+  ): Promise<void> {
     // Mock implementation - would use Teams webhook
-    console.log(`[TEAMS] Alert ${alert.id} sent to ${target.config.webhook_url}`);
+    console.log(
+      `[TEAMS] Alert ${alert.id} sent to ${target.config.webhook_url}`
+    );
   }
 
   /**
@@ -536,36 +579,40 @@ class AlertDeliveryEngine {
    */
   private formatSlackMessage(alert: Alert): any {
     const color = this.getSeverityColor(alert.severity);
-    
+
     return {
-      attachments: [{
-        color,
-        title: `[${alert.severity.toUpperCase()}] ${alert.rule.name}`,
-        text: alert.message,
-        fields: [
-          {
-            title: 'Metric',
-            value: alert.details.triggeredConditions.map(c => c.metric).join(', '),
-            short: true
-          },
-          {
-            title: 'Value',
-            value: alert.details.actualValue.toString(),
-            short: true
-          },
-          {
-            title: 'Threshold',
-            value: alert.details.threshold.toString(),
-            short: true
-          },
-          {
-            title: 'Duration',
-            value: `${alert.details.duration}s`,
-            short: true
-          }
-        ],
-        timestamp: Math.floor(alert.timestamps.triggered / 1000)
-      }]
+      attachments: [
+        {
+          color,
+          title: `[${alert.severity.toUpperCase()}] ${alert.rule.name}`,
+          text: alert.message,
+          fields: [
+            {
+              title: 'Metric',
+              value: alert.details.triggeredConditions
+                .map(c => c.metric)
+                .join(', '),
+              short: true,
+            },
+            {
+              title: 'Value',
+              value: alert.details.actualValue.toString(),
+              short: true,
+            },
+            {
+              title: 'Threshold',
+              value: alert.details.threshold.toString(),
+              short: true,
+            },
+            {
+              title: 'Duration',
+              value: `${alert.details.duration}s`,
+              short: true,
+            },
+          ],
+          timestamp: Math.floor(alert.timestamps.triggered / 1000),
+        },
+      ],
     };
   }
 
@@ -577,7 +624,7 @@ class AlertDeliveryEngine {
       [AlertSeverity.INFO]: '#36a64f',
       [AlertSeverity.WARNING]: '#ffcc00',
       [AlertSeverity.CRITICAL]: '#ff6600',
-      [AlertSeverity.EMERGENCY]: '#ff0000'
+      [AlertSeverity.EMERGENCY]: '#ff0000',
     };
     return colors[severity];
   }
@@ -592,7 +639,7 @@ class AlertDeliveryEngine {
 
 /**
  * Performance Alerting Engine
- * 
+ *
  * Main engine that orchestrates performance monitoring, alerting,
  * and anomaly detection with intelligent notification management.
  */
@@ -621,21 +668,25 @@ export class PerformanceAlertingEngine {
       name: 'High Response Time',
       description: 'Response time exceeding acceptable thresholds',
       enabled: true,
-      conditions: [{
-        metric: 'response_time',
-        operator: '>',
-        threshold: 2000, // 2 seconds
-        duration: 60, // 1 minute
-        comparison: 'absolute'
-      }],
+      conditions: [
+        {
+          metric: 'response_time',
+          operator: '>',
+          threshold: 2000, // 2 seconds
+          duration: 60, // 1 minute
+          comparison: 'absolute',
+        },
+      ],
       severity: AlertSeverity.WARNING,
       tags: ['performance', 'response-time'],
-      targets: [{
-        type: 'webhook',
-        config: { webhook_url: 'http://localhost:3000/alerts' },
-        enabled: true
-      }],
-      cooldown: 10
+      targets: [
+        {
+          type: 'webhook',
+          config: { webhook_url: 'http://localhost:3000/alerts' },
+          enabled: true,
+        },
+      ],
+      cooldown: 10,
     });
 
     // High error rate alert
@@ -644,21 +695,25 @@ export class PerformanceAlertingEngine {
       name: 'High Error Rate',
       description: 'Error rate exceeding acceptable thresholds',
       enabled: true,
-      conditions: [{
-        metric: 'error_rate',
-        operator: '>',
-        threshold: 5, // 5%
-        duration: 120, // 2 minutes
-        comparison: 'percentage'
-      }],
+      conditions: [
+        {
+          metric: 'error_rate',
+          operator: '>',
+          threshold: 5, // 5%
+          duration: 120, // 2 minutes
+          comparison: 'percentage',
+        },
+      ],
       severity: AlertSeverity.CRITICAL,
       tags: ['reliability', 'errors'],
-      targets: [{
-        type: 'webhook',
-        config: { webhook_url: 'http://localhost:3000/alerts' },
-        enabled: true
-      }],
-      cooldown: 5
+      targets: [
+        {
+          type: 'webhook',
+          config: { webhook_url: 'http://localhost:3000/alerts' },
+          enabled: true,
+        },
+      ],
+      cooldown: 5,
     });
 
     // High CPU usage alert
@@ -667,21 +722,25 @@ export class PerformanceAlertingEngine {
       name: 'High CPU Usage',
       description: 'CPU usage exceeding safe operating levels',
       enabled: true,
-      conditions: [{
-        metric: 'cpu_usage',
-        operator: '>',
-        threshold: 80, // 80%
-        duration: 300, // 5 minutes
-        comparison: 'percentage'
-      }],
+      conditions: [
+        {
+          metric: 'cpu_usage',
+          operator: '>',
+          threshold: 80, // 80%
+          duration: 300, // 5 minutes
+          comparison: 'percentage',
+        },
+      ],
       severity: AlertSeverity.WARNING,
       tags: ['system', 'cpu'],
-      targets: [{
-        type: 'webhook',
-        config: { webhook_url: 'http://localhost:3000/alerts' },
-        enabled: true
-      }],
-      cooldown: 15
+      targets: [
+        {
+          type: 'webhook',
+          config: { webhook_url: 'http://localhost:3000/alerts' },
+          enabled: true,
+        },
+      ],
+      cooldown: 15,
     });
 
     // Anomaly detection alert
@@ -690,21 +749,25 @@ export class PerformanceAlertingEngine {
       name: 'Performance Anomaly Detected',
       description: 'Statistical anomaly detected in system performance',
       enabled: true,
-      conditions: [{
-        metric: 'response_time',
-        operator: 'anomaly',
-        threshold: 0.7, // Anomaly score threshold
-        duration: 60,
-        comparison: 'baseline'
-      }],
+      conditions: [
+        {
+          metric: 'response_time',
+          operator: 'anomaly',
+          threshold: 0.7, // Anomaly score threshold
+          duration: 60,
+          comparison: 'baseline',
+        },
+      ],
       severity: AlertSeverity.INFO,
       tags: ['anomaly', 'ml'],
-      targets: [{
-        type: 'webhook',
-        config: { webhook_url: 'http://localhost:3000/alerts' },
-        enabled: true
-      }],
-      cooldown: 30
+      targets: [
+        {
+          type: 'webhook',
+          config: { webhook_url: 'http://localhost:3000/alerts' },
+          enabled: true,
+        },
+      ],
+      cooldown: 30,
     });
   }
 
@@ -740,7 +803,7 @@ export class PerformanceAlertingEngine {
   async processMetrics(metrics: MetricDataPoint[]): Promise<void> {
     // Add to buffer for baseline calculation
     this.metricsBuffer.push(...metrics);
-    
+
     // Maintain buffer size
     if (this.metricsBuffer.length > 10000) {
       this.metricsBuffer = this.metricsBuffer.slice(-5000);
@@ -759,18 +822,23 @@ export class PerformanceAlertingEngine {
   /**
    * Check threshold-based alerts
    */
-  private async checkThresholdAlerts(metrics: MetricDataPoint[]): Promise<void> {
+  private async checkThresholdAlerts(
+    metrics: MetricDataPoint[]
+  ): Promise<void> {
     for (const [ruleId, rule] of this.rules) {
       if (!rule.enabled) continue;
 
-      const relevantMetrics = metrics.filter(m => 
+      const relevantMetrics = metrics.filter(m =>
         rule.conditions.some(c => c.metric === m.metric)
       );
 
       if (relevantMetrics.length === 0) continue;
 
-      const triggeredConditions = this.evaluateConditions(rule.conditions, relevantMetrics);
-      
+      const triggeredConditions = this.evaluateConditions(
+        rule.conditions,
+        relevantMetrics
+      );
+
       if (triggeredConditions.length > 0) {
         await this.triggerAlert(rule, triggeredConditions, relevantMetrics);
       }
@@ -782,27 +850,29 @@ export class PerformanceAlertingEngine {
    */
   private async checkAnomalyAlerts(metrics: MetricDataPoint[]): Promise<void> {
     const anomalies = this.baselineEngine.detectAnomalies(metrics);
-    
+
     for (const anomaly of anomalies) {
       const anomalyRules = Array.from(this.rules.values()).filter(rule =>
-        rule.conditions.some(c => c.operator === 'anomaly' && c.metric === anomaly.metric)
+        rule.conditions.some(
+          c => c.operator === 'anomaly' && c.metric === anomaly.metric
+        )
       );
 
       for (const rule of anomalyRules) {
-        const relevantConditions = rule.conditions.filter(c => 
-          c.operator === 'anomaly' && c.metric === anomaly.metric
+        const relevantConditions = rule.conditions.filter(
+          c => c.operator === 'anomaly' && c.metric === anomaly.metric
         );
 
         // Check if anomaly score exceeds threshold
-        const triggeredConditions = relevantConditions.filter(c =>
-          anomaly.anomalyScore >= c.threshold
+        const triggeredConditions = relevantConditions.filter(
+          c => anomaly.anomalyScore >= c.threshold
         );
 
         if (triggeredConditions.length > 0) {
           const anomalyMetric: MetricDataPoint = {
             metric: anomaly.metric,
             value: anomaly.actualValue,
-            timestamp: anomaly.timestamp
+            timestamp: anomaly.timestamp,
           };
 
           await this.triggerAlert(rule, triggeredConditions, [anomalyMetric]);
@@ -815,13 +885,15 @@ export class PerformanceAlertingEngine {
    * Evaluate alert conditions
    */
   private evaluateConditions(
-    conditions: AlertCondition[], 
+    conditions: AlertCondition[],
     metrics: MetricDataPoint[]
   ): AlertCondition[] {
     const triggered: AlertCondition[] = [];
 
     for (const condition of conditions) {
-      const relevantMetrics = metrics.filter(m => m.metric === condition.metric);
+      const relevantMetrics = metrics.filter(
+        m => m.metric === condition.metric
+      );
       if (relevantMetrics.length === 0) continue;
 
       const currentValue = this.aggregateMetricValue(relevantMetrics);
@@ -840,12 +912,18 @@ export class PerformanceAlertingEngine {
    */
   private evaluateCondition(condition: AlertCondition, value: number): boolean {
     switch (condition.operator) {
-      case '>': return value > condition.threshold;
-      case '<': return value < condition.threshold;
-      case '>=': return value >= condition.threshold;
-      case '<=': return value <= condition.threshold;
-      case '=': return value === condition.threshold;
-      case '!=': return value !== condition.threshold;
+      case '>':
+        return value > condition.threshold;
+      case '<':
+        return value < condition.threshold;
+      case '>=':
+        return value >= condition.threshold;
+      case '<=':
+        return value <= condition.threshold;
+      case '=':
+        return value === condition.threshold;
+      case '!=':
+        return value !== condition.threshold;
       case 'change':
         // Would implement change detection logic
         return false;
@@ -863,7 +941,7 @@ export class PerformanceAlertingEngine {
   private aggregateMetricValue(metrics: MetricDataPoint[]): number {
     if (metrics.length === 0) return 0;
     if (metrics.length === 1) return metrics[0].value;
-    
+
     // Use average for multiple values
     return metrics.reduce((sum, m) => sum + m.value, 0) / metrics.length;
   }
@@ -881,7 +959,7 @@ export class PerformanceAlertingEngine {
     const cooldownMs = rule.cooldown * 60 * 1000;
 
     // Check cooldown
-    if (lastAlert && (now - lastAlert) < cooldownMs) {
+    if (lastAlert && now - lastAlert < cooldownMs) {
       return;
     }
 
@@ -898,15 +976,15 @@ export class PerformanceAlertingEngine {
         metricValues: metrics,
         threshold: triggeredConditions[0]?.threshold || 0,
         actualValue: this.aggregateMetricValue(metrics),
-        duration: triggeredConditions[0]?.duration || 0
+        duration: triggeredConditions[0]?.duration || 0,
       },
       timestamps: {
-        triggered: now
+        triggered: now,
       },
       escalationLevel: 0,
       acknowledgments: [],
       tags: rule.tags,
-      metadata: rule.metadata
+      metadata: rule.metadata,
     };
 
     // Store alert
@@ -929,7 +1007,7 @@ export class PerformanceAlertingEngine {
   ): string {
     const condition = conditions[0];
     const value = this.aggregateMetricValue(metrics);
-    
+
     return `${rule.name}: ${condition.metric} is ${value.toFixed(2)} (threshold: ${condition.threshold})`;
   }
 
@@ -948,7 +1026,7 @@ export class PerformanceAlertingEngine {
       userId,
       timestamp: Date.now(),
       message,
-      action: 'acknowledge'
+      action: 'acknowledge',
     });
 
     console.log(`[ALERT] Alert ${alertId} acknowledged by ${userId}`);
@@ -968,7 +1046,7 @@ export class PerformanceAlertingEngine {
       userId,
       timestamp: Date.now(),
       message,
-      action: 'resolve'
+      action: 'resolve',
     });
 
     console.log(`[ALERT] Alert ${alertId} resolved by ${userId}`);
@@ -979,16 +1057,19 @@ export class PerformanceAlertingEngine {
    * Get active alerts
    */
   getActiveAlerts(): Alert[] {
-    return Array.from(this.alerts.values()).filter(a => a.status === AlertStatus.ACTIVE);
+    return Array.from(this.alerts.values()).filter(
+      a => a.status === AlertStatus.ACTIVE
+    );
   }
 
   /**
    * Get all alerts
    */
   getAllAlerts(limit?: number): Alert[] {
-    const alerts = Array.from(this.alerts.values())
-      .sort((a, b) => b.timestamps.triggered - a.timestamps.triggered);
-    
+    const alerts = Array.from(this.alerts.values()).sort(
+      (a, b) => b.timestamps.triggered - a.timestamps.triggered
+    );
+
     return limit ? alerts.slice(0, limit) : alerts;
   }
 
@@ -1035,10 +1116,13 @@ export class PerformanceAlertingEngine {
     const activeAlerts = allAlerts.filter(a => a.status === AlertStatus.ACTIVE);
     const enabledRules = Array.from(this.rules.values()).filter(r => r.enabled);
 
-    const alertsBySeverity = allAlerts.reduce((acc, alert) => {
-      acc[alert.severity] = (acc[alert.severity] || 0) + 1;
-      return acc;
-    }, {} as Record<AlertSeverity, number>);
+    const alertsBySeverity = allAlerts.reduce(
+      (acc, alert) => {
+        acc[alert.severity] = (acc[alert.severity] || 0) + 1;
+        return acc;
+      },
+      {} as Record<AlertSeverity, number>
+    );
 
     // Initialize missing severities
     Object.values(AlertSeverity).forEach(severity => {
@@ -1053,7 +1137,7 @@ export class PerformanceAlertingEngine {
       activeAlerts: activeAlerts.length,
       totalAlerts: allAlerts.length,
       alertsBySevierty: alertsBySeverity,
-      recentAnomalies: 0 // Would track recent anomalies
+      recentAnomalies: 0, // Would track recent anomalies
     };
   }
 

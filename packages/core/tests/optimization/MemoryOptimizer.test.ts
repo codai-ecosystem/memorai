@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { OptimizationConfig } from '../../src/optimization/MemoryOptimizer';
 import { MemoryOptimizer } from '../../src/optimization/MemoryOptimizer';
-import type { OptimizationConfig, MemoryStats } from '../../src/optimization/MemoryOptimizer';
 import type { VectorStore } from '../../src/vector/VectorStore';
 
 // Mock vector store
@@ -21,9 +21,9 @@ describe('MemoryOptimizer', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     mockVectorStore = createMockVectorStore();
-    
+
     optimizationConfig = {
       maxMemoryAge: 30, // 30 days
       maxMemoryCount: 1000,
@@ -82,18 +82,18 @@ describe('MemoryOptimizer', () => {
 
     it('should handle concurrent optimization attempts by returning current stats', async () => {
       // Start first optimization - use a slow mock to ensure overlap
-      vi.mocked(mockVectorStore.count).mockImplementation(() => 
-        new Promise(resolve => setTimeout(() => resolve(0), 50))
+      vi.mocked(mockVectorStore.count).mockImplementation(
+        () => new Promise(resolve => setTimeout(() => resolve(0), 50))
       );
 
       const firstOptimization = optimizer.optimize('tenant-1');
-      
+
       // Immediately try second optimization while first is running
       // Should return stats instead of throwing (actual behavior)
       const secondResult = await optimizer.optimize('tenant-1');
       expect(secondResult).toBeDefined();
       expect(secondResult).toHaveProperty('totalMemories');
-      
+
       // Wait for first optimization to complete
       await firstOptimization;
     });
@@ -137,7 +137,7 @@ describe('MemoryOptimizer', () => {
   describe('Caching System', () => {
     it('should cache and retrieve data', () => {
       const testData = { test: 'data' };
-      
+
       optimizer.setCachedData('test-key', testData);
       const retrieved = optimizer.getCachedData('test-key');
 
@@ -157,17 +157,17 @@ describe('MemoryOptimizer', () => {
       });
 
       shortTtlOptimizer.setCachedData('test-key', { test: 'data' });
-      
+
       // Wait for cache to expire
       await new Promise(resolve => setTimeout(resolve, 10));
-      
+
       const retrieved = shortTtlOptimizer.getCachedData('test-key');
       expect(retrieved).toBeNull();
     });
 
     it('should not clear cache (no public method)', () => {
       optimizer.setCachedData('test-key', { test: 'data' });
-      
+
       // Cache can't be cleared via public API, only expires via TTL
       const retrieved = optimizer.getCachedData('test-key');
       expect(retrieved).toEqual({ test: 'data' });
@@ -187,14 +187,17 @@ describe('MemoryOptimizer', () => {
         batchSize: 500,
       };
 
-      const customOptimizer = new MemoryOptimizer(mockVectorStore, customConfig);
+      const customOptimizer = new MemoryOptimizer(
+        mockVectorStore,
+        customConfig
+      );
       expect(customOptimizer).toBeDefined();
     });
 
     it('should not expose configuration via public API', () => {
       // Configuration is private, we can only test through behavior
       expect(optimizer).toBeDefined();
-      
+
       // Test that configuration affects behavior by using different configs
       const customOptimizer = new MemoryOptimizer(mockVectorStore, {
         maxMemoryAge: 60,
@@ -208,7 +211,9 @@ describe('MemoryOptimizer', () => {
   describe('Error Handling', () => {
     it('should complete optimization despite errors in placeholder implementation', async () => {
       // Since getAllMemories is placeholder returning empty array, vector store errors won't propagate
-      vi.mocked(mockVectorStore.count).mockRejectedValue(new Error('Vector store error'));
+      vi.mocked(mockVectorStore.count).mockRejectedValue(
+        new Error('Vector store error')
+      );
 
       // Optimization will still complete since it doesn't actually use vectorStore.count
       const stats = await optimizer.optimize('tenant-1');
@@ -216,7 +221,9 @@ describe('MemoryOptimizer', () => {
     });
 
     it('should handle delete operation errors gracefully', async () => {
-      vi.mocked(mockVectorStore.delete).mockRejectedValue(new Error('Delete failed'));
+      vi.mocked(mockVectorStore.delete).mockRejectedValue(
+        new Error('Delete failed')
+      );
 
       // Should not throw but handle the error internally
       const stats = await optimizer.optimize('tenant-1');
@@ -225,7 +232,9 @@ describe('MemoryOptimizer', () => {
 
     it('should handle vector store health through optimization behavior', async () => {
       // Test that optimization completes regardless of vector store state
-      vi.mocked(mockVectorStore.count).mockRejectedValue(new Error('Vector store unavailable'));
+      vi.mocked(mockVectorStore.count).mockRejectedValue(
+        new Error('Vector store unavailable')
+      );
 
       // Due to placeholder implementation, optimization will still complete
       const stats = await optimizer.optimize('tenant-1');
@@ -245,7 +254,9 @@ describe('MemoryOptimizer', () => {
     });
 
     it('should handle vector store failures gracefully in current implementation', async () => {
-      vi.mocked(mockVectorStore.count).mockRejectedValue(new Error('Vector store unhealthy'));
+      vi.mocked(mockVectorStore.count).mockRejectedValue(
+        new Error('Vector store unhealthy')
+      );
 
       // Current placeholder implementation doesn't propagate vector store errors
       const stats = await optimizer.optimize('tenant-1');

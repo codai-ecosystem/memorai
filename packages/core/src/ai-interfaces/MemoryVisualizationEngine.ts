@@ -1,7 +1,7 @@
 /**
  * 🎨 Memory Visualization Excellence Engine
  * Advanced visualization components for memory exploration and analysis
- * 
+ *
  * Features:
  * - 3D memory network visualization
  * - Timeline-based memory exploration
@@ -9,7 +9,7 @@
  * - Interactive relationship mapping
  * - Memory flow animations
  * - Multi-dimensional data visualization
- * 
+ *
  * @version 3.2.0
  * @author Memorai AI Team
  */
@@ -74,7 +74,12 @@ interface VisualizationConfig {
   enableInteractions: boolean;
   theme: 'light' | 'dark' | 'auto';
   colorScheme: 'semantic' | 'temporal' | 'importance' | 'custom';
-  layoutAlgorithm: 'force-directed' | 'hierarchical' | 'circular' | 'timeline' | 'semantic-clustering';
+  layoutAlgorithm:
+    | 'force-directed'
+    | 'hierarchical'
+    | 'circular'
+    | 'timeline'
+    | 'semantic-clustering';
   renderQuality: 'low' | 'medium' | 'high' | 'ultra';
 }
 
@@ -163,19 +168,24 @@ class MemoryNetwork3DVisualizer {
       size: this.calculateNodeSize(memory),
       color: this.calculateNodeColor(memory),
       importance: this.calculateImportance(memory),
-      connections: []
+      connections: [],
     };
 
     this.nodes.set(node.id, node);
     this.updateLayout();
-    
+
     return node;
   }
 
   /**
    * Add connection between memories
    */
-  addMemoryConnection(sourceId: string, targetId: string, type: MemoryEdge['type'], weight: number = 1): MemoryEdge {
+  addMemoryConnection(
+    sourceId: string,
+    targetId: string,
+    type: MemoryEdge['type'],
+    weight: number = 1
+  ): MemoryEdge {
     const edge: MemoryEdge = {
       id: uuidv4(),
       sourceId,
@@ -184,15 +194,15 @@ class MemoryNetwork3DVisualizer {
       type,
       metadata: {},
       color: this.getEdgeColor(type),
-      animated: type === 'causal' || type === 'reference'
+      animated: type === 'causal' || type === 'reference',
     };
 
     this.edges.set(edge.id, edge);
-    
+
     // Update node connections
     const sourceNode = this.nodes.get(sourceId);
     const targetNode = this.nodes.get(targetId);
-    
+
     if (sourceNode && !sourceNode.connections.includes(targetId)) {
       sourceNode.connections.push(targetId);
     }
@@ -201,7 +211,7 @@ class MemoryNetwork3DVisualizer {
     }
 
     this.updateLayout();
-    
+
     return edge;
   }
 
@@ -247,7 +257,7 @@ class MemoryNetwork3DVisualizer {
       nodes: Array.from(this.nodes.values()),
       edges: Array.from(this.edges.values()),
       clusters: Array.from(this.clusters.values()),
-      metrics: this.calculateMetrics()
+      metrics: this.calculateMetrics(),
     };
   }
 
@@ -259,7 +269,8 @@ class MemoryNetwork3DVisualizer {
     if (!node) return;
 
     if (this.interactionState.selectedNodes.includes(nodeId)) {
-      this.interactionState.selectedNodes = this.interactionState.selectedNodes.filter(id => id !== nodeId);
+      this.interactionState.selectedNodes =
+        this.interactionState.selectedNodes.filter(id => id !== nodeId);
     } else {
       this.interactionState.selectedNodes.push(nodeId);
     }
@@ -271,7 +282,10 @@ class MemoryNetwork3DVisualizer {
    * Filter memories based on criteria
    */
   applyFilters(filters: Partial<VisualizationFilters>): void {
-    this.interactionState.filters = { ...this.interactionState.filters, ...filters };
+    this.interactionState.filters = {
+      ...this.interactionState.filters,
+      ...filters,
+    };
     this.updateVisibleNodes();
   }
 
@@ -286,15 +300,15 @@ class MemoryNetwork3DVisualizer {
         target: { x: 0, y: 0, z: 0 },
         fov: 45,
         near: 0.1,
-        far: 1000
+        far: 1000,
       },
       filters: {
         dateRange: { start: new Date(0), end: new Date() },
         tags: [],
         importance: { min: 0, max: 1 },
         contentType: [],
-        searchQuery: ''
-      }
+        searchQuery: '',
+      },
     };
   }
 
@@ -302,11 +316,11 @@ class MemoryNetwork3DVisualizer {
     // Simple positioning based on timestamp and content hash
     const timeOffset = new Date(memory.timestamp).getTime() / 1000000;
     const contentHash = this.hashString(memory.content);
-    
+
     return {
       x: (contentHash % 200) - 100,
-      y: (Math.sin(timeOffset) * 50),
-      z: (Math.cos(timeOffset) * 50)
+      y: Math.sin(timeOffset) * 50,
+      z: Math.cos(timeOffset) * 50,
     };
   }
 
@@ -314,8 +328,11 @@ class MemoryNetwork3DVisualizer {
     const contentLength = memory.content.length;
     const tagCount = (memory.tags || []).length;
     const importance = this.calculateImportance(memory);
-    
-    return Math.max(5, Math.min(20, contentLength / 10 + tagCount * 2 + importance * 10));
+
+    return Math.max(
+      5,
+      Math.min(20, contentLength / 10 + tagCount * 2 + importance * 10)
+    );
   }
 
   private calculateNodeColor(memory: any): ColorRGB {
@@ -333,22 +350,22 @@ class MemoryNetwork3DVisualizer {
 
   private calculateImportance(memory: any): number {
     let importance = 0.5; // Base importance
-    
+
     // Content length factor
     importance += Math.min(0.3, memory.content.length / 1000);
-    
+
     // Tag count factor
     importance += Math.min(0.2, (memory.tags || []).length / 10);
-    
+
     // Metadata richness
     importance += Math.min(0.1, Object.keys(memory.metadata || {}).length / 20);
-    
+
     return Math.min(1, importance);
   }
 
   private getSemanticColor(content: string): ColorRGB {
     const hash = this.hashString(content);
-    const hue = (hash % 360);
+    const hue = hash % 360;
     return this.hslToRgb({ h: hue, s: 70, l: 60 });
   }
 
@@ -357,12 +374,12 @@ class MemoryNetwork3DVisualizer {
     const age = now - timestamp.getTime();
     const maxAge = 365 * 24 * 60 * 60 * 1000; // 1 year
     const ratio = Math.min(1, age / maxAge);
-    
+
     // Blue (new) to red (old)
     return {
       r: Math.floor(255 * ratio),
       g: 100,
-      b: Math.floor(255 * (1 - ratio))
+      b: Math.floor(255 * (1 - ratio)),
     };
   }
 
@@ -371,7 +388,7 @@ class MemoryNetwork3DVisualizer {
     return {
       r: Math.floor(255 * importance),
       g: Math.floor(255 * (1 - importance)),
-      b: 50
+      b: 50,
     };
   }
 
@@ -381,13 +398,16 @@ class MemoryNetwork3DVisualizer {
       temporal: { r: 200, g: 200, b: 100 },
       causal: { r: 200, g: 100, b: 100 },
       reference: { r: 100, g: 100, b: 200 },
-      tag: { r: 150, g: 150, b: 150 }
+      tag: { r: 150, g: 150, b: 150 },
     };
-    
+
     return colors[type] || { r: 128, g: 128, b: 128 };
   }
 
-  private findSemanticCluster(startNodeId: string, processedNodes: Set<string>): MemoryCluster {
+  private findSemanticCluster(
+    startNodeId: string,
+    processedNodes: Set<string>
+  ): MemoryCluster {
     const clusterMemories = [startNodeId];
     const queue = [startNodeId];
     processedNodes.add(startNodeId);
@@ -399,7 +419,10 @@ class MemoryNetwork3DVisualizer {
 
       for (const connectedId of currentNode.connections) {
         if (!processedNodes.has(connectedId)) {
-          const semanticSimilarity = this.calculateSemanticSimilarity(currentId, connectedId);
+          const semanticSimilarity = this.calculateSemanticSimilarity(
+            currentId,
+            connectedId
+          );
           if (semanticSimilarity > 0.5) {
             clusterMemories.push(connectedId);
             queue.push(connectedId);
@@ -420,30 +443,39 @@ class MemoryNetwork3DVisualizer {
       color: this.getSemanticColor(topic),
       size: clusterMemories.length * 5,
       semanticTopic: topic,
-      confidence: 0.8
+      confidence: 0.8,
     };
   }
 
-  private calculateSemanticSimilarity(nodeId1: string, nodeId2: string): number {
+  private calculateSemanticSimilarity(
+    nodeId1: string,
+    nodeId2: string
+  ): number {
     const node1 = this.nodes.get(nodeId1);
     const node2 = this.nodes.get(nodeId2);
     if (!node1 || !node2) return 0;
 
     // Simple semantic similarity based on shared tags and content overlap
     const sharedTags = node1.tags.filter(tag => node2.tags.includes(tag));
-    const tagSimilarity = sharedTags.length / Math.max(node1.tags.length, node2.tags.length, 1);
-    
+    const tagSimilarity =
+      sharedTags.length / Math.max(node1.tags.length, node2.tags.length, 1);
+
     const words1 = node1.content.toLowerCase().split(/\W+/);
     const words2 = node2.content.toLowerCase().split(/\W+/);
-    const sharedWords = words1.filter(word => words2.includes(word) && word.length > 3);
-    const wordSimilarity = sharedWords.length / Math.max(words1.length, words2.length, 1);
-    
-    return (tagSimilarity * 0.6 + wordSimilarity * 0.4);
+    const sharedWords = words1.filter(
+      word => words2.includes(word) && word.length > 3
+    );
+    const wordSimilarity =
+      sharedWords.length / Math.max(words1.length, words2.length, 1);
+
+    return tagSimilarity * 0.6 + wordSimilarity * 0.4;
   }
 
   private calculateCentroid(nodeIds: string[]): Vector3D {
-    const positions = nodeIds.map(id => this.nodes.get(id)?.position).filter(Boolean) as Vector3D[];
-    
+    const positions = nodeIds
+      .map(id => this.nodes.get(id)?.position)
+      .filter(Boolean) as Vector3D[];
+
     if (positions.length === 0) {
       return { x: 0, y: 0, z: 0 };
     }
@@ -452,7 +484,7 @@ class MemoryNetwork3DVisualizer {
       (acc, pos) => ({
         x: acc.x + pos.x,
         y: acc.y + pos.y,
-        z: acc.z + pos.z
+        z: acc.z + pos.z,
       }),
       { x: 0, y: 0, z: 0 }
     );
@@ -460,17 +492,20 @@ class MemoryNetwork3DVisualizer {
     return {
       x: sum.x / positions.length,
       y: sum.y / positions.length,
-      z: sum.z / positions.length
+      z: sum.z / positions.length,
     };
   }
 
   private extractSemanticTopic(nodeIds: string[]): string {
     const allWords: string[] = [];
-    
+
     nodeIds.forEach(id => {
       const node = this.nodes.get(id);
       if (node) {
-        const words = node.content.toLowerCase().split(/\W+/).filter(word => word.length > 3);
+        const words = node.content
+          .toLowerCase()
+          .split(/\W+/)
+          .filter(word => word.length > 3);
         allWords.push(...words);
       }
     });
@@ -504,14 +539,14 @@ class MemoryNetwork3DVisualizer {
         const node1 = nodes[i];
         const node2 = nodes[j];
         const force = this.calculateRepulsionForce(node1, node2);
-        
+
         const force1 = forces.get(node1.id)!;
         const force2 = forces.get(node2.id)!;
-        
+
         force1.x += force.x;
         force1.y += force.y;
         force1.z += force.z;
-        
+
         force2.x -= force.x;
         force2.y -= force.y;
         force2.z -= force.z;
@@ -522,17 +557,21 @@ class MemoryNetwork3DVisualizer {
     this.edges.forEach(edge => {
       const sourceNode = this.nodes.get(edge.sourceId);
       const targetNode = this.nodes.get(edge.targetId);
-      
+
       if (sourceNode && targetNode) {
-        const force = this.calculateAttractionForce(sourceNode, targetNode, edge.weight);
-        
+        const force = this.calculateAttractionForce(
+          sourceNode,
+          targetNode,
+          edge.weight
+        );
+
         const sourceForce = forces.get(sourceNode.id)!;
         const targetForce = forces.get(targetNode.id)!;
-        
+
         sourceForce.x += force.x;
         sourceForce.y += force.y;
         sourceForce.z += force.z;
-        
+
         targetForce.x -= force.x;
         targetForce.y -= force.y;
         targetForce.z -= force.z;
@@ -543,50 +582,57 @@ class MemoryNetwork3DVisualizer {
     nodes.forEach(node => {
       const force = forces.get(node.id)!;
       const damping = 0.9;
-      
+
       node.position.x += force.x * damping;
       node.position.y += force.y * damping;
       node.position.z += force.z * damping;
     });
   }
 
-  private calculateRepulsionForce(node1: MemoryNode, node2: MemoryNode): Vector3D {
+  private calculateRepulsionForce(
+    node1: MemoryNode,
+    node2: MemoryNode
+  ): Vector3D {
     const dx = node1.position.x - node2.position.x;
     const dy = node1.position.y - node2.position.y;
     const dz = node1.position.z - node2.position.z;
-    
+
     const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
     const minDistance = 10;
-    
+
     if (distance < minDistance) {
       const force = (minDistance - distance) * 0.1;
       const magnitude = force / (distance || 1);
-      
+
       return {
         x: dx * magnitude,
         y: dy * magnitude,
-        z: dz * magnitude
+        z: dz * magnitude,
       };
     }
-    
+
     return { x: 0, y: 0, z: 0 };
   }
 
-  private calculateAttractionForce(sourceNode: MemoryNode, targetNode: MemoryNode, weight: number): Vector3D {
+  private calculateAttractionForce(
+    sourceNode: MemoryNode,
+    targetNode: MemoryNode,
+    weight: number
+  ): Vector3D {
     const dx = targetNode.position.x - sourceNode.position.x;
     const dy = targetNode.position.y - sourceNode.position.y;
     const dz = targetNode.position.z - sourceNode.position.z;
-    
+
     const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
     const idealDistance = 50;
-    
+
     const force = (distance - idealDistance) * weight * 0.01;
     const magnitude = force / (distance || 1);
-    
+
     return {
       x: dx * magnitude,
       y: dy * magnitude,
-      z: dz * magnitude
+      z: dz * magnitude,
     };
   }
 
@@ -611,7 +657,7 @@ class MemoryNetwork3DVisualizer {
       clusterCount: this.clusters.size,
       renderTime: 16, // Placeholder
       interactionLatency: 5, // Placeholder
-      memoryUsage: 0 // Placeholder
+      memoryUsage: 0, // Placeholder
     };
   }
 
@@ -619,7 +665,7 @@ class MemoryNetwork3DVisualizer {
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
       const char = str.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
+      hash = (hash << 5) - hash + char;
       hash = hash & hash; // Convert to 32-bit integer
     }
     return Math.abs(hash);
@@ -633,9 +679,9 @@ class MemoryNetwork3DVisualizer {
     const hue2rgb = (p: number, q: number, t: number) => {
       if (t < 0) t += 1;
       if (t > 1) t -= 1;
-      if (t < 1/6) return p + (q - p) * 6 * t;
-      if (t < 1/2) return q;
-      if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+      if (t < 1 / 6) return p + (q - p) * 6 * t;
+      if (t < 1 / 2) return q;
+      if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
       return p;
     };
 
@@ -646,15 +692,15 @@ class MemoryNetwork3DVisualizer {
     } else {
       const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
       const p = 2 * l - q;
-      r = hue2rgb(p, q, h + 1/3);
+      r = hue2rgb(p, q, h + 1 / 3);
       g = hue2rgb(p, q, h);
-      b = hue2rgb(p, q, h - 1/3);
+      b = hue2rgb(p, q, h - 1 / 3);
     }
 
     return {
       r: Math.round(r * 255),
       g: Math.round(g * 255),
-      b: Math.round(b * 255)
+      b: Math.round(b * 255),
     };
   }
 }
@@ -690,42 +736,45 @@ class TimelineMemoryExplorer {
   } {
     const memoriesArray = Array.from(this.memories.values());
     const timestamps = memoriesArray.map(m => new Date(m.timestamp));
-    
+
     return {
       memories: memoriesArray,
       markers: Array.from(this.markers.values()),
       timeRange: {
         start: new Date(Math.min(...timestamps.map(t => t.getTime()))),
-        end: new Date(Math.max(...timestamps.map(t => t.getTime())))
-      }
+        end: new Date(Math.max(...timestamps.map(t => t.getTime()))),
+      },
     };
   }
 
   /**
    * Group memories by time periods
    */
-  groupByTimePeriod(period: 'hour' | 'day' | 'week' | 'month' | 'year'): Map<string, any[]> {
+  groupByTimePeriod(
+    period: 'hour' | 'day' | 'week' | 'month' | 'year'
+  ): Map<string, any[]> {
     const groups = new Map<string, any[]>();
-    
+
     this.memories.forEach(memory => {
       const timestamp = new Date(memory.timestamp);
       const key = this.getTimePeriodKey(timestamp, period);
-      
+
       if (!groups.has(key)) {
         groups.set(key, []);
       }
       groups.get(key)!.push(memory);
     });
-    
+
     return groups;
   }
 
   private updateTimelineMarkers(): void {
     // Create markers for significant time periods
     const groups = this.groupByTimePeriod('day');
-    
+
     groups.forEach((memories, dateKey) => {
-      if (memories.length > 3) { // Significant day
+      if (memories.length > 3) {
+        // Significant day
         const marker: TimelineMarker = {
           id: uuidv4(),
           timestamp: new Date(dateKey),
@@ -733,9 +782,9 @@ class TimelineMemoryExplorer {
           description: `Significant memory activity with ${memories.length} entries`,
           memories: memories.map(m => m.id),
           color: { r: 255, g: 200, b: 100 },
-          importance: Math.min(1, memories.length / 10)
+          importance: Math.min(1, memories.length / 10),
         };
-        
+
         this.markers.set(marker.id, marker);
       }
     });
@@ -746,7 +795,7 @@ class TimelineMemoryExplorer {
     const month = timestamp.getMonth();
     const day = timestamp.getDate();
     const hour = timestamp.getHours();
-    
+
     switch (period) {
       case 'hour':
         return `${year}-${month}-${day}-${hour}`;
@@ -778,7 +827,7 @@ export class MemoryVisualizationEngine extends EventEmitter {
 
   constructor(config: VisualizationConfig) {
     super();
-    
+
     this.config = config;
     this.network3D = new MemoryNetwork3DVisualizer(config);
     this.timeline = new TimelineMemoryExplorer(config);
@@ -789,18 +838,20 @@ export class MemoryVisualizationEngine extends EventEmitter {
    */
   async initialize(): Promise<void> {
     if (this.isInitialized) return;
-    
+
     try {
       // Setup visualization components
       this.isInitialized = true;
-      
+
       this.emit('visualization_initialized', {
         config: this.config,
-        timestamp: new Date()
+        timestamp: new Date(),
       });
-      
     } catch (error) {
-      this.emit('error', new Error(`Failed to initialize visualization: ${error}`));
+      this.emit(
+        'error',
+        new Error(`Failed to initialize visualization: ${error}`)
+      );
       throw error;
     }
   }
@@ -815,26 +866,36 @@ export class MemoryVisualizationEngine extends EventEmitter {
 
     // Add to 3D network
     const node = this.network3D.addMemoryNode(memory);
-    
+
     // Add to timeline
     this.timeline.addMemory(memory);
-    
+
     this.emit('memory_added', {
       memoryId: memory.id,
       node,
-      timestamp: new Date()
+      timestamp: new Date(),
     });
   }
 
   /**
    * Create connections between memories
    */
-  createMemoryConnection(sourceId: string, targetId: string, type: MemoryEdge['type'], weight: number = 1): void {
-    const edge = this.network3D.addMemoryConnection(sourceId, targetId, type, weight);
-    
+  createMemoryConnection(
+    sourceId: string,
+    targetId: string,
+    type: MemoryEdge['type'],
+    weight: number = 1
+  ): void {
+    const edge = this.network3D.addMemoryConnection(
+      sourceId,
+      targetId,
+      type,
+      weight
+    );
+
     this.emit('connection_created', {
       edge,
-      timestamp: new Date()
+      timestamp: new Date(),
     });
   }
 
@@ -853,7 +914,7 @@ export class MemoryVisualizationEngine extends EventEmitter {
   } {
     const network3DData = this.network3D.getVisualizationData();
     const timelineData = this.timeline.getTimelineData();
-    
+
     return {
       network3D: network3DData,
       timeline: timelineData,
@@ -861,8 +922,8 @@ export class MemoryVisualizationEngine extends EventEmitter {
         totalMemories: network3DData.nodes.length,
         totalConnections: network3DData.edges.length,
         visualizationQuality: this.config.renderQuality,
-        lastUpdated: new Date()
-      }
+        lastUpdated: new Date(),
+      },
     };
   }
 
@@ -871,13 +932,13 @@ export class MemoryVisualizationEngine extends EventEmitter {
    */
   createSemanticClusters(): MemoryCluster[] {
     const clusters = this.network3D.createSemanticClusters();
-    
+
     this.emit('clusters_created', {
       clusterCount: clusters.length,
       clusters,
-      timestamp: new Date()
+      timestamp: new Date(),
     });
-    
+
     return clusters;
   }
 
@@ -886,10 +947,10 @@ export class MemoryVisualizationEngine extends EventEmitter {
    */
   applyFilters(filters: Partial<VisualizationFilters>): void {
     this.network3D.applyFilters(filters);
-    
+
     this.emit('filters_applied', {
       filters,
-      timestamp: new Date()
+      timestamp: new Date(),
     });
   }
 
@@ -910,11 +971,11 @@ export class MemoryVisualizationEngine extends EventEmitter {
         // Handle zoom interactions
         break;
     }
-    
+
     this.emit('interaction', {
       type,
       data,
-      timestamp: new Date()
+      timestamp: new Date(),
     });
   }
 
@@ -923,7 +984,7 @@ export class MemoryVisualizationEngine extends EventEmitter {
    */
   exportVisualization(format: 'json' | 'svg' | 'png'): any {
     const data = this.generateVisualizationData();
-    
+
     switch (format) {
       case 'json':
         return JSON.stringify(data, null, 2);
@@ -950,27 +1011,27 @@ export class MemoryVisualizationEngine extends EventEmitter {
    */
   updateConfiguration(newConfig: Partial<VisualizationConfig>): void {
     this.config = { ...this.config, ...newConfig };
-    
+
     this.emit('configuration_updated', {
       config: this.config,
-      timestamp: new Date()
+      timestamp: new Date(),
     });
   }
 }
 
 // Export types for external use
 export type {
-  MemoryNode,
-  MemoryEdge,
+  CameraState,
+  ColorHSL,
+  ColorRGB,
+  InteractionState,
   MemoryCluster,
+  MemoryEdge,
+  MemoryNode,
   TimelineMarker,
+  Vector2D,
+  Vector3D,
   VisualizationConfig,
   VisualizationFilters,
   VisualizationMetrics,
-  Vector3D,
-  Vector2D,
-  ColorRGB,
-  ColorHSL,
-  InteractionState,
-  CameraState
 };

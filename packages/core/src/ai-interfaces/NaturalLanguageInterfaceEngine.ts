@@ -275,10 +275,12 @@ export class NaturalLanguageInterfaceEngine extends EventEmitter {
       // Step 4: Update conversation context
       context.conversationHistory.push(message);
       context.currentIntent = intent;
-      context.extractedEntities = entitiesToEntityMap(this.mergeEntities(
-        entityMapToEntities(context.extractedEntities),
-        entities
-      ));
+      context.extractedEntities = entitiesToEntityMap(
+        this.mergeEntities(
+          entityMapToEntities(context.extractedEntities),
+          entities
+        )
+      );
       await this.updateMemoryContext(context, analysisResult);
 
       // Step 5: Process intent and execute actions
@@ -298,10 +300,7 @@ export class NaturalLanguageInterfaceEngine extends EventEmitter {
       );
 
       // Step 7: Update analytics and learning
-      await this.updateAnalytics(
-        context,
-        response
-      );
+      await this.updateAnalytics(context, response);
 
       // Step 8: Prepare final response
       const nliResponse: NLIResponse = {
@@ -335,7 +334,11 @@ export class NaturalLanguageInterfaceEngine extends EventEmitter {
       return nliResponse;
     } catch (error) {
       this.emit('processingError', { sessionId, userId, error, input });
-      return this.generateErrorResponse(sessionId, input, error instanceof Error ? error : new Error(String(error)));
+      return this.generateErrorResponse(
+        sessionId,
+        input,
+        error instanceof Error ? error : new Error(String(error))
+      );
     }
   }
 
@@ -491,7 +494,7 @@ export class NaturalLanguageInterfaceEngine extends EventEmitter {
         totalConversations: 0,
         averageResponseTime: 0,
         commonIntents: [],
-        satisfactionScore: 0
+        satisfactionScore: 0,
       } as ConversationAnalytics;
     }
     return await this.analyticsService.getConversationAnalytics(
@@ -575,7 +578,7 @@ export class NaturalLanguageInterfaceEngine extends EventEmitter {
         metadata: {},
         action: 'memory_search',
         relatedMemories: [],
-        confidence: 0
+        confidence: 0,
       };
     }
 
@@ -623,7 +626,7 @@ export class NaturalLanguageInterfaceEngine extends EventEmitter {
         metadata: {},
         action: 'memory_create',
         relatedMemories: [],
-        confidence: 0
+        confidence: 0,
       };
     }
 
@@ -666,7 +669,9 @@ export class NaturalLanguageInterfaceEngine extends EventEmitter {
         .map(m => m.intent?.category)
         .filter(Boolean);
 
-      suggestions.push(...(await this.generateIntentBasedSuggestions(recentIntents)));
+      suggestions.push(
+        ...(await this.generateIntentBasedSuggestions(recentIntents))
+      );
     }
 
     // Memory context suggestions
@@ -725,32 +730,43 @@ export class NaturalLanguageInterfaceEngine extends EventEmitter {
   private mergeEntities(existing: Entity[], newEntities: Entity[]): Entity[] {
     const merged = [...existing];
     for (const entity of newEntities) {
-      const existingIndex = merged.findIndex(e => e.type === entity.type && e.value === entity.value);
+      const existingIndex = merged.findIndex(
+        e => e.type === entity.type && e.value === entity.value
+      );
       if (existingIndex === -1) {
         merged.push(entity);
       } else {
         // Merge confidence scores
-        merged[existingIndex].confidence = Math.max(merged[existingIndex].confidence, entity.confidence);
+        merged[existingIndex].confidence = Math.max(
+          merged[existingIndex].confidence,
+          entity.confidence
+        );
       }
     }
     return merged;
   }
 
-  private async updateMemoryContext(context: ConversationContext, analysisResult: any): Promise<void> {
+  private async updateMemoryContext(
+    context: ConversationContext,
+    analysisResult: any
+  ): Promise<void> {
     // Update context with analysis results
     if (analysisResult.memoryReferences) {
       (context as any).memoryReferences = analysisResult.memoryReferences;
     }
   }
 
-  private async updateAnalytics(context: ConversationContext, response: any): Promise<void> {
+  private async updateAnalytics(
+    context: ConversationContext,
+    response: any
+  ): Promise<void> {
     if (this.analyticsService) {
       await (this.analyticsService as any).trackInteraction({
         sessionId: context.sessionId,
         userId: context.userId,
         intent: context.currentIntent,
         response: response,
-        timestamp: new Date()
+        timestamp: new Date(),
       });
     }
   }
@@ -758,58 +774,80 @@ export class NaturalLanguageInterfaceEngine extends EventEmitter {
   private sanitizeContext(context: ConversationContext): ConversationContext {
     return {
       ...context,
-      conversationHistory: context.conversationHistory.slice(-10) // Keep last 10 messages
+      conversationHistory: context.conversationHistory.slice(-10), // Keep last 10 messages
     };
   }
 
-  private generateErrorResponse(sessionId: string, input: string, error: Error): NLIResponse {
+  private generateErrorResponse(
+    sessionId: string,
+    input: string,
+    error: Error
+  ): NLIResponse {
     return {
       sessionId: sessionId || 'error',
       messageId: 'error-' + Date.now(),
-      response: 'I apologize, but I encountered an error processing your request.',
+      response:
+        'I apologize, but I encountered an error processing your request.',
       intent: 'error',
       entities: [],
       suggestions: [],
-      metadata: { timestamp: new Date().toISOString() }
+      metadata: { timestamp: new Date().toISOString() },
     };
   }
 
-  private async generateInputSuggestions(input: string, context: ConversationContext): Promise<string[]> {
+  private async generateInputSuggestions(
+    input: string,
+    context: ConversationContext
+  ): Promise<string[]> {
     // Generate suggestions based on partial input
     const suggestions = [
       'Find memories about...',
       'What happened last...',
       'Show me information about...',
-      'Create a memory for...'
+      'Create a memory for...',
     ];
-    return suggestions.filter(s => s.toLowerCase().includes(input.toLowerCase()));
+    return suggestions.filter(s =>
+      s.toLowerCase().includes(input.toLowerCase())
+    );
   }
 
-  private async generateMemorySuggestions(context: ConversationContext): Promise<string[]> {
+  private async generateMemorySuggestions(
+    context: ConversationContext
+  ): Promise<string[]> {
     if (!this.memoryService) return [];
-    
+
     try {
       // Get recent memories as suggestions
       const recentMemories = await this.memoryService.search('', 'demo-user');
-      return recentMemories.map((memory: any) => memory.content.substring(0, 50) + '...');
+      return recentMemories.map(
+        (memory: any) => memory.content.substring(0, 50) + '...'
+      );
     } catch {
       return [];
     }
   }
 
-  private async generatePatternSuggestions(context: ConversationContext): Promise<string[]> {
+  private async generatePatternSuggestions(
+    context: ConversationContext
+  ): Promise<string[]> {
     // Generate pattern-based suggestions
     return ['What is...', 'How to...', 'When did...', 'Where is...'];
   }
 
-  private rankAndFilterSuggestions(suggestions: string[], context: ConversationContext): string[] {
+  private rankAndFilterSuggestions(
+    suggestions: string[],
+    context: ConversationContext
+  ): string[] {
     return suggestions.slice(0, 5); // Return top 5
   }
 
-  private async analyzePartialInput(input: string, context: ConversationContext): Promise<{ completionType: string; confidence: number }> {
+  private async analyzePartialInput(
+    input: string,
+    context: ConversationContext
+  ): Promise<{ completionType: string; confidence: number }> {
     return {
       completionType: 'query',
-      confidence: 0.8
+      confidence: 0.8,
     };
   }
 
@@ -817,11 +855,17 @@ export class NaturalLanguageInterfaceEngine extends EventEmitter {
     return [];
   }
 
-  private generateSemanticCompletions(input: string, context: ConversationContext): string[] {
+  private generateSemanticCompletions(
+    input: string,
+    context: ConversationContext
+  ): string[] {
     return [];
   }
 
-  private generateMemoryCompletions(input: string, context: ConversationContext): string[] {
+  private generateMemoryCompletions(
+    input: string,
+    context: ConversationContext
+  ): string[] {
     return [];
   }
 
@@ -833,7 +877,11 @@ export class NaturalLanguageInterfaceEngine extends EventEmitter {
     return [];
   }
 
-  private rankCompletions(completions: string[], analysis: any, context: ConversationContext): string[] {
+  private rankCompletions(
+    completions: string[],
+    analysis: any,
+    context: ConversationContext
+  ): string[] {
     return completions.slice(0, 10);
   }
 
@@ -841,7 +889,10 @@ export class NaturalLanguageInterfaceEngine extends EventEmitter {
     return { userId, preferences: {} };
   }
 
-  private async getUserPreferences(userId: string, preferences?: any): Promise<any> {
+  private async getUserPreferences(
+    userId: string,
+    preferences?: any
+  ): Promise<any> {
     return { language: 'en', theme: 'default', ...preferences };
   }
 
@@ -849,78 +900,107 @@ export class NaturalLanguageInterfaceEngine extends EventEmitter {
     return ['search', 'create', 'update', 'delete', 'analyze'];
   }
 
-  private async generateConversationSummary(context: ConversationContext): Promise<string> {
+  private async generateConversationSummary(
+    context: ConversationContext
+  ): Promise<string> {
     const messageCount = context.conversationHistory.length;
     return `Conversation with ${messageCount} messages`;
   }
 
-  private async storeConversationHistory(context: ConversationContext, summary: string): Promise<void> {
+  private async storeConversationHistory(
+    context: ConversationContext,
+    summary: string
+  ): Promise<void> {
     // Store conversation history
   }
 
-  private async executeMemoryUpdate(intent: Intent, entities: Entity[], context: ConversationContext): Promise<IntentActionResult> {
-    return { 
-      success: true, 
-      data: null, 
+  private async executeMemoryUpdate(
+    intent: Intent,
+    entities: Entity[],
+    context: ConversationContext
+  ): Promise<IntentActionResult> {
+    return {
+      success: true,
+      data: null,
       metadata: {},
       action: 'memory_update',
       relatedMemories: [],
-      confidence: 0.8
+      confidence: 0.8,
     };
   }
 
-  private async executeMemoryDelete(intent: Intent, entities: Entity[], context: ConversationContext): Promise<IntentActionResult> {
-    return { 
-      success: true, 
-      data: null, 
+  private async executeMemoryDelete(
+    intent: Intent,
+    entities: Entity[],
+    context: ConversationContext
+  ): Promise<IntentActionResult> {
+    return {
+      success: true,
+      data: null,
       metadata: {},
       action: 'memory_delete',
       relatedMemories: [],
-      confidence: 0.8
+      confidence: 0.8,
     };
   }
 
-  private async executeConversation(intent: Intent, entities: Entity[], context: ConversationContext): Promise<IntentActionResult> {
-    return { 
-      success: true, 
-      data: null, 
+  private async executeConversation(
+    intent: Intent,
+    entities: Entity[],
+    context: ConversationContext
+  ): Promise<IntentActionResult> {
+    return {
+      success: true,
+      data: null,
       metadata: {},
       action: 'conversation',
       relatedMemories: [],
-      confidence: 0.8
+      confidence: 0.8,
     };
   }
 
-  private async executeAnalytics(intent: Intent, entities: Entity[], context: ConversationContext): Promise<IntentActionResult> {
-    return { 
-      success: true, 
-      data: null, 
+  private async executeAnalytics(
+    intent: Intent,
+    entities: Entity[],
+    context: ConversationContext
+  ): Promise<IntentActionResult> {
+    return {
+      success: true,
+      data: null,
       metadata: {},
       action: 'analytics',
       relatedMemories: [],
-      confidence: 0.8
+      confidence: 0.8,
     };
   }
 
-  private async executeHelp(intent: Intent, entities: Entity[], context: ConversationContext): Promise<IntentActionResult> {
-    return { 
-      success: true, 
-      data: 'Available commands: search, create, update, delete, analyze', 
+  private async executeHelp(
+    intent: Intent,
+    entities: Entity[],
+    context: ConversationContext
+  ): Promise<IntentActionResult> {
+    return {
+      success: true,
+      data: 'Available commands: search, create, update, delete, analyze',
       metadata: {},
       action: 'help',
       relatedMemories: [],
-      confidence: 0.8
+      confidence: 0.8,
     };
   }
 
-  private async executeDefaultAction(intent: Intent, entities: Entity[], context: ConversationContext): Promise<IntentActionResult> {
-    return { 
-      success: true, 
-      data: 'Action executed', 
+  private async executeDefaultAction(
+    intent: Intent,
+    entities: Entity[],
+    context: ConversationContext
+  ): Promise<IntentActionResult> {
+    return {
+      success: true,
+      data: 'Action executed',
       metadata: {},
       action: 'default',
       relatedMemories: [],
-      confidence: 0.8
+      confidence: 0.8,
     };
   }
 
@@ -932,15 +1012,21 @@ export class NaturalLanguageInterfaceEngine extends EventEmitter {
     return {};
   }
 
-  private extractSearchOptions(intent: Intent, context: ConversationContext): any {
+  private extractSearchOptions(
+    intent: Intent,
+    context: ConversationContext
+  ): any {
     return {};
   }
 
-  private async enhanceSearchResults(results: any[], context: ConversationContext): Promise<any[]> {
+  private async enhanceSearchResults(
+    results: any[],
+    context: ConversationContext
+  ): Promise<any[]> {
     return results.map(result => ({
       ...result,
       enhanced: true,
-      context: context.sessionId
+      context: context.sessionId,
     }));
   }
 
@@ -948,7 +1034,10 @@ export class NaturalLanguageInterfaceEngine extends EventEmitter {
     return (intent as any).parameters?.content || '';
   }
 
-  private extractMemoryMetadata(entities: Entity[], context: ConversationContext): any {
+  private extractMemoryMetadata(
+    entities: Entity[],
+    context: ConversationContext
+  ): any {
     return {};
   }
 
@@ -956,24 +1045,46 @@ export class NaturalLanguageInterfaceEngine extends EventEmitter {
     return [];
   }
 
-  private async generateIntentBasedSuggestions(recentIntents: any[]): Promise<QuerySuggestion[]> {
+  private async generateIntentBasedSuggestions(
+    recentIntents: any[]
+  ): Promise<QuerySuggestion[]> {
     const suggestions: QuerySuggestion[] = [];
     for (const intent of recentIntents) {
       switch ((intent as any).type) {
         case 'memory_search':
           suggestions.push(
-            { text: 'Search for recent memories', category: 'search', confidence: 0.8 },
-            { text: 'Find memories by tag', category: 'search', confidence: 0.8 }
+            {
+              text: 'Search for recent memories',
+              category: 'search',
+              confidence: 0.8,
+            },
+            {
+              text: 'Find memories by tag',
+              category: 'search',
+              confidence: 0.8,
+            }
           );
           break;
         case 'memory_create':
           suggestions.push(
-            { text: 'Create a new memory', category: 'create', confidence: 0.8 },
-            { text: 'Save this information', category: 'create', confidence: 0.8 }
+            {
+              text: 'Create a new memory',
+              category: 'create',
+              confidence: 0.8,
+            },
+            {
+              text: 'Save this information',
+              category: 'create',
+              confidence: 0.8,
+            }
           );
           break;
         default:
-          suggestions.push({ text: 'What would you like to do?', category: 'general', confidence: 0.6 });
+          suggestions.push({
+            text: 'What would you like to do?',
+            category: 'general',
+            confidence: 0.6,
+          });
       }
     }
     return suggestions;
@@ -983,7 +1094,7 @@ export class NaturalLanguageInterfaceEngine extends EventEmitter {
     return memories.map(memory => ({
       text: `Remember: ${memory.content.substring(0, 30)}...`,
       category: 'memory',
-      confidence: 0.7
+      confidence: 0.7,
     }));
   }
 
@@ -991,7 +1102,7 @@ export class NaturalLanguageInterfaceEngine extends EventEmitter {
     return topics.map(topic => ({
       text: `Tell me about ${topic}`,
       category: 'topic',
-      confidence: 0.7
+      confidence: 0.7,
     }));
   }
 }
@@ -1179,7 +1290,11 @@ class IntentClassifier {
     return input.toLowerCase().trim();
   }
 
-  private combineResults(keywordResults: any[], patternResults: any[], contextResults: any[]): Intent {
+  private combineResults(
+    keywordResults: any[],
+    patternResults: any[],
+    contextResults: any[]
+  ): Intent {
     // Combine results from different classification methods
     return {
       name: 'general',
@@ -1187,18 +1302,21 @@ class IntentClassifier {
       confidence: 0.5,
       parameters: {},
       requiresMemoryAccess: false,
-      expectedResponse: ResponseType.TEXT
+      expectedResponse: ResponseType.TEXT,
     };
   }
 
-  private getFallbackIntent(input: string, context: ConversationContext): Intent {
+  private getFallbackIntent(
+    input: string,
+    context: ConversationContext
+  ): Intent {
     return {
       name: 'fallback',
       category: IntentCategory.HELP,
       confidence: 0.3,
       parameters: { originalInput: input },
       requiresMemoryAccess: false,
-      expectedResponse: ResponseType.TEXT
+      expectedResponse: ResponseType.TEXT,
     };
   }
 

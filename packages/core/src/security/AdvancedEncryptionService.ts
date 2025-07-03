@@ -1,17 +1,21 @@
 import crypto from 'crypto';
-import type { SecurityConfig, EncryptionKey } from '../types/Security.js';
+import type { EncryptionKey, SecurityConfig } from '../types/Security.js';
 
 // Simple logger implementation
 const logger = {
-  info: (message: string, meta?: any) => console.log(`[INFO] ${message}`, meta || ''),
-  warn: (message: string, meta?: any) => console.warn(`[WARN] ${message}`, meta || ''),
-  error: (message: string, meta?: any) => console.error(`[ERROR] ${message}`, meta || ''),
-  debug: (message: string, meta?: any) => console.debug(`[DEBUG] ${message}`, meta || ''),
+  info: (message: string, meta?: any) =>
+    console.log(`[INFO] ${message}`, meta || ''),
+  warn: (message: string, meta?: any) =>
+    console.warn(`[WARN] ${message}`, meta || ''),
+  error: (message: string, meta?: any) =>
+    console.error(`[ERROR] ${message}`, meta || ''),
+  debug: (message: string, meta?: any) =>
+    console.debug(`[DEBUG] ${message}`, meta || ''),
 };
 
 /**
  * Advanced Encryption Service
- * 
+ *
  * Provides enterprise-grade encryption with key management, rotation,
  * and field-level encryption for sensitive data protection.
  */
@@ -35,7 +39,9 @@ export class AdvancedEncryptionService {
   private initializePrimaryKey(): void {
     const primaryKey = this.generateEncryptionKey(this.currentKeyId);
     this.encryptionKeys.set(this.currentKeyId, primaryKey);
-    logger.info('Primary encryption key initialized', { keyId: this.currentKeyId });
+    logger.info('Primary encryption key initialized', {
+      keyId: this.currentKeyId,
+    });
   }
 
   /**
@@ -61,7 +67,10 @@ export class AdvancedEncryptionService {
   /**
    * Encrypt sensitive text data
    */
-  public encryptText(plaintext: string, keyId?: string): {
+  public encryptText(
+    plaintext: string,
+    keyId?: string
+  ): {
     ciphertext: string;
     keyId: string;
     iv: string;
@@ -73,7 +82,7 @@ export class AdvancedEncryptionService {
 
     const useKeyId = keyId || this.currentKeyId;
     const encryptionKey = this.encryptionKeys.get(useKeyId);
-    
+
     if (!encryptionKey) {
       throw new Error(`Encryption key not found: ${useKeyId}`);
     }
@@ -81,14 +90,14 @@ export class AdvancedEncryptionService {
     try {
       // Generate random IV for each encryption
       const iv = crypto.randomBytes(16);
-      
+
       // Create cipher
       const cipher = crypto.createCipher('aes-256-gcm', encryptionKey.key);
-      
+
       // Encrypt the data
       let ciphertext = cipher.update(plaintext, 'utf8', 'hex');
       ciphertext += cipher.final('hex');
-      
+
       // Get authentication tag
       const tag = cipher.getAuthTag();
 
@@ -99,18 +108,22 @@ export class AdvancedEncryptionService {
         ciphertext,
         keyId: useKeyId,
         iv: iv.toString('hex'),
-        tag: tag.toString('hex')
+        tag: tag.toString('hex'),
       };
 
-      logger.debug('Text encrypted successfully', { 
-        keyId: useKeyId, 
-        plaintextLength: plaintext.length 
+      logger.debug('Text encrypted successfully', {
+        keyId: useKeyId,
+        plaintextLength: plaintext.length,
       });
 
       return result;
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      logger.error('Text encryption failed', { error: errorMessage, keyId: useKeyId });
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      logger.error('Text encryption failed', {
+        error: errorMessage,
+        keyId: useKeyId,
+      });
       throw new Error(`Encryption failed: ${errorMessage}`);
     }
   }
@@ -129,7 +142,7 @@ export class AdvancedEncryptionService {
     }
 
     const encryptionKey = this.encryptionKeys.get(keyId);
-    
+
     if (!encryptionKey) {
       throw new Error(`Encryption key not found: ${keyId}`);
     }
@@ -146,14 +159,15 @@ export class AdvancedEncryptionService {
       // Update key usage
       encryptionKey.lastUsed = new Date();
 
-      logger.debug('Text decrypted successfully', { 
-        keyId, 
-        ciphertextLength: ciphertext.length 
+      logger.debug('Text decrypted successfully', {
+        keyId,
+        ciphertextLength: ciphertext.length,
       });
 
       return plaintext;
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
       logger.error('Text decryption failed', { error: errorMessage, keyId });
       throw new Error(`Decryption failed: ${errorMessage}`);
     }
@@ -180,21 +194,27 @@ export class AdvancedEncryptionService {
   } {
     // Always encrypt the main text content
     const textEncryption = this.encryptText(content.text);
-    
+
     let metadataEncryption: any = null;
-    
+
     // Encrypt sensitive metadata fields
-    if (content.metadata && content.sensitiveFields && content.sensitiveFields.length > 0) {
+    if (
+      content.metadata &&
+      content.sensitiveFields &&
+      content.sensitiveFields.length > 0
+    ) {
       const sensitiveMetadata: Record<string, any> = {};
-      
+
       for (const field of content.sensitiveFields) {
         if (content.metadata[field] !== undefined) {
           sensitiveMetadata[field] = content.metadata[field];
         }
       }
-      
+
       if (Object.keys(sensitiveMetadata).length > 0) {
-        metadataEncryption = this.encryptText(JSON.stringify(sensitiveMetadata));
+        metadataEncryption = this.encryptText(
+          JSON.stringify(sensitiveMetadata)
+        );
       }
     }
 
@@ -208,12 +228,12 @@ export class AdvancedEncryptionService {
         metadataKeyId: metadataEncryption?.keyId,
         metadataIv: metadataEncryption?.iv,
         metadataTag: metadataEncryption?.tag,
-      }
+      },
     };
 
     logger.debug('Memory content encrypted', {
       hasMetadata: !!metadataEncryption,
-      sensitiveFields: content.sensitiveFields?.length || 0
+      sensitiveFields: content.sensitiveFields?.length || 0,
     });
 
     return result;
@@ -263,14 +283,14 @@ export class AdvancedEncryptionService {
         );
         metadata = JSON.parse(metadataJson);
       } catch (error) {
-        logger.warn('Failed to decrypt metadata, continuing without it', { 
-          error: error instanceof Error ? error.message : 'Unknown error'
+        logger.warn('Failed to decrypt metadata, continuing without it', {
+          error: error instanceof Error ? error.message : 'Unknown error',
         });
       }
     }
 
     logger.debug('Memory content decrypted', {
-      hasMetadata: !!metadata
+      hasMetadata: !!metadata,
     });
 
     return { text, metadata };
@@ -297,14 +317,16 @@ export class AdvancedEncryptionService {
   private generateEncryptionKey(keyId: string): EncryptionKey {
     const key = crypto.randomBytes(32); // 256-bit key for AES-256
     const now = new Date();
-    
+
     return {
       id: keyId,
       algorithm: this.config.encryption.algorithm,
       key,
       createdAt: now,
       lastUsed: now,
-      rotationDue: new Date(now.getTime() + this.config.encryption.rotationIntervalMs)
+      rotationDue: new Date(
+        now.getTime() + this.config.encryption.rotationIntervalMs
+      ),
     };
   }
 
@@ -321,27 +343,30 @@ export class AdvancedEncryptionService {
       // Generate new primary key
       const newKeyId = `key_${Date.now()}`;
       const newKey = this.generateEncryptionKey(newKeyId);
-      
+
       // Add new key to the store
       this.encryptionKeys.set(newKeyId, newKey);
-      
+
       // Update current key ID
       const oldKeyId = this.currentKeyId;
       this.currentKeyId = newKeyId;
-      
-      logger.info('Encryption key rotated', { 
-        oldKeyId, 
+
+      logger.info('Encryption key rotated', {
+        oldKeyId,
         newKeyId,
-        totalKeys: this.encryptionKeys.size 
+        totalKeys: this.encryptionKeys.size,
       });
 
       // Schedule old key removal (keep for decryption of existing data)
-      setTimeout(() => {
-        this.cleanupOldKeys();
-      }, 24 * 60 * 60 * 1000); // 24 hours
-      
+      setTimeout(
+        () => {
+          this.cleanupOldKeys();
+        },
+        24 * 60 * 60 * 1000
+      ); // 24 hours
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
       logger.error('Key rotation failed', { error: errorMessage });
       throw new Error(`Key rotation failed: ${errorMessage}`);
     }
@@ -358,7 +383,7 @@ export class AdvancedEncryptionService {
     for (const [keyId, key] of this.encryptionKeys) {
       // Don't remove current key
       if (keyId === this.currentKeyId) continue;
-      
+
       // Remove keys older than retention period
       if (now.getTime() - key.createdAt.getTime() > retentionPeriod) {
         keysToRemove.push(keyId);
@@ -370,9 +395,9 @@ export class AdvancedEncryptionService {
     }
 
     if (keysToRemove.length > 0) {
-      logger.info('Old encryption keys cleaned up', { 
+      logger.info('Old encryption keys cleaned up', {
         removedKeys: keysToRemove.length,
-        remainingKeys: this.encryptionKeys.size 
+        remainingKeys: this.encryptionKeys.size,
       });
     }
   }
@@ -385,19 +410,25 @@ export class AdvancedEncryptionService {
       clearInterval(this.keyRotationInterval);
     }
 
-    this.keyRotationInterval = setInterval(async () => {
-      if (!this.isActive) return;
+    this.keyRotationInterval = setInterval(
+      async () => {
+        if (!this.isActive) return;
 
-      const currentKey = this.encryptionKeys.get(this.currentKeyId);
-      if (currentKey && new Date() >= currentKey.rotationDue) {
-        try {
-          await this.rotateKeys();
-        } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-          logger.error('Automatic key rotation failed', { error: errorMessage });
+        const currentKey = this.encryptionKeys.get(this.currentKeyId);
+        if (currentKey && new Date() >= currentKey.rotationDue) {
+          try {
+            await this.rotateKeys();
+          } catch (error) {
+            const errorMessage =
+              error instanceof Error ? error.message : 'Unknown error';
+            logger.error('Automatic key rotation failed', {
+              error: errorMessage,
+            });
+          }
         }
-      }
-    }, 60 * 60 * 1000); // Check every hour
+      },
+      60 * 60 * 1000
+    ); // Check every hour
 
     logger.info('Automatic key rotation scheduled');
   }
@@ -412,11 +443,13 @@ export class AdvancedEncryptionService {
     nextRotation: Date | null;
     encryptionOverhead: number;
   } {
-    const keyUsage = Array.from(this.encryptionKeys.entries()).map(([keyId, key]) => ({
-      keyId,
-      lastUsed: key.lastUsed,
-      age: Date.now() - key.createdAt.getTime()
-    }));
+    const keyUsage = Array.from(this.encryptionKeys.entries()).map(
+      ([keyId, key]) => ({
+        keyId,
+        lastUsed: key.lastUsed,
+        age: Date.now() - key.createdAt.getTime(),
+      })
+    );
 
     const currentKey = this.encryptionKeys.get(this.currentKeyId);
     const nextRotation = currentKey?.rotationDue || null;
@@ -426,7 +459,7 @@ export class AdvancedEncryptionService {
       currentKeyId: this.currentKeyId,
       keyUsage,
       nextRotation,
-      encryptionOverhead: this.calculateEncryptionOverhead()
+      encryptionOverhead: this.calculateEncryptionOverhead(),
     };
   }
 
@@ -450,7 +483,11 @@ export class AdvancedEncryptionService {
 
     // Encrypt the key with backup password
     const backupCipher = crypto.createCipher('aes-256-cbc', backupPassword);
-    let encryptedKey = backupCipher.update(key.key.toString('hex'), 'utf8', 'hex');
+    let encryptedKey = backupCipher.update(
+      key.key.toString('hex'),
+      'utf8',
+      'hex'
+    );
     encryptedKey += backupCipher.final('hex');
 
     const backupData = {
@@ -460,8 +497,8 @@ export class AdvancedEncryptionService {
       createdAt: key.createdAt.toISOString(),
       metadata: {
         version: '1.0',
-        exportedAt: new Date().toISOString()
-      }
+        exportedAt: new Date().toISOString(),
+      },
     };
 
     logger.info('Encryption key exported for backup', { keyId });
@@ -474,26 +511,33 @@ export class AdvancedEncryptionService {
   public importKeyFromBackup(backupData: string, backupPassword: string): void {
     try {
       const parsed = JSON.parse(backupData);
-      
+
       // Decrypt the key
-      const backupDecipher = crypto.createDecipher('aes-256-cbc', backupPassword);
+      const backupDecipher = crypto.createDecipher(
+        'aes-256-cbc',
+        backupPassword
+      );
       let keyHex = backupDecipher.update(parsed.encryptedKey, 'hex', 'utf8');
       keyHex += backupDecipher.final('utf8');
-      
+
       const restoredKey: EncryptionKey = {
         id: parsed.keyId,
         algorithm: parsed.algorithm,
         key: Buffer.from(keyHex, 'hex'),
         createdAt: new Date(parsed.createdAt),
         lastUsed: new Date(),
-        rotationDue: new Date(Date.now() + this.config.encryption.rotationIntervalMs)
+        rotationDue: new Date(
+          Date.now() + this.config.encryption.rotationIntervalMs
+        ),
       };
 
       this.encryptionKeys.set(parsed.keyId, restoredKey);
-      logger.info('Encryption key restored from backup', { keyId: parsed.keyId });
-      
+      logger.info('Encryption key restored from backup', {
+        keyId: parsed.keyId,
+      });
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
       logger.error('Key import from backup failed', { error: errorMessage });
       throw new Error(`Key import failed: ${errorMessage}`);
     }

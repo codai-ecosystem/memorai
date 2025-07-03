@@ -1,10 +1,10 @@
 /**
  * Disaster Recovery Engine for Memorai
- * 
+ *
  * Comprehensive disaster recovery system providing automated backup,
  * restoration, geo-replication, and business continuity capabilities
  * for enterprise-grade memory systems with RPO/RTO optimization.
- * 
+ *
  * Features:
  * - Multi-tier backup strategies (full, incremental, differential)
  * - Cross-region geo-replication with conflict resolution
@@ -13,13 +13,13 @@
  * - Data consistency validation and repair
  * - Recovery testing and compliance reporting
  * - Business continuity orchestration
- * 
+ *
  * @version 3.0.0
  * @author Memorai Enterprise Team
  */
 
-import { EventEmitter } from 'events';
 import { createHash } from 'crypto';
+import { EventEmitter } from 'events';
 
 /**
  * Recovery point objective and recovery time objective configuration
@@ -308,16 +308,16 @@ export class DisasterRecoveryEngine extends EventEmitter {
   private backupConfig: BackupConfig;
   private replicationConfig: ReplicationConfig;
   private failoverConfig: FailoverConfig;
-  
+
   private backupJobs: Map<string, BackupJob> = new Map();
   private recoveryJobs: Map<string, RecoveryJob> = new Map();
   private failoverEvents: Map<string, FailoverEvent> = new Map();
   private continuityPlans: Map<string, BusinessContinuityPlan> = new Map();
-  
+
   private backupScheduler?: NodeJS.Timeout;
   private replicationMonitor?: NodeJS.Timeout;
   private healthCheckMonitor?: NodeJS.Timeout;
-  
+
   private isRunning: boolean = false;
   private currentMetrics: DRMetrics;
 
@@ -329,19 +329,31 @@ export class DisasterRecoveryEngine extends EventEmitter {
     failoverConfig: FailoverConfig
   ) {
     super();
-    
+
     this.rpoConfig = rpoConfig;
     this.rtoConfig = rtoConfig;
     this.backupConfig = backupConfig;
     this.replicationConfig = replicationConfig;
     this.failoverConfig = failoverConfig;
-    
+
     this.currentMetrics = {
       rpo: { target: rpoConfig.maxDataLoss, actual: 0, achieved: true },
       rto: { target: rtoConfig.maxDowntime, actual: 0, achieved: true },
-      backups: { total: 0, successful: 0, failed: 0, avgSize: 0, avgDuration: 0 },
+      backups: {
+        total: 0,
+        successful: 0,
+        failed: 0,
+        avgSize: 0,
+        avgDuration: 0,
+      },
       replication: { avgLag: 0, maxLag: 0, uptime: 100, throughput: 0 },
-      failovers: { total: 0, successful: 0, failed: 0, avgDowntime: 0, avgRecoveryTime: 0 }
+      failovers: {
+        total: 0,
+        successful: 0,
+        failed: 0,
+        avgDowntime: 0,
+        avgRecoveryTime: 0,
+      },
     };
   }
 
@@ -354,15 +366,15 @@ export class DisasterRecoveryEngine extends EventEmitter {
     }
 
     this.isRunning = true;
-    
+
     // Start backup scheduler
     this.startBackupScheduler();
-    
+
     // Start replication monitoring
     if (this.replicationConfig.enabled) {
       this.startReplicationMonitor();
     }
-    
+
     // Start health check monitoring
     if (this.failoverConfig.enabled) {
       this.startHealthCheckMonitor();
@@ -380,7 +392,7 @@ export class DisasterRecoveryEngine extends EventEmitter {
     }
 
     this.isRunning = false;
-    
+
     this.stopBackupScheduler();
     this.stopReplicationMonitor();
     this.stopHealthCheckMonitor();
@@ -396,7 +408,7 @@ export class DisasterRecoveryEngine extends EventEmitter {
     options: Partial<BackupConfig> = {}
   ): Promise<string> {
     const jobId = this.generateId('backup');
-    
+
     const job: BackupJob = {
       id: jobId,
       type,
@@ -410,16 +422,16 @@ export class DisasterRecoveryEngine extends EventEmitter {
         sourceVersion: '3.0.0',
         engineVersion: '3.0.0',
         recordCount: 0,
-        tableCount: 0
+        tableCount: 0,
       },
-      progress: 0
+      progress: 0,
     };
 
     this.backupJobs.set(jobId, job);
-    
+
     // Execute backup asynchronously
     setImmediate(() => this.executeBackup(jobId));
-    
+
     this.emit('backup_created', { jobId, job });
     return jobId;
   }
@@ -454,10 +466,10 @@ export class DisasterRecoveryEngine extends EventEmitter {
       job.error = (error as Error).message;
       job.endTime = new Date();
       job.duration = job.endTime.getTime() - job.startTime.getTime();
-      
+
       this.currentMetrics.backups.total++;
       this.currentMetrics.backups.failed++;
-      
+
       this.emit('backup_failed', { jobId, job, error });
     }
   }
@@ -467,15 +479,15 @@ export class DisasterRecoveryEngine extends EventEmitter {
    */
   private async simulateBackupProcess(job: BackupJob): Promise<void> {
     const totalSteps = 10;
-    
+
     for (let step = 1; step <= totalSteps; step++) {
       // Simulate backup step
       await this.sleep(1000); // 1 second per step
-      
+
       job.progress = (step / totalSteps) * 100;
       this.emit('backup_progress', { jobId: job.id, progress: job.progress });
     }
-    
+
     // Generate backup metadata
     job.size = Math.floor(Math.random() * 1000000000) + 100000000; // 100MB - 1GB
     job.location = `/backups/${job.id}.backup`;
@@ -493,7 +505,7 @@ export class DisasterRecoveryEngine extends EventEmitter {
     options: Partial<RecoveryJob['options']> = {}
   ): Promise<string> {
     const jobId = this.generateId('recovery');
-    
+
     const job: RecoveryJob = {
       id: jobId,
       type: 'full_restore',
@@ -506,16 +518,16 @@ export class DisasterRecoveryEngine extends EventEmitter {
         skipTables: [],
         includeTables: [],
         validateData: true,
-        ...options
+        ...options,
       },
-      progress: 0
+      progress: 0,
     };
 
     this.recoveryJobs.set(jobId, job);
-    
+
     // Execute recovery asynchronously
     setImmediate(() => this.executeRecovery(jobId));
-    
+
     this.emit('recovery_created', { jobId, job });
     return jobId;
   }
@@ -545,7 +557,7 @@ export class DisasterRecoveryEngine extends EventEmitter {
       job.error = (error as Error).message;
       job.endTime = new Date();
       job.duration = job.endTime.getTime() - job.startTime.getTime();
-      
+
       this.emit('recovery_failed', { jobId, job, error });
     }
   }
@@ -555,28 +567,32 @@ export class DisasterRecoveryEngine extends EventEmitter {
    */
   private async simulateRecoveryProcess(job: RecoveryJob): Promise<void> {
     const totalSteps = 15;
-    
+
     for (let step = 1; step <= totalSteps; step++) {
       // Simulate recovery step
       await this.sleep(1500); // 1.5 seconds per step
-      
+
       job.progress = (step / totalSteps) * 100;
       this.emit('recovery_progress', { jobId: job.id, progress: job.progress });
     }
-    
+
     // Generate validation results if enabled
     if (job.options.validateData) {
-      job.validationResults = await this.validateRecoveredData(job.targetDatabase);
+      job.validationResults = await this.validateRecoveredData(
+        job.targetDatabase
+      );
     }
   }
 
   /**
    * Validate recovered data
    */
-  private async validateRecoveredData(database: string): Promise<ValidationResult[]> {
+  private async validateRecoveredData(
+    database: string
+  ): Promise<ValidationResult[]> {
     const tables = ['memories', 'users', 'sessions', 'analytics'];
     const results: ValidationResult[] = [];
-    
+
     for (const table of tables) {
       results.push({
         table,
@@ -584,10 +600,10 @@ export class DisasterRecoveryEngine extends EventEmitter {
         checksumValid: Math.random() > 0.05, // 95% success rate
         foreignKeyValid: Math.random() > 0.02, // 98% success rate
         constraintsValid: Math.random() > 0.01, // 99% success rate
-        errors: []
+        errors: [],
       });
     }
-    
+
     return results;
   }
 
@@ -601,7 +617,7 @@ export class DisasterRecoveryEngine extends EventEmitter {
     reason: string = 'Manual failover'
   ): Promise<string> {
     const eventId = this.generateId('failover');
-    
+
     const failoverEvent: FailoverEvent = {
       id: eventId,
       type,
@@ -612,14 +628,14 @@ export class DisasterRecoveryEngine extends EventEmitter {
       reason,
       steps: this.generateFailoverSteps(),
       downtime: 0,
-      dataLoss: 0
+      dataLoss: 0,
     };
 
     this.failoverEvents.set(eventId, failoverEvent);
-    
+
     // Execute failover asynchronously
     setImmediate(() => this.executeFailover(eventId));
-    
+
     this.emit('failover_initiated', { eventId, failoverEvent });
     return eventId;
   }
@@ -634,9 +650,13 @@ export class DisasterRecoveryEngine extends EventEmitter {
       { id: '3', name: 'Sync final data changes', status: 'pending' },
       { id: '4', name: 'Update DNS records', status: 'pending' },
       { id: '5', name: 'Start services on target site', status: 'pending' },
-      { id: '6', name: 'Validate application functionality', status: 'pending' },
+      {
+        id: '6',
+        name: 'Validate application functionality',
+        status: 'pending',
+      },
       { id: '7', name: 'Resume application traffic', status: 'pending' },
-      { id: '8', name: 'Notify stakeholders', status: 'pending' }
+      { id: '8', name: 'Notify stakeholders', status: 'pending' },
     ];
   }
 
@@ -654,30 +674,36 @@ export class DisasterRecoveryEngine extends EventEmitter {
       for (const step of failoverEvent.steps) {
         step.status = 'running';
         step.startTime = new Date();
-        
+
         this.emit('failover_step_started', { eventId, stepId: step.id, step });
-        
+
         // Simulate step execution
         await this.sleep(Math.random() * 5000 + 2000); // 2-7 seconds per step
-        
+
         // Simulate occasional step failures
-        if (Math.random() > 0.95) { // 5% failure rate
+        if (Math.random() > 0.95) {
+          // 5% failure rate
           step.status = 'failed';
           step.error = 'Simulated step failure';
           throw new Error(`Failover step failed: ${step.name}`);
         }
-        
+
         step.status = 'completed';
         step.endTime = new Date();
         step.duration = step.endTime.getTime() - step.startTime!.getTime();
-        
-        this.emit('failover_step_completed', { eventId, stepId: step.id, step });
+
+        this.emit('failover_step_completed', {
+          eventId,
+          stepId: step.id,
+          step,
+        });
       }
 
       failoverEvent.status = 'completed';
       failoverEvent.endTime = new Date();
-      failoverEvent.downtime = failoverEvent.endTime.getTime() - failoverEvent.startTime.getTime();
-      
+      failoverEvent.downtime =
+        failoverEvent.endTime.getTime() - failoverEvent.startTime.getTime();
+
       // Update metrics
       this.currentMetrics.failovers.total++;
       this.currentMetrics.failovers.successful++;
@@ -687,10 +713,10 @@ export class DisasterRecoveryEngine extends EventEmitter {
     } catch (error) {
       failoverEvent.status = 'failed';
       failoverEvent.endTime = new Date();
-      
+
       this.currentMetrics.failovers.total++;
       this.currentMetrics.failovers.failed++;
-      
+
       this.emit('failover_failed', { eventId, failoverEvent, error });
     }
   }
@@ -713,16 +739,16 @@ export class DisasterRecoveryEngine extends EventEmitter {
       duration: 0,
       issues: [],
       recommendations: [],
-      compliance: true
+      compliance: true,
     };
 
     const startTime = Date.now();
-    
+
     try {
       // Test backup creation
       const backupJobId = await this.createBackup('full');
       await this.waitForJob(backupJobId, 'backup');
-      
+
       // Test recovery
       const recoveryJobId = await this.createRecovery(
         backupJobId,
@@ -730,7 +756,7 @@ export class DisasterRecoveryEngine extends EventEmitter {
         { validateData: true }
       );
       await this.waitForJob(recoveryJobId, 'recovery');
-      
+
       // Test failover
       const failoverEventId = await this.initiateFailover(
         'primary-site',
@@ -739,29 +765,28 @@ export class DisasterRecoveryEngine extends EventEmitter {
         'DR testing'
       );
       await this.waitForFailover(failoverEventId);
-      
+
       testResult.duration = Date.now() - startTime;
-      
+
       // Check if RTO/RPO targets were met
       if (testResult.duration > this.rtoConfig.maxDowntime * 1000) {
         testResult.issues.push('RTO target not met');
         testResult.compliance = false;
       }
-      
+
       plan.lastTested = new Date();
       plan.testResults.push(testResult);
-      
+
       this.emit('dr_test_completed', { testId, planId, testResult });
-      
     } catch (error) {
       testResult.status = 'failed';
       testResult.duration = Date.now() - startTime;
       testResult.issues.push((error as Error).message);
       testResult.compliance = false;
-      
+
       this.emit('dr_test_failed', { testId, planId, testResult, error });
     }
-    
+
     return testId;
   }
 
@@ -771,7 +796,7 @@ export class DisasterRecoveryEngine extends EventEmitter {
   private startBackupScheduler(): void {
     // Simple scheduler - in production would use a proper cron scheduler
     const interval = this.parseScheduleInterval(this.backupConfig.schedule);
-    
+
     this.backupScheduler = setInterval(async () => {
       await this.createBackup(this.backupConfig.type);
     }, interval);
@@ -816,16 +841,15 @@ export class DisasterRecoveryEngine extends EventEmitter {
         const lag = Math.random() * 1000; // 0-1000ms lag
         target.lag = lag;
         target.lastSync = new Date();
-        
+
         if (lag > this.replicationConfig.maxLag) {
           target.status = 'error';
           this.emit('replication_lag_exceeded', { targetId: target.id, lag });
         } else {
           target.status = 'active';
         }
-        
+
         this.updateReplicationMetrics();
-        
       } catch (error) {
         target.status = 'error';
         this.emit('replication_error', { targetId: target.id, error });
@@ -858,7 +882,7 @@ export class DisasterRecoveryEngine extends EventEmitter {
   private async performHealthCheck(): Promise<void> {
     // Simulate health check
     const isHealthy = Math.random() > 0.05; // 95% healthy
-    
+
     if (!isHealthy && this.failoverConfig.automatic) {
       // Trigger automatic failover
       await this.initiateFailover(
@@ -868,25 +892,29 @@ export class DisasterRecoveryEngine extends EventEmitter {
         'Automatic failover due to health check failure'
       );
     }
-    
+
     this.emit('health_check_completed', { healthy: isHealthy });
   }
 
   /**
    * Wait for job completion
    */
-  private async waitForJob(jobId: string, type: 'backup' | 'recovery'): Promise<void> {
+  private async waitForJob(
+    jobId: string,
+    type: 'backup' | 'recovery'
+  ): Promise<void> {
     return new Promise((resolve, reject) => {
       const checkStatus = () => {
-        const job = type === 'backup' 
-          ? this.backupJobs.get(jobId) 
-          : this.recoveryJobs.get(jobId);
-        
+        const job =
+          type === 'backup'
+            ? this.backupJobs.get(jobId)
+            : this.recoveryJobs.get(jobId);
+
         if (!job) {
           reject(new Error(`Job ${jobId} not found`));
           return;
         }
-        
+
         if (job.status === 'completed') {
           resolve();
         } else if (job.status === 'failed') {
@@ -895,7 +923,7 @@ export class DisasterRecoveryEngine extends EventEmitter {
           setTimeout(checkStatus, 1000);
         }
       };
-      
+
       checkStatus();
     });
   }
@@ -907,12 +935,12 @@ export class DisasterRecoveryEngine extends EventEmitter {
     return new Promise((resolve, reject) => {
       const checkStatus = () => {
         const event = this.failoverEvents.get(eventId);
-        
+
         if (!event) {
           reject(new Error(`Failover event ${eventId} not found`));
           return;
         }
-        
+
         if (event.status === 'completed') {
           resolve();
         } else if (event.status === 'failed') {
@@ -921,7 +949,7 @@ export class DisasterRecoveryEngine extends EventEmitter {
           setTimeout(checkStatus, 1000);
         }
       };
-      
+
       checkStatus();
     });
   }
@@ -930,17 +958,20 @@ export class DisasterRecoveryEngine extends EventEmitter {
    * Update backup metrics
    */
   private updateBackupMetrics(): void {
-    const completedBackups = Array.from(this.backupJobs.values())
-      .filter(job => job.status === 'completed');
-    
+    const completedBackups = Array.from(this.backupJobs.values()).filter(
+      job => job.status === 'completed'
+    );
+
     if (completedBackups.length > 0) {
-      this.currentMetrics.backups.avgSize = 
-        completedBackups.reduce((sum, job) => sum + job.size, 0) / completedBackups.length;
-      
-      this.currentMetrics.backups.avgDuration = 
+      this.currentMetrics.backups.avgSize =
+        completedBackups.reduce((sum, job) => sum + job.size, 0) /
+        completedBackups.length;
+
+      this.currentMetrics.backups.avgDuration =
         completedBackups
           .filter(job => job.duration)
-          .reduce((sum, job) => sum + (job.duration || 0), 0) / completedBackups.length;
+          .reduce((sum, job) => sum + (job.duration || 0), 0) /
+        completedBackups.length;
     }
   }
 
@@ -948,15 +979,20 @@ export class DisasterRecoveryEngine extends EventEmitter {
    * Update replication metrics
    */
   private updateReplicationMetrics(): void {
-    const activeTargets = this.replicationConfig.targets.filter(t => t.status === 'active');
-    
+    const activeTargets = this.replicationConfig.targets.filter(
+      t => t.status === 'active'
+    );
+
     if (activeTargets.length > 0) {
-      this.currentMetrics.replication.avgLag = 
-        activeTargets.reduce((sum, target) => sum + target.lag, 0) / activeTargets.length;
-      
-      this.currentMetrics.replication.maxLag = Math.max(...activeTargets.map(t => t.lag));
-      
-      this.currentMetrics.replication.uptime = 
+      this.currentMetrics.replication.avgLag =
+        activeTargets.reduce((sum, target) => sum + target.lag, 0) /
+        activeTargets.length;
+
+      this.currentMetrics.replication.maxLag = Math.max(
+        ...activeTargets.map(t => t.lag)
+      );
+
+      this.currentMetrics.replication.uptime =
         (activeTargets.length / this.replicationConfig.targets.length) * 100;
     }
   }
@@ -965,19 +1001,22 @@ export class DisasterRecoveryEngine extends EventEmitter {
    * Update failover metrics
    */
   private updateFailoverMetrics(failoverEvent: FailoverEvent): void {
-    const completedFailovers = Array.from(this.failoverEvents.values())
-      .filter(event => event.status === 'completed');
-    
+    const completedFailovers = Array.from(this.failoverEvents.values()).filter(
+      event => event.status === 'completed'
+    );
+
     if (completedFailovers.length > 0) {
-      this.currentMetrics.failovers.avgDowntime = 
-        completedFailovers.reduce((sum, event) => sum + event.downtime, 0) / completedFailovers.length;
-      
+      this.currentMetrics.failovers.avgDowntime =
+        completedFailovers.reduce((sum, event) => sum + event.downtime, 0) /
+        completedFailovers.length;
+
       const recoveryTimes = completedFailovers
         .filter(event => event.endTime)
         .map(event => event.endTime!.getTime() - event.startTime.getTime());
-      
-      this.currentMetrics.failovers.avgRecoveryTime = 
-        recoveryTimes.reduce((sum, time) => sum + time, 0) / recoveryTimes.length;
+
+      this.currentMetrics.failovers.avgRecoveryTime =
+        recoveryTimes.reduce((sum, time) => sum + time, 0) /
+        recoveryTimes.length;
     }
   }
 
@@ -1017,24 +1056,27 @@ export class DisasterRecoveryEngine extends EventEmitter {
    * Get all backup jobs
    */
   getBackupJobs(): BackupJob[] {
-    return Array.from(this.backupJobs.values())
-      .sort((a, b) => b.startTime.getTime() - a.startTime.getTime());
+    return Array.from(this.backupJobs.values()).sort(
+      (a, b) => b.startTime.getTime() - a.startTime.getTime()
+    );
   }
 
   /**
    * Get all recovery jobs
    */
   getRecoveryJobs(): RecoveryJob[] {
-    return Array.from(this.recoveryJobs.values())
-      .sort((a, b) => b.startTime.getTime() - a.startTime.getTime());
+    return Array.from(this.recoveryJobs.values()).sort(
+      (a, b) => b.startTime.getTime() - a.startTime.getTime()
+    );
   }
 
   /**
    * Get all failover events
    */
   getFailoverEvents(): FailoverEvent[] {
-    return Array.from(this.failoverEvents.values())
-      .sort((a, b) => b.startTime.getTime() - a.startTime.getTime());
+    return Array.from(this.failoverEvents.values()).sort(
+      (a, b) => b.startTime.getTime() - a.startTime.getTime()
+    );
   }
 
   /**
@@ -1058,13 +1100,14 @@ export class DisasterRecoveryEngine extends EventEmitter {
     const rtoCompliant = this.currentMetrics.rto.achieved;
     const backupCompliant = this.currentMetrics.backups.failed === 0;
     const replicationCompliant = this.currentMetrics.replication.uptime >= 99.9;
-    
+
     return {
       rpoCompliant,
       rtoCompliant,
       backupCompliant,
       replicationCompliant,
-      overallCompliant: rpoCompliant && rtoCompliant && backupCompliant && replicationCompliant
+      overallCompliant:
+        rpoCompliant && rtoCompliant && backupCompliant && replicationCompliant,
     };
   }
 
@@ -1085,28 +1128,28 @@ export class DisasterRecoveryEngine extends EventEmitter {
   } {
     const compliance = this.getComplianceStatus();
     const recommendations: string[] = [];
-    
+
     if (!compliance.rpoCompliant) {
       recommendations.push('Increase backup frequency to meet RPO targets');
     }
-    
+
     if (!compliance.rtoCompliant) {
       recommendations.push('Optimize failover procedures to meet RTO targets');
     }
-    
+
     if (!compliance.backupCompliant) {
       recommendations.push('Investigate and resolve backup failures');
     }
-    
+
     if (!compliance.replicationCompliant) {
       recommendations.push('Improve replication reliability and monitoring');
     }
-    
+
     return {
       reportDate: new Date(),
       compliance,
       metrics: this.getMetrics(),
-      recommendations
+      recommendations,
     };
   }
 }

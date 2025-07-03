@@ -1,7 +1,7 @@
 /**
  * Performance-Optimized Memory Engine
  * Target: Sub-50ms response times for 95% of queries
- * 
+ *
  * Key optimizations:
  * - Advanced caching strategies (embeddings + results)
  * - Connection pooling and query optimization
@@ -12,19 +12,20 @@
 import { nanoid } from 'nanoid';
 import { performance } from 'perf_hooks';
 
-import { MemoryEngine, RememberOptions, RecallOptions } from './MemoryEngine.js';
 import { HighPerformanceCache } from '../cache/HighPerformanceCache.js';
-import { MemoryConfigManager } from '../config/MemoryConfig.js';
 import { EmbeddingService } from '../embedding/EmbeddingService.js';
-import { logger } from '../utils/logger.js';
 import type {
   MemoryConfig,
   MemoryMetadata,
   MemoryQuery,
   MemoryResult,
-  MemoryType,
 } from '../types/index.js';
-import { MemoryError } from '../types/index.js';
+import { logger } from '../utils/logger.js';
+import {
+  MemoryEngine,
+  RecallOptions,
+  RememberOptions,
+} from './MemoryEngine.js';
 
 export interface PerformanceMetrics {
   operationType: 'remember' | 'recall' | 'batch_remember' | 'batch_recall';
@@ -70,7 +71,7 @@ export class PerformanceOptimizedMemoryEngine extends MemoryEngine {
 
   constructor(config?: Partial<MemoryConfig>) {
     super(config);
-    
+
     // Initialize performance-optimized caches
     this.embeddingCache = new HighPerformanceCache<number[]>({
       maxSize: 50000, // Cache up to 50k embeddings
@@ -86,12 +87,14 @@ export class PerformanceOptimizedMemoryEngine extends MemoryEngine {
       enableStatistics: true,
     });
 
-    this.isPerformanceMonitoringEnabled = 
-      process.env.MEMORAI_PERFORMANCE_MONITORING === 'true' || 
+    this.isPerformanceMonitoringEnabled =
+      process.env.MEMORAI_PERFORMANCE_MONITORING === 'true' ||
       process.env.NODE_ENV === 'development' ||
       process.env.NODE_ENV === 'test'; // Enable for tests
 
-    logger.info('PerformanceOptimizedMemoryEngine initialized with advanced caching');
+    logger.info(
+      'PerformanceOptimizedMemoryEngine initialized with advanced caching'
+    );
   }
 
   /**
@@ -109,25 +112,35 @@ export class PerformanceOptimizedMemoryEngine extends MemoryEngine {
     try {
       // Generate cache key for embedding
       const embeddingKey = this.generateEmbeddingCacheKey(content);
-      
+
       // Try to get cached embedding first
       let embedding = this.embeddingCache.get(embeddingKey);
-      
+
       if (embedding) {
         cacheHit = true;
-        logger.debug('Embedding cache hit for content', { contentLength: content.length });
+        logger.debug('Embedding cache hit for content', {
+          contentLength: content.length,
+        });
       } else {
         // Generate new embedding
         const embeddingResult = await this.getEmbeddingService().embed(content);
         embedding = embeddingResult.embedding;
-        
+
         // Cache the embedding for future use
         this.embeddingCache.set(embeddingKey, embedding, 3600); // 1 hour cache
-        logger.debug('Generated and cached new embedding', { contentLength: content.length });
+        logger.debug('Generated and cached new embedding', {
+          contentLength: content.length,
+        });
       }
 
       // Use the parent remember method with the cached/generated embedding
-      const memoryId = await this.rememberWithEmbedding(content, tenantId, agentId, embedding, options);
+      const memoryId = await this.rememberWithEmbedding(
+        content,
+        tenantId,
+        agentId,
+        embedding,
+        options
+      );
 
       // Invalidate related caches
       this.invalidateRelatedCaches(tenantId, agentId);
@@ -143,18 +156,18 @@ export class PerformanceOptimizedMemoryEngine extends MemoryEngine {
         timestamp: new Date(),
       });
 
-      logger.debug('Remember operation completed', { 
-        duration: `${duration.toFixed(2)}ms`, 
+      logger.debug('Remember operation completed', {
+        duration: `${duration.toFixed(2)}ms`,
         cacheHit,
-        memoryId 
+        memoryId,
       });
 
       return memoryId;
     } catch (error) {
       const duration = performance.now() - startTime;
-      logger.error('Remember operation failed', { 
-        duration: `${duration.toFixed(2)}ms`, 
-        error: error instanceof Error ? error.message : 'Unknown error' 
+      logger.error('Remember operation failed', {
+        duration: `${duration.toFixed(2)}ms`,
+        error: error instanceof Error ? error.message : 'Unknown error',
       });
       throw error;
     }
@@ -174,18 +187,26 @@ export class PerformanceOptimizedMemoryEngine extends MemoryEngine {
 
     try {
       // Generate cache key for results
-      const resultsKey = this.generateResultsCacheKey(query, tenantId, agentId, options);
-      
+      const resultsKey = this.generateResultsCacheKey(
+        query,
+        tenantId,
+        agentId,
+        options
+      );
+
       // Try to get cached results first
       let results = this.resultsCache.get(resultsKey);
-      
+
       if (results) {
         cacheHit = true;
-        logger.debug('Results cache hit for query', { queryLength: query.length, resultCount: results.length });
-        
+        logger.debug('Results cache hit for query', {
+          queryLength: query.length,
+          resultCount: results.length,
+        });
+
         // Update access times for cached results
         this.updateResultsAccessTime(results);
-        
+
         const duration = performance.now() - startTime;
         this.recordPerformanceMetric({
           operationType: 'recall',
@@ -203,7 +224,7 @@ export class PerformanceOptimizedMemoryEngine extends MemoryEngine {
       // Cache miss - perform search with embedding cache optimization
       const embeddingKey = this.generateEmbeddingCacheKey(query);
       let queryEmbedding = this.embeddingCache.get(embeddingKey);
-      
+
       if (!queryEmbedding) {
         const embeddingResult = await this.getEmbeddingService().embed(query);
         queryEmbedding = embeddingResult.embedding;
@@ -211,7 +232,13 @@ export class PerformanceOptimizedMemoryEngine extends MemoryEngine {
       }
 
       // Perform optimized search
-      results = await this.searchWithOptimizations(query, tenantId, agentId, queryEmbedding, options);
+      results = await this.searchWithOptimizations(
+        query,
+        tenantId,
+        agentId,
+        queryEmbedding,
+        options
+      );
 
       // Cache the results
       const cacheTtl = this.calculateCacheTtl(results, options);
@@ -228,18 +255,18 @@ export class PerformanceOptimizedMemoryEngine extends MemoryEngine {
         timestamp: new Date(),
       });
 
-      logger.debug('Recall operation completed', { 
-        duration: `${duration.toFixed(2)}ms`, 
+      logger.debug('Recall operation completed', {
+        duration: `${duration.toFixed(2)}ms`,
         cacheHit,
-        resultCount: results.length 
+        resultCount: results.length,
       });
 
       return results;
     } catch (error) {
       const duration = performance.now() - startTime;
-      logger.error('Recall operation failed', { 
-        duration: `${duration.toFixed(2)}ms`, 
-        error: error instanceof Error ? error.message : 'Unknown error' 
+      logger.error('Recall operation failed', {
+        duration: `${duration.toFixed(2)}ms`,
+        error: error instanceof Error ? error.message : 'Unknown error',
       });
       throw error;
     }
@@ -248,21 +275,27 @@ export class PerformanceOptimizedMemoryEngine extends MemoryEngine {
   /**
    * Batch remember operations for improved performance
    */
-  public async batchRemember(requests: BatchRememberRequest[]): Promise<string[]> {
+  public async batchRemember(
+    requests: BatchRememberRequest[]
+  ): Promise<string[]> {
     const startTime = performance.now();
     const batchKey = `batch_remember_${nanoid()}`;
 
     try {
-      logger.info('Starting batch remember operation', { requestCount: requests.length });
+      logger.info('Starting batch remember operation', {
+        requestCount: requests.length,
+      });
 
       // Group by tenant for optimized processing
       const groupedByTenant = this.groupRequestsByTenant(requests);
       const results: string[] = [];
 
       // Process each tenant group in parallel
-      const tenantPromises = Object.entries(groupedByTenant).map(async ([tenantId, tenantRequests]) => {
-        return this.processTenantBatch(tenantRequests, 'remember');
-      });
+      const tenantPromises = Object.entries(groupedByTenant).map(
+        async ([tenantId, tenantRequests]) => {
+          return this.processTenantBatch(tenantRequests, 'remember');
+        }
+      );
 
       const tenantResults = await Promise.all(tenantPromises);
       tenantResults.forEach(tenantResult => results.push(...tenantResult));
@@ -277,18 +310,18 @@ export class PerformanceOptimizedMemoryEngine extends MemoryEngine {
         timestamp: new Date(),
       });
 
-      logger.info('Batch remember operation completed', { 
-        duration: `${duration.toFixed(2)}ms`, 
+      logger.info('Batch remember operation completed', {
+        duration: `${duration.toFixed(2)}ms`,
         requestCount: requests.length,
-        resultCount: results.length 
+        resultCount: results.length,
       });
 
       return results;
     } catch (error) {
       const duration = performance.now() - startTime;
-      logger.error('Batch remember operation failed', { 
-        duration: `${duration.toFixed(2)}ms`, 
-        error: error instanceof Error ? error.message : 'Unknown error' 
+      logger.error('Batch remember operation failed', {
+        duration: `${duration.toFixed(2)}ms`,
+        error: error instanceof Error ? error.message : 'Unknown error',
       });
       throw error;
     }
@@ -297,27 +330,36 @@ export class PerformanceOptimizedMemoryEngine extends MemoryEngine {
   /**
    * Batch recall operations for improved performance
    */
-  public async batchRecall(requests: BatchRecallRequest[]): Promise<MemoryResult[][]> {
+  public async batchRecall(
+    requests: BatchRecallRequest[]
+  ): Promise<MemoryResult[][]> {
     const startTime = performance.now();
 
     try {
-      logger.info('Starting batch recall operation', { requestCount: requests.length });
+      logger.info('Starting batch recall operation', {
+        requestCount: requests.length,
+      });
 
       // Group by tenant for optimized processing
       const groupedByTenant = this.groupRequestsByTenant(requests);
       const results: MemoryResult[][] = [];
 
       // Process each tenant group in parallel
-      const tenantPromises = Object.entries(groupedByTenant).map(async ([tenantId, tenantRequests]) => {
-        return this.processTenantBatch(tenantRequests, 'recall');
-      });
+      const tenantPromises = Object.entries(groupedByTenant).map(
+        async ([tenantId, tenantRequests]) => {
+          return this.processTenantBatch(tenantRequests, 'recall');
+        }
+      );
 
       const tenantResults = await Promise.all(tenantPromises);
       tenantResults.forEach(tenantResult => results.push(...tenantResult));
 
       const duration = performance.now() - startTime;
-      const totalResults = results.reduce((sum, batch) => sum + batch.length, 0);
-      
+      const totalResults = results.reduce(
+        (sum, batch) => sum + batch.length,
+        0
+      );
+
       this.recordPerformanceMetric({
         operationType: 'batch_recall',
         duration,
@@ -327,18 +369,18 @@ export class PerformanceOptimizedMemoryEngine extends MemoryEngine {
         timestamp: new Date(),
       });
 
-      logger.info('Batch recall operation completed', { 
-        duration: `${duration.toFixed(2)}ms`, 
+      logger.info('Batch recall operation completed', {
+        duration: `${duration.toFixed(2)}ms`,
         requestCount: requests.length,
-        totalResults 
+        totalResults,
       });
 
       return results;
     } catch (error) {
       const duration = performance.now() - startTime;
-      logger.error('Batch recall operation failed', { 
-        duration: `${duration.toFixed(2)}ms`, 
-        error: error instanceof Error ? error.message : 'Unknown error' 
+      logger.error('Batch recall operation failed', {
+        duration: `${duration.toFixed(2)}ms`,
+        error: error instanceof Error ? error.message : 'Unknown error',
       });
       throw error;
     }
@@ -355,7 +397,7 @@ export class PerformanceOptimizedMemoryEngine extends MemoryEngine {
     resultsCacheStats: any;
   } {
     const recent = this.performanceMetrics.slice(-100); // Last 100 operations
-    
+
     const avgResponseTimes: Record<string, number> = {};
     const cacheHitRates: Record<string, number> = {};
 
@@ -363,8 +405,11 @@ export class PerformanceOptimizedMemoryEngine extends MemoryEngine {
     ['remember', 'recall', 'batch_remember', 'batch_recall'].forEach(opType => {
       const operations = recent.filter(m => m.operationType === opType);
       if (operations.length > 0) {
-        avgResponseTimes[opType] = operations.reduce((sum, op) => sum + op.duration, 0) / operations.length;
-        cacheHitRates[opType] = operations.filter(op => op.cacheHit).length / operations.length;
+        avgResponseTimes[opType] =
+          operations.reduce((sum, op) => sum + op.duration, 0) /
+          operations.length;
+        cacheHitRates[opType] =
+          operations.filter(op => op.cacheHit).length / operations.length;
       }
     });
 
@@ -400,15 +445,15 @@ export class PerformanceOptimizedMemoryEngine extends MemoryEngine {
   }
 
   private generateResultsCacheKey(
-    query: string, 
-    tenantId: string, 
-    agentId?: string, 
+    query: string,
+    tenantId: string,
+    agentId?: string,
     options?: RecallOptions
   ): string {
     const keyParts = [query, tenantId];
     if (agentId) keyParts.push(agentId);
     if (options) keyParts.push(JSON.stringify(options));
-    
+
     const crypto = require('crypto');
     return crypto.createHash('md5').update(keyParts.join('|')).digest('hex');
   }
@@ -456,7 +501,7 @@ export class PerformanceOptimizedMemoryEngine extends MemoryEngine {
   ): Promise<MemoryResult[]> {
     // Use the cached embedding to search without re-generating
     const vectorStore = (this as any).vectorStore;
-    
+
     // Build search query with correct interface
     const searchQuery: MemoryQuery = {
       query,
@@ -470,19 +515,26 @@ export class PerformanceOptimizedMemoryEngine extends MemoryEngine {
     };
 
     // Search using the cached embedding
-    const searchResults = await vectorStore.searchMemories(queryEmbedding, searchQuery);
-    
+    const searchResults = await vectorStore.searchMemories(
+      queryEmbedding,
+      searchQuery
+    );
+
     return searchResults;
   }
 
   private invalidateRelatedCaches(tenantId: string, agentId?: string): void {
     // Invalidate result caches for this tenant/agent
     const keysToInvalidate: string[] = [];
-    
+
     // This is a simplified invalidation - in production, you'd want more sophisticated cache invalidation
     this.resultsCache.clear(); // Clear all for now
-    
-    logger.debug('Invalidated related caches', { tenantId, agentId, keysInvalidated: keysToInvalidate.length });
+
+    logger.debug('Invalidated related caches', {
+      tenantId,
+      agentId,
+      keysInvalidated: keysToInvalidate.length,
+    });
   }
 
   private updateResultsAccessTime(results: MemoryResult[]): void {
@@ -496,35 +548,56 @@ export class PerformanceOptimizedMemoryEngine extends MemoryEngine {
     });
   }
 
-  private calculateCacheTtl(results: MemoryResult[], options: RecallOptions): number {
+  private calculateCacheTtl(
+    results: MemoryResult[],
+    options: RecallOptions
+  ): number {
     // Dynamic TTL based on result characteristics
     if (results.length === 0) return 60; // Cache empty results for 1 minute
     if (results.length > 50) return 120; // Large result sets cached for 2 minutes
     return 300; // Default 5 minutes
   }
 
-  private groupRequestsByTenant<T extends { tenantId: string }>(requests: T[]): Record<string, T[]> {
-    return requests.reduce((acc, request) => {
-      if (!acc[request.tenantId]) {
-        acc[request.tenantId] = [];
-      }
-      acc[request.tenantId].push(request);
-      return acc;
-    }, {} as Record<string, T[]>);
+  private groupRequestsByTenant<T extends { tenantId: string }>(
+    requests: T[]
+  ): Record<string, T[]> {
+    return requests.reduce(
+      (acc, request) => {
+        if (!acc[request.tenantId]) {
+          acc[request.tenantId] = [];
+        }
+        acc[request.tenantId].push(request);
+        return acc;
+      },
+      {} as Record<string, T[]>
+    );
   }
 
-  private async processTenantBatch(requests: any[], operationType: 'remember' | 'recall'): Promise<any[]> {
+  private async processTenantBatch(
+    requests: any[],
+    operationType: 'remember' | 'recall'
+  ): Promise<any[]> {
     // Process requests for a single tenant in parallel batches
     const batchSize = 10; // Process 10 at a time
     const results: any[] = [];
 
     for (let i = 0; i < requests.length; i += batchSize) {
       const batch = requests.slice(i, i + batchSize);
-      const batchPromises = batch.map(async (request) => {
+      const batchPromises = batch.map(async request => {
         if (operationType === 'remember') {
-          return this.remember(request.content, request.tenantId, request.agentId, request.options);
+          return this.remember(
+            request.content,
+            request.tenantId,
+            request.agentId,
+            request.options
+          );
         } else {
-          return this.recall(request.query, request.tenantId, request.agentId, request.options);
+          return this.recall(
+            request.query,
+            request.tenantId,
+            request.agentId,
+            request.options
+          );
         }
       });
 
@@ -539,7 +612,7 @@ export class PerformanceOptimizedMemoryEngine extends MemoryEngine {
     if (!this.isPerformanceMonitoringEnabled) return;
 
     this.performanceMetrics.push(metric);
-    
+
     // Keep only the last 1000 metrics to prevent memory leaks
     if (this.performanceMetrics.length > 1000) {
       this.performanceMetrics = this.performanceMetrics.slice(-1000);

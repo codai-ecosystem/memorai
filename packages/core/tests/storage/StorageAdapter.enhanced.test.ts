@@ -3,13 +3,12 @@
  * Comprehensive test coverage for all storage adapters to achieve 85%+ coverage
  */
 
-import { beforeEach, describe, expect, it, vi, beforeAll, afterAll, afterEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { ProductionPostgreSQLAdapter } from '../../src/storage/ProductionPostgreSQLAdapter';
 import {
   InMemoryStorageAdapter,
-  PostgreSQLStorageAdapter,
   RedisStorageAdapter,
 } from '../../src/storage/StorageAdapter';
-import { ProductionPostgreSQLAdapter } from '../../src/storage/ProductionPostgreSQLAdapter';
 import type { MemoryMetadata } from '../../src/types/index';
 
 describe('Enhanced Storage Adapter Tests', () => {
@@ -71,7 +70,7 @@ describe('Enhanced Storage Adapter Tests', () => {
 
       it('should overwrite existing memory when storing with same ID', async () => {
         await adapter.store(sampleMemory);
-        
+
         const updatedMemory = { ...sampleMemory, content: 'Updated content' };
         await adapter.store(updatedMemory);
 
@@ -124,7 +123,7 @@ describe('Enhanced Storage Adapter Tests', () => {
       it('should handle retrieving with special characters in ID', async () => {
         const specialMemory = { ...sampleMemory, id: 'test-!@#$%^&*()' };
         await adapter.store(specialMemory);
-        
+
         const retrieved = await adapter.retrieve('test-!@#$%^&*()');
         expect(retrieved).toEqual(specialMemory);
       });
@@ -149,8 +148,9 @@ describe('Enhanced Storage Adapter Tests', () => {
 
       it('should handle updating non-existent memory', async () => {
         // InMemoryStorageAdapter silently ignores updates to non-existent memories
-        await expect(adapter.update('non-existent', { content: 'New content' }))
-          .resolves.toBeUndefined();
+        await expect(
+          adapter.update('non-existent', { content: 'New content' })
+        ).resolves.toBeUndefined();
       });
 
       it('should update complex fields like arrays', async () => {
@@ -179,10 +179,10 @@ describe('Enhanced Storage Adapter Tests', () => {
 
       it('should delete existing memory', async () => {
         await adapter.delete(sampleMemory.id);
-        
+
         const deleted = await adapter.retrieve(sampleMemory.id);
         const remaining = await adapter.retrieve(secondMemory.id);
-        
+
         expect(deleted).toBeNull();
         expect(remaining).toEqual(secondMemory);
       });
@@ -271,18 +271,18 @@ describe('Enhanced Storage Adapter Tests', () => {
 
       it('should clear all memories when no tenant specified', async () => {
         await adapter.clear();
-        
+
         const memories = await adapter.list();
         expect(memories).toHaveLength(0);
       });
 
       it('should clear memories for specific tenant', async () => {
         await adapter.clear('tenant-1');
-        
+
         const allMemories = await adapter.list();
         const tenant1Memories = await adapter.list({ tenantId: 'tenant-1' });
         const tenant2Memories = await adapter.list({ tenantId: 'tenant-2' });
-        
+
         expect(tenant1Memories).toHaveLength(0);
         expect(tenant2Memories).toHaveLength(1);
         expect(allMemories).toHaveLength(1);
@@ -290,14 +290,14 @@ describe('Enhanced Storage Adapter Tests', () => {
 
       it('should handle clearing non-existent tenant', async () => {
         await adapter.clear('non-existent-tenant');
-        
+
         const memories = await adapter.list();
         expect(memories).toHaveLength(2); // No change
       });
 
       it('should handle clearing with empty string tenant', async () => {
         await adapter.clear('');
-        
+
         const memories = await adapter.list();
         expect(memories).toHaveLength(0); // Empty string clears all
       });
@@ -306,18 +306,20 @@ describe('Enhanced Storage Adapter Tests', () => {
     describe('Error Handling and Edge Cases', () => {
       it('should handle concurrent operations', async () => {
         const promises: Promise<void>[] = [];
-        
+
         // Concurrent stores
         for (let i = 0; i < 10; i++) {
-          promises.push(adapter.store({
-            ...sampleMemory,
-            id: `concurrent-${i}`,
-            content: `Content ${i}`,
-          }));
+          promises.push(
+            adapter.store({
+              ...sampleMemory,
+              id: `concurrent-${i}`,
+              content: `Content ${i}`,
+            })
+          );
         }
-        
+
         await Promise.all(promises);
-        
+
         const memories = await adapter.list();
         expect(memories).toHaveLength(10);
       });
@@ -337,14 +339,14 @@ describe('Enhanced Storage Adapter Tests', () => {
 
       it('should maintain data integrity across operations', async () => {
         await adapter.store(sampleMemory);
-        
+
         // Multiple operations
         await adapter.update(sampleMemory.id, { accessCount: 5 });
         const afterUpdate = await adapter.retrieve(sampleMemory.id);
-        
+
         await adapter.store(secondMemory);
         const afterSecondStore = await adapter.retrieve(sampleMemory.id);
-        
+
         expect(afterUpdate?.accessCount).toBe(5);
         expect(afterSecondStore?.accessCount).toBe(5); // Should be preserved
       });
@@ -353,22 +355,24 @@ describe('Enhanced Storage Adapter Tests', () => {
     describe('Performance and Memory Management', () => {
       it('should handle bulk operations efficiently', async () => {
         const start = Date.now();
-        
+
         // Store 100 memories
         const promises: Promise<void>[] = [];
         for (let i = 0; i < 100; i++) {
-          promises.push(adapter.store({
-            ...sampleMemory,
-            id: `bulk-${i}`,
-            content: `Bulk content ${i}`,
-          }));
+          promises.push(
+            adapter.store({
+              ...sampleMemory,
+              id: `bulk-${i}`,
+              content: `Bulk content ${i}`,
+            })
+          );
         }
-        
+
         await Promise.all(promises);
         const duration = Date.now() - start;
-        
+
         expect(duration).toBeLessThan(1000); // Should complete in under 1 second
-        
+
         const memories = await adapter.list();
         expect(memories).toHaveLength(100);
       });
@@ -457,7 +461,7 @@ describe('Enhanced Storage Adapter Tests', () => {
         // This would normally require a real database connection
         // For testing, we'll mock the behavior
         const mockAdapter = new ProductionPostgreSQLAdapter(mockConfig);
-        
+
         // Mock database operations would go here
         expect(mockAdapter).toBeDefined();
       });
@@ -478,7 +482,9 @@ describe('Enhanced Storage Adapter Tests', () => {
       });
 
       it('should handle Redis connection with authentication', () => {
-        const authAdapter = new RedisStorageAdapter('redis://:password@localhost:6379');
+        const authAdapter = new RedisStorageAdapter(
+          'redis://:password@localhost:6379'
+        );
         expect(authAdapter).toBeDefined();
       });
 
@@ -491,14 +497,18 @@ describe('Enhanced Storage Adapter Tests', () => {
     describe('Error Scenarios', () => {
       it('should handle Redis connection failures', async () => {
         // Mock Redis connection error
-        const failingAdapter = new RedisStorageAdapter('redis://invalid-redis-host:9999');
+        const failingAdapter = new RedisStorageAdapter(
+          'redis://invalid-redis-host:9999'
+        );
 
         // Operations should fail gracefully
         await expect(failingAdapter.store(sampleMemory)).rejects.toThrow();
       });
 
       it('should handle Redis timeout errors', async () => {
-        const timeoutAdapter = new RedisStorageAdapter('redis://localhost:6379');
+        const timeoutAdapter = new RedisStorageAdapter(
+          'redis://localhost:6379'
+        );
 
         await expect(timeoutAdapter.store(sampleMemory)).rejects.toThrow();
       });
@@ -513,7 +523,9 @@ describe('Enhanced Storage Adapter Tests', () => {
       });
 
       it('should handle Redis clustering configuration', () => {
-        const clusterAdapter = new RedisStorageAdapter('redis://localhost:6379');
+        const clusterAdapter = new RedisStorageAdapter(
+          'redis://localhost:6379'
+        );
         expect(clusterAdapter).toBeDefined();
       });
     });
@@ -546,7 +558,7 @@ describe('Enhanced Storage Adapter Tests', () => {
           if (name === 'InMemory') {
             await adapter.store(sampleMemory);
             const retrieved = await adapter.retrieve(sampleMemory.id);
-            
+
             // Verify all required fields are preserved
             expect(retrieved?.id).toBe(sampleMemory.id);
             expect(retrieved?.content).toBe(sampleMemory.content);
@@ -562,39 +574,39 @@ describe('Enhanced Storage Adapter Tests', () => {
   describe('Integration Tests', () => {
     it('should handle adapter switching scenarios', async () => {
       const inMemoryAdapter = new InMemoryStorageAdapter();
-      
+
       // Store data in first adapter
       await inMemoryAdapter.store(sampleMemory);
       await inMemoryAdapter.store(secondMemory);
-      
+
       // Retrieve data for migration
       const memories = await inMemoryAdapter.list();
       expect(memories).toHaveLength(2);
-      
+
       // Simulate migration to another adapter
       const newAdapter = new InMemoryStorageAdapter();
       for (const memory of memories) {
         await newAdapter.store(memory);
       }
-      
+
       const migratedMemories = await newAdapter.list();
       expect(migratedMemories).toHaveLength(2);
     });
 
     it('should maintain data consistency across multiple operations', async () => {
       const adapter = new InMemoryStorageAdapter();
-      
+
       // Complex workflow
       await adapter.store(sampleMemory);
       await adapter.update(sampleMemory.id, { accessCount: 10 });
       await adapter.store(secondMemory);
-      
+
       const allMemories = await adapter.list();
       const firstMemory = await adapter.retrieve(sampleMemory.id);
-      
+
       expect(allMemories).toHaveLength(2);
       expect(firstMemory?.accessCount).toBe(10);
-      
+
       await adapter.delete(secondMemory.id);
       const remainingMemories = await adapter.list();
       expect(remainingMemories).toHaveLength(1);

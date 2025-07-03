@@ -1,67 +1,67 @@
 /**
  * Analytics Module
- * 
+ *
  * Comprehensive analytics and monitoring system for Memorai enterprise memory operations.
  * Provides performance monitoring, system optimization, and business intelligence.
  */
 
 // Performance Monitoring
-export { 
+export {
   AdvancedPerformanceMonitor,
-  type PerformanceMetric,
+  type AnalyticsConfig,
   type MemoryUsageStats,
-  type SystemHealthMetrics,
   type PerformanceAlert,
-  type AnalyticsConfig 
+  type PerformanceMetric,
+  type SystemHealthMetrics,
 } from './AdvancedPerformanceMonitor';
 
 // System Optimization
-export { 
+export {
   SystemOptimizationEngine,
-  type OptimizationRule,
-  type OptimizationMetrics,
-  type OptimizationContext,
-  type OptimizationResult,
   type AutoScalingConfig,
   type CacheOptimizationConfig,
-  type QueryOptimizationConfig 
+  type OptimizationContext,
+  type OptimizationMetrics,
+  type OptimizationResult,
+  type OptimizationRule,
+  type QueryOptimizationConfig,
 } from './SystemOptimizationEngine';
 
 // Analytics Dashboard
-export { 
+export {
   AnalyticsDashboardService,
-  type DashboardWidget,
-  type DashboardLayout,
-  type ReportConfig,
   type AnalyticsQuery,
+  type BusinessMetrics,
   type DashboardData,
-  type BusinessMetrics 
+  type DashboardLayout,
+  type DashboardWidget,
+  type ReportConfig,
 } from './AnalyticsDashboardService';
 
 // Import types for internal use
-import type { 
+import type {
   AnalyticsConfig,
+  MemoryUsageStats,
+  PerformanceAlert,
   PerformanceMetric,
   SystemHealthMetrics,
-  PerformanceAlert,
-  MemoryUsageStats 
 } from './AdvancedPerformanceMonitor';
-import type { 
-  AutoScalingConfig,
-  CacheOptimizationConfig,
-  QueryOptimizationConfig,
-  OptimizationMetrics,
-  OptimizationRule,
-  OptimizationResult 
-} from './SystemOptimizationEngine';
-import type { 
+import { AdvancedPerformanceMonitor } from './AdvancedPerformanceMonitor';
+import type {
+  BusinessMetrics,
   DashboardData,
   DashboardLayout,
-  BusinessMetrics 
 } from './AnalyticsDashboardService';
-import { AdvancedPerformanceMonitor } from './AdvancedPerformanceMonitor';
-import { SystemOptimizationEngine } from './SystemOptimizationEngine';
 import { AnalyticsDashboardService } from './AnalyticsDashboardService';
+import type {
+  AutoScalingConfig,
+  CacheOptimizationConfig,
+  OptimizationMetrics,
+  OptimizationResult,
+  OptimizationRule,
+  QueryOptimizationConfig,
+} from './SystemOptimizationEngine';
+import { SystemOptimizationEngine } from './SystemOptimizationEngine';
 
 // Default Configurations
 export const DEFAULT_ANALYTICS_CONFIG: AnalyticsConfig = {
@@ -71,14 +71,14 @@ export const DEFAULT_ANALYTICS_CONFIG: AnalyticsConfig = {
     errorRate: 0.05, // 5%
     memoryUsage: 0.8, // 80%
     cpuUsage: 80, // 80%
-    diskUsage: 85 // 85%
+    diskUsage: 85, // 85%
   },
   sampling: {
     enabled: false,
-    rate: 1.0 // 100% sampling by default
+    rate: 1.0, // 100% sampling by default
   },
   realTimeUpdates: true,
-  aggregationIntervals: [60, 300, 3600] // 1min, 5min, 1hour
+  aggregationIntervals: [60, 300, 3600], // 1min, 5min, 1hour
 };
 
 export const DEFAULT_AUTO_SCALING_CONFIG: AutoScalingConfig = {
@@ -87,15 +87,15 @@ export const DEFAULT_AUTO_SCALING_CONFIG: AutoScalingConfig = {
     cpuThreshold: 70, // 70%
     memoryThreshold: 80, // 80%
     responseTimeThreshold: 200, // 200ms
-    throughputThreshold: 1000 // ops/min
+    throughputThreshold: 1000, // ops/min
   },
   scaling: {
     minInstances: 1,
     maxInstances: 10,
     scaleUpFactor: 1.5,
     scaleDownFactor: 0.7,
-    cooldownPeriodMs: 300000 // 5 minutes
-  }
+    cooldownPeriodMs: 300000, // 5 minutes
+  },
 };
 
 export const DEFAULT_CACHE_OPTIMIZATION_CONFIG: CacheOptimizationConfig = {
@@ -104,13 +104,13 @@ export const DEFAULT_CACHE_OPTIMIZATION_CONFIG: CacheOptimizationConfig = {
     preemptiveLoading: true,
     intelligentEviction: true,
     hotDataIdentification: true,
-    crossTenantOptimization: false // Disabled for security
+    crossTenantOptimization: false, // Disabled for security
   },
   thresholds: {
     hitRatioTarget: 0.85, // 85%
     memoryUsageLimit: 0.9, // 90%
-    accessFrequencyMin: 5 // minimum 5 accesses
-  }
+    accessFrequencyMin: 5, // minimum 5 accesses
+  },
 };
 
 export const DEFAULT_QUERY_OPTIMIZATION_CONFIG: QueryOptimizationConfig = {
@@ -119,18 +119,18 @@ export const DEFAULT_QUERY_OPTIMIZATION_CONFIG: QueryOptimizationConfig = {
     queryPlanOptimization: true,
     indexSuggestions: true,
     batchingOptimization: true,
-    vectorSearchTuning: true
+    vectorSearchTuning: true,
   },
   analysis: {
     slowQueryThreshold: 100, // 100ms
     frequentQueryThreshold: 10, // 10 times per hour
-    optimizationWindowMs: 3600000 // 1 hour
-  }
+    optimizationWindowMs: 3600000, // 1 hour
+  },
 };
 
 /**
  * Enterprise Analytics Manager
- * 
+ *
  * Unified interface for all analytics capabilities including performance monitoring,
  * system optimization, and business intelligence dashboards.
  */
@@ -147,7 +147,11 @@ export class EnterpriseAnalyticsManager {
     queryConfig: QueryOptimizationConfig = DEFAULT_QUERY_OPTIMIZATION_CONFIG
   ) {
     this.performanceMonitor = new AdvancedPerformanceMonitor(analyticsConfig);
-    this.optimizationEngine = new SystemOptimizationEngine(autoScalingConfig, cacheConfig, queryConfig);
+    this.optimizationEngine = new SystemOptimizationEngine(
+      autoScalingConfig,
+      cacheConfig,
+      queryConfig
+    );
     this.dashboardService = new AnalyticsDashboardService();
 
     // Wire up event connections
@@ -167,10 +171,14 @@ export class EnterpriseAnalyticsManager {
       this.dashboardService.start();
 
       this.isRunning = true;
-      console.log('[EnterpriseAnalytics] All analytics services started successfully');
-      
+      console.log(
+        '[EnterpriseAnalytics] All analytics services started successfully'
+      );
     } catch (error) {
-      console.error('[EnterpriseAnalytics] Failed to start analytics services:', error);
+      console.error(
+        '[EnterpriseAnalytics] Failed to start analytics services:',
+        error
+      );
       await this.stop(); // Cleanup on failure
       throw error;
     }
@@ -189,10 +197,14 @@ export class EnterpriseAnalyticsManager {
       this.performanceMonitor.stop();
 
       this.isRunning = false;
-      console.log('[EnterpriseAnalytics] All analytics services stopped successfully');
-      
+      console.log(
+        '[EnterpriseAnalytics] All analytics services stopped successfully'
+      );
     } catch (error) {
-      console.error('[EnterpriseAnalytics] Error stopping analytics services:', error);
+      console.error(
+        '[EnterpriseAnalytics] Error stopping analytics services:',
+        error
+      );
       throw error;
     }
   }
@@ -207,8 +219,16 @@ export class EnterpriseAnalyticsManager {
   /**
    * Get performance statistics
    */
-  public getPerformanceStats(startTime: Date, endTime: Date, operationType?: string) {
-    return this.performanceMonitor.getPerformanceStats(startTime, endTime, operationType);
+  public getPerformanceStats(
+    startTime: Date,
+    endTime: Date,
+    operationType?: string
+  ) {
+    return this.performanceMonitor.getPerformanceStats(
+      startTime,
+      endTime,
+      operationType
+    );
   }
 
   /**
@@ -242,15 +262,17 @@ export class EnterpriseAnalyticsManager {
   /**
    * Get optimization recommendations
    */
-  public async getOptimizationRecommendations(): Promise<Array<{
-    category: string;
-    priority: 'low' | 'medium' | 'high' | 'critical';
-    title: string;
-    description: string;
-    estimatedImpact: string;
-    implementation: string;
-    automated: boolean;
-  }>> {
+  public async getOptimizationRecommendations(): Promise<
+    Array<{
+      category: string;
+      priority: 'low' | 'medium' | 'high' | 'critical';
+      title: string;
+      description: string;
+      estimatedImpact: string;
+      implementation: string;
+      automated: boolean;
+    }>
+  > {
     const metrics = await this.gatherCurrentMetrics();
     return this.optimizationEngine.getOptimizationRecommendations(metrics);
   }
@@ -258,7 +280,9 @@ export class EnterpriseAnalyticsManager {
   /**
    * Execute specific optimization
    */
-  public async executeOptimization(ruleId: string): Promise<OptimizationResult> {
+  public async executeOptimization(
+    ruleId: string
+  ): Promise<OptimizationResult> {
     return this.optimizationEngine.executeOptimization(ruleId);
   }
 
@@ -347,32 +371,35 @@ export class EnterpriseAnalyticsManager {
     const dashboardData = this.dashboardService.getDashboardData();
     const systemHealth = this.performanceMonitor.getSystemHealth();
     const alerts = this.performanceMonitor.getAlerts();
-    const recentOptimizations = this.optimizationEngine.getOptimizationHistory(1); // Last hour
+    const recentOptimizations =
+      this.optimizationEngine.getOptimizationHistory(1); // Last hour
 
     const overall = dashboardData?.systemOverview.status || 'warning';
-    
+
     return {
       overall,
       performance: {
         averageResponseTime: dashboardData?.systemOverview.errorRate || 0,
         throughput: 0, // Would be calculated from recent metrics
-        errorRate: dashboardData?.systemOverview.errorRate || 0
+        errorRate: dashboardData?.systemOverview.errorRate || 0,
       },
       resources: {
-        memoryUsage: systemHealth ? systemHealth.memory.heapUsed / systemHealth.memory.heapTotal : 0,
+        memoryUsage: systemHealth
+          ? systemHealth.memory.heapUsed / systemHealth.memory.heapTotal
+          : 0,
         cpuUsage: systemHealth?.cpu.usage || 0,
-        connections: systemHealth?.database.connections || 0
+        connections: systemHealth?.database.connections || 0,
       },
       alerts: {
         critical: alerts.filter(a => a.type === 'critical').length,
         warning: alerts.filter(a => a.type === 'warning').length,
-        total: alerts.length
+        total: alerts.length,
       },
       optimizations: {
         recent: recentOptimizations.length,
         successful: recentOptimizations.filter(o => o.result.success).length,
-        pending: 0 // Would be calculated from pending optimizations
-      }
+        pending: 0, // Would be calculated from pending optimizations
+      },
     };
   }
 
@@ -390,24 +417,26 @@ export class EnterpriseAnalyticsManager {
     });
 
     // Optimization engine -> Dashboard service
-    this.optimizationEngine.on('optimizationApplied', (data) => {
-      this.dashboardService.updateOptimizationHistory([{
-        timestamp: new Date(),
-        rule: data.rule,
-        result: data.result
-      }]);
+    this.optimizationEngine.on('optimizationApplied', data => {
+      this.dashboardService.updateOptimizationHistory([
+        {
+          timestamp: new Date(),
+          rule: data.rule,
+          result: data.result,
+        },
+      ]);
     });
 
     // Error handling
-    this.performanceMonitor.on('error', (error) => {
+    this.performanceMonitor.on('error', error => {
       console.error('[EnterpriseAnalytics] Performance monitor error:', error);
     });
 
-    this.optimizationEngine.on('error', (error) => {
+    this.optimizationEngine.on('error', error => {
       console.error('[EnterpriseAnalytics] Optimization engine error:', error);
     });
 
-    this.dashboardService.on('error', (error) => {
+    this.dashboardService.on('error', error => {
       console.error('[EnterpriseAnalytics] Dashboard service error:', error);
     });
   }
@@ -418,7 +447,7 @@ export class EnterpriseAnalyticsManager {
   private async gatherCurrentMetrics(): Promise<OptimizationMetrics> {
     const now = new Date();
     const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
-    
+
     const stats = this.performanceMonitor.getPerformanceStats(oneHourAgo, now);
     const memoryAnalytics = this.performanceMonitor.getMemoryAnalytics();
     const systemHealth = this.performanceMonitor.getSystemHealth();
@@ -429,20 +458,34 @@ export class EnterpriseAnalyticsManager {
     const throughputTrend = trends.throughputTrend;
     const errorRateTrend = trends.errorRateTrend;
 
-    const responseTimeGrowth = responseTimeTrend.length >= 2 ? 
-      (responseTimeTrend[responseTimeTrend.length - 1].value - responseTimeTrend[0].value) / responseTimeTrend[0].value : 0;
-    
-    const throughputChange = throughputTrend.length >= 2 ? 
-      (throughputTrend[throughputTrend.length - 1].value - throughputTrend[0].value) / throughputTrend[0].value : 0;
-    
-    const errorRateChange = errorRateTrend.length >= 2 ? 
-      (errorRateTrend[errorRateTrend.length - 1].value - errorRateTrend[0].value) / Math.max(errorRateTrend[0].value, 0.001) : 0;
+    const responseTimeGrowth =
+      responseTimeTrend.length >= 2
+        ? (responseTimeTrend[responseTimeTrend.length - 1].value -
+            responseTimeTrend[0].value) /
+          responseTimeTrend[0].value
+        : 0;
+
+    const throughputChange =
+      throughputTrend.length >= 2
+        ? (throughputTrend[throughputTrend.length - 1].value -
+            throughputTrend[0].value) /
+          throughputTrend[0].value
+        : 0;
+
+    const errorRateChange =
+      errorRateTrend.length >= 2
+        ? (errorRateTrend[errorRateTrend.length - 1].value -
+            errorRateTrend[0].value) /
+          Math.max(errorRateTrend[0].value, 0.001)
+        : 0;
 
     return {
       averageResponseTime: stats.averageResponseTime,
       throughput: stats.operationsPerSecond,
       errorRate: 1 - stats.successRate,
-      memoryUsage: systemHealth ? systemHealth.memory.heapUsed / systemHealth.memory.heapTotal : 0,
+      memoryUsage: systemHealth
+        ? systemHealth.memory.heapUsed / systemHealth.memory.heapTotal
+        : 0,
       cpuUsage: systemHealth?.cpu.usage || 0,
       cacheHitRatio: memoryAnalytics.cacheHitRatio,
       vectorSearchLatency: memoryAnalytics.vectorSearchLatency,
@@ -451,8 +494,8 @@ export class EnterpriseAnalyticsManager {
       trendData: {
         responseTimeGrowth,
         throughputChange,
-        errorRateChange
-      }
+        errorRateChange,
+      },
     };
   }
 }

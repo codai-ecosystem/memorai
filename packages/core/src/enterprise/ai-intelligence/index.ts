@@ -1,41 +1,41 @@
 /**
  * @fileoverview AI Intelligence Package - Advanced AI-powered memory intelligence
  * components for next-generation memory management and analysis.
- * 
+ *
  * This package provides sophisticated AI capabilities including:
  * - Semantic similarity analysis with multi-dimensional vectors
  * - Memory clustering and auto-categorization
  * - Predictive memory pre-loading with machine learning
  * - Intelligent memory pruning and lifecycle management
  * - Cross-memory relationship analysis and visualization
- * 
+ *
  * @author Memorai AI Intelligence Team
  * @version 3.1.0
  * @since 2025-07-03
  */
 
 // Export AI Intelligence Engines
-export { default as SemanticSimilarityEngine } from './SemanticSimilarityEngine';
+export { default as CrossMemoryRelationshipAnalysisEngine } from './CrossMemoryRelationshipAnalysisEngine';
+export { default as IntelligentMemoryPruningEngine } from './IntelligentMemoryPruningEngine';
 export { default as MemoryClusteringEngine } from './MemoryClusteringEngine';
 export { default as PredictiveMemoryPreloadingEngine } from './PredictiveMemoryPreloadingEngine';
-export { default as IntelligentMemoryPruningEngine } from './IntelligentMemoryPruningEngine';
-export { default as CrossMemoryRelationshipAnalysisEngine } from './CrossMemoryRelationshipAnalysisEngine';
+export { default as SemanticSimilarityEngine } from './SemanticSimilarityEngine';
 
 // Export Schemas and Types
 export {
   SemanticVectorSchema,
   SimilarityScoreSchema,
   type SemanticVector,
-  type SimilarityScore
+  type SimilarityScore,
 } from './SemanticSimilarityEngine';
 
 export {
-  MemoryClusterSchema,
-  MemoryCategorySchema,
   ClusteringConfigSchema,
-  type MemoryCluster,
+  MemoryCategorySchema,
+  MemoryClusterSchema,
+  type ClusteringConfig,
   type MemoryCategory,
-  type ClusteringConfig
+  type MemoryCluster,
 } from './MemoryClusteringEngine';
 
 export {
@@ -44,27 +44,27 @@ export {
   PreloadingConfigSchema,
   type MemoryAccessPattern,
   type PredictionModel,
-  type PreloadingConfig
+  type PreloadingConfig,
 } from './PredictiveMemoryPreloadingEngine';
 
 export {
-  MemoryImportanceScoreSchema,
-  PruningPolicySchema,
-  PruningConfigSchema,
   MemoryAnalyticsSchema,
+  MemoryImportanceScoreSchema,
+  PruningConfigSchema,
+  PruningPolicySchema,
+  type MemoryAnalytics,
   type MemoryImportanceScore,
-  type PruningPolicy,
   type PruningConfig,
-  type MemoryAnalytics
+  type PruningPolicy,
 } from './IntelligentMemoryPruningEngine';
 
 export {
-  MemoryRelationshipSchema,
   MemoryGraphSchema,
+  MemoryRelationshipSchema,
   RelationshipAnalysisConfigSchema,
-  type MemoryRelationship,
   type MemoryGraph,
-  type RelationshipAnalysisConfig
+  type MemoryRelationship,
+  type RelationshipAnalysisConfig,
 } from './CrossMemoryRelationshipAnalysisEngine';
 
 /**
@@ -97,20 +97,24 @@ export class AIIntelligencePlatform {
       MemoryClusteringEngine,
       PredictiveMemoryPreloadingEngine,
       IntelligentMemoryPruningEngine,
-      CrossMemoryRelationshipAnalysisEngine
+      CrossMemoryRelationshipAnalysisEngine,
     ] = await Promise.all([
       import('./SemanticSimilarityEngine').then(m => m.default),
       import('./MemoryClusteringEngine').then(m => m.default),
       import('./PredictiveMemoryPreloadingEngine').then(m => m.default),
       import('./IntelligentMemoryPruningEngine').then(m => m.default),
-      import('./CrossMemoryRelationshipAnalysisEngine').then(m => m.default)
+      import('./CrossMemoryRelationshipAnalysisEngine').then(m => m.default),
     ]);
 
     this.semanticEngine = new SemanticSimilarityEngine(config.semantic);
     this.clusteringEngine = new MemoryClusteringEngine(config.clustering);
-    this.preloadingEngine = new PredictiveMemoryPreloadingEngine(config.preloading);
+    this.preloadingEngine = new PredictiveMemoryPreloadingEngine(
+      config.preloading
+    );
     this.pruningEngine = new IntelligentMemoryPruningEngine(config.pruning);
-    this.relationshipEngine = new CrossMemoryRelationshipAnalysisEngine(config.relationship);
+    this.relationshipEngine = new CrossMemoryRelationshipAnalysisEngine(
+      config.relationship
+    );
     this.initialized = true;
   }
 
@@ -175,20 +179,24 @@ export class AIIntelligencePlatform {
   }> {
     await this.ensureInitialized();
 
-    const [semantic, clustering, relationships, preloading, pruning] = await Promise.all([
-      this.semanticEngine.calculateSimilarity(memories[0] || {}, memories[1] || {}),
-      this.clusteringEngine.clusterMemories(memories),
-      this.relationshipEngine.discoverRelationships(memories),
-      this.preloadingEngine.getPerformanceMetrics(), // Use a simpler method for demo
-      this.pruningEngine.executePruning(memories, undefined, true) // Dry run
-    ]);
+    const [semantic, clustering, relationships, preloading, pruning] =
+      await Promise.all([
+        this.semanticEngine.calculateSimilarity(
+          memories[0] || {},
+          memories[1] || {}
+        ),
+        this.clusteringEngine.clusterMemories(memories),
+        this.relationshipEngine.discoverRelationships(memories),
+        this.preloadingEngine.getPerformanceMetrics(), // Use a simpler method for demo
+        this.pruningEngine.executePruning(memories, undefined, true), // Dry run
+      ]);
 
     return {
       semantic,
       clustering,
       relationships,
       preloading,
-      pruning
+      pruning,
     };
   }
 
@@ -203,7 +211,7 @@ export class AIIntelligencePlatform {
       this.clusteringEngine?.cleanup(),
       this.preloadingEngine?.cleanup(),
       this.pruningEngine?.cleanup(),
-      this.relationshipEngine?.cleanup()
+      this.relationshipEngine?.cleanup(),
     ]);
   }
 }
@@ -262,7 +270,9 @@ export interface AIIntelligenceResults {
 /**
  * Create AI Intelligence Platform with default configuration
  */
-export function createAIIntelligencePlatform(config?: AIIntelligenceConfig): AIIntelligencePlatform {
+export function createAIIntelligencePlatform(
+  config?: AIIntelligenceConfig
+): AIIntelligencePlatform {
   return new AIIntelligencePlatform(config);
 }
 
@@ -280,7 +290,7 @@ export const AI_INTELLIGENCE_FEATURES = [
   'machine_learning_models',
   'graph_visualization',
   'real_time_processing',
-  'performance_optimization'
+  'performance_optimization',
 ];
 
 /**
@@ -292,34 +302,34 @@ export const AI_INTELLIGENCE_CAPABILITIES = {
     crossLingualSupport: true,
     temporalAnalysis: true,
     contextualWeighting: true,
-    attentionMechanisms: true
+    attentionMechanisms: true,
   },
   clustering: {
     adaptiveAlgorithms: true,
     hierarchicalOrganization: true,
     autoCategorizationML: true,
     qualityOptimization: true,
-    dynamicEvolution: true
+    dynamicEvolution: true,
   },
   preloading: {
     behavioralPrediction: true,
     collaborativeFiltering: true,
     temporalPatterns: true,
     realtimeAdaptation: true,
-    reinforcementLearning: true
+    reinforcementLearning: true,
   },
   pruning: {
     importanceScoring: true,
     policyBasedManagement: true,
     recoveryMechanisms: true,
     performanceOptimization: true,
-    lifecycleManagement: true
+    lifecycleManagement: true,
   },
   relationshipAnalysis: {
     graphBasedAnalysis: true,
     communityDetection: true,
     centralityMetrics: true,
     visualizationSupport: true,
-    patternRecognition: true
-  }
+    patternRecognition: true,
+  },
 };

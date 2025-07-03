@@ -1,82 +1,82 @@
 /**
  * @fileoverview Developer Experience Package - Enterprise-grade developer tools
  * and workflow management system providing comprehensive development support.
- * 
+ *
  * @author Memorai Development Team
  * @version 2.1.0
  * @since 2025-07-02
  */
 
 // Core Components
-import APIDocumentationEngine from './APIDocumentationEngine';
-import InteractiveDevelopmentEnvironment from './InteractiveDevelopmentEnvironment';
 import AdvancedDebuggingTools from './AdvancedDebuggingTools';
-import DevelopmentEnvironmentManager from './DevelopmentEnvironmentManager';
+import APIDocumentationEngine from './APIDocumentationEngine';
 import CodeQualityScanner from './CodeQualityScanner';
 import DeveloperExperienceOrchestrator from './DeveloperExperienceOrchestrator';
+import DevelopmentEnvironmentManager from './DevelopmentEnvironmentManager';
+import InteractiveDevelopmentEnvironment from './InteractiveDevelopmentEnvironment';
 
 // Type exports
 export type {
   APIEndpoint,
-  OpenAPISpec,
   CodeGenConfig,
+  CodeGenerationResult,
   DocumentationConfig,
   DocumentationResult,
-  CodeGenerationResult
+  OpenAPISpec,
 } from './APIDocumentationEngine';
 
 export type {
-  DevSessionConfig,
   CodeExecutionRequest,
-  DebugSession,
-  CollaborationSession,
   CodeExecutionResult,
-  DebugEvent,
   CollaborationEvent,
-  PerformanceMetrics
+  CollaborationSession,
+  DebugEvent,
+  DebugSession,
+  DevSessionConfig,
+  PerformanceMetrics,
 } from './InteractiveDevelopmentEnvironment';
 
 export type {
-  DebugConfig,
+  DebugEvent as AdvancedDebugEvent,
   Breakpoint,
+  DebugConfig,
+  DebugSessionState,
+  DistributedTrace,
+  MemorySnapshot,
+  PerformanceSnapshot,
   StackFrame,
   Variable,
-  DebugSessionState,
-  PerformanceSnapshot,
-  MemorySnapshot,
-  DebugEvent as AdvancedDebugEvent,
-  DistributedTrace
 } from './AdvancedDebuggingTools';
 
 export type {
-  EnvironmentConfig,
-  EnvironmentStatus,
   DeploymentResult,
+  EnvironmentConfig,
   EnvironmentMetrics,
-  EnvironmentTemplate
+  EnvironmentStatus,
+  EnvironmentTemplate,
 } from './DevelopmentEnvironmentManager';
 
 export type {
-  ScanConfig,
   CodeIssue,
-  SecurityVulnerability,
-  ScanResults,
-  DependencyAnalysis,
   CodeMetrics,
-  Recommendation
+  DependencyAnalysis,
+  Recommendation,
+  ScanConfig,
+  ScanResults,
+  SecurityVulnerability,
 } from './CodeQualityScanner';
 
 export type {
-  DeveloperWorkflowConfig,
-  WorkflowStatus,
   DeveloperAnalytics,
+  DeveloperWorkflowConfig,
   QualityGateResult,
-  WorkflowEvent
+  WorkflowEvent,
+  WorkflowStatus,
 } from './DeveloperExperienceOrchestrator';
 
 /**
  * Developer Experience Factory
- * 
+ *
  * Factory class for creating and configuring developer experience components
  * with sensible defaults and enterprise-grade configurations.
  */
@@ -94,12 +94,7 @@ export class DeveloperExperienceFactory {
       collaborationEnabled?: boolean;
     };
   }) {
-    const {
-      projectName,
-      baseUrl,
-      developerId,
-      preferences = {}
-    } = config;
+    const { projectName, baseUrl, developerId, preferences = {} } = config;
 
     // Create orchestrator
     const orchestrator = new DeveloperExperienceOrchestrator();
@@ -115,8 +110,8 @@ export class DeveloperExperienceFactory {
       includeCodeSamples: true,
       includePostmanCollection: true,
       customStyling: {
-        theme: 'auto'
-      }
+        theme: 'auto',
+      },
     });
 
     // Create interactive development environment
@@ -137,7 +132,7 @@ export class DeveloperExperienceFactory {
       interactiveDev,
       debuggingTools,
       environmentManager,
-      qualityScanner
+      qualityScanner,
     };
   }
 
@@ -154,7 +149,7 @@ export class DeveloperExperienceFactory {
       projectName,
       baseUrl,
       outputDirectory = './docs/api',
-      includeEnterprise = true
+      includeEnterprise = true,
     } = config;
 
     const engineConfig = {
@@ -167,14 +162,14 @@ export class DeveloperExperienceFactory {
       includeCodeSamples: true,
       includePostmanCollection: true,
       customStyling: {
-        theme: 'auto' as const
-      }
+        theme: 'auto' as const,
+      },
     };
 
     if (includeEnterprise) {
       engineConfig.customStyling = {
         ...engineConfig.customStyling,
-        primaryColor: '#2563eb'
+        primaryColor: '#2563eb',
       };
     }
 
@@ -189,11 +184,7 @@ export class DeveloperExperienceFactory {
     type: 'web-app' | 'microservices' | 'data-pipeline';
     region?: string;
   }) {
-    const {
-      projectName,
-      type,
-      region = 'us-east-1'
-    } = config;
+    const { projectName, type, region = 'us-east-1' } = config;
 
     const manager = new DevelopmentEnvironmentManager();
 
@@ -209,8 +200,8 @@ export class DeveloperExperienceFactory {
         storage: type === 'data-pipeline' ? 100 : 20,
         network: {
           bandwidth: 100,
-          endpoints: []
-        }
+          endpoints: [],
+        },
       },
       services: [],
       databases: [],
@@ -220,14 +211,14 @@ export class DeveloperExperienceFactory {
         monitoring: true,
         logging: true,
         debugging: true,
-        profiling: false
+        profiling: false,
       },
       lifecycle: {
         autoStart: true,
         autoStop: false,
         maxIdleTime: 3600,
-        timeout: 300
-      }
+        timeout: 300,
+      },
     };
 
     return { manager, environmentConfig };
@@ -246,7 +237,7 @@ export class DeveloperExperienceFactory {
       projectPath,
       languages,
       compliance = ['gdpr'],
-      autoFix = true
+      autoFix = true,
     } = config;
 
     const scanner = new CodeQualityScanner();
@@ -255,7 +246,13 @@ export class DeveloperExperienceFactory {
       scanId: `scan_${Date.now()}`,
       projectPath,
       languages: languages as any[],
-      scanTypes: ['quality', 'security', 'performance', 'compliance', 'dependencies'] as any[],
+      scanTypes: [
+        'quality',
+        'security',
+        'performance',
+        'compliance',
+        'dependencies',
+      ] as any[],
       severity: 'medium' as const,
       excludePatterns: ['node_modules/**', 'dist/**', 'build/**'],
       includePatterns: ['src/**', 'lib/**'],
@@ -266,8 +263,8 @@ export class DeveloperExperienceFactory {
         generateReport: true,
         failOnHigh: true,
         maxIssues: 1000,
-        timeout: 300000
-      }
+        timeout: 300000,
+      },
     };
 
     return { scanner, scanConfig };
@@ -289,10 +286,17 @@ export const DeveloperExperienceUtils = {
   }) => {
     const { workflowId, projectId, developerId, type } = options;
 
-    const baseStages = ['planning', 'development', 'testing', 'review', 'deployment'];
-    const stages = type === 'bug-fix' 
-      ? ['development', 'testing', 'review', 'deployment']
-      : baseStages;
+    const baseStages = [
+      'planning',
+      'development',
+      'testing',
+      'review',
+      'deployment',
+    ];
+    const stages =
+      type === 'bug-fix'
+        ? ['development', 'testing', 'review', 'deployment']
+        : baseStages;
 
     return {
       workflowId,
@@ -305,40 +309,42 @@ export const DeveloperExperienceUtils = {
         notifications: {
           slack: true,
           email: false,
-          dashboard: true
+          dashboard: true,
         },
         collaboration: {
           pairProgramming: type === 'feature-development',
           codeReview: true,
-          realTimeSharing: false
-        }
+          realTimeSharing: false,
+        },
       },
       tools: {
         documentation: true,
         debugging: true,
         environmentManagement: true,
         qualityScanning: true,
-        performanceMonitoring: true
+        performanceMonitoring: true,
       },
       preferences: {
         autoFixEnabled: true,
         realTimeAnalysis: true,
         detailedLogging: false,
-        proactiveAlerts: true
+        proactiveAlerts: true,
       },
       constraints: {
         maxBuildTime: 300000,
         maxMemoryUsage: 2048,
         qualityGateThreshold: 80,
-        securityScanRequired: true
-      }
+        securityScanRequired: true,
+      },
     };
   },
 
   /**
    * Validate environment configuration
    */
-  validateEnvironmentConfig: (config: any): { valid: boolean; errors: string[] } => {
+  validateEnvironmentConfig: (
+    config: any
+  ): { valid: boolean; errors: string[] } => {
     const errors: string[] = [];
 
     if (!config.name || config.name.length < 3) {
@@ -355,7 +361,7 @@ export const DeveloperExperienceUtils = {
 
     return {
       valid: errors.length === 0,
-      errors
+      errors,
     };
   },
 
@@ -368,31 +374,31 @@ export const DeveloperExperienceUtils = {
     }
 
     const { issues, security } = scanResults.summary;
-    
+
     let score = 100;
-    
+
     // Deduct for issues
     score -= issues.critical * 10;
     score -= issues.high * 5;
     score -= issues.medium * 2;
     score -= issues.low * 0.5;
-    
+
     // Deduct for security vulnerabilities
     score -= security.critical * 15;
     score -= security.high * 8;
     score -= security.medium * 3;
     score -= security.low * 1;
-    
+
     return Math.max(0, Math.round(score));
-  }
+  },
 };
 
 // Re-export individual components for direct access
 export {
   APIDocumentationEngine,
-  InteractiveDevelopmentEnvironment,
   AdvancedDebuggingTools,
-  DevelopmentEnvironmentManager,
   CodeQualityScanner,
-  DeveloperExperienceOrchestrator
+  DeveloperExperienceOrchestrator,
+  DevelopmentEnvironmentManager,
+  InteractiveDevelopmentEnvironment,
 };

@@ -1,10 +1,10 @@
 /**
  * Federated Memory Networks Engine
- * 
+ *
  * Enterprise-grade federated memory architecture for distributed AI systems.
  * Enables secure, efficient memory sharing across multiple AI agents, services,
  * and geographical locations while maintaining privacy, consistency, and performance.
- * 
+ *
  * Features:
  * - Distributed memory synchronization
  * - Cross-agent memory sharing protocols
@@ -14,7 +14,7 @@
  * - Intelligent memory routing
  * - Real-time memory replication
  * - Federated learning integration
- * 
+ *
  * @author Memorai Enterprise Team
  * @version 2.0.0
  * @since 2024-12-28
@@ -50,12 +50,15 @@ export interface MemoryNode {
   };
   network: {
     peers: string[]; // Connected node IDs
-    routes: Record<string, {
-      nodeId: string;
-      latency: number;
-      bandwidth: number;
-      reliability: number;
-    }>;
+    routes: Record<
+      string,
+      {
+        nodeId: string;
+        latency: number;
+        bandwidth: number;
+        reliability: number;
+      }
+    >;
     protocols: string[];
   };
   security: {
@@ -77,7 +80,13 @@ export interface MemoryNode {
 export interface FederatedMemory {
   id: string;
   content: string;
-  type: 'fact' | 'conversation' | 'context' | 'knowledge' | 'procedure' | 'insight';
+  type:
+    | 'fact'
+    | 'conversation'
+    | 'context'
+    | 'knowledge'
+    | 'procedure'
+    | 'insight';
   category: string;
   agentId: string;
   tenantId?: string;
@@ -300,8 +309,8 @@ export class FederatedMemoryNetworksEngine {
         totalConnections: 0,
         averageLatency: 0,
         totalBandwidth: 0,
-        networkEfficiency: 0
-      }
+        networkEfficiency: 0,
+      },
     };
 
     this.initializeDefaultPolicies();
@@ -317,7 +326,8 @@ export class FederatedMemoryNetworksEngine {
     const globalPolicy: FederationPolicy = {
       id: 'global-default',
       name: 'Global Default Federation Policy',
-      description: 'Default rules for memory federation across all agents and tenants',
+      description:
+        'Default rules for memory federation across all agents and tenants',
       scope: 'global',
       rules: {
         access: {
@@ -325,40 +335,40 @@ export class FederatedMemoryNetworksEngine {
           allowCrossRegion: true,
           allowCrossTenant: false,
           requireEncryption: true,
-          maxHops: 3
+          maxHops: 3,
         },
         distribution: {
           minReplicas: 2,
           maxReplicas: 5,
           preferredRegions: ['us-east-1', 'eu-west-1'],
           excludedRegions: [],
-          consistencyLevel: 'eventual'
+          consistencyLevel: 'eventual',
         },
         lifecycle: {
           defaultTTL: 86400 * 30, // 30 days
           maxRetention: 86400 * 365, // 1 year
           autoArchive: true,
-          autoDelete: false
+          autoDelete: false,
         },
         performance: {
           maxLatency: 100,
           minBandwidth: 10,
           priorityThreshold: 0.8,
-          cacheStrategy: 'adaptive'
+          cacheStrategy: 'adaptive',
         },
         security: {
           encryptionRequired: true,
           accessLogging: true,
           auditTrail: true,
-          complianceChecks: ['GDPR', 'SOC2']
-        }
+          complianceChecks: ['GDPR', 'SOC2'],
+        },
       },
       conditions: [],
       priority: 1,
       enabled: true,
       createdAt: new Date(),
       updatedAt: new Date(),
-      createdBy: 'system'
+      createdBy: 'system',
     };
 
     this.policies.set(globalPolicy.id, globalPolicy);
@@ -375,47 +385,52 @@ export class FederatedMemoryNetworksEngine {
           allowCrossRegion: true,
           allowCrossTenant: true,
           requireEncryption: true,
-          maxHops: 2
+          maxHops: 2,
         },
         distribution: {
           minReplicas: 3,
           maxReplicas: 7,
-          preferredRegions: ['us-east-1', 'us-west-2', 'eu-west-1', 'ap-southeast-1'],
+          preferredRegions: [
+            'us-east-1',
+            'us-west-2',
+            'eu-west-1',
+            'ap-southeast-1',
+          ],
           excludedRegions: [],
-          consistencyLevel: 'strong'
+          consistencyLevel: 'strong',
         },
         lifecycle: {
           defaultTTL: 86400 * 90, // 90 days
           maxRetention: 86400 * 1825, // 5 years
           autoArchive: false,
-          autoDelete: false
+          autoDelete: false,
         },
         performance: {
           maxLatency: 50,
           minBandwidth: 50,
           priorityThreshold: 0.9,
-          cacheStrategy: 'lfu'
+          cacheStrategy: 'lfu',
         },
         security: {
           encryptionRequired: true,
           accessLogging: true,
           auditTrail: true,
-          complianceChecks: ['GDPR', 'SOC2', 'ISO27001']
-        }
+          complianceChecks: ['GDPR', 'SOC2', 'ISO27001'],
+        },
       },
       conditions: [
         {
           field: 'quality.importance',
           operator: 'range',
           value: [0.8, 1.0],
-          action: 'allow'
-        }
+          action: 'allow',
+        },
       ],
       priority: 10,
       enabled: true,
       createdAt: new Date(),
       updatedAt: new Date(),
-      createdBy: 'system'
+      createdBy: 'system',
     };
 
     this.policies.set(highPriorityPolicy.id, highPriorityPolicy);
@@ -424,23 +439,25 @@ export class FederatedMemoryNetworksEngine {
   /**
    * Register a new memory node
    */
-  async registerNode(config: Omit<MemoryNode, 'id' | 'createdAt' | 'updatedAt'>): Promise<MemoryNode> {
+  async registerNode(
+    config: Omit<MemoryNode, 'id' | 'createdAt' | 'updatedAt'>
+  ): Promise<MemoryNode> {
     const nodeId = `node_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
+
     const node: MemoryNode = {
       id: nodeId,
       ...config,
       status: {
         ...config.status,
-        lastHeartbeat: new Date()
+        lastHeartbeat: new Date(),
       },
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
 
     this.nodes.set(nodeId, node);
     this.updateTopology();
-    
+
     console.log(`Registered memory node: ${node.name} (${nodeId})`);
     return node;
   }
@@ -448,9 +465,11 @@ export class FederatedMemoryNetworksEngine {
   /**
    * Store federated memory
    */
-  async storeMemory(memory: Omit<FederatedMemory, 'id' | 'createdAt' | 'updatedAt'>): Promise<FederatedMemory> {
+  async storeMemory(
+    memory: Omit<FederatedMemory, 'id' | 'createdAt' | 'updatedAt'>
+  ): Promise<FederatedMemory> {
     const memoryId = `memory_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
+
     const federatedMemory: FederatedMemory = {
       id: memoryId,
       ...memory,
@@ -458,17 +477,18 @@ export class FederatedMemoryNetworksEngine {
         version: 1,
         lastSync: new Date(),
         conflicts: [],
-        mergeStrategy: memory.synchronization?.mergeStrategy || 'latest-wins'
+        mergeStrategy: memory.synchronization?.mergeStrategy || 'latest-wins',
       },
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
 
     // Apply federation policies
     const applicablePolicy = this.findApplicablePolicy(federatedMemory);
     if (applicablePolicy) {
       federatedMemory.access.level = applicablePolicy.rules.access.defaultLevel;
-      federatedMemory.distribution.consistency = applicablePolicy.rules.distribution.consistencyLevel;
+      federatedMemory.distribution.consistency =
+        applicablePolicy.rules.distribution.consistencyLevel;
       federatedMemory.distribution.replicas = Math.max(
         federatedMemory.distribution.replicas,
         applicablePolicy.rules.distribution.minReplicas
@@ -484,14 +504,19 @@ export class FederatedMemoryNetworksEngine {
     // Schedule synchronization to target nodes
     await this.scheduleReplication(federatedMemory);
 
-    console.log(`Stored federated memory: ${memoryId} on nodes: ${targetNodes.join(', ')}`);
+    console.log(
+      `Stored federated memory: ${memoryId} on nodes: ${targetNodes.join(', ')}`
+    );
     return federatedMemory;
   }
 
   /**
    * Retrieve federated memory
    */
-  async retrieveMemory(memoryId: string, requestingAgentId: string): Promise<FederatedMemory | null> {
+  async retrieveMemory(
+    memoryId: string,
+    requestingAgentId: string
+  ): Promise<FederatedMemory | null> {
     const memory = this.memories.get(memoryId);
     if (!memory) {
       return null;
@@ -539,14 +564,14 @@ export class FederatedMemoryNetworksEngine {
       synchronization: {
         ...memory.synchronization,
         version: memory.synchronization.version + 1,
-        lastSync: new Date()
+        lastSync: new Date(),
       },
       metrics: {
         ...memory.metrics,
         updateCount: memory.metrics.updateCount + 1,
-        lastUpdated: new Date()
+        lastUpdated: new Date(),
       },
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
 
     this.memories.set(memoryId, updatedMemory);
@@ -554,7 +579,9 @@ export class FederatedMemoryNetworksEngine {
     // Schedule synchronization to all replicas
     await this.scheduleSynchronization(updatedMemory);
 
-    console.log(`Updated federated memory: ${memoryId} (version ${updatedMemory.synchronization.version})`);
+    console.log(
+      `Updated federated memory: ${memoryId} (version ${updatedMemory.synchronization.version})`
+    );
     return updatedMemory;
   }
 
@@ -583,9 +610,10 @@ export class FederatedMemoryNetworksEngine {
     // Apply filters
     if (query.content) {
       const searchTerm = query.content.toLowerCase();
-      results = results.filter(m => 
-        m.content.toLowerCase().includes(searchTerm) ||
-        m.category.toLowerCase().includes(searchTerm)
+      results = results.filter(
+        m =>
+          m.content.toLowerCase().includes(searchTerm) ||
+          m.category.toLowerCase().includes(searchTerm)
       );
     }
 
@@ -610,15 +638,20 @@ export class FederatedMemoryNetworksEngine {
     }
 
     if (query.minQuality !== undefined) {
-      results = results.filter(m => 
-        (m.quality.confidence + m.quality.relevance + m.quality.accuracy) / 3 >= query.minQuality!
+      results = results.filter(
+        m =>
+          (m.quality.confidence + m.quality.relevance + m.quality.accuracy) /
+            3 >=
+          query.minQuality!
       );
     }
 
     // Sort by relevance and quality
     results.sort((a, b) => {
-      const aScore = (a.quality.confidence + a.quality.relevance + a.quality.importance) / 3;
-      const bScore = (b.quality.confidence + b.quality.relevance + b.quality.importance) / 3;
+      const aScore =
+        (a.quality.confidence + a.quality.relevance + a.quality.importance) / 3;
+      const bScore =
+        (b.quality.confidence + b.quality.relevance + b.quality.importance) / 3;
       return bScore - aScore;
     });
 
@@ -632,14 +665,16 @@ export class FederatedMemoryNetworksEngine {
     return {
       memories: paginatedResults,
       total,
-      searchTime
+      searchTime,
     };
   }
 
   /**
    * Find applicable federation policy
    */
-  private findApplicablePolicy(memory: FederatedMemory): FederationPolicy | null {
+  private findApplicablePolicy(
+    memory: FederatedMemory
+  ): FederationPolicy | null {
     const policies = Array.from(this.policies.values())
       .filter(p => p.enabled)
       .sort((a, b) => b.priority - a.priority);
@@ -656,7 +691,10 @@ export class FederatedMemoryNetworksEngine {
   /**
    * Check if policy applies to memory
    */
-  private policyApplies(policy: FederationPolicy, memory: FederatedMemory): boolean {
+  private policyApplies(
+    policy: FederationPolicy,
+    memory: FederatedMemory
+  ): boolean {
     // Check scope
     switch (policy.scope) {
       case 'global':
@@ -690,7 +728,7 @@ export class FederatedMemoryNetworksEngine {
     memory: FederatedMemory
   ): boolean {
     const value = this.getFieldValue(memory, condition.field);
-    
+
     switch (condition.operator) {
       case 'equals':
         return value === condition.value;
@@ -701,10 +739,15 @@ export class FederatedMemoryNetworksEngine {
       case 'regex':
         return new RegExp(condition.value).test(String(value));
       case 'in':
-        return Array.isArray(condition.value) && condition.value.includes(value);
+        return (
+          Array.isArray(condition.value) && condition.value.includes(value)
+        );
       case 'range':
-        return Array.isArray(condition.value) && 
-               value >= condition.value[0] && value <= condition.value[1];
+        return (
+          Array.isArray(condition.value) &&
+          value >= condition.value[0] &&
+          value <= condition.value[1]
+        );
       default:
         return false;
     }
@@ -716,12 +759,12 @@ export class FederatedMemoryNetworksEngine {
   private getFieldValue(memory: FederatedMemory, field: string): any {
     const keys = field.split('.');
     let value: any = memory;
-    
+
     for (const key of keys) {
       value = value?.[key];
       if (value === undefined) break;
     }
-    
+
     return value;
   }
 
@@ -729,8 +772,9 @@ export class FederatedMemoryNetworksEngine {
    * Select optimal nodes for memory placement
    */
   private selectOptimalNodes(memory: FederatedMemory): string[] {
-    const availableNodes = Array.from(this.nodes.values())
-      .filter(node => node.status.state === 'active' && node.status.load < 80);
+    const availableNodes = Array.from(this.nodes.values()).filter(
+      node => node.status.state === 'active' && node.status.load < 80
+    );
 
     if (availableNodes.length === 0) {
       throw new Error('No available nodes for memory placement');
@@ -739,7 +783,10 @@ export class FederatedMemoryNetworksEngine {
     // Apply placement strategy
     switch (memory.distribution.strategy) {
       case 'replicate':
-        return this.selectReplicationNodes(availableNodes, memory.distribution.replicas);
+        return this.selectReplicationNodes(
+          availableNodes,
+          memory.distribution.replicas
+        );
       case 'partition':
         return this.selectPartitionNodes(availableNodes, memory);
       case 'cache':
@@ -754,13 +801,18 @@ export class FederatedMemoryNetworksEngine {
   /**
    * Select nodes for replication
    */
-  private selectReplicationNodes(nodes: MemoryNode[], replicas: number): string[] {
+  private selectReplicationNodes(
+    nodes: MemoryNode[],
+    replicas: number
+  ): string[] {
     // Sort by performance and availability
     const sortedNodes = nodes.sort((a, b) => {
-      const aScore = a.status.health * (1 - a.status.load / 100) + 
-                    a.capabilities.bandwidth / 1000;
-      const bScore = b.status.health * (1 - b.status.load / 100) + 
-                    b.capabilities.bandwidth / 1000;
+      const aScore =
+        a.status.health * (1 - a.status.load / 100) +
+        a.capabilities.bandwidth / 1000;
+      const bScore =
+        b.status.health * (1 - b.status.load / 100) +
+        b.capabilities.bandwidth / 1000;
       return bScore - aScore;
     });
 
@@ -770,9 +822,14 @@ export class FederatedMemoryNetworksEngine {
   /**
    * Select nodes for partitioning
    */
-  private selectPartitionNodes(nodes: MemoryNode[], memory: FederatedMemory): string[] {
+  private selectPartitionNodes(
+    nodes: MemoryNode[],
+    memory: FederatedMemory
+  ): string[] {
     // Use consistent hashing for partition placement
-    const hash = this.calculateHash(memory.id + (memory.distribution.partitionKey || ''));
+    const hash = this.calculateHash(
+      memory.id + (memory.distribution.partitionKey || '')
+    );
     const nodeIndex = hash % nodes.length;
     return [nodes[nodeIndex].id];
   }
@@ -782,7 +839,9 @@ export class FederatedMemoryNetworksEngine {
    */
   private selectCacheNodes(nodes: MemoryNode[]): string[] {
     // Prefer edge nodes with high bandwidth
-    const edgeNodes = nodes.filter(node => node.type === 'edge' || node.type === 'cache');
+    const edgeNodes = nodes.filter(
+      node => node.type === 'edge' || node.type === 'cache'
+    );
     if (edgeNodes.length > 0) {
       return [edgeNodes[0].id];
     }
@@ -797,7 +856,7 @@ export class FederatedMemoryNetworksEngine {
     const archiveNodes = nodes
       .filter(node => node.type === 'archive')
       .sort((a, b) => b.capabilities.storage - a.capabilities.storage);
-    
+
     if (archiveNodes.length > 0) {
       return [archiveNodes[0].id];
     }
@@ -811,7 +870,7 @@ export class FederatedMemoryNetworksEngine {
     let hash = 0;
     for (let i = 0; i < input.length; i++) {
       const char = input.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
+      hash = (hash << 5) - hash + char;
       hash = hash & hash; // Convert to 32-bit integer
     }
     return Math.abs(hash);
@@ -835,37 +894,41 @@ export class FederatedMemoryNetworksEngine {
           content: memory.content,
           version: memory.synchronization.version,
           checksum: this.calculateChecksum(memory.content),
-          size: Buffer.byteLength(memory.content, 'utf8')
+          size: Buffer.byteLength(memory.content, 'utf8'),
         },
         timing: {
           scheduledAt: new Date(),
-          estimatedDuration: 1000 // 1 second estimate
+          estimatedDuration: 1000, // 1 second estimate
         },
         result: {
           success: false,
           metrics: {
             bytesTransferred: 0,
             transferTime: 0,
-            bandwidth: 0
-          }
+            bandwidth: 0,
+          },
         },
         retries: {
           count: 0,
           maxRetries: 3,
-          backoffMs: 1000
-        }
+          backoffMs: 1000,
+        },
       };
 
       this.syncQueue.push(syncOp);
     }
 
-    console.log(`Scheduled replication for memory ${memory.id} to ${memory.distribution.nodes.length} nodes`);
+    console.log(
+      `Scheduled replication for memory ${memory.id} to ${memory.distribution.nodes.length} nodes`
+    );
   }
 
   /**
    * Schedule memory synchronization
    */
-  private async scheduleSynchronization(memory: FederatedMemory): Promise<void> {
+  private async scheduleSynchronization(
+    memory: FederatedMemory
+  ): Promise<void> {
     for (const nodeId of memory.distribution.nodes) {
       const syncOp: SyncOperation = {
         id: `sync_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -880,24 +943,24 @@ export class FederatedMemoryNetworksEngine {
           content: memory.content,
           version: memory.synchronization.version,
           checksum: this.calculateChecksum(memory.content),
-          size: Buffer.byteLength(memory.content, 'utf8')
+          size: Buffer.byteLength(memory.content, 'utf8'),
         },
         timing: {
-          scheduledAt: new Date()
+          scheduledAt: new Date(),
         },
         result: {
           success: false,
           metrics: {
             bytesTransferred: 0,
             transferTime: 0,
-            bandwidth: 0
-          }
+            bandwidth: 0,
+          },
         },
         retries: {
           count: 0,
           maxRetries: 3,
-          backoffMs: 1000
-        }
+          backoffMs: 1000,
+        },
       };
 
       this.syncQueue.push(syncOp);
@@ -919,12 +982,18 @@ export class FederatedMemoryNetworksEngine {
   /**
    * Check if agent has access permission
    */
-  private hasAccessPermission(memory: FederatedMemory, agentId: string): boolean {
+  private hasAccessPermission(
+    memory: FederatedMemory,
+    agentId: string
+  ): boolean {
     switch (memory.access.level) {
       case 'private':
         return memory.agentId === agentId;
       case 'shared':
-        return memory.access.allowedAgents.includes(agentId) || memory.agentId === agentId;
+        return (
+          memory.access.allowedAgents.includes(agentId) ||
+          memory.agentId === agentId
+        );
       case 'public':
         return true;
       case 'federated':
@@ -937,7 +1006,10 @@ export class FederatedMemoryNetworksEngine {
   /**
    * Check if agent has update permission
    */
-  private hasUpdatePermission(memory: FederatedMemory, agentId: string): boolean {
+  private hasUpdatePermission(
+    memory: FederatedMemory,
+    agentId: string
+  ): boolean {
     // Only the original agent can update, unless federated with special permissions
     return memory.agentId === agentId;
   }
@@ -955,10 +1027,10 @@ export class FederatedMemoryNetworksEngine {
    */
   private async fetchFromNetwork(memoryId: string): Promise<void> {
     console.log(`Fetching memory ${memoryId} from network...`);
-    
+
     // Simulate network fetch
     await new Promise(resolve => setTimeout(resolve, 100));
-    
+
     console.log(`Successfully fetched memory ${memoryId} from network`);
   }
 
@@ -967,11 +1039,13 @@ export class FederatedMemoryNetworksEngine {
    */
   private updateTopology(): void {
     const nodes = Array.from(this.nodes.values());
-    
+
     this.topology.nodes = nodes;
     this.topology.metrics.totalNodes = nodes.length;
-    this.topology.metrics.activeNodes = nodes.filter(n => n.status.state === 'active').length;
-    
+    this.topology.metrics.activeNodes = nodes.filter(
+      n => n.status.state === 'active'
+    ).length;
+
     // Update regions
     const regions = new Map<string, string[]>();
     for (const node of nodes) {
@@ -981,22 +1055,28 @@ export class FederatedMemoryNetworksEngine {
       regions.get(node.region)!.push(node.id);
     }
 
-    this.topology.regions = Array.from(regions.entries()).map(([region, nodeIds]) => ({
-      id: region,
-      name: region,
-      nodes: nodeIds,
-      primaryNode: nodeIds[0],
-      backup: nodeIds.length > 1
-    }));
+    this.topology.regions = Array.from(regions.entries()).map(
+      ([region, nodeIds]) => ({
+        id: region,
+        name: region,
+        nodes: nodeIds,
+        primaryNode: nodeIds[0],
+        backup: nodeIds.length > 1,
+      })
+    );
 
     // Calculate network metrics
-    this.topology.metrics.averageLatency = nodes.reduce((acc, node) => 
-      acc + node.capabilities.latency, 0) / Math.max(nodes.length, 1);
-    
-    this.topology.metrics.totalBandwidth = nodes.reduce((acc, node) => 
-      acc + node.capabilities.bandwidth, 0);
-    
-    this.topology.metrics.networkEfficiency = this.topology.metrics.activeNodes / 
+    this.topology.metrics.averageLatency =
+      nodes.reduce((acc, node) => acc + node.capabilities.latency, 0) /
+      Math.max(nodes.length, 1);
+
+    this.topology.metrics.totalBandwidth = nodes.reduce(
+      (acc, node) => acc + node.capabilities.bandwidth,
+      0
+    );
+
+    this.topology.metrics.networkEfficiency =
+      this.topology.metrics.activeNodes /
       Math.max(this.topology.metrics.totalNodes, 1);
   }
 
@@ -1029,18 +1109,18 @@ export class FederatedMemoryNetworksEngine {
       const priorityOrder = { critical: 4, high: 3, normal: 2, low: 1 };
       const aPriority = priorityOrder[a.priority];
       const bPriority = priorityOrder[b.priority];
-      
+
       if (aPriority !== bPriority) {
         return bPriority - aPriority;
       }
-      
+
       return a.timing.scheduledAt.getTime() - b.timing.scheduledAt.getTime();
     });
 
     // Process up to 5 operations concurrently
     const concurrent = this.syncQueue.slice(0, 5);
     const promises = concurrent.map(op => this.executeSyncOperation(op));
-    
+
     await Promise.allSettled(promises);
   }
 
@@ -1053,44 +1133,53 @@ export class FederatedMemoryNetworksEngine {
     operation.timing.startedAt = new Date();
 
     try {
-      console.log(`Executing sync operation: ${operation.type} ${operation.memoryId} to ${operation.targetNodeId}`);
-      
+      console.log(
+        `Executing sync operation: ${operation.type} ${operation.memoryId} to ${operation.targetNodeId}`
+      );
+
       // Simulate sync operation
       await new Promise(resolve => setTimeout(resolve, 500));
-      
+
       operation.status = 'completed';
       operation.progress = 100;
       operation.result.success = true;
       operation.result.metrics = {
         bytesTransferred: operation.data.size,
         transferTime: Date.now() - startTime,
-        bandwidth: operation.data.size / ((Date.now() - startTime) / 1000)
+        bandwidth: operation.data.size / ((Date.now() - startTime) / 1000),
       };
 
       console.log(`Sync operation completed: ${operation.id}`);
-      
     } catch (error) {
       operation.status = 'failed';
       operation.result.success = false;
-      operation.result.error = error instanceof Error ? error.message : 'Unknown error';
-      
+      operation.result.error =
+        error instanceof Error ? error.message : 'Unknown error';
+
       // Schedule retry if not exceeded max retries
       if (operation.retries.count < operation.retries.maxRetries) {
         operation.retries.count++;
         operation.retries.lastRetry = new Date();
         operation.status = 'pending';
-        operation.timing.scheduledAt = new Date(Date.now() + operation.retries.backoffMs);
+        operation.timing.scheduledAt = new Date(
+          Date.now() + operation.retries.backoffMs
+        );
         operation.retries.backoffMs *= 2; // Exponential backoff
-        
-        console.log(`Scheduling retry ${operation.retries.count} for operation: ${operation.id}`);
+
+        console.log(
+          `Scheduling retry ${operation.retries.count} for operation: ${operation.id}`
+        );
         return; // Don't remove from queue
       }
-      
-      console.error(`Sync operation failed permanently: ${operation.id}`, error);
+
+      console.error(
+        `Sync operation failed permanently: ${operation.id}`,
+        error
+      );
     } finally {
       operation.timing.completedAt = new Date();
       operation.timing.actualDuration = Date.now() - startTime;
-      
+
       // Remove completed/failed operations from queue
       const index = this.syncQueue.findIndex(op => op.id === operation.id);
       if (index > -1) {
@@ -1104,22 +1193,29 @@ export class FederatedMemoryNetworksEngine {
    */
   private checkNodeHealth(): void {
     for (const [nodeId, node] of this.nodes) {
-      const timeSinceHeartbeat = Date.now() - node.status.lastHeartbeat.getTime();
-      
-      if (timeSinceHeartbeat > 60000) { // 1 minute
+      const timeSinceHeartbeat =
+        Date.now() - node.status.lastHeartbeat.getTime();
+
+      if (timeSinceHeartbeat > 60000) {
+        // 1 minute
         node.status.state = 'inactive';
         node.status.health = 0;
-        console.warn(`Node ${nodeId} marked as inactive - no heartbeat for ${timeSinceHeartbeat}ms`);
-      } else if (timeSinceHeartbeat > 30000) { // 30 seconds
+        console.warn(
+          `Node ${nodeId} marked as inactive - no heartbeat for ${timeSinceHeartbeat}ms`
+        );
+      } else if (timeSinceHeartbeat > 30000) {
+        // 30 seconds
         node.status.state = 'degraded';
         node.status.health = Math.max(0, node.status.health - 10);
-        console.warn(`Node ${nodeId} degraded - heartbeat delay: ${timeSinceHeartbeat}ms`);
+        console.warn(
+          `Node ${nodeId} degraded - heartbeat delay: ${timeSinceHeartbeat}ms`
+        );
       } else {
         node.status.state = 'active';
         node.status.health = Math.min(100, node.status.health + 5);
       }
     }
-    
+
     this.updateTopology();
   }
 
@@ -1140,10 +1236,16 @@ export class FederatedMemoryNetworksEngine {
     averageLatency: number;
     totalBandwidth: number;
   } {
-    const syncStats = this.syncQueue.reduce((acc, op) => {
-      acc[op.status]++;
-      return acc;
-    }, { pending: 0, 'in-progress': 0, completed: 0, failed: 0 } as Record<string, number>);
+    const syncStats = this.syncQueue.reduce(
+      (acc, op) => {
+        acc[op.status]++;
+        return acc;
+      },
+      { pending: 0, 'in-progress': 0, completed: 0, failed: 0 } as Record<
+        string,
+        number
+      >
+    );
 
     return {
       totalMemories: this.memories.size,
@@ -1153,11 +1255,11 @@ export class FederatedMemoryNetworksEngine {
         pending: syncStats.pending || 0,
         inProgress: syncStats['in-progress'] || 0,
         completed: syncStats.completed || 0,
-        failed: syncStats.failed || 0
+        failed: syncStats.failed || 0,
       },
       networkHealth: this.topology.metrics.networkEfficiency * 100,
       averageLatency: this.topology.metrics.averageLatency,
-      totalBandwidth: this.topology.metrics.totalBandwidth
+      totalBandwidth: this.topology.metrics.totalBandwidth,
     };
   }
 
@@ -1190,7 +1292,7 @@ export class FederatedMemoryNetworksEngine {
       clearInterval(this.syncInterval);
       this.syncInterval = null;
     }
-    
+
     if (this.heartbeatInterval) {
       clearInterval(this.heartbeatInterval);
       this.heartbeatInterval = null;

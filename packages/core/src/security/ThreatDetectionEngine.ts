@@ -1,16 +1,24 @@
-import type { SecurityEvent, ThreatPattern, SecurityConfig } from '../types/Security.js';
+import type {
+  SecurityConfig,
+  SecurityEvent,
+  ThreatPattern,
+} from '../types/Security.js';
 
 // Simple logger implementation for security module
 const logger = {
-  info: (message: string, meta?: any) => console.log(`[INFO] ${message}`, meta || ''),
-  warn: (message: string, meta?: any) => console.warn(`[WARN] ${message}`, meta || ''),
-  error: (message: string, meta?: any) => console.error(`[ERROR] ${message}`, meta || ''),
-  debug: (message: string, meta?: any) => console.debug(`[DEBUG] ${message}`, meta || ''),
+  info: (message: string, meta?: any) =>
+    console.log(`[INFO] ${message}`, meta || ''),
+  warn: (message: string, meta?: any) =>
+    console.warn(`[WARN] ${message}`, meta || ''),
+  error: (message: string, meta?: any) =>
+    console.error(`[ERROR] ${message}`, meta || ''),
+  debug: (message: string, meta?: any) =>
+    console.debug(`[DEBUG] ${message}`, meta || ''),
 };
 
 /**
  * Advanced Threat Detection Engine
- * 
+ *
  * Provides real-time threat monitoring and response capabilities
  * for the Memorai enterprise memory system.
  */
@@ -44,7 +52,7 @@ export class ThreatDetectionEngine {
       ],
       severity: 'high',
       action: 'block',
-      description: 'Detects common SQL injection attack patterns'
+      description: 'Detects common SQL injection attack patterns',
     });
 
     // XSS patterns
@@ -61,7 +69,7 @@ export class ThreatDetectionEngine {
       ],
       severity: 'high',
       action: 'block',
-      description: 'Detects XSS attack attempts in user input'
+      description: 'Detects XSS attack attempts in user input',
     });
 
     // Path traversal patterns
@@ -76,7 +84,7 @@ export class ThreatDetectionEngine {
       ],
       severity: 'medium',
       action: 'block',
-      description: 'Detects directory traversal attempts'
+      description: 'Detects directory traversal attempts',
     });
 
     // Command injection patterns
@@ -91,7 +99,7 @@ export class ThreatDetectionEngine {
       ],
       severity: 'high',
       action: 'block',
-      description: 'Detects command injection attempts'
+      description: 'Detects command injection attempts',
     });
 
     // Memory-specific patterns
@@ -108,10 +116,12 @@ export class ThreatDetectionEngine {
       ],
       severity: 'medium',
       action: 'throttle',
-      description: 'Detects abuse of memory storage system'
+      description: 'Detects abuse of memory storage system',
     });
 
-    logger.info(`Initialized ${this.threatPatterns.size} threat detection patterns`);
+    logger.info(
+      `Initialized ${this.threatPatterns.size} threat detection patterns`
+    );
   }
 
   /**
@@ -168,10 +178,13 @@ export class ThreatDetectionEngine {
       if (detection.detected) {
         threats.push(id);
         totalConfidence += detection.confidence;
-        
+
         if (pattern.action === 'block' && maxSeverityAction !== 'block') {
           maxSeverityAction = 'block';
-        } else if (pattern.action === 'throttle' && maxSeverityAction === 'allow') {
+        } else if (
+          pattern.action === 'throttle' &&
+          maxSeverityAction === 'allow'
+        ) {
           maxSeverityAction = 'throttle';
         }
       }
@@ -180,13 +193,17 @@ export class ThreatDetectionEngine {
     // Check for suspicious IP patterns
     if (this.suspiciousIPs.has(clientIP)) {
       threats.push('suspicious_ip');
-      maxSeverityAction = maxSeverityAction === 'allow' ? 'throttle' : maxSeverityAction;
+      maxSeverityAction =
+        maxSeverityAction === 'allow' ? 'throttle' : maxSeverityAction;
       totalConfidence += 0.5;
     }
 
     // Analyze access patterns
     const accessPatternAnalysis = await this.analyzeAccessPatterns(
-      clientIP, userAgent, tenantId, agentId
+      clientIP,
+      userAgent,
+      tenantId,
+      agentId
     );
     if (accessPatternAnalysis.suspicious) {
       threats.push('suspicious_access_pattern');
@@ -197,7 +214,10 @@ export class ThreatDetectionEngine {
     }
 
     const isThreat = threats.length > 0;
-    const normalizedConfidence = Math.min(totalConfidence / threats.length || 0, 1);
+    const normalizedConfidence = Math.min(
+      totalConfidence / threats.length || 0,
+      1
+    );
 
     // Log security event
     if (isThreat) {
@@ -242,8 +262,9 @@ export class ThreatDetectionEngine {
     }
 
     const detected = matches > 0;
-    const confidence = detected ? 
-      Math.min(0.3 + (matches / pattern.patterns.length) * 0.7, 1) : 0;
+    const confidence = detected
+      ? Math.min(0.3 + (matches / pattern.patterns.length) * 0.7, 1)
+      : 0;
 
     return { detected, confidence, matches: totalMatches };
   }
@@ -251,19 +272,22 @@ export class ThreatDetectionEngine {
   /**
    * Check for brute force attempts
    */
-  private checkBruteForce(clientIP: string): { isBruteForce: boolean; attempts: number } {
+  private checkBruteForce(clientIP: string): {
+    isBruteForce: boolean;
+    attempts: number;
+  } {
     const currentAttempts = this.bruteForceAttempts.get(clientIP) || 0;
     const newAttempts = currentAttempts + 1;
-    
+
     this.bruteForceAttempts.set(clientIP, newAttempts);
 
     const isBruteForce = newAttempts > this.config.bruteForceThreshold;
-    
+
     if (isBruteForce) {
       this.suspiciousIPs.add(clientIP);
-      logger.warn('Brute force attempt detected', { 
-        clientIP, 
-        attempts: newAttempts 
+      logger.warn('Brute force attempt detected', {
+        clientIP,
+        attempts: newAttempts,
       });
     }
 
@@ -278,7 +302,11 @@ export class ThreatDetectionEngine {
     userAgent: string,
     tenantId: string,
     agentId?: string
-  ): Promise<{ suspicious: boolean; confidence: number; severity: 'low' | 'medium' | 'high' }> {
+  ): Promise<{
+    suspicious: boolean;
+    confidence: number;
+    severity: 'low' | 'medium' | 'high';
+  }> {
     // Check for suspicious user agent patterns
     const suspiciousUAPatterns = [
       /bot|crawler|spider|scraper/i,
@@ -323,10 +351,10 @@ export class ThreatDetectionEngine {
       severity = 'high';
     }
 
-    return { 
-      suspicious, 
-      confidence: Math.min(confidence, 1), 
-      severity 
+    return {
+      suspicious,
+      confidence: Math.min(confidence, 1),
+      severity,
     };
   }
 
@@ -335,10 +363,12 @@ export class ThreatDetectionEngine {
    */
   private logSecurityEvent(event: SecurityEvent): void {
     this.securityEvents.push(event);
-    
+
     // Keep only recent events to prevent memory leak
     if (this.securityEvents.length > this.config.maxSecurityEvents) {
-      this.securityEvents = this.securityEvents.slice(-this.config.maxSecurityEvents);
+      this.securityEvents = this.securityEvents.slice(
+        -this.config.maxSecurityEvents
+      );
     }
 
     logger.warn('Security threat detected', {
@@ -378,7 +408,10 @@ export class ThreatDetectionEngine {
   /**
    * Get recent security events for analysis
    */
-  private getRecentSecurityEvents(clientIP: string, timeWindowMs: number): SecurityEvent[] {
+  private getRecentSecurityEvents(
+    clientIP: string,
+    timeWindowMs: number
+  ): SecurityEvent[] {
     const cutoff = new Date(Date.now() - timeWindowMs);
     return this.securityEvents.filter(
       event => event.clientIP === clientIP && event.timestamp >= cutoff
@@ -402,7 +435,7 @@ export class ThreatDetectionEngine {
       if (event.action === 'block') {
         threatsStopped++;
       }
-      
+
       for (const threat of event.threatTypes) {
         threatCounts.set(threat, (threatCounts.get(threat) || 0) + 1);
       }
@@ -454,7 +487,7 @@ export class ThreatDetectionEngine {
 
       const cutoff = new Date(Date.now() - this.config.eventRetentionMs);
       const beforeCount = this.securityEvents.length;
-      
+
       this.securityEvents = this.securityEvents.filter(
         event => event.timestamp >= cutoff
       );
@@ -466,7 +499,7 @@ export class ThreatDetectionEngine {
           bruteForceToRemove.push(ip);
         }
       }
-      
+
       for (const ip of bruteForceToRemove) {
         this.bruteForceAttempts.delete(ip);
       }

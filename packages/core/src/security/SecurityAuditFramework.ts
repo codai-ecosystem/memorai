@@ -1,11 +1,19 @@
-import type { SecurityConfig, AuditLogEntry, SecurityEvent } from '../types/Security.js';
+import type {
+  AuditLogEntry,
+  SecurityConfig,
+  SecurityEvent,
+} from '../types/Security.js';
 
 // Simple logger implementation
 const logger = {
-  info: (message: string, meta?: any) => console.log(`[INFO] ${message}`, meta || ''),
-  warn: (message: string, meta?: any) => console.warn(`[WARN] ${message}`, meta || ''),
-  error: (message: string, meta?: any) => console.error(`[ERROR] ${message}`, meta || ''),
-  debug: (message: string, meta?: any) => console.debug(`[DEBUG] ${message}`, meta || ''),
+  info: (message: string, meta?: any) =>
+    console.log(`[INFO] ${message}`, meta || ''),
+  warn: (message: string, meta?: any) =>
+    console.warn(`[WARN] ${message}`, meta || ''),
+  error: (message: string, meta?: any) =>
+    console.error(`[ERROR] ${message}`, meta || ''),
+  debug: (message: string, meta?: any) =>
+    console.debug(`[DEBUG] ${message}`, meta || ''),
 };
 
 interface SecurityAlert {
@@ -37,7 +45,7 @@ interface ComplianceReport {
 
 /**
  * Security Audit Framework
- * 
+ *
  * Provides comprehensive security monitoring, audit logging,
  * and compliance reporting for enterprise security requirements.
  */
@@ -78,7 +86,7 @@ export class SecurityAuditFramework {
     if (!this.isActive) return;
 
     this.securityEvents.push(event);
-    
+
     // Keep only recent events
     if (this.securityEvents.length > 10000) {
       this.securityEvents = this.securityEvents.slice(-10000);
@@ -90,7 +98,7 @@ export class SecurityAuditFramework {
     logger.debug('Security event logged', {
       eventType: event.eventType,
       confidence: event.confidence,
-      action: event.action
+      action: event.action,
     });
   }
 
@@ -101,19 +109,23 @@ export class SecurityAuditFramework {
     if (!this.isActive) return;
 
     this.auditLogs.push(entry);
-    
+
     // Keep only recent audit logs
     if (this.auditLogs.length > 50000) {
       this.auditLogs = this.auditLogs.slice(-50000);
     }
 
     // Log high-severity actions
-    if (entry.result === 'blocked' || entry.action.includes('delete') || entry.action.includes('admin')) {
+    if (
+      entry.result === 'blocked' ||
+      entry.action.includes('delete') ||
+      entry.action.includes('admin')
+    ) {
       logger.warn('High-severity audit event', {
         action: entry.action,
         result: entry.result,
         tenantId: entry.tenantId,
-        userId: entry.userId
+        userId: entry.userId,
       });
     }
   }
@@ -139,7 +151,7 @@ export class SecurityAuditFramework {
       result,
       ipAddress,
       userAgent,
-      details
+      details,
     };
 
     this.logAuditEntry(auditEntry);
@@ -151,7 +163,9 @@ export class SecurityAuditFramework {
   private checkForAlerts(event: SecurityEvent): void {
     // High confidence threats
     if (event.confidence > 0.8) {
-      this.createAlert('critical', 'threat_detection', 
+      this.createAlert(
+        'critical',
+        'threat_detection',
         `High confidence threat detected: ${event.threatTypes.join(', ')}`,
         { event }
       );
@@ -159,33 +173,39 @@ export class SecurityAuditFramework {
 
     // Multiple threats from same IP
     const recentEvents = this.securityEvents.filter(
-      e => e.clientIP === event.clientIP && 
-           Date.now() - e.timestamp.getTime() < 300000 // 5 minutes
+      e =>
+        e.clientIP === event.clientIP &&
+        Date.now() - e.timestamp.getTime() < 300000 // 5 minutes
     );
 
     if (recentEvents.length > 10) {
-      this.createAlert('high', 'multiple_threats',
+      this.createAlert(
+        'high',
+        'multiple_threats',
         `Multiple security threats from IP ${event.clientIP}`,
-        { 
+        {
           ip: event.clientIP,
           eventCount: recentEvents.length,
-          threatTypes: [...new Set(recentEvents.flatMap(e => e.threatTypes))]
+          threatTypes: [...new Set(recentEvents.flatMap(e => e.threatTypes))],
         }
       );
     }
 
     // Tenant-specific anomalies
     const tenantEvents = this.securityEvents.filter(
-      e => e.tenantId === event.tenantId &&
-           Date.now() - e.timestamp.getTime() < 3600000 // 1 hour
+      e =>
+        e.tenantId === event.tenantId &&
+        Date.now() - e.timestamp.getTime() < 3600000 // 1 hour
     );
 
     if (tenantEvents.length > 50) {
-      this.createAlert('medium', 'tenant_anomaly',
+      this.createAlert(
+        'medium',
+        'tenant_anomaly',
         `High security event volume for tenant ${event.tenantId}`,
-        { 
+        {
           tenantId: event.tenantId,
-          eventCount: tenantEvents.length
+          eventCount: tenantEvents.length,
         }
       );
     }
@@ -207,7 +227,7 @@ export class SecurityAuditFramework {
       category,
       message,
       details,
-      resolved: false
+      resolved: false,
     };
 
     this.securityAlerts.push(alert);
@@ -221,14 +241,17 @@ export class SecurityAuditFramework {
       alertId: alert.id,
       severity: alert.severity,
       category: alert.category,
-      message: alert.message
+      message: alert.message,
     });
 
     // Auto-resolve low severity alerts after 24 hours
     if (severity === 'low') {
-      setTimeout(() => {
-        this.resolveAlert(alert.id, 'auto_resolved');
-      }, 24 * 60 * 60 * 1000);
+      setTimeout(
+        () => {
+          this.resolveAlert(alert.id, 'auto_resolved');
+        },
+        24 * 60 * 60 * 1000
+      );
     }
   }
 
@@ -237,7 +260,7 @@ export class SecurityAuditFramework {
    */
   public resolveAlert(alertId: string, resolvedBy: string): boolean {
     const alert = this.securityAlerts.find(a => a.id === alertId);
-    
+
     if (!alert) {
       logger.warn('Alert not found for resolution', { alertId });
       return false;
@@ -255,7 +278,7 @@ export class SecurityAuditFramework {
     logger.info('Security alert resolved', {
       alertId,
       resolvedBy,
-      severity: alert.severity
+      severity: alert.severity,
     });
 
     return true;
@@ -269,7 +292,7 @@ export class SecurityAuditFramework {
     endDate: Date
   ): ComplianceReport {
     const reportId = `compliance_${Date.now()}`;
-    
+
     // Filter events within the period
     const periodEvents = this.securityEvents.filter(
       e => e.timestamp >= startDate && e.timestamp <= endDate
@@ -281,23 +304,30 @@ export class SecurityAuditFramework {
 
     // Calculate compliance metrics
     const totalEvents = periodEvents.length + periodAudits.length;
-    const securityIncidents = periodEvents.filter(e => e.action === 'block').length;
-    const blockedRequests = periodAudits.filter(a => a.result === 'blocked').length;
-    
+    const securityIncidents = periodEvents.filter(
+      e => e.action === 'block'
+    ).length;
+    const blockedRequests = periodAudits.filter(
+      a => a.result === 'blocked'
+    ).length;
+
     // Calculate compliance score (0-100)
     let complianceScore = 100;
-    
+
     // Deduct points for security incidents
     if (totalEvents > 0) {
       const incidentRate = securityIncidents / totalEvents;
       complianceScore -= Math.min(incidentRate * 50, 50);
-      
+
       const blockRate = blockedRequests / totalEvents;
       complianceScore -= Math.min(blockRate * 30, 30);
     }
 
     // Generate findings
-    const findings = this.generateComplianceFindings(periodEvents, periodAudits);
+    const findings = this.generateComplianceFindings(
+      periodEvents,
+      periodAudits
+    );
 
     const report: ComplianceReport = {
       reportId,
@@ -306,14 +336,14 @@ export class SecurityAuditFramework {
       totalEvents,
       securityIncidents,
       complianceScore: Math.max(complianceScore, 0),
-      findings
+      findings,
     };
 
     logger.info('Compliance report generated', {
       reportId,
       period: report.period,
       score: report.complianceScore,
-      findings: findings.length
+      findings: findings.length,
     });
 
     return report;
@@ -353,14 +383,14 @@ export class SecurityAuditFramework {
           category: 'security_threats',
           severity: count > 100 ? 'high' : count > 50 ? 'medium' : 'low',
           count,
-          description: `High frequency of ${threat} attacks detected`
+          description: `High frequency of ${threat} attacks detected`,
         });
       }
     }
 
     // Failed authentication attempts
-    const failedAuths = audits.filter(a => 
-      a.action.includes('auth') && a.result === 'failure'
+    const failedAuths = audits.filter(
+      a => a.action.includes('auth') && a.result === 'failure'
     ).length;
 
     if (failedAuths > 20) {
@@ -368,13 +398,13 @@ export class SecurityAuditFramework {
         category: 'authentication',
         severity: failedAuths > 100 ? 'high' : 'medium',
         count: failedAuths,
-        description: 'High number of failed authentication attempts'
+        description: 'High number of failed authentication attempts',
       });
     }
 
     // Data access violations
-    const dataViolations = audits.filter(a => 
-      a.result === 'blocked' && a.action.includes('data')
+    const dataViolations = audits.filter(
+      a => a.result === 'blocked' && a.action.includes('data')
     ).length;
 
     if (dataViolations > 5) {
@@ -382,7 +412,7 @@ export class SecurityAuditFramework {
         category: 'data_access',
         severity: dataViolations > 20 ? 'high' : 'medium',
         count: dataViolations,
-        description: 'Unauthorized data access attempts blocked'
+        description: 'Unauthorized data access attempts blocked',
       });
     }
 
@@ -421,29 +451,37 @@ export class SecurityAuditFramework {
     const weeklyReport = this.generateComplianceReport(last7d, now);
 
     // Threat trends (daily counts for last 7 days)
-    const threatTrends: Array<{ date: string; count: number; types: string[] }> = [];
+    const threatTrends: Array<{
+      date: string;
+      count: number;
+      types: string[];
+    }> = [];
     for (let i = 6; i >= 0; i--) {
       const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
-      const dayStart = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      const dayStart = new Date(
+        date.getFullYear(),
+        date.getMonth(),
+        date.getDate()
+      );
       const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
-      
+
       const dayEvents = this.securityEvents.filter(
         e => e.timestamp >= dayStart && e.timestamp < dayEnd
       );
-      
+
       const threatTypes = [...new Set(dayEvents.flatMap(e => e.threatTypes))];
-      
+
       threatTrends.push({
         date: dayStart.toISOString().split('T')[0],
         count: dayEvents.length,
-        types: threatTypes
+        types: threatTypes,
       });
     }
 
     // Top threats (last 7 days)
     const threatCounts = new Map<string, number>();
     const weekEvents = this.securityEvents.filter(e => e.timestamp >= last7d);
-    
+
     for (const event of weekEvents) {
       for (const threat of event.threatTypes) {
         threatCounts.set(threat, (threatCounts.get(threat) || 0) + 1);
@@ -460,12 +498,12 @@ export class SecurityAuditFramework {
         totalEvents: this.securityEvents.length + this.auditLogs.length,
         activeAlerts: activeAlerts.length,
         resolvedAlerts: resolvedAlerts.length,
-        complianceScore: weeklyReport.complianceScore
+        complianceScore: weeklyReport.complianceScore,
       },
       recentEvents,
       activeAlerts: activeAlerts.slice(-20),
       threatTrends,
-      topThreats
+      topThreats,
     };
   }
 
@@ -482,9 +520,18 @@ export class SecurityAuditFramework {
     );
 
     if (format === 'csv') {
-      const headers = ['timestamp', 'tenantId', 'agentId', 'action', 'resource', 'result', 'ipAddress', 'userAgent'];
+      const headers = [
+        'timestamp',
+        'tenantId',
+        'agentId',
+        'action',
+        'resource',
+        'result',
+        'ipAddress',
+        'userAgent',
+      ];
       const csvLines = [headers.join(',')];
-      
+
       for (const log of filteredLogs) {
         const values = [
           log.timestamp.toISOString(),
@@ -494,11 +541,11 @@ export class SecurityAuditFramework {
           log.resource,
           log.result,
           log.ipAddress,
-          `"${log.userAgent.replace(/"/g, '""')}"`
+          `"${log.userAgent.replace(/"/g, '""')}"`,
         ];
         csvLines.push(values.join(','));
       }
-      
+
       return csvLines.join('\n');
     }
 
@@ -562,7 +609,9 @@ export class SecurityAuditFramework {
 
     for (const [tenantId, ips] of tenantAttacks) {
       if (ips.size > 5) {
-        this.createAlert('high', 'coordinated_attack',
+        this.createAlert(
+          'high',
+          'coordinated_attack',
           `Coordinated attack detected on tenant ${tenantId}`,
           { tenantId, attackingIPs: Array.from(ips) }
         );
@@ -571,7 +620,7 @@ export class SecurityAuditFramework {
 
     logger.debug('Security event correlation completed', {
       eventsAnalyzed: recentEvents.length,
-      tenantsChecked: tenantAttacks.size
+      tenantsChecked: tenantAttacks.size,
     });
   }
 
@@ -588,8 +637,12 @@ export class SecurityAuditFramework {
     const beforeAlerts = this.securityAlerts.length;
 
     this.auditLogs = this.auditLogs.filter(log => log.timestamp >= cutoff);
-    this.securityEvents = this.securityEvents.filter(event => event.timestamp >= cutoff);
-    this.securityAlerts = this.securityAlerts.filter(alert => alert.timestamp >= cutoff);
+    this.securityEvents = this.securityEvents.filter(
+      event => event.timestamp >= cutoff
+    );
+    this.securityAlerts = this.securityAlerts.filter(
+      alert => alert.timestamp >= cutoff
+    );
 
     const removedLogs = beforeLogs - this.auditLogs.length;
     const removedEvents = beforeEvents - this.securityEvents.length;
@@ -600,7 +653,7 @@ export class SecurityAuditFramework {
         removedLogs,
         removedEvents,
         removedAlerts,
-        retentionDays: 90
+        retentionDays: 90,
       });
     }
   }
@@ -614,11 +667,11 @@ export class SecurityAuditFramework {
     );
 
     const criticalAlerts = recentAlerts.filter(a => a.severity === 'critical');
-    
+
     if (criticalAlerts.length > 3) {
       logger.error('SECURITY SYSTEM ALERT: Multiple critical security alerts', {
         criticalAlerts: criticalAlerts.length,
-        totalRecentAlerts: recentAlerts.length
+        totalRecentAlerts: recentAlerts.length,
       });
     }
 
@@ -630,7 +683,7 @@ export class SecurityAuditFramework {
     if (recentEvents.length > 1000) {
       logger.warn('High security event volume detected', {
         eventsPerMinute: recentEvents.length,
-        threshold: 1000
+        threshold: 1000,
       });
     }
   }

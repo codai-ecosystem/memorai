@@ -1,9 +1,9 @@
 /**
  * Distributed Tracing Engine for Memorai Enterprise
- * 
+ *
  * Implements OpenTelemetry-based distributed tracing for comprehensive
  * monitoring across all memory operations and system components.
- * 
+ *
  * Features:
  * - Request correlation across services
  * - Performance bottleneck identification
@@ -92,8 +92,8 @@ export interface TracingConfig {
  */
 class MockSpan {
   private attributes: Record<string, any> = {};
-  private events: Array<{name: string; attributes: Record<string, any>}> = [];
-  private status: {code: number; message?: string} = {code: 1};
+  private events: Array<{ name: string; attributes: Record<string, any> }> = [];
+  private status: { code: number; message?: string } = { code: 1 };
 
   setAttribute(key: string, value: AttributeValue): void {
     this.attributes[key] = value;
@@ -104,10 +104,10 @@ class MockSpan {
   }
 
   addEvent(name: string, attributes: Record<string, any> = {}): void {
-    this.events.push({name, attributes});
+    this.events.push({ name, attributes });
   }
 
-  setStatus(status: {code: number; message?: string}): void {
+  setStatus(status: { code: number; message?: string }): void {
     this.status = status;
   }
 
@@ -115,14 +115,14 @@ class MockSpan {
     // Mock implementation
   }
 
-  spanContext(): {traceId: string} {
-    return {traceId: `mock_trace_${Date.now()}`};
+  spanContext(): { traceId: string } {
+    return { traceId: `mock_trace_${Date.now()}` };
   }
 }
 
 /**
  * Enterprise Distributed Tracing Engine
- * 
+ *
  * Provides comprehensive tracing capabilities for the memorai system
  * with OpenTelemetry integration and custom memory operation tracking.
  */
@@ -137,7 +137,8 @@ export class DistributedTracingEngine {
   constructor(config: TracingConfig) {
     this.config = config;
     this.isProduction = config.environment === 'production';
-    this.correlationIdGenerator = () => `trace_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    this.correlationIdGenerator = () =>
+      `trace_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     this.initializeTracing();
   }
 
@@ -149,9 +150,13 @@ export class DistributedTracingEngine {
       try {
         // In production, we would initialize real OpenTelemetry
         // For now, using mock implementation
-        console.log(`[TracingEngine] Initialized for ${this.config.serviceName} in ${this.config.environment}`);
+        console.log(
+          `[TracingEngine] Initialized for ${this.config.serviceName} in ${this.config.environment}`
+        );
       } catch (error) {
-        console.warn('[TracingEngine] Failed to initialize OpenTelemetry, using mock implementation');
+        console.warn(
+          '[TracingEngine] Failed to initialize OpenTelemetry, using mock implementation'
+        );
       }
     }
   }
@@ -164,9 +169,10 @@ export class DistributedTracingEngine {
     traceContext: MemoryTraceContext,
     operation: (span: MockSpan) => Promise<T>
   ): Promise<T> {
-    const correlationId = traceContext.correlationId || this.correlationIdGenerator();
+    const correlationId =
+      traceContext.correlationId || this.correlationIdGenerator();
     const span = new MockSpan();
-    
+
     try {
       // Set initial attributes
       span.setAttributes({
@@ -176,16 +182,16 @@ export class DistributedTracingEngine {
         'correlation.id': correlationId,
         ...(traceContext.userId && { 'memory.user_id': traceContext.userId }),
         ...(traceContext.sessionId && { 'session.id': traceContext.sessionId }),
-        ...(traceContext.requestId && { 'request.id': traceContext.requestId })
+        ...(traceContext.requestId && { 'request.id': traceContext.requestId }),
       });
 
       this.activeSpans.set(traceContext.operationId, span);
-      
+
       // Add operation start event
       span.addEvent('operation.started', {
         'operation.type': operationName,
         'operation.id': traceContext.operationId,
-        'timestamp': Date.now()
+        timestamp: Date.now(),
       });
 
       const result = await operation(span);
@@ -193,23 +199,24 @@ export class DistributedTracingEngine {
       // Add success event
       span.addEvent('operation.completed', {
         'operation.status': 'success',
-        'timestamp': Date.now()
+        timestamp: Date.now(),
       });
 
       span.setStatus({ code: 1 }); // OK status
       return result;
-
     } catch (error) {
       // Record error in span
       this.recordError(span, error as Error, {
-        errorType: error instanceof Error ? error.constructor.name : 'UnknownError',
-        errorMessage: error instanceof Error ? error.message : 'Unknown error occurred',
+        errorType:
+          error instanceof Error ? error.constructor.name : 'UnknownError',
+        errorMessage:
+          error instanceof Error ? error.message : 'Unknown error occurred',
         userId: traceContext.userId,
         operationDetails: {
           operation: operationName,
           operationId: traceContext.operationId,
-          tenantId: traceContext.tenantId
-        }
+          tenantId: traceContext.tenantId,
+        },
       });
 
       throw error;
@@ -233,11 +240,11 @@ export class DistributedTracingEngine {
     }
 
     const childSpan = new MockSpan();
-    
+
     // Convert attributes to safe AttributeValue types
     const safeAttributes: Record<string, AttributeValue> = {
       'memory.operation': operationName,
-      'memory.parent_operation': parentOperationId
+      'memory.parent_operation': parentOperationId,
     };
 
     // Add safe attributes from the provided attributes
@@ -245,7 +252,11 @@ export class DistributedTracingEngine {
       if (value !== undefined) {
         if (Array.isArray(value)) {
           safeAttributes[key] = JSON.stringify(value);
-        } else if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+        } else if (
+          typeof value === 'string' ||
+          typeof value === 'number' ||
+          typeof value === 'boolean'
+        ) {
           safeAttributes[key] = value;
         } else {
           safeAttributes[key] = String(value);
@@ -286,18 +297,28 @@ export class DistributedTracingEngine {
       span.setAttributes({
         'performance.duration_ms': metrics.duration,
         'performance.memory_usage_bytes': metrics.memoryUsage,
-        ...(metrics.cpuUsage && { 'performance.cpu_usage_percent': metrics.cpuUsage }),
-        ...(metrics.cacheHitRate && { 'performance.cache_hit_rate': metrics.cacheHitRate }),
-        ...(metrics.databaseQueryCount && { 'performance.db_query_count': metrics.databaseQueryCount }),
-        ...(metrics.networkRequestCount && { 'performance.network_request_count': metrics.networkRequestCount }),
-        ...(metrics.errorCount && { 'performance.error_count': metrics.errorCount })
+        ...(metrics.cpuUsage && {
+          'performance.cpu_usage_percent': metrics.cpuUsage,
+        }),
+        ...(metrics.cacheHitRate && {
+          'performance.cache_hit_rate': metrics.cacheHitRate,
+        }),
+        ...(metrics.databaseQueryCount && {
+          'performance.db_query_count': metrics.databaseQueryCount,
+        }),
+        ...(metrics.networkRequestCount && {
+          'performance.network_request_count': metrics.networkRequestCount,
+        }),
+        ...(metrics.errorCount && {
+          'performance.error_count': metrics.errorCount,
+        }),
       });
 
       // Add performance event
       span.addEvent('performance.metrics_recorded', {
-        'duration': metrics.duration,
-        'memory_usage': metrics.memoryUsage,
-        'timestamp': Date.now()
+        duration: metrics.duration,
+        memory_usage: metrics.memoryUsage,
+        timestamp: Date.now(),
       });
     }
   }
@@ -312,21 +333,21 @@ export class DistributedTracingEngine {
   ): void {
     span.setStatus({
       code: 2, // ERROR status
-      message: errorContext.errorMessage
+      message: errorContext.errorMessage,
     });
 
     span.setAttributes({
       'error.type': errorContext.errorType,
       'error.message': errorContext.errorMessage,
       ...(errorContext.errorCode && { 'error.code': errorContext.errorCode }),
-      ...(errorContext.userId && { 'error.user_id': errorContext.userId })
+      ...(errorContext.userId && { 'error.user_id': errorContext.userId }),
     });
 
     span.addEvent('error.occurred', {
       'error.type': errorContext.errorType,
       'error.message': errorContext.errorMessage,
       'error.stack': errorContext.stackTrace || error.stack,
-      'timestamp': Date.now()
+      timestamp: Date.now(),
     });
 
     // Record operation details if provided
@@ -349,7 +370,7 @@ export class DistributedTracingEngine {
     if (span) {
       span.addEvent(eventName, {
         ...attributes,
-        'timestamp': Date.now()
+        timestamp: Date.now(),
       });
     }
   }
@@ -398,7 +419,7 @@ export class DistributedTracingEngine {
       activeSpansCount: this.activeSpans.size,
       serviceName: this.config.serviceName,
       environment: this.config.environment,
-      samplingRate: this.config.samplingRate
+      samplingRate: this.config.samplingRate,
     };
   }
 }
@@ -410,16 +431,17 @@ export const DEFAULT_TRACING_CONFIG: TracingConfig = {
   serviceName: 'memorai-enterprise',
   serviceVersion: '3.0.0',
   environment: process.env.NODE_ENV || 'development',
-  jaegerEndpoint: process.env.JAEGER_ENDPOINT || 'http://localhost:14268/api/traces',
+  jaegerEndpoint:
+    process.env.JAEGER_ENDPOINT || 'http://localhost:14268/api/traces',
   samplingRate: parseFloat(process.env.TRACING_SAMPLING_RATE || '1.0'),
   enableConsoleExporter: process.env.TRACING_CONSOLE === 'true',
   enableJaegerExporter: process.env.TRACING_JAEGER !== 'false',
   resourceAttributes: {
     'service.namespace': 'memorai',
     'service.instance.id': process.env.INSTANCE_ID || 'local',
-    'deployment.environment': process.env.DEPLOYMENT_ENV || 'local'
+    'deployment.environment': process.env.DEPLOYMENT_ENV || 'local',
   },
-  instrumentations: ['http', 'express', 'redis', 'qdrant']
+  instrumentations: ['http', 'express', 'redis', 'qdrant'],
 };
 
 /**
@@ -430,7 +452,7 @@ export function createDistributedTracingEngine(
 ): DistributedTracingEngine {
   return new DistributedTracingEngine({
     ...DEFAULT_TRACING_CONFIG,
-    ...config
+    ...config,
   });
 }
 

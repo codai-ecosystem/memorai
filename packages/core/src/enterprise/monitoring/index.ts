@@ -1,6 +1,6 @@
 /**
  * Enterprise Monitoring Module for Memorai
- * 
+ *
  * Comprehensive monitoring and observability solution providing:
  * - Distributed tracing with OpenTelemetry
  * - Custom metrics with Prometheus integration
@@ -8,7 +8,7 @@
  * - Log aggregation with pattern detection
  * - Performance alerting with ML-based anomaly detection
  * - Unified monitoring orchestration
- * 
+ *
  * @version 3.0.0
  * @author Memorai Enterprise Team
  */
@@ -17,62 +17,62 @@ import { LogLevel } from './LogAggregationEngine';
 import { AlertSeverity } from './PerformanceAlertingEngine';
 
 // Core monitoring engines
-export { 
+export {
   default as DistributedTracingEngine,
   createDistributedTracingEngine,
   type MemoryTraceContext,
-  type TracingConfig
+  type TracingConfig,
 } from './DistributedTracingEngine';
 
-export { 
+export {
   default as CustomMetricsEngine,
   createCustomMetricsEngine,
+  type BusinessMetrics,
   type MemoryOperationMetrics,
   type SystemPerformanceMetrics,
-  type BusinessMetrics
 } from './CustomMetricsEngine';
 
-export { 
+export {
   default as HealthCheckEngine,
   createHealthCheckEngine,
+  type HealthCheckConfig,
   type SystemHealthReport,
-  type HealthCheckConfig
 } from './HealthCheckEngine';
 
-export { 
+export {
   default as LogAggregationEngine,
-  createLogAggregationEngine,
-  type LogEntry,
   LogLevel,
-  type LogAnalysisResult
+  createLogAggregationEngine,
+  type LogAnalysisResult,
+  type LogEntry,
 } from './LogAggregationEngine';
 
-export { 
+export {
+  AlertSeverity,
   default as PerformanceAlertingEngine,
   createPerformanceAlertingEngine,
   type Alert,
   type AlertRule,
   type MetricDataPoint,
-  AlertSeverity
 } from './PerformanceAlertingEngine';
 
 // Enterprise orchestrator
-import { 
+import {
   default as EnterpriseMonitoringOrchestrator,
   createEnterpriseMonitoringOrchestrator,
   type MonitoringConfig,
-  type MonitoringReport,
   type MonitoringContext,
-  type OptimizationRecommendation
+  type MonitoringReport,
+  type OptimizationRecommendation,
 } from './EnterpriseMonitoringOrchestrator';
 
-export { 
+export {
   EnterpriseMonitoringOrchestrator,
   createEnterpriseMonitoringOrchestrator,
   type MonitoringConfig,
-  type MonitoringReport,
   type MonitoringContext,
-  type OptimizationRecommendation
+  type MonitoringReport,
+  type OptimizationRecommendation,
 };
 
 /**
@@ -85,34 +85,34 @@ export const MonitoringPresets = {
   development: {
     tracing: {
       samplingRate: 1.0,
-      enableJaegerExporter: false
+      enableJaegerExporter: false,
     },
     metrics: {
       collectionInterval: 10000,
       retentionDays: 1,
-      enableBusinessMetrics: true
+      enableBusinessMetrics: true,
     },
     healthChecks: {
       interval: 30000,
       timeout: 5000,
-      retryCount: 1
+      retryCount: 1,
     },
     logging: {
       level: LogLevel.DEBUG,
       maxEntries: 10000,
-      analysisInterval: 1
+      analysisInterval: 1,
     },
     alerting: {
       enabled: true,
       defaultCooldown: 5,
-      escalationEnabled: false
+      escalationEnabled: false,
     },
     general: {
       environment: 'development',
       serviceName: 'memorai-dev',
       version: '3.0.0-dev',
-      enableAutoOptimization: true
-    }
+      enableAutoOptimization: true,
+    },
   },
 
   /**
@@ -121,34 +121,34 @@ export const MonitoringPresets = {
   production: {
     tracing: {
       samplingRate: 0.1,
-      enableJaegerExporter: true
+      enableJaegerExporter: true,
     },
     metrics: {
       collectionInterval: 60000,
       retentionDays: 30,
-      enableBusinessMetrics: true
+      enableBusinessMetrics: true,
     },
     healthChecks: {
       interval: 120000,
       timeout: 10000,
-      retryCount: 3
+      retryCount: 3,
     },
     logging: {
       level: LogLevel.INFO,
       maxEntries: 100000,
-      analysisInterval: 10
+      analysisInterval: 10,
     },
     alerting: {
       enabled: true,
       defaultCooldown: 15,
-      escalationEnabled: true
+      escalationEnabled: true,
     },
     general: {
       environment: 'production',
       serviceName: 'memorai-enterprise',
       version: '3.0.0',
-      enableAutoOptimization: true
-    }
+      enableAutoOptimization: true,
+    },
   },
 
   /**
@@ -157,34 +157,34 @@ export const MonitoringPresets = {
   highPerformance: {
     tracing: {
       samplingRate: 0.01,
-      enableJaegerExporter: true
+      enableJaegerExporter: true,
     },
     metrics: {
       collectionInterval: 30000,
       retentionDays: 7,
-      enableBusinessMetrics: false
+      enableBusinessMetrics: false,
     },
     healthChecks: {
       interval: 180000,
       timeout: 5000,
-      retryCount: 2
+      retryCount: 2,
     },
     logging: {
       level: LogLevel.WARN,
       maxEntries: 50000,
-      analysisInterval: 5
+      analysisInterval: 5,
     },
     alerting: {
       enabled: true,
       defaultCooldown: 10,
-      escalationEnabled: true
+      escalationEnabled: true,
     },
     general: {
       environment: 'production',
       serviceName: 'memorai-hp',
       version: '3.0.0',
-      enableAutoOptimization: false
-    }
+      enableAutoOptimization: false,
+    },
   },
 
   /**
@@ -193,35 +193,35 @@ export const MonitoringPresets = {
   testing: {
     tracing: {
       samplingRate: 1.0,
-      enableJaegerExporter: false
+      enableJaegerExporter: false,
     },
     metrics: {
       collectionInterval: 5000,
       retentionDays: 1,
-      enableBusinessMetrics: false
+      enableBusinessMetrics: false,
     },
     healthChecks: {
       interval: 15000,
       timeout: 3000,
-      retryCount: 1
+      retryCount: 1,
     },
     logging: {
       level: LogLevel.DEBUG,
       maxEntries: 5000,
-      analysisInterval: 1
+      analysisInterval: 1,
     },
     alerting: {
       enabled: false,
       defaultCooldown: 1,
-      escalationEnabled: false
+      escalationEnabled: false,
     },
     general: {
       environment: 'test',
       serviceName: 'memorai-test',
       version: '3.0.0-test',
-      enableAutoOptimization: false
-    }
-  }
+      enableAutoOptimization: false,
+    },
+  },
 };
 
 /**
@@ -238,8 +238,8 @@ export const DefaultAlertRules = {
         metric: 'response_time' as const,
         operator: '>' as const,
         threshold: 1000,
-        duration: 300
-      }
+        duration: 300,
+      },
     ],
     severity: AlertSeverity.WARNING,
     cooldown: 10,
@@ -249,9 +249,9 @@ export const DefaultAlertRules = {
       {
         type: 'email' as const,
         config: { emails: ['admin@memorai.ro'] },
-        enabled: true
-      }
-    ]
+        enabled: true,
+      },
+    ],
   },
 
   highErrorRate: {
@@ -264,8 +264,8 @@ export const DefaultAlertRules = {
         metric: 'error_rate' as const,
         operator: '>' as const,
         threshold: 5,
-        duration: 300
-      }
+        duration: 300,
+      },
     ],
     severity: AlertSeverity.CRITICAL,
     cooldown: 5,
@@ -275,14 +275,14 @@ export const DefaultAlertRules = {
       {
         type: 'email' as const,
         config: { emails: ['admin@memorai.ro'] },
-        enabled: true
+        enabled: true,
       },
       {
         type: 'slack' as const,
         config: { channel: '#alerts' },
-        enabled: true
-      }
-    ]
+        enabled: true,
+      },
+    ],
   },
 
   highCpuUsage: {
@@ -295,8 +295,8 @@ export const DefaultAlertRules = {
         metric: 'cpu_usage' as const,
         operator: '>' as const,
         threshold: 80,
-        duration: 600
-      }
+        duration: 600,
+      },
     ],
     severity: AlertSeverity.WARNING,
     cooldown: 15,
@@ -306,9 +306,9 @@ export const DefaultAlertRules = {
       {
         type: 'email' as const,
         config: { emails: ['admin@memorai.ro'] },
-        enabled: true
-      }
-    ]
+        enabled: true,
+      },
+    ],
   },
 
   highMemoryUsage: {
@@ -321,8 +321,8 @@ export const DefaultAlertRules = {
         metric: 'memory_usage' as const,
         operator: '>' as const,
         threshold: 85,
-        duration: 600
-      }
+        duration: 600,
+      },
     ],
     severity: AlertSeverity.CRITICAL,
     cooldown: 10,
@@ -332,14 +332,14 @@ export const DefaultAlertRules = {
       {
         type: 'email' as const,
         config: { emails: ['admin@memorai.ro'] },
-        enabled: true
+        enabled: true,
       },
       {
         type: 'slack' as const,
         config: { channel: '#alerts' },
-        enabled: true
-      }
-    ]
+        enabled: true,
+      },
+    ],
   },
 
   systemUnhealthy: {
@@ -352,8 +352,8 @@ export const DefaultAlertRules = {
         metric: 'error_rate' as const,
         operator: '>' as const,
         threshold: 50,
-        duration: 60
-      }
+        duration: 60,
+      },
     ],
     severity: AlertSeverity.EMERGENCY,
     cooldown: 1,
@@ -363,20 +363,20 @@ export const DefaultAlertRules = {
       {
         type: 'email' as const,
         config: { emails: ['admin@memorai.ro'] },
-        enabled: true
+        enabled: true,
       },
       {
         type: 'slack' as const,
         config: { channel: '#emergency' },
-        enabled: true
+        enabled: true,
       },
       {
         type: 'webhook' as const,
         config: { webhook_url: 'https://hooks.memorai.ro/alerts' },
-        enabled: true
-      }
-    ]
-  }
+        enabled: true,
+      },
+    ],
+  },
 };
 
 /**
@@ -393,13 +393,17 @@ export const MonitoringUtils = {
   /**
    * Setup basic monitoring for a memorai service
    */
-  setupBasicMonitoring(serviceName: string, environment: string = 'development') {
+  setupBasicMonitoring(
+    serviceName: string,
+    environment: string = 'development'
+  ) {
     const config = {
       ...MonitoringPresets[environment as keyof typeof MonitoringPresets],
       general: {
-        ...MonitoringPresets[environment as keyof typeof MonitoringPresets].general,
-        serviceName
-      }
+        ...MonitoringPresets[environment as keyof typeof MonitoringPresets]
+          .general,
+        serviceName,
+      },
     };
 
     const orchestrator = createEnterpriseMonitoringOrchestrator(config);
@@ -417,14 +421,14 @@ export const MonitoringUtils = {
    */
   setupHighThroughputMonitoring(serviceName: string) {
     const orchestrator = this.createWithPreset('highPerformance');
-    
+
     // Override service name
     const config = {
       ...MonitoringPresets.highPerformance,
       general: {
         ...MonitoringPresets.highPerformance.general,
-        serviceName
-      }
+        serviceName,
+      },
     };
 
     return createEnterpriseMonitoringOrchestrator(config);
@@ -435,7 +439,7 @@ export const MonitoringUtils = {
    */
   setupTestingMonitoring(serviceName: string) {
     return this.createWithPreset('testing');
-  }
+  },
 };
 
 /**
@@ -489,7 +493,7 @@ export class MemoraiMonitoring {
       component,
       tenantId,
       userId,
-      metadata
+      metadata,
     };
 
     return await this.orchestrator.startMemoryOperationMonitoring(context, fn);
@@ -544,8 +548,8 @@ export const BUILD_INFO = {
     'Health Monitoring',
     'Log Aggregation',
     'Performance Alerting',
-    'Enterprise Orchestration'
-  ]
+    'Enterprise Orchestration',
+  ],
 };
 
 export default {
@@ -557,5 +561,5 @@ export default {
   createEnterpriseMonitoringOrchestrator,
   createMemoraiMonitoring,
   VERSION,
-  BUILD_INFO
+  BUILD_INFO,
 };

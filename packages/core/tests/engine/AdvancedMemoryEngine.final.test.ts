@@ -1,9 +1,13 @@
-import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { EmbeddingService } from '../../src/embedding/EmbeddingService.js';
 import { AdvancedMemoryEngine } from '../../src/engine/AdvancedMemoryEngine.js';
-import { MemoryError } from '../../src/types/index.js';
-import type { MemoryConfig, MemoryMetadata, MemoryType } from '../../src/types/index.js';
 import type { StorageAdapter } from '../../src/storage/StorageAdapter.js';
-import type { EmbeddingService, EmbeddingResult } from '../../src/embedding/EmbeddingService.js';
+import type {
+  MemoryConfig,
+  MemoryMetadata,
+  MemoryType,
+} from '../../src/types/index.js';
+import { MemoryError } from '../../src/types/index.js';
 
 // Mock dependencies
 vi.mock('../../src/storage/StorageAdapter.js', () => ({
@@ -46,7 +50,7 @@ describe('AdvancedMemoryEngine - Comprehensive Coverage Suite', () => {
     mockStorage.store.mockResolvedValue();
     mockStorage.retrieve.mockResolvedValue(null);
     mockStorage.delete.mockResolvedValue();
-    
+
     mockEmbedding.embed.mockResolvedValue({
       embedding: new Array(1536).fill(0).map(() => Math.random()),
       tokens: 10,
@@ -128,9 +132,9 @@ describe('AdvancedMemoryEngine - Comprehensive Coverage Suite', () => {
   describe('initialize()', () => {
     it('should initialize successfully', async () => {
       mockStorage.list.mockResolvedValue([]);
-      
+
       await engine.initialize();
-      
+
       expect((engine as any).isInitialized).toBe(true);
       expect(mockStorage.list).toHaveBeenCalled();
     });
@@ -144,7 +148,7 @@ describe('AdvancedMemoryEngine - Comprehensive Coverage Suite', () => {
     it('should allow re-initialization if already initialized', async () => {
       await engine.initialize();
       await engine.initialize(); // Should not throw
-      
+
       expect(mockStorage.list).toHaveBeenCalledTimes(2);
     });
 
@@ -185,7 +189,12 @@ describe('AdvancedMemoryEngine - Comprehensive Coverage Suite', () => {
       const content = 'This is a test memory';
       const options = { importance: 0.7 };
 
-      const result = await engine.remember(content, testTenantId, testAgentId, options);
+      const result = await engine.remember(
+        content,
+        testTenantId,
+        testAgentId,
+        options
+      );
 
       expect(typeof result).toBe('string');
       expect(result).toMatch(/^[a-zA-Z0-9_-]+$/); // nanoid format
@@ -210,7 +219,12 @@ describe('AdvancedMemoryEngine - Comprehensive Coverage Suite', () => {
         tags: ['important', 'test'],
       };
 
-      const result = await engine.remember(content, testTenantId, testAgentId, options);
+      const result = await engine.remember(
+        content,
+        testTenantId,
+        testAgentId,
+        options
+      );
 
       expect(typeof result).toBe('string');
       expect(mockStorage.store).toHaveBeenCalled();
@@ -227,24 +241,34 @@ describe('AdvancedMemoryEngine - Comprehensive Coverage Suite', () => {
       (uninitializedEngine as any).storage = mockStorage;
       (uninitializedEngine as any).embedding = mockEmbedding;
 
-      await expect(uninitializedEngine.remember('test', testTenantId)).rejects.toThrow(MemoryError);
+      await expect(
+        uninitializedEngine.remember('test', testTenantId)
+      ).rejects.toThrow(MemoryError);
     });
 
     it('should throw error for empty content', async () => {
-      await expect(engine.remember('', testTenantId)).rejects.toThrow(MemoryError);
-      await expect(engine.remember('   ', testTenantId)).rejects.toThrow(MemoryError);
+      await expect(engine.remember('', testTenantId)).rejects.toThrow(
+        MemoryError
+      );
+      await expect(engine.remember('   ', testTenantId)).rejects.toThrow(
+        MemoryError
+      );
     });
 
     it('should handle embedding generation failure', async () => {
       mockEmbedding.embed.mockRejectedValue(new Error('Embedding failed'));
 
-      await expect(engine.remember('test content', testTenantId)).rejects.toThrow(MemoryError);
+      await expect(
+        engine.remember('test content', testTenantId)
+      ).rejects.toThrow(MemoryError);
     });
 
     it('should handle storage failure', async () => {
       mockStorage.store.mockRejectedValue(new Error('Storage failed'));
 
-      await expect(engine.remember('test content', testTenantId)).rejects.toThrow(MemoryError);
+      await expect(
+        engine.remember('test content', testTenantId)
+      ).rejects.toThrow(MemoryError);
     });
 
     it('should trim whitespace from content', async () => {
@@ -259,7 +283,7 @@ describe('AdvancedMemoryEngine - Comprehensive Coverage Suite', () => {
 
     it('should handle non-string content', async () => {
       const result = await engine.remember(123 as any, testTenantId);
-      
+
       expect(typeof result).toBe('string');
       expect(mockEmbedding.embed).toHaveBeenCalledWith('123');
     });
@@ -353,7 +377,9 @@ describe('AdvancedMemoryEngine - Comprehensive Coverage Suite', () => {
       (uninitializedEngine as any).storage = mockStorage;
       (uninitializedEngine as any).embedding = mockEmbedding;
 
-      await expect(uninitializedEngine.recall('test', testTenantId)).rejects.toThrow(MemoryError);
+      await expect(
+        uninitializedEngine.recall('test', testTenantId)
+      ).rejects.toThrow(MemoryError);
     });
   });
 
@@ -435,7 +461,7 @@ describe('AdvancedMemoryEngine - Comprehensive Coverage Suite', () => {
       };
 
       const context = await engine.getContext(contextRequest);
-      
+
       expect(context.context).toBeDefined();
       expect(context.memories).toEqual([]);
     });
@@ -486,7 +512,9 @@ describe('AdvancedMemoryEngine - Comprehensive Coverage Suite', () => {
       (uninitializedEngine as any).storage = mockStorage;
       (uninitializedEngine as any).embedding = mockEmbedding;
 
-      await expect(uninitializedEngine.forget('test')).rejects.toThrow(MemoryError);
+      await expect(uninitializedEngine.forget('test')).rejects.toThrow(
+        MemoryError
+      );
     });
 
     it('should handle storage retrieve failure gracefully', async () => {
@@ -630,12 +658,18 @@ describe('AdvancedMemoryEngine - Comprehensive Coverage Suite', () => {
     it('should handle unknown error types in remember', async () => {
       mockEmbedding.embed.mockRejectedValue('Unknown error string');
 
-      await expect(engine.remember('test', testTenantId)).rejects.toThrow(MemoryError);
+      await expect(engine.remember('test', testTenantId)).rejects.toThrow(
+        MemoryError
+      );
     });
 
     it('should handle null/undefined values gracefully', async () => {
-      await expect(engine.remember(null as any, testTenantId)).rejects.toThrow(MemoryError);
-      await expect(engine.remember(undefined as any, testTenantId)).rejects.toThrow(MemoryError);
+      await expect(engine.remember(null as any, testTenantId)).rejects.toThrow(
+        MemoryError
+      );
+      await expect(
+        engine.remember(undefined as any, testTenantId)
+      ).rejects.toThrow(MemoryError);
     });
   });
 
@@ -654,7 +688,8 @@ describe('AdvancedMemoryEngine - Comprehensive Coverage Suite', () => {
     });
 
     it('should handle special characters in content', async () => {
-      const specialContent = '🚀 Special chars: àáâãäåæçèéêë 中文 русский العربية';
+      const specialContent =
+        '🚀 Special chars: àáâãäåæçèéêë 中文 русский العربية';
 
       const result = await engine.remember(specialContent, testTenantId);
 
@@ -670,7 +705,7 @@ describe('AdvancedMemoryEngine - Comprehensive Coverage Suite', () => {
       const results = await Promise.all(promises);
 
       expect(results).toHaveLength(10);
-      results.forEach((result) => {
+      results.forEach(result => {
         expect(typeof result).toBe('string');
       });
     });
@@ -681,7 +716,9 @@ describe('AdvancedMemoryEngine - Comprehensive Coverage Suite', () => {
 
       // Failing operation
       mockEmbedding.embed.mockRejectedValueOnce(new Error('Temporary failure'));
-      await expect(engine.remember('Invalid memory', testTenantId)).rejects.toThrow();
+      await expect(
+        engine.remember('Invalid memory', testTenantId)
+      ).rejects.toThrow();
 
       // Engine should still work after error
       mockEmbedding.embed.mockResolvedValue({
@@ -731,7 +768,7 @@ describe('AdvancedMemoryEngine - Comprehensive Coverage Suite', () => {
       await Promise.all(promises);
 
       const duration = Date.now() - start;
-      
+
       // Should complete within reasonable time (less than 5 seconds)
       expect(duration).toBeLessThan(5000);
     });
@@ -740,7 +777,10 @@ describe('AdvancedMemoryEngine - Comprehensive Coverage Suite', () => {
       // Add memories
       const memoryIds: string[] = [];
       for (let i = 0; i < 10; i++) {
-        const memoryId = await engine.remember(`Memory to clean ${i}`, testTenantId);
+        const memoryId = await engine.remember(
+          `Memory to clean ${i}`,
+          testTenantId
+        );
         memoryIds.push(memoryId);
       }
 

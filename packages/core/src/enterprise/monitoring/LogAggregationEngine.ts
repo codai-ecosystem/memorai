@@ -1,9 +1,9 @@
 /**
  * Log Aggregation and Analysis Engine for Memorai Enterprise
- * 
+ *
  * Implements comprehensive log collection, analysis, and alerting
  * with structured logging, pattern detection, and real-time monitoring.
- * 
+ *
  * Features:
  * - Structured logging with JSON format
  * - Log level filtering and routing
@@ -21,7 +21,7 @@ export enum LogLevel {
   INFO = 2,
   WARN = 3,
   ERROR = 4,
-  FATAL = 5
+  FATAL = 5,
 }
 
 /**
@@ -207,7 +207,9 @@ class LogBuffer {
 
     // Filter by correlation ID
     if (criteria.correlationId) {
-      results = results.filter(entry => entry.correlationId === criteria.correlationId);
+      results = results.filter(
+        entry => entry.correlationId === criteria.correlationId
+      );
     }
 
     // Filter by tenant ID
@@ -217,9 +219,10 @@ class LogBuffer {
 
     // Filter by time range
     if (criteria.timeRange) {
-      results = results.filter(entry => 
-        entry.timestamp >= criteria.timeRange!.start && 
-        entry.timestamp <= criteria.timeRange!.end
+      results = results.filter(
+        entry =>
+          entry.timestamp >= criteria.timeRange!.start &&
+          entry.timestamp <= criteria.timeRange!.end
       );
     }
 
@@ -254,7 +257,7 @@ class LogBuffer {
       [LogLevel.INFO]: 0,
       [LogLevel.WARN]: 0,
       [LogLevel.ERROR]: 0,
-      [LogLevel.FATAL]: 0
+      [LogLevel.FATAL]: 0,
     };
 
     const componentCounts: Record<string, number> = {};
@@ -263,8 +266,9 @@ class LogBuffer {
 
     for (const entry of this.entries) {
       levelCounts[entry.level]++;
-      componentCounts[entry.component] = (componentCounts[entry.component] || 0) + 1;
-      
+      componentCounts[entry.component] =
+        (componentCounts[entry.component] || 0) + 1;
+
       if (!oldestTimestamp || entry.timestamp < oldestTimestamp) {
         oldestTimestamp = entry.timestamp;
       }
@@ -278,7 +282,7 @@ class LogBuffer {
       levelCounts,
       componentCounts,
       oldestTimestamp,
-      newestTimestamp
+      newestTimestamp,
     };
   }
 
@@ -371,7 +375,7 @@ class PatternDetectionEngine {
       pattern: /ERROR|FATAL/,
       severity: 'high',
       action: 'alert',
-      cooldown: 5
+      cooldown: 5,
     });
 
     // Performance patterns
@@ -382,7 +386,7 @@ class PatternDetectionEngine {
       pattern: /duration.*([5-9]\d{3,}|[1-9]\d{4,})/,
       severity: 'medium',
       action: 'alert',
-      cooldown: 10
+      cooldown: 10,
     });
 
     // Security patterns
@@ -393,7 +397,7 @@ class PatternDetectionEngine {
       pattern: /authentication.*failed|invalid.*credentials|unauthorized/i,
       severity: 'high',
       action: 'alert',
-      cooldown: 2
+      cooldown: 2,
     });
 
     // Memory patterns
@@ -404,7 +408,7 @@ class PatternDetectionEngine {
       pattern: /memory.*usage.*high|out of memory|memory.*exhausted/i,
       severity: 'high',
       action: 'escalate',
-      cooldown: 5
+      cooldown: 5,
     });
   }
 
@@ -423,7 +427,7 @@ class PatternDetectionEngine {
 
     for (const [patternId, pattern] of this.patterns) {
       const patternMatches = this.findPatternMatches(logs, pattern);
-      
+
       if (patternMatches.length > 0) {
         const match: PatternMatch = {
           pattern,
@@ -431,7 +435,11 @@ class PatternDetectionEngine {
           frequency: patternMatches.length,
           lastSeen: Math.max(...patternMatches.map(m => m.timestamp)),
           severity: pattern.severity,
-          shouldAlert: this.shouldAlert(patternId, pattern, patternMatches.length)
+          shouldAlert: this.shouldAlert(
+            patternId,
+            pattern,
+            patternMatches.length
+          ),
         };
 
         matches.push(match);
@@ -445,7 +453,10 @@ class PatternDetectionEngine {
   /**
    * Find matches for a specific pattern
    */
-  private findPatternMatches(logs: LogEntry[], pattern: LogPattern): LogEntry[] {
+  private findPatternMatches(
+    logs: LogEntry[],
+    pattern: LogPattern
+  ): LogEntry[] {
     return logs.filter(log => {
       // Check level filter
       if (pattern.level !== undefined && log.level < pattern.level) {
@@ -459,11 +470,15 @@ class PatternDetectionEngine {
 
       // Check pattern match
       if (pattern.pattern instanceof RegExp) {
-        return pattern.pattern.test(log.message) || 
-               (log.stack && pattern.pattern.test(log.stack));
+        return (
+          pattern.pattern.test(log.message) ||
+          (log.stack && pattern.pattern.test(log.stack))
+        );
       } else {
-        return log.message.includes(pattern.pattern) ||
-               (log.stack && log.stack.includes(pattern.pattern));
+        return (
+          log.message.includes(pattern.pattern) ||
+          (log.stack && log.stack.includes(pattern.pattern))
+        );
       }
     });
   }
@@ -471,7 +486,11 @@ class PatternDetectionEngine {
   /**
    * Determine if pattern should trigger alert
    */
-  private shouldAlert(patternId: string, pattern: LogPattern, frequency: number): boolean {
+  private shouldAlert(
+    patternId: string,
+    pattern: LogPattern,
+    frequency: number
+  ): boolean {
     if (pattern.action !== 'alert' && pattern.action !== 'escalate') {
       return false;
     }
@@ -480,16 +499,16 @@ class PatternDetectionEngine {
     const lastAlert = this.lastAlerts.get(patternId);
     const cooldownMs = (pattern.cooldown || 5) * 60 * 1000;
 
-    if (lastAlert && (now - lastAlert) < cooldownMs) {
+    if (lastAlert && now - lastAlert < cooldownMs) {
       return false;
     }
 
     // Frequency thresholds based on severity
     const thresholds = {
-      'low': 10,
-      'medium': 5,
-      'high': 3,
-      'critical': 1
+      low: 10,
+      medium: 5,
+      high: 3,
+      critical: 1,
     };
 
     if (frequency >= thresholds[pattern.severity]) {
@@ -511,7 +530,7 @@ class PatternDetectionEngine {
     return {
       totalPatterns: this.patterns.size,
       activeMatches: this.patternMatches.size,
-      alertsTriggered: this.lastAlerts.size
+      alertsTriggered: this.lastAlerts.size,
     };
   }
 }
@@ -530,7 +549,7 @@ class AnomalyDetectionEngine {
   detectAnomalies(logs: LogEntry[], timeWindow: number = 10): LogAnomaly[] {
     const anomalies: LogAnomaly[] = [];
     const now = Date.now();
-    const windowStart = now - (timeWindow * 60 * 1000);
+    const windowStart = now - timeWindow * 60 * 1000;
 
     // Volume anomaly detection
     const volumeAnomaly = this.detectVolumeAnomaly(logs, windowStart, now);
@@ -541,7 +560,11 @@ class AnomalyDetectionEngine {
     if (errorAnomaly) anomalies.push(errorAnomaly);
 
     // Response time anomaly detection
-    const responseAnomaly = this.detectResponseTimeAnomaly(logs, windowStart, now);
+    const responseAnomaly = this.detectResponseTimeAnomaly(
+      logs,
+      windowStart,
+      now
+    );
     if (responseAnomaly) anomalies.push(responseAnomaly);
 
     return anomalies;
@@ -550,10 +573,16 @@ class AnomalyDetectionEngine {
   /**
    * Detect volume anomalies
    */
-  private detectVolumeAnomaly(logs: LogEntry[], start: number, end: number): LogAnomaly | null {
-    const currentVolume = logs.filter(log => log.timestamp >= start && log.timestamp <= end).length;
+  private detectVolumeAnomaly(
+    logs: LogEntry[],
+    start: number,
+    end: number
+  ): LogAnomaly | null {
+    const currentVolume = logs.filter(
+      log => log.timestamp >= start && log.timestamp <= end
+    ).length;
     const baselineKey = 'volume';
-    
+
     if (!this.baselines.has(baselineKey)) {
       this.baselines.set(baselineKey, []);
     }
@@ -569,13 +598,16 @@ class AnomalyDetectionEngine {
     if (baseline.length < 10) return null; // Need minimum data
 
     const mean = baseline.reduce((sum, val) => sum + val, 0) / baseline.length;
-    const variance = baseline.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / baseline.length;
+    const variance =
+      baseline.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) /
+      baseline.length;
     const stdDev = Math.sqrt(variance);
 
     const zScore = Math.abs(currentVolume - mean) / (stdDev || 1);
 
     if (zScore > this.ANOMALY_THRESHOLD) {
-      const severity = zScore > 3 ? 'critical' : zScore > 2.5 ? 'high' : 'medium';
+      const severity =
+        zScore > 3 ? 'critical' : zScore > 2.5 ? 'high' : 'medium';
       return {
         type: 'volume',
         description: `Log volume anomaly detected: ${currentVolume} logs (${zScore.toFixed(2)} standard deviations from normal)`,
@@ -585,13 +617,13 @@ class AnomalyDetectionEngine {
           currentVolume,
           baselineMean: mean,
           standardDeviation: stdDev,
-          zScore
+          zScore,
         },
         recommendations: [
           'Investigate potential system issues or traffic spikes',
           'Check for error cascades or retry loops',
-          'Review recent deployments or configuration changes'
-        ]
+          'Review recent deployments or configuration changes',
+        ],
       };
     }
 
@@ -601,10 +633,18 @@ class AnomalyDetectionEngine {
   /**
    * Detect error rate anomalies
    */
-  private detectErrorRateAnomaly(logs: LogEntry[], start: number, end: number): LogAnomaly | null {
-    const recentLogs = logs.filter(log => log.timestamp >= start && log.timestamp <= end);
+  private detectErrorRateAnomaly(
+    logs: LogEntry[],
+    start: number,
+    end: number
+  ): LogAnomaly | null {
+    const recentLogs = logs.filter(
+      log => log.timestamp >= start && log.timestamp <= end
+    );
     const totalLogs = recentLogs.length;
-    const errorLogs = recentLogs.filter(log => log.level >= LogLevel.ERROR).length;
+    const errorLogs = recentLogs.filter(
+      log => log.level >= LogLevel.ERROR
+    ).length;
     const currentErrorRate = totalLogs > 0 ? (errorLogs / totalLogs) * 100 : 0;
 
     const baselineKey = 'error_rate';
@@ -622,13 +662,21 @@ class AnomalyDetectionEngine {
     if (baseline.length < 10) return null;
 
     const mean = baseline.reduce((sum, val) => sum + val, 0) / baseline.length;
-    const variance = baseline.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / baseline.length;
+    const variance =
+      baseline.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) /
+      baseline.length;
     const stdDev = Math.sqrt(variance);
 
     const zScore = Math.abs(currentErrorRate - mean) / (stdDev || 1);
 
-    if (zScore > this.ANOMALY_THRESHOLD && currentErrorRate > 5) { // At least 5% error rate
-      const severity = currentErrorRate > 20 ? 'critical' : currentErrorRate > 10 ? 'high' : 'medium';
+    if (zScore > this.ANOMALY_THRESHOLD && currentErrorRate > 5) {
+      // At least 5% error rate
+      const severity =
+        currentErrorRate > 20
+          ? 'critical'
+          : currentErrorRate > 10
+            ? 'high'
+            : 'medium';
       return {
         type: 'error_rate',
         description: `Error rate anomaly detected: ${currentErrorRate.toFixed(1)}% (${zScore.toFixed(2)} standard deviations from normal)`,
@@ -640,13 +688,13 @@ class AnomalyDetectionEngine {
           standardDeviation: stdDev,
           zScore,
           totalLogs,
-          errorLogs
+          errorLogs,
         },
         recommendations: [
           'Investigate recent error patterns and root causes',
           'Check system dependencies and external services',
-          'Review error logs for common failure patterns'
-        ]
+          'Review error logs for common failure patterns',
+        ],
       };
     }
 
@@ -656,16 +704,23 @@ class AnomalyDetectionEngine {
   /**
    * Detect response time anomalies
    */
-  private detectResponseTimeAnomaly(logs: LogEntry[], start: number, end: number): LogAnomaly | null {
-    const recentLogs = logs.filter(log => 
-      log.timestamp >= start && 
-      log.timestamp <= end && 
-      log.duration !== undefined
+  private detectResponseTimeAnomaly(
+    logs: LogEntry[],
+    start: number,
+    end: number
+  ): LogAnomaly | null {
+    const recentLogs = logs.filter(
+      log =>
+        log.timestamp >= start &&
+        log.timestamp <= end &&
+        log.duration !== undefined
     );
 
     if (recentLogs.length === 0) return null;
 
-    const currentAvgTime = recentLogs.reduce((sum, log) => sum + (log.duration || 0), 0) / recentLogs.length;
+    const currentAvgTime =
+      recentLogs.reduce((sum, log) => sum + (log.duration || 0), 0) /
+      recentLogs.length;
 
     const baselineKey = 'response_time';
     if (!this.baselines.has(baselineKey)) {
@@ -682,13 +737,21 @@ class AnomalyDetectionEngine {
     if (baseline.length < 10) return null;
 
     const mean = baseline.reduce((sum, val) => sum + val, 0) / baseline.length;
-    const variance = baseline.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / baseline.length;
+    const variance =
+      baseline.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) /
+      baseline.length;
     const stdDev = Math.sqrt(variance);
 
     const zScore = Math.abs(currentAvgTime - mean) / (stdDev || 1);
 
-    if (zScore > this.ANOMALY_THRESHOLD && currentAvgTime > 1000) { // At least 1 second
-      const severity = currentAvgTime > 10000 ? 'critical' : currentAvgTime > 5000 ? 'high' : 'medium';
+    if (zScore > this.ANOMALY_THRESHOLD && currentAvgTime > 1000) {
+      // At least 1 second
+      const severity =
+        currentAvgTime > 10000
+          ? 'critical'
+          : currentAvgTime > 5000
+            ? 'high'
+            : 'medium';
       return {
         type: 'response_time',
         description: `Response time anomaly detected: ${currentAvgTime.toFixed(0)}ms average (${zScore.toFixed(2)} standard deviations from normal)`,
@@ -699,13 +762,13 @@ class AnomalyDetectionEngine {
           baselineMean: mean,
           standardDeviation: stdDev,
           zScore,
-          sampleSize: recentLogs.length
+          sampleSize: recentLogs.length,
         },
         recommendations: [
           'Check system performance and resource usage',
           'Investigate slow database queries or external API calls',
-          'Review recent code changes that might affect performance'
-        ]
+          'Review recent code changes that might affect performance',
+        ],
       };
     }
 
@@ -715,7 +778,7 @@ class AnomalyDetectionEngine {
 
 /**
  * Log Aggregation and Analysis Engine
- * 
+ *
  * Main engine that orchestrates log collection, storage, analysis,
  * and alerting with comprehensive monitoring capabilities.
  */
@@ -737,17 +800,17 @@ export class LogAggregationEngine {
       alertThresholds: {
         errorRate: 10,
         volumeIncrease: 50,
-        responseTimeIncrease: 100
+        responseTimeIncrease: 100,
       },
       outputs: [
         {
           type: 'console',
           config: {},
           enabled: true,
-          logLevel: LogLevel.INFO
-        }
+          logLevel: LogLevel.INFO,
+        },
       ],
-      ...config
+      ...config,
     };
 
     this.buffer = new LogBuffer(this.config.maxEntries);
@@ -764,7 +827,9 @@ export class LogAggregationEngine {
     level: LogLevel,
     message: string,
     component: string,
-    metadata: Partial<Omit<LogEntry, 'timestamp' | 'level' | 'message' | 'component'>> = {}
+    metadata: Partial<
+      Omit<LogEntry, 'timestamp' | 'level' | 'message' | 'component'>
+    > = {}
   ): void {
     if (level < this.config.logLevel) {
       return; // Skip logs below configured level
@@ -775,7 +840,7 @@ export class LogAggregationEngine {
       level,
       message,
       component,
-      ...metadata
+      ...metadata,
     };
 
     // Add to buffer
@@ -829,16 +894,18 @@ export class LogAggregationEngine {
   /**
    * Analyze logs and generate report
    */
-  async analyzeRecent(timeWindowMinutes: number = 10): Promise<LogAnalysisResult> {
+  async analyzeRecent(
+    timeWindowMinutes: number = 10
+  ): Promise<LogAnalysisResult> {
     const now = Date.now();
-    const start = now - (timeWindowMinutes * 60 * 1000);
-    
+    const start = now - timeWindowMinutes * 60 * 1000;
+
     const logs = this.buffer.getLogs({
-      timeRange: { start, end: now }
+      timeRange: { start, end: now },
     });
 
     // Pattern analysis
-    const patternMatches = this.config.enablePatternDetection 
+    const patternMatches = this.config.enablePatternDetection
       ? this.patternEngine.analyzePatterns(logs)
       : [];
 
@@ -854,7 +921,11 @@ export class LogAggregationEngine {
     const trends = this.generateTrends(logs);
 
     // Generate recommendations
-    const recommendations = this.generateRecommendations(patternMatches, anomalies, stats);
+    const recommendations = this.generateRecommendations(
+      patternMatches,
+      anomalies,
+      stats
+    );
 
     return {
       totalLogs: logs.length,
@@ -864,7 +935,7 @@ export class LogAggregationEngine {
       patternMatches,
       anomalies,
       trends,
-      recommendations
+      recommendations,
     };
   }
 
@@ -896,13 +967,13 @@ export class LogAggregationEngine {
     const timestamp = new Date(entry.timestamp).toISOString();
     const level = LogLevel[entry.level].padEnd(5);
     const component = entry.component.padEnd(15);
-    
+
     let output = `${timestamp} [${level}] ${component} ${entry.message}`;
-    
+
     if (entry.correlationId) {
       output += ` [${entry.correlationId}]`;
     }
-    
+
     if (entry.duration) {
       output += ` (${entry.duration}ms)`;
     }
@@ -928,17 +999,17 @@ export class LogAggregationEngine {
    */
   private generateTrends(logs: LogEntry[]): LogTrend[] {
     const trends: LogTrend[] = [];
-    
+
     // Error rate trend
     const errorCount = logs.filter(log => log.level >= LogLevel.ERROR).length;
     const errorRate = logs.length > 0 ? (errorCount / logs.length) * 100 : 0;
-    
+
     trends.push({
       metric: 'error_rate',
       direction: errorRate > 5 ? 'increasing' : 'stable',
       change: errorRate,
       timeWindow: 10,
-      significance: errorRate > 10 ? 'high' : errorRate > 5 ? 'medium' : 'low'
+      significance: errorRate > 10 ? 'high' : errorRate > 5 ? 'medium' : 'low',
     });
 
     return trends;
@@ -955,26 +1026,41 @@ export class LogAggregationEngine {
     const recommendations: string[] = [];
 
     // Pattern-based recommendations
-    const criticalPatterns = patterns.filter(p => p.severity === 'critical' || p.severity === 'high');
+    const criticalPatterns = patterns.filter(
+      p => p.severity === 'critical' || p.severity === 'high'
+    );
     if (criticalPatterns.length > 0) {
-      recommendations.push(`Address ${criticalPatterns.length} critical log patterns requiring immediate attention`);
+      recommendations.push(
+        `Address ${criticalPatterns.length} critical log patterns requiring immediate attention`
+      );
     }
 
     // Anomaly-based recommendations
-    const criticalAnomalies = anomalies.filter(a => a.severity === 'critical' || a.severity === 'high');
+    const criticalAnomalies = anomalies.filter(
+      a => a.severity === 'critical' || a.severity === 'high'
+    );
     if (criticalAnomalies.length > 0) {
-      recommendations.push(`Investigate ${criticalAnomalies.length} detected anomalies in system behavior`);
+      recommendations.push(
+        `Investigate ${criticalAnomalies.length} detected anomalies in system behavior`
+      );
     }
 
     // Volume-based recommendations
     if (stats.totalEntries > this.config.maxEntries * 0.8) {
-      recommendations.push('Consider increasing log buffer size or reducing log retention period');
+      recommendations.push(
+        'Consider increasing log buffer size or reducing log retention period'
+      );
     }
 
     // Error rate recommendations
-    const errorRate = (stats.levelCounts[LogLevel.ERROR] + stats.levelCounts[LogLevel.FATAL]) / stats.totalEntries * 100;
+    const errorRate =
+      ((stats.levelCounts[LogLevel.ERROR] + stats.levelCounts[LogLevel.FATAL]) /
+        stats.totalEntries) *
+      100;
     if (errorRate > 10) {
-      recommendations.push('High error rate detected - review error patterns and implement fixes');
+      recommendations.push(
+        'High error rate detected - review error patterns and implement fixes'
+      );
     }
 
     if (recommendations.length === 0) {
@@ -992,39 +1078,47 @@ export class LogAggregationEngine {
       clearInterval(this.analysisInterval);
     }
 
-    this.analysisInterval = setInterval(async () => {
-      try {
-        const analysis = await this.analyzeRecent();
-        
-        // Log analysis summary
-        this.info(
-          `Log analysis complete: ${analysis.totalLogs} logs, ${analysis.patternMatches.length} patterns, ${analysis.anomalies.length} anomalies`,
-          'LogAggregationEngine',
-          { analysis: analysis }
-        );
+    this.analysisInterval = setInterval(
+      async () => {
+        try {
+          const analysis = await this.analyzeRecent();
 
-        // Trigger alerts for critical issues
-        const criticalIssues = [
-          ...analysis.patternMatches.filter(p => p.shouldAlert && (p.severity === 'critical' || p.severity === 'high')),
-          ...analysis.anomalies.filter(a => a.severity === 'critical' || a.severity === 'high')
-        ];
-
-        if (criticalIssues.length > 0) {
-          this.error(
-            `Critical issues detected: ${criticalIssues.length} items require immediate attention`,
+          // Log analysis summary
+          this.info(
+            `Log analysis complete: ${analysis.totalLogs} logs, ${analysis.patternMatches.length} patterns, ${analysis.anomalies.length} anomalies`,
             'LogAggregationEngine',
-            { criticalIssues }
+            { analysis: analysis }
+          );
+
+          // Trigger alerts for critical issues
+          const criticalIssues = [
+            ...analysis.patternMatches.filter(
+              p =>
+                p.shouldAlert &&
+                (p.severity === 'critical' || p.severity === 'high')
+            ),
+            ...analysis.anomalies.filter(
+              a => a.severity === 'critical' || a.severity === 'high'
+            ),
+          ];
+
+          if (criticalIssues.length > 0) {
+            this.error(
+              `Critical issues detected: ${criticalIssues.length} items require immediate attention`,
+              'LogAggregationEngine',
+              { criticalIssues }
+            );
+          }
+        } catch (error) {
+          this.error(
+            `Log analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+            'LogAggregationEngine',
+            { error }
           );
         }
-
-      } catch (error) {
-        this.error(
-          `Log analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-          'LogAggregationEngine',
-          { error }
-        );
-      }
-    }, this.config.analysisInterval * 60 * 1000);
+      },
+      this.config.analysisInterval * 60 * 1000
+    );
   }
 
   /**
@@ -1065,7 +1159,7 @@ export class LogAggregationEngine {
     return {
       buffer: this.buffer.getStats(),
       patterns: this.patternEngine.getPatternStats(),
-      config: this.config
+      config: this.config,
     };
   }
 

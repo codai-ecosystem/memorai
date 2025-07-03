@@ -1,16 +1,14 @@
 /**
  * Analytics Dashboard Service
- * 
+ *
  * Comprehensive analytics dashboard for Memorai enterprise memory system.
  * Provides real-time dashboards, historical reports, and business intelligence.
  */
 
 import { EventEmitter } from 'events';
-import type { 
-  PerformanceMetric, 
-  SystemHealthMetrics, 
+import type {
   PerformanceAlert,
-  MemoryUsageStats 
+  PerformanceMetric,
 } from './AdvancedPerformanceMonitor';
 import type { OptimizationResult } from './SystemOptimizationEngine';
 
@@ -77,11 +75,14 @@ export interface AnalyticsQuery {
 
 export interface DashboardData {
   timestamp: Date;
-  widgets: Record<string, {
-    data: any;
-    lastUpdated: Date;
-    error?: string;
-  }>;
+  widgets: Record<
+    string,
+    {
+      data: any;
+      lastUpdated: Date;
+      error?: string;
+    }
+  >;
   systemOverview: {
     status: 'healthy' | 'warning' | 'critical';
     uptime: number;
@@ -121,7 +122,7 @@ export interface BusinessMetrics {
 
 /**
  * Analytics Dashboard Service
- * 
+ *
  * Provides comprehensive analytics dashboards and reporting capabilities
  * for enterprise memory system monitoring and business intelligence.
  */
@@ -153,7 +154,7 @@ export class AnalyticsDashboardService extends EventEmitter {
     if (this.isRunning) return;
 
     this.isRunning = true;
-    
+
     // Update dashboard data every 30 seconds
     this.updateIntervalId = setInterval(() => {
       this.updateDashboardData().catch(error => {
@@ -236,8 +237,8 @@ export class AnalyticsDashboardService extends EventEmitter {
       uptimePercentage: number;
     };
   } {
-    const relevantMetrics = this.metricsHistory.filter(m => 
-      m.timestamp >= startTime && m.timestamp <= endTime
+    const relevantMetrics = this.metricsHistory.filter(
+      m => m.timestamp >= startTime && m.timestamp <= endTime
     );
 
     if (relevantMetrics.length === 0) {
@@ -249,39 +250,49 @@ export class AnalyticsDashboardService extends EventEmitter {
           p95ResponseTime: 0,
           p99ResponseTime: 0,
           successRate: 0,
-          uptimePercentage: 0
-        }
+          uptimePercentage: 0,
+        },
       };
     }
 
     // Group metrics by time granularity
-    const groupedMetrics = this.groupMetricsByTime(relevantMetrics, granularity);
-    
-    const timeSeriesData = Object.entries(groupedMetrics).map(([timestamp, metrics]) => {
-      const avgResponseTime = metrics.reduce((sum, m) => sum + m.duration, 0) / metrics.length;
-      const throughput = metrics.length;
-      const errorRate = 1 - (metrics.filter(m => m.success).length / metrics.length);
-      
-      return {
-        timestamp: new Date(timestamp),
-        averageResponseTime: avgResponseTime,
-        throughput,
-        errorRate,
-        memoryUsage: 0 // Would be calculated from system metrics
-      };
-    });
+    const groupedMetrics = this.groupMetricsByTime(
+      relevantMetrics,
+      granularity
+    );
+
+    const timeSeriesData = Object.entries(groupedMetrics).map(
+      ([timestamp, metrics]) => {
+        const avgResponseTime =
+          metrics.reduce((sum, m) => sum + m.duration, 0) / metrics.length;
+        const throughput = metrics.length;
+        const errorRate =
+          1 - metrics.filter(m => m.success).length / metrics.length;
+
+        return {
+          timestamp: new Date(timestamp),
+          averageResponseTime: avgResponseTime,
+          throughput,
+          errorRate,
+          memoryUsage: 0, // Would be calculated from system metrics
+        };
+      }
+    );
 
     // Calculate summary statistics
-    const durations = relevantMetrics.map(m => m.duration).sort((a, b) => a - b);
+    const durations = relevantMetrics
+      .map(m => m.duration)
+      .sort((a, b) => a - b);
     const successCount = relevantMetrics.filter(m => m.success).length;
 
     const summary = {
       totalOperations: relevantMetrics.length,
-      averageResponseTime: durations.reduce((a, b) => a + b, 0) / durations.length,
+      averageResponseTime:
+        durations.reduce((a, b) => a + b, 0) / durations.length,
       p95ResponseTime: durations[Math.floor(durations.length * 0.95)] || 0,
       p99ResponseTime: durations[Math.floor(durations.length * 0.99)] || 0,
       successRate: successCount / relevantMetrics.length,
-      uptimePercentage: 99.9 // Would be calculated from actual uptime data
+      uptimePercentage: 99.9, // Would be calculated from actual uptime data
     };
 
     return { timeSeriesData, summary };
@@ -313,57 +324,70 @@ export class AnalyticsDashboardService extends EventEmitter {
     });
 
     // Calculate tenant analytics
-    const tenantAnalytics = Array.from(tenantMetrics.entries()).map(([tenantId, metrics]) => {
-      const totalMemories = metrics.reduce((sum, m) => sum + m.memoryCount, 0);
-      const dailyOperations = metrics.filter(m => 
-        Date.now() - m.timestamp.getTime() < 24 * 60 * 60 * 1000
-      ).length;
-      const avgResponseTime = metrics.reduce((sum, m) => sum + m.duration, 0) / metrics.length;
-      const errorRate = 1 - (metrics.filter(m => m.success).length / metrics.length);
-      const lastActivity = new Date(Math.max(...metrics.map(m => m.timestamp.getTime())));
+    const tenantAnalytics = Array.from(tenantMetrics.entries()).map(
+      ([tenantId, metrics]) => {
+        const totalMemories = metrics.reduce(
+          (sum, m) => sum + m.memoryCount,
+          0
+        );
+        const dailyOperations = metrics.filter(
+          m => Date.now() - m.timestamp.getTime() < 24 * 60 * 60 * 1000
+        ).length;
+        const avgResponseTime =
+          metrics.reduce((sum, m) => sum + m.duration, 0) / metrics.length;
+        const errorRate =
+          1 - metrics.filter(m => m.success).length / metrics.length;
+        const lastActivity = new Date(
+          Math.max(...metrics.map(m => m.timestamp.getTime()))
+        );
 
-      return {
-        tenantId,
-        totalMemories,
-        dailyOperations,
-        averageResponseTime: avgResponseTime,
-        errorRate,
-        cacheHitRatio: 0.85, // Would be calculated from cache metrics
-        storageUsed: totalMemories * 1024, // Estimated
-        lastActivity
-      };
-    });
+        return {
+          tenantId,
+          totalMemories,
+          dailyOperations,
+          averageResponseTime: avgResponseTime,
+          errorRate,
+          cacheHitRatio: 0.85, // Would be calculated from cache metrics
+          storageUsed: totalMemories * 1024, // Estimated
+          lastActivity,
+        };
+      }
+    );
 
     // Calculate agent analytics
-    const agentAnalytics = Array.from(agentMetrics.entries()).map(([key, metrics]) => {
-      const [tenantId, agentId] = key.split(':');
-      const memoryCount = metrics.reduce((sum, m) => sum + m.memoryCount, 0);
-      const operationsPerDay = metrics.filter(m => 
-        Date.now() - m.timestamp.getTime() < 24 * 60 * 60 * 1000
-      ).length;
-      const lastSeen = new Date(Math.max(...metrics.map(m => m.timestamp.getTime())));
+    const agentAnalytics = Array.from(agentMetrics.entries()).map(
+      ([key, metrics]) => {
+        const [tenantId, agentId] = key.split(':');
+        const memoryCount = metrics.reduce((sum, m) => sum + m.memoryCount, 0);
+        const operationsPerDay = metrics.filter(
+          m => Date.now() - m.timestamp.getTime() < 24 * 60 * 60 * 1000
+        ).length;
+        const lastSeen = new Date(
+          Math.max(...metrics.map(m => m.timestamp.getTime()))
+        );
 
-      // Analyze memory type preferences
-      const memoryTypes = new Map<string, number>();
-      metrics.forEach(m => {
-        const type = m.operationType;
-        memoryTypes.set(type, (memoryTypes.get(type) || 0) + 1);
-      });
-      const preferredMemoryTypes = Array.from(memoryTypes.entries())
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 3)
-        .map(([type]) => type);
+        // Analyze memory type preferences
+        const memoryTypes = new Map<string, number>();
+        metrics.forEach(m => {
+          const type = m.operationType;
+          memoryTypes.set(type, (memoryTypes.get(type) || 0) + 1);
+        });
+        const preferredMemoryTypes = Array.from(memoryTypes.entries())
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 3)
+          .map(([type]) => type);
 
-      return {
-        agentId,
-        tenantId,
-        memoryCount,
-        operationsPerDay,
-        averageSessionLength: 0, // Would be calculated from session data
-        preferredMemoryTypes,
-        lastSeen
-      };
-    });
+        return {
+          agentId,
+          tenantId,
+          memoryCount,
+          operationsPerDay,
+          averageSessionLength: 0, // Would be calculated from session data
+          preferredMemoryTypes,
+          lastSeen,
+        };
+      }
+    );
 
     // Calculate usage patterns
     const hourlyDistribution = new Array(24).fill(0);
@@ -375,13 +399,14 @@ export class AnalyticsDashboardService extends EventEmitter {
       hourlyDistribution[hour]++;
 
       operationCounts.set(
-        metric.operationType, 
+        metric.operationType,
         (operationCounts.get(metric.operationType) || 0) + 1
       );
 
       memoryTypeDistribution.set(
         metric.operationType,
-        (memoryTypeDistribution.get(metric.operationType) || 0) + metric.memoryCount
+        (memoryTypeDistribution.get(metric.operationType) || 0) +
+          metric.memoryCount
       );
     });
 
@@ -403,8 +428,8 @@ export class AnalyticsDashboardService extends EventEmitter {
         peakHours,
         popularOperations,
         memoryTypeDistribution: Object.fromEntries(memoryTypeDistribution),
-        geographicDistribution: {} // Would be populated from IP geolocation
-      }
+        geographicDistribution: {}, // Would be populated from IP geolocation
+      },
     };
   }
 
@@ -431,7 +456,7 @@ export class AnalyticsDashboardService extends EventEmitter {
   }> {
     const startTime = performance.now();
     const reportConfig = this.reports.get(reportId);
-    
+
     if (!reportConfig) {
       throw new Error(`Report configuration not found: ${reportId}`);
     }
@@ -466,13 +491,15 @@ export class AnalyticsDashboardService extends EventEmitter {
           sectionData = this.generateOptimizationSection(startDate, endTime);
           break;
         default:
-          sectionData = { error: `Unknown section type: ${sectionConfig.type}` };
+          sectionData = {
+            error: `Unknown section type: ${sectionConfig.type}`,
+          };
       }
 
       sections.push({
         title: sectionConfig.title,
         type: sectionConfig.type,
-        data: sectionData
+        data: sectionData,
       });
     }
 
@@ -484,13 +511,13 @@ export class AnalyticsDashboardService extends EventEmitter {
         name: reportConfig.name,
         generatedAt: new Date(),
         timeRange: { start: startDate, end: endTime },
-        sections
+        sections,
       },
       metadata: {
         dataPoints: this.metricsHistory.length,
         generationTime,
-        exportFormats: ['pdf', 'excel', 'json']
-      }
+        exportFormats: ['pdf', 'excel', 'json'],
+      },
     };
   }
 
@@ -499,11 +526,13 @@ export class AnalyticsDashboardService extends EventEmitter {
    */
   public updateMetrics(metrics: PerformanceMetric[]): void {
     this.metricsHistory.push(...metrics);
-    
+
     // Keep only recent metrics to prevent memory issues
     const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000); // 30 days
-    this.metricsHistory = this.metricsHistory.filter(m => m.timestamp >= cutoff);
-    
+    this.metricsHistory = this.metricsHistory.filter(
+      m => m.timestamp >= cutoff
+    );
+
     this.emit('metricsUpdated', metrics);
   }
 
@@ -518,11 +547,13 @@ export class AnalyticsDashboardService extends EventEmitter {
   /**
    * Update optimization history
    */
-  public updateOptimizationHistory(history: Array<{
-    timestamp: Date;
-    rule: string;
-    result: OptimizationResult;
-  }>): void {
+  public updateOptimizationHistory(
+    history: Array<{
+      timestamp: Date;
+      rule: string;
+      result: OptimizationResult;
+    }>
+  ): void {
     this.optimizationHistory.push(...history);
     this.emit('optimizationUpdated', history);
   }
@@ -546,9 +577,9 @@ export class AnalyticsDashboardService extends EventEmitter {
             dataSource: 'performance-metrics',
             refreshInterval: 30000,
             chartType: 'line',
-            timeRange: '24h'
+            timeRange: '24h',
           },
-          layout: { x: 0, y: 0, width: 6, height: 4 }
+          layout: { x: 0, y: 0, width: 6, height: 4 },
         },
         {
           id: 'throughput-gauge',
@@ -557,9 +588,9 @@ export class AnalyticsDashboardService extends EventEmitter {
           description: 'Operations per second',
           config: {
             dataSource: 'real-time-metrics',
-            refreshInterval: 5000
+            refreshInterval: 5000,
           },
-          layout: { x: 6, y: 0, width: 3, height: 4 }
+          layout: { x: 6, y: 0, width: 3, height: 4 },
         },
         {
           id: 'error-rate-metric',
@@ -568,9 +599,9 @@ export class AnalyticsDashboardService extends EventEmitter {
           description: 'Current system error rate',
           config: {
             dataSource: 'error-metrics',
-            refreshInterval: 15000
+            refreshInterval: 15000,
           },
-          layout: { x: 9, y: 0, width: 3, height: 4 }
+          layout: { x: 9, y: 0, width: 3, height: 4 },
         },
         {
           id: 'active-alerts',
@@ -579,16 +610,16 @@ export class AnalyticsDashboardService extends EventEmitter {
           description: 'Current system alerts',
           config: {
             dataSource: 'alerts',
-            refreshInterval: 10000
+            refreshInterval: 10000,
           },
-          layout: { x: 0, y: 4, width: 12, height: 4 }
-        }
+          layout: { x: 0, y: 4, width: 12, height: 4 },
+        },
       ],
       permissions: {
         view: ['admin', 'operator', 'viewer'],
-        edit: ['admin']
+        edit: ['admin'],
       },
-      isDefault: true
+      isDefault: true,
     };
 
     // Business Analytics Dashboard
@@ -606,9 +637,9 @@ export class AnalyticsDashboardService extends EventEmitter {
             dataSource: 'tenant-metrics',
             refreshInterval: 60000,
             chartType: 'bar',
-            timeRange: '7d'
+            timeRange: '7d',
           },
-          layout: { x: 0, y: 0, width: 6, height: 4 }
+          layout: { x: 0, y: 0, width: 6, height: 4 },
         },
         {
           id: 'memory-types-pie',
@@ -618,9 +649,9 @@ export class AnalyticsDashboardService extends EventEmitter {
           config: {
             dataSource: 'memory-type-metrics',
             refreshInterval: 60000,
-            chartType: 'pie'
+            chartType: 'pie',
           },
-          layout: { x: 6, y: 0, width: 6, height: 4 }
+          layout: { x: 6, y: 0, width: 6, height: 4 },
         },
         {
           id: 'usage-patterns-heatmap',
@@ -630,16 +661,16 @@ export class AnalyticsDashboardService extends EventEmitter {
           config: {
             dataSource: 'usage-patterns',
             refreshInterval: 300000,
-            chartType: 'heatmap'
+            chartType: 'heatmap',
           },
-          layout: { x: 0, y: 4, width: 12, height: 4 }
-        }
+          layout: { x: 0, y: 4, width: 12, height: 4 },
+        },
       ],
       permissions: {
         view: ['admin', 'business-analyst'],
-        edit: ['admin']
+        edit: ['admin'],
       },
-      isDefault: false
+      isDefault: false,
     };
 
     this.dashboards.set(systemOverview.id, systemOverview);
@@ -655,9 +686,10 @@ export class AnalyticsDashboardService extends EventEmitter {
     const performanceQuery: AnalyticsQuery = {
       id: 'performance-summary',
       name: 'Performance Summary',
-      query: 'SELECT AVG(duration), COUNT(*), operation_type FROM metrics WHERE timestamp >= ? GROUP BY operation_type',
+      query:
+        'SELECT AVG(duration), COUNT(*), operation_type FROM metrics WHERE timestamp >= ? GROUP BY operation_type',
       parameters: { timeRange: '24h' },
-      cache: { enabled: true, ttl: 300 }
+      cache: { enabled: true, ttl: 300 },
     };
 
     this.queries.set(performanceQuery.id, performanceQuery);
@@ -669,8 +701,8 @@ export class AnalyticsDashboardService extends EventEmitter {
   private async updateDashboardData(): Promise<void> {
     try {
       const now = new Date();
-      const recentMetrics = this.metricsHistory.filter(m => 
-        now.getTime() - m.timestamp.getTime() < 300000 // Last 5 minutes
+      const recentMetrics = this.metricsHistory.filter(
+        m => now.getTime() - m.timestamp.getTime() < 300000 // Last 5 minutes
       );
 
       const systemStatus = this.calculateSystemStatus(recentMetrics);
@@ -684,14 +716,16 @@ export class AnalyticsDashboardService extends EventEmitter {
           uptime,
           totalOperations: this.metricsHistory.length,
           activeUsers: new Set(this.metricsHistory.map(m => m.tenantId)).size,
-          errorRate: this.calculateCurrentErrorRate(recentMetrics)
-        }
+          errorRate: this.calculateCurrentErrorRate(recentMetrics),
+        },
       };
 
       this.emit('dashboardDataUpdated', this.realtimeData);
-      
     } catch (error) {
-      console.error('[AnalyticsDashboard] Error updating dashboard data:', error);
+      console.error(
+        '[AnalyticsDashboard] Error updating dashboard data:',
+        error
+      );
       this.emit('error', error);
     }
   }
@@ -700,7 +734,7 @@ export class AnalyticsDashboardService extends EventEmitter {
    * Group metrics by time granularity
    */
   private groupMetricsByTime(
-    metrics: PerformanceMetric[], 
+    metrics: PerformanceMetric[],
     granularity: 'minute' | 'hour' | 'day'
   ): Record<string, PerformanceMetric[]> {
     const groups: Record<string, PerformanceMetric[]> = {};
@@ -736,15 +770,20 @@ export class AnalyticsDashboardService extends EventEmitter {
   /**
    * Calculate current system status
    */
-  private calculateSystemStatus(recentMetrics: PerformanceMetric[]): 'healthy' | 'warning' | 'critical' {
+  private calculateSystemStatus(
+    recentMetrics: PerformanceMetric[]
+  ): 'healthy' | 'warning' | 'critical' {
     if (recentMetrics.length === 0) return 'warning';
 
-    const errorRate = 1 - (recentMetrics.filter(m => m.success).length / recentMetrics.length);
-    const avgResponseTime = recentMetrics.reduce((sum, m) => sum + m.duration, 0) / recentMetrics.length;
+    const errorRate =
+      1 - recentMetrics.filter(m => m.success).length / recentMetrics.length;
+    const avgResponseTime =
+      recentMetrics.reduce((sum, m) => sum + m.duration, 0) /
+      recentMetrics.length;
 
     if (errorRate > 0.1 || avgResponseTime > 1000) return 'critical';
     if (errorRate > 0.05 || avgResponseTime > 500) return 'warning';
-    
+
     return 'healthy';
   }
 
@@ -759,9 +798,11 @@ export class AnalyticsDashboardService extends EventEmitter {
   /**
    * Calculate current error rate
    */
-  private calculateCurrentErrorRate(recentMetrics: PerformanceMetric[]): number {
+  private calculateCurrentErrorRate(
+    recentMetrics: PerformanceMetric[]
+  ): number {
     if (recentMetrics.length === 0) return 0;
-    
+
     const errors = recentMetrics.filter(m => !m.success).length;
     return errors / recentMetrics.length;
   }
@@ -777,8 +818,8 @@ export class AnalyticsDashboardService extends EventEmitter {
       highlights: [
         `${analytics.summary.totalOperations} total operations processed`,
         `${(analytics.summary.successRate * 100).toFixed(1)}% success rate`,
-        `${analytics.summary.averageResponseTime.toFixed(2)}ms average response time`
-      ]
+        `${analytics.summary.averageResponseTime.toFixed(2)}ms average response time`,
+      ],
     };
   }
 
@@ -786,15 +827,15 @@ export class AnalyticsDashboardService extends EventEmitter {
    * Generate security section for reports
    */
   private generateSecuritySection(startTime: Date, endTime: Date): any {
-    const relevantAlerts = this.alertsHistory.filter(a => 
-      a.timestamp >= startTime && a.timestamp <= endTime
+    const relevantAlerts = this.alertsHistory.filter(
+      a => a.timestamp >= startTime && a.timestamp <= endTime
     );
 
     return {
       totalAlerts: relevantAlerts.length,
       criticalAlerts: relevantAlerts.filter(a => a.type === 'critical').length,
       securityIncidents: 0, // Would be calculated from security events
-      threatsBlocked: 0 // Would be calculated from security metrics
+      threatsBlocked: 0, // Would be calculated from security metrics
     };
   }
 
@@ -802,24 +843,32 @@ export class AnalyticsDashboardService extends EventEmitter {
    * Generate optimization section for reports
    */
   private generateOptimizationSection(startTime: Date, endTime: Date): any {
-    const relevantOptimizations = this.optimizationHistory.filter(o => 
-      o.timestamp >= startTime && o.timestamp <= endTime
+    const relevantOptimizations = this.optimizationHistory.filter(
+      o => o.timestamp >= startTime && o.timestamp <= endTime
     );
 
     return {
       totalOptimizations: relevantOptimizations.length,
-      successfulOptimizations: relevantOptimizations.filter(o => o.result.success).length,
-      averageImprovement: relevantOptimizations.reduce(
-        (sum, o) => sum + (o.result.impact.expectedImprovement || 0), 0
-      ) / Math.max(relevantOptimizations.length, 1),
+      successfulOptimizations: relevantOptimizations.filter(
+        o => o.result.success
+      ).length,
+      averageImprovement:
+        relevantOptimizations.reduce(
+          (sum, o) => sum + (o.result.impact.expectedImprovement || 0),
+          0
+        ) / Math.max(relevantOptimizations.length, 1),
       topOptimizations: relevantOptimizations
-        .sort((a, b) => (b.result.impact.expectedImprovement || 0) - (a.result.impact.expectedImprovement || 0))
+        .sort(
+          (a, b) =>
+            (b.result.impact.expectedImprovement || 0) -
+            (a.result.impact.expectedImprovement || 0)
+        )
         .slice(0, 5)
         .map(o => ({
           rule: o.rule,
           improvement: o.result.impact.expectedImprovement,
-          description: o.result.description
-        }))
+          description: o.result.description,
+        })),
     };
   }
 }

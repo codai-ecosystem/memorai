@@ -3,7 +3,7 @@
 **Version**: 3.2.0  
 **Date**: July 3, 2025  
 **Author**: Memorai Enterprise Team  
-**Status**: Production-Ready  
+**Status**: Production-Ready
 
 ## 📋 Document Overview
 
@@ -71,12 +71,14 @@ Memorai is designed as a world-class enterprise memory system that provides:
 ### Component Architecture
 
 #### Core Memory Engine
+
 - **Memory Storage**: Advanced storage abstractions with pluggable backends
 - **Retrieval System**: High-performance query engine with semantic search
 - **Cache Management**: Multi-level caching with intelligent eviction
 - **Index Management**: Automatic indexing with ML-driven optimization
 
 #### AI/ML Intelligence Engine
+
 - **Usage Pattern Analysis**: Real-time behavioral tracking and prediction
 - **Personalized Recommendations**: Collaborative and content-based filtering
 - **Query Optimization**: Adaptive performance tuning with ML models
@@ -84,6 +86,7 @@ Memorai is designed as a world-class enterprise memory system that provides:
 - **Anomaly Detection**: Pattern-based security and integrity monitoring
 
 #### Integration & Connectivity
+
 - **API Gateway**: RESTful and GraphQL APIs with authentication
 - **Event System**: Real-time pub/sub with webhook support
 - **Enterprise Connectors**: Pre-built integrations (Salesforce, SAP, Microsoft)
@@ -96,6 +99,7 @@ Memorai follows a modular monorepo structure with 8 specialized packages:
 ### Core Packages
 
 #### 1. `@memorai/core`
+
 - **Purpose**: Core memory engine and business logic
 - **Components**:
   - Memory storage abstractions
@@ -106,6 +110,7 @@ Memorai follows a modular monorepo structure with 8 specialized packages:
 - **Dependencies**: Minimal external dependencies for maximum portability
 
 #### 2. `@memorai/mcp`
+
 - **Purpose**: Model Context Protocol server implementation
 - **Components**:
   - MCP protocol handlers
@@ -115,6 +120,7 @@ Memorai follows a modular monorepo structure with 8 specialized packages:
 - **Standards**: Full MCP 1.0 compliance
 
 #### 3. `@memorai/server`
+
 - **Purpose**: HTTP/REST server implementation
 - **Components**:
   - Express.js server
@@ -124,6 +130,7 @@ Memorai follows a modular monorepo structure with 8 specialized packages:
 - **Features**: Auto-generated OpenAPI documentation
 
 #### 4. `@memorai/sdk`
+
 - **Purpose**: TypeScript SDK for client integration
 - **Components**:
   - Type-safe client interfaces
@@ -135,6 +142,7 @@ Memorai follows a modular monorepo structure with 8 specialized packages:
 ### Application Packages
 
 #### 5. `@memorai/cli`
+
 - **Purpose**: Command-line interface for operations
 - **Commands**:
   - Memory management operations
@@ -146,6 +154,7 @@ Memorai follows a modular monorepo structure with 8 specialized packages:
 ### Applications
 
 #### 6. `apps/api`
+
 - **Purpose**: Production API server
 - **Features**:
   - RESTful endpoints
@@ -155,6 +164,7 @@ Memorai follows a modular monorepo structure with 8 specialized packages:
 - **Runtime**: Node.js with TypeScript
 
 #### 7. `apps/dashboard`
+
 - **Purpose**: Web-based administration interface
 - **Technology**: Next.js 15 with React 19
 - **Features**:
@@ -165,6 +175,7 @@ Memorai follows a modular monorepo structure with 8 specialized packages:
 - **Design**: Responsive with dark/light themes
 
 #### 8. `apps/demo`
+
 - **Purpose**: Interactive demonstration application
 - **Features**:
   - Live API examples
@@ -177,24 +188,28 @@ Memorai follows a modular monorepo structure with 8 specialized packages:
 ### Multi-Layered Security Model
 
 #### 1. Perimeter Security
+
 - **API Gateway**: Request validation and rate limiting
 - **Web Application Firewall (WAF)**: OWASP protection
 - **DDoS Protection**: Automatic mitigation
 - **IP Allowlisting**: Enterprise IP restrictions
 
 #### 2. Authentication & Authorization
+
 - **Identity Management**: OAuth 2.0 / OIDC integration
 - **Multi-Factor Authentication**: TOTP and hardware keys
 - **Role-Based Access Control (RBAC)**: Granular permissions
 - **API Key Management**: Rotating keys with expiration
 
 #### 3. Data Protection
+
 - **Encryption at Rest**: AES-256 with key rotation
 - **Encryption in Transit**: TLS 1.3 for all communications
 - **Field-Level Encryption**: Sensitive data protection
 - **Key Management**: Hardware Security Modules (HSM)
 
 #### 4. Compliance & Auditing
+
 - **GDPR Compliance**: Data rights and consent management
 - **HIPAA Compliance**: Healthcare data protection
 - **SOX Compliance**: Financial data controls
@@ -202,20 +217,21 @@ Memorai follows a modular monorepo structure with 8 specialized packages:
 
 ### Security Controls Matrix
 
-| Control Category | Implementation | Compliance Standard |
-|------------------|----------------|-------------------|
-| Access Control | RBAC + MFA | ISO 27001 |
-| Data Encryption | AES-256 + TLS 1.3 | FIPS 140-2 |
-| Audit Logging | Immutable logs | SOX, GDPR |
-| Vulnerability Management | Automated scanning | NIST Framework |
-| Incident Response | 24/7 monitoring | ISO 27035 |
-| Business Continuity | Multi-region DR | ISO 22301 |
+| Control Category         | Implementation     | Compliance Standard |
+| ------------------------ | ------------------ | ------------------- |
+| Access Control           | RBAC + MFA         | ISO 27001           |
+| Data Encryption          | AES-256 + TLS 1.3  | FIPS 140-2          |
+| Audit Logging            | Immutable logs     | SOX, GDPR           |
+| Vulnerability Management | Automated scanning | NIST Framework      |
+| Incident Response        | 24/7 monitoring    | ISO 27035           |
+| Business Continuity      | Multi-region DR    | ISO 22301           |
 
 ## 🚀 Deployment Architecture
 
 ### Multi-Region Deployment
 
 #### Production Environment
+
 ```
 Primary Region (us-east-1)     Secondary Region (eu-west-1)     Tertiary Region (ap-south-1)
 ┌─────────────────────────┐    ┌─────────────────────────┐      ┌─────────────────────────┐
@@ -227,6 +243,7 @@ Primary Region (us-east-1)     Secondary Region (eu-west-1)     Tertiary Region 
 ```
 
 #### Kubernetes Deployment Model
+
 ```yaml
 # High-level Kubernetes architecture
 apiVersion: v1
@@ -256,14 +273,15 @@ metadata:
 ### Infrastructure as Code
 
 #### Terraform Configuration
+
 ```hcl
 # AWS Infrastructure
 module "memorai_infrastructure" {
   source = "./terraform/aws"
-  
+
   # Multi-AZ deployment
   availability_zones = ["us-east-1a", "us-east-1b", "us-east-1c"]
-  
+
   # Compute resources
   eks_cluster_config = {
     node_groups = {
@@ -271,7 +289,7 @@ module "memorai_infrastructure" {
       ml_workload = { instance_types = ["c5.2xlarge"], min_size = 2, max_size = 8 }
     }
   }
-  
+
   # Database configuration
   rds_config = {
     engine = "postgresql"
@@ -280,7 +298,7 @@ module "memorai_infrastructure" {
     multi_az = true
     backup_retention = 30
   }
-  
+
   # Cache configuration
   elasticache_config = {
     node_type = "cache.r5.large"
@@ -322,6 +340,7 @@ module "memorai_infrastructure" {
 ### Database Schema Design
 
 #### Primary Database (PostgreSQL)
+
 ```sql
 -- Core memory table
 CREATE TABLE memories (
@@ -375,6 +394,7 @@ CREATE TABLE audit_logs (
 ```
 
 #### Vector Database (Qdrant)
+
 ```yaml
 # Qdrant collection configuration
 collections:
@@ -401,6 +421,7 @@ collections:
 ### RESTful API Design
 
 #### Core Endpoints
+
 ```yaml
 # Memory Management
 GET    /api/v1/memories              # List memories with pagination
@@ -432,6 +453,7 @@ GET    /api/v1/admin/metrics         # System metrics
 ```
 
 #### API Standards
+
 - **Versioning**: URI versioning (`/api/v1/`)
 - **Authentication**: Bearer tokens (JWT)
 - **Rate Limiting**: Per-user and per-endpoint limits
@@ -440,6 +462,7 @@ GET    /api/v1/admin/metrics         # System metrics
 - **Caching**: ETags and Cache-Control headers
 
 ### GraphQL API
+
 ```graphql
 # Core schema types
 type Memory {
@@ -490,6 +513,7 @@ type Subscription {
 ## 🔧 Development Architecture
 
 ### Development Environment
+
 ```yaml
 # Development stack
 runtime: Node.js 20+
@@ -508,6 +532,7 @@ monitoring: Prometheus + Grafana (Docker)
 ```
 
 ### Code Quality Standards
+
 ```typescript
 // TypeScript configuration
 {
@@ -541,6 +566,7 @@ monitoring: Prometheus + Grafana (Docker)
 ## 📈 Performance Architecture
 
 ### Performance Targets
+
 - **API Response Time**: <50ms (95th percentile)
 - **Search Latency**: <100ms (semantic search)
 - **Throughput**: 10,000+ requests/second
@@ -550,6 +576,7 @@ monitoring: Prometheus + Grafana (Docker)
 ### Optimization Strategies
 
 #### 1. Caching Strategy
+
 ```
 ┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
 │   Browser   │    │   CDN       │    │ Application │    │  Database   │
@@ -565,12 +592,14 @@ monitoring: Prometheus + Grafana (Docker)
 ```
 
 #### 2. Database Optimization
+
 - **Connection Pooling**: PgBouncer with 100 connections
 - **Read Replicas**: 2 read-only replicas for query distribution
 - **Partitioning**: Date-based partitioning for large tables
 - **Indexing**: Automated index management with usage monitoring
 
 #### 3. Application Optimization
+
 - **Async Processing**: Background jobs for heavy computations
 - **Microservices**: Decomposed services for specialized workloads
 - **Load Balancing**: Round-robin with health checks
@@ -579,6 +608,7 @@ monitoring: Prometheus + Grafana (Docker)
 ## 🏗️ DevOps Architecture
 
 ### CI/CD Pipeline
+
 ```yaml
 # GitHub Actions workflow
 stages:
@@ -587,25 +617,25 @@ stages:
     - TypeScript compilation
     - Security scanning (Snyk)
     - Dependency audit
-    
+
   2_testing:
     - Unit tests (Vitest)
     - Integration tests
     - E2E tests (Playwright)
     - Performance tests
-    
+
   3_build:
     - Docker image build
     - Multi-architecture support
     - Image security scanning
     - Artifact signing
-    
+
   4_deployment:
     - Staging deployment
     - Smoke tests
     - Production deployment
     - Health checks
-    
+
   5_monitoring:
     - Deployment metrics
     - Error tracking
@@ -614,23 +644,24 @@ stages:
 ```
 
 ### Infrastructure Monitoring
+
 ```yaml
 # Monitoring stack
 metrics:
   collection: Prometheus
   visualization: Grafana
   alerting: AlertManager
-  
+
 logs:
   collection: Fluent Bit
   aggregation: Elasticsearch
   visualization: Kibana
-  
+
 traces:
   collection: OpenTelemetry
   processing: Jaeger
   analysis: Jaeger UI
-  
+
 uptime:
   monitoring: Pingdom
   synthetic: Datadog Synthetics
@@ -642,6 +673,7 @@ uptime:
 ### Key Metrics Dashboard
 
 #### Application Metrics
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                    Memorai Performance Dashboard                │
@@ -669,6 +701,7 @@ uptime:
 ```
 
 #### Business Metrics
+
 - **Daily Active Users**: 125,000+
 - **Memory Operations**: 2.5M+ per day
 - **Search Queries**: 800,000+ per day
@@ -676,6 +709,7 @@ uptime:
 - **Customer Satisfaction**: 4.8/5.0
 
 ### Alerting Rules
+
 ```yaml
 # Critical alerts (immediate response)
 - name: High Error Rate
@@ -710,6 +744,7 @@ uptime:
 ### Compliance Frameworks
 
 #### GDPR (General Data Protection Regulation)
+
 - ✅ **Data Subject Rights**: Right to access, rectify, erase, restrict, port
 - ✅ **Consent Management**: Granular consent tracking and withdrawal
 - ✅ **Privacy by Design**: Data minimization and purpose limitation
@@ -717,6 +752,7 @@ uptime:
 - ✅ **Data Breach Notification**: 72-hour notification procedures
 
 #### HIPAA (Health Insurance Portability and Accountability Act)
+
 - ✅ **Administrative Safeguards**: Security officer, workforce training
 - ✅ **Physical Safeguards**: Facility access controls, workstation security
 - ✅ **Technical Safeguards**: Access control, audit logs, encryption
@@ -724,6 +760,7 @@ uptime:
 - ✅ **Risk Assessment**: Annual security risk assessments
 
 #### SOX (Sarbanes-Oxley Act)
+
 - ✅ **Internal Controls**: Financial reporting controls
 - ✅ **Access Controls**: Segregation of duties
 - ✅ **Audit Trails**: Immutable financial transaction logs
@@ -733,6 +770,7 @@ uptime:
 ### Data Governance
 
 #### Data Classification
+
 ```
 ┌─────────────────┬─────────────────┬─────────────────┬─────────────────┐
 │   PUBLIC        │   INTERNAL      │   CONFIDENTIAL  │   RESTRICTED    │
@@ -752,6 +790,7 @@ uptime:
 ```
 
 #### Data Lifecycle Management
+
 1. **Creation**: Automatic classification and tagging
 2. **Storage**: Encrypted storage with access controls
 3. **Processing**: Audit logging and purpose limitation
@@ -762,12 +801,14 @@ uptime:
 ## 🚨 Disaster Recovery & Business Continuity
 
 ### Recovery Objectives
+
 - **Recovery Time Objective (RTO)**: 4 hours maximum
 - **Recovery Point Objective (RPO)**: 15 minutes maximum
 - **Mean Time to Recovery (MTTR)**: 2 hours average
 - **Availability Target**: 99.99% (52.56 minutes downtime/year)
 
 ### Backup Strategy
+
 ```yaml
 # Multi-tier backup approach
 tier_1_hot_backup:
@@ -775,19 +816,19 @@ tier_1_hot_backup:
   retention: 7 days
   location: Same region
   recovery_time: <5 minutes
-  
+
 tier_2_warm_backup:
   frequency: Every 4 hours
   retention: 30 days
   location: Different region
   recovery_time: <1 hour
-  
+
 tier_3_cold_backup:
   frequency: Daily
   retention: 7 years
   location: Geographic distribution
   recovery_time: <24 hours
-  
+
 tier_4_archive:
   frequency: Monthly
   retention: Indefinite
@@ -798,18 +839,21 @@ tier_4_archive:
 ### Disaster Recovery Plan
 
 #### Scenario 1: Single Service Failure
+
 1. **Detection**: Automated monitoring alerts (30 seconds)
 2. **Response**: Auto-failover to healthy instances (2 minutes)
 3. **Recovery**: Automatic service restart and scaling (5 minutes)
 4. **Validation**: Health checks and performance verification (3 minutes)
 
 #### Scenario 2: Database Failure
+
 1. **Detection**: Database connection monitoring (1 minute)
 2. **Response**: Failover to read replica promotion (10 minutes)
 3. **Recovery**: Point-in-time recovery from backup (30 minutes)
 4. **Validation**: Data integrity checks and application testing (15 minutes)
 
 #### Scenario 3: Region-Wide Outage
+
 1. **Detection**: Multi-region health monitoring (2 minutes)
 2. **Response**: DNS failover to secondary region (10 minutes)
 3. **Recovery**: Full service deployment in backup region (2 hours)
@@ -818,11 +862,13 @@ tier_4_archive:
 ### Business Continuity Planning
 
 #### Communication Plan
+
 - **Internal**: Slack alerts, email notifications, SMS for critical issues
 - **External**: Status page updates, customer emails, social media
 - **Stakeholders**: Executive dashboard, board reporting, investor updates
 
 #### Resource Allocation
+
 - **On-call Engineering**: 24/7 rotation with escalation procedures
 - **Emergency Budget**: Pre-approved spending for disaster recovery
 - **Vendor Relationships**: Priority support agreements with critical vendors
@@ -832,32 +878,38 @@ tier_4_archive:
 ### Documentation Types
 
 #### 1. Architecture Documentation (This Document)
+
 - **Purpose**: High-level system design and architectural decisions
 - **Audience**: Architects, senior engineers, technical leadership
 - **Update Frequency**: Quarterly or with major architectural changes
 
 #### 2. API Documentation
+
 - **Purpose**: Complete API reference with examples
 - **Audience**: Developers, integrators, partners
 - **Update Frequency**: With every API change
 - **Tools**: OpenAPI/Swagger with auto-generation
 
 #### 3. Operations Documentation
+
 - **Purpose**: Deployment, monitoring, and troubleshooting guides
 - **Audience**: DevOps engineers, SREs, support staff
 - **Update Frequency**: With infrastructure changes
 
 #### 4. User Documentation
+
 - **Purpose**: End-user guides and tutorials
 - **Audience**: End users, customer success teams
 - **Update Frequency**: With feature releases
 
 #### 5. Compliance Documentation
+
 - **Purpose**: Security, privacy, and regulatory compliance
 - **Audience**: Compliance officers, auditors, legal teams
 - **Update Frequency**: Annually or with regulatory changes
 
 ### Documentation Maintenance
+
 - **Review Cycle**: Quarterly documentation reviews
 - **Ownership**: Each team owns documentation for their domain
 - **Approval Process**: Technical review + stakeholder approval
@@ -867,30 +919,35 @@ tier_4_archive:
 ## 🎯 Architecture Principles
 
 ### 1. Security by Design
+
 - Default-deny access controls
 - Principle of least privilege
 - Defense in depth
 - Zero-trust architecture
 
 ### 2. Performance by Default
+
 - Sub-50ms response times
 - Efficient algorithms and data structures
 - Optimistic caching strategies
 - Asynchronous processing
 
 ### 3. Scalability First
+
 - Horizontal scaling capabilities
 - Stateless service design
 - Database sharding readiness
 - Event-driven architecture
 
 ### 4. Reliability and Resilience
+
 - Circuit breaker patterns
 - Graceful degradation
 - Automated recovery
 - Comprehensive monitoring
 
 ### 5. Developer Experience
+
 - Self-documenting APIs
 - Comprehensive SDKs
 - Local development environments
@@ -899,30 +956,35 @@ tier_4_archive:
 ## 📋 Architecture Decision Records (ADRs)
 
 ### ADR-001: Monorepo Structure
+
 - **Status**: Accepted
 - **Decision**: Use monorepo with multiple packages
 - **Rationale**: Simplified dependency management, shared tooling, atomic deployments
 - **Consequences**: Requires sophisticated build tooling but improves code sharing
 
 ### ADR-002: PostgreSQL + Qdrant
+
 - **Status**: Accepted
 - **Decision**: PostgreSQL for relational data, Qdrant for vector storage
 - **Rationale**: Best-in-class performance for respective use cases
 - **Consequences**: Increased complexity but optimal performance
 
 ### ADR-003: TypeScript First
+
 - **Status**: Accepted
 - **Decision**: TypeScript for all code with strict configuration
 - **Rationale**: Type safety, better developer experience, reduced runtime errors
 - **Consequences**: Slightly slower development but much higher quality
 
 ### ADR-004: Model Context Protocol
+
 - **Status**: Accepted
 - **Decision**: Full MCP compliance for AI agent integration
 - **Rationale**: Future-proofing for AI ecosystem integration
 - **Consequences**: Additional complexity but strategic positioning
 
 ### ADR-005: Multi-Cloud Strategy
+
 - **Status**: Accepted
 - **Decision**: Support AWS, Azure, and GCP deployment
 - **Rationale**: Customer choice and vendor risk mitigation
@@ -931,18 +993,21 @@ tier_4_archive:
 ## 🔄 Evolution Roadmap
 
 ### Short-term (3-6 months)
+
 - GraphQL API completion
 - Advanced analytics dashboard
 - Mobile SDK development
 - Plugin architecture
 
 ### Medium-term (6-12 months)
+
 - Edge computing deployment
 - Advanced ML capabilities
 - Multi-language support
 - Real-time collaboration
 
 ### Long-term (12+ months)
+
 - Blockchain integration
 - Quantum-resistant encryption
 - AI-powered architecture optimization

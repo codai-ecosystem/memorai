@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MultiCloudDeploymentEngine } from '../../src/cloud/MultiCloudDeploymentEngine';
 
 describe('MultiCloudDeploymentEngine - Zero Coverage Target', () => {
@@ -18,7 +18,9 @@ describe('MultiCloudDeploymentEngine - Zero Coverage Target', () => {
     deploymentEngine.cleanup();
   });
 
-  const createTestTarget = (environment: 'development' | 'staging' | 'production' = 'development') => ({
+  const createTestTarget = (
+    environment: 'development' | 'staging' | 'production' = 'development'
+  ) => ({
     id: `target-${Date.now()}`,
     providerId: 'aws-us-east-1',
     environment,
@@ -29,39 +31,45 @@ describe('MultiCloudDeploymentEngine - Zero Coverage Target', () => {
       autoScaling: true,
       loadBalancing: true,
       monitoring: true,
-      backup: true
+      backup: true,
     },
     networking: {
       vpc: 'vpc-12345',
       subnets: ['subnet-12345'],
       securityGroups: ['sg-12345'],
-      loadBalancers: ['lb-12345']
+      loadBalancers: ['lb-12345'],
     },
     storage: {
       type: 'ssd' as const,
       size: 20,
       encryption: true,
       backup: true,
-      replication: 1
+      replication: 1,
     },
     database: {
       type: 'postgresql' as const,
       version: '13.0',
       clustering: false,
-      backupRetention: 7
+      backupRetention: 7,
     },
     deployment: {
       strategy: 'rolling' as const,
       rollbackEnabled: true,
       healthCheckPath: '/health',
       readinessProbe: '/ready',
-      livenessProbe: '/alive'
+      livenessProbe: '/alive',
     },
     createdAt: new Date(),
-    updatedAt: new Date()
+    updatedAt: new Date(),
   });
 
-  const createTestPlanConfig = (strategyType: 'multi-region' | 'multi-cloud' | 'hybrid' | 'edge-first' = 'multi-region') => ({
+  const createTestPlanConfig = (
+    strategyType:
+      | 'multi-region'
+      | 'multi-cloud'
+      | 'hybrid'
+      | 'edge-first' = 'multi-region'
+  ) => ({
     name: `Test ${strategyType} Deployment`,
     description: `Test deployment for ${strategyType} setup`,
     version: '1.0.0',
@@ -72,10 +80,10 @@ describe('MultiCloudDeploymentEngine - Zero Coverage Target', () => {
       trafficDistribution: { 'us-east-1': 70, 'us-west-2': 30 },
       costOptimization: true,
       performanceOptimization: true,
-      complianceRequirements: ['SOC2']
+      complianceRequirements: ['SOC2'],
     },
     targets: [createTestTarget()],
-    createdBy: 'test-user'
+    createdBy: 'test-user',
   });
 
   describe('Constructor and Initialization', () => {
@@ -145,8 +153,8 @@ describe('MultiCloudDeploymentEngine - Zero Coverage Target', () => {
         targets: [
           createTestTarget('development'),
           createTestTarget('staging'),
-          createTestTarget('production')
-        ]
+          createTestTarget('production'),
+        ],
       };
       const plan = await deploymentEngine.createDeploymentPlan(config);
       expect(plan.targets).toHaveLength(3);
@@ -174,13 +182,17 @@ describe('MultiCloudDeploymentEngine - Zero Coverage Target', () => {
     });
 
     it('should execute deployment with dry run', async () => {
-      const status = await deploymentEngine.executeDeployment(plan.id, { dryRun: true });
+      const status = await deploymentEngine.executeDeployment(plan.id, {
+        dryRun: true,
+      });
       expect(status).toBeDefined();
       expect(status.planId).toBe(plan.id);
     });
 
     it('should execute deployment with skip validation', async () => {
-      const status = await deploymentEngine.executeDeployment(plan.id, { skipValidation: true });
+      const status = await deploymentEngine.executeDeployment(plan.id, {
+        skipValidation: true,
+      });
       expect(status).toBeDefined();
       expect(status.planId).toBe(plan.id);
     });
@@ -188,14 +200,16 @@ describe('MultiCloudDeploymentEngine - Zero Coverage Target', () => {
     it('should execute deployment with parallel execution', async () => {
       const status = await deploymentEngine.executeDeployment(plan.id, {
         parallelExecution: true,
-        maxConcurrency: 3
+        maxConcurrency: 3,
       });
       expect(status).toBeDefined();
       expect(status.planId).toBe(plan.id);
     });
 
     it('should track deployment progress', async () => {
-      const status = await deploymentEngine.executeDeployment(plan.id, { dryRun: true });
+      const status = await deploymentEngine.executeDeployment(plan.id, {
+        dryRun: true,
+      });
       vi.advanceTimersByTime(1000);
       const metrics = deploymentEngine.getDeploymentMetrics();
       expect(metrics.totalDeployments).toBeGreaterThan(0);
@@ -215,24 +229,34 @@ describe('MultiCloudDeploymentEngine - Zero Coverage Target', () => {
     beforeEach(async () => {
       const config = createTestPlanConfig('multi-region');
       plan = await deploymentEngine.createDeploymentPlan(config);
-      deploymentStatus = await deploymentEngine.executeDeployment(plan.id, { dryRun: true });
+      deploymentStatus = await deploymentEngine.executeDeployment(plan.id, {
+        dryRun: true,
+      });
     });
 
     it('should cancel deployment successfully', async () => {
-      await expect(deploymentEngine.cancelDeployment(deploymentStatus.planId)).resolves.not.toThrow();
+      await expect(
+        deploymentEngine.cancelDeployment(deploymentStatus.planId)
+      ).resolves.not.toThrow();
     });
 
     it('should rollback deployment successfully', async () => {
-      await expect(deploymentEngine.rollbackDeployment(deploymentStatus.planId)).resolves.not.toThrow();
+      await expect(
+        deploymentEngine.rollbackDeployment(deploymentStatus.planId)
+      ).resolves.not.toThrow();
       vi.advanceTimersByTime(2000);
     });
 
     it('should handle cancellation of non-existent deployment', async () => {
-      await expect(deploymentEngine.cancelDeployment('non-existent-deployment-id')).resolves.not.toThrow();
+      await expect(
+        deploymentEngine.cancelDeployment('non-existent-deployment-id')
+      ).resolves.not.toThrow();
     });
 
     it('should handle rollback of non-existent deployment', async () => {
-      await expect(deploymentEngine.rollbackDeployment('non-existent-deployment-id')).resolves.not.toThrow();
+      await expect(
+        deploymentEngine.rollbackDeployment('non-existent-deployment-id')
+      ).resolves.not.toThrow();
     });
   });
 
@@ -249,7 +273,7 @@ describe('MultiCloudDeploymentEngine - Zero Coverage Target', () => {
     it('should track metrics across multiple deployments', async () => {
       const configs = Array.from({ length: 3 }, (_, i) => ({
         ...createTestPlanConfig('multi-region'),
-        name: `Metrics Test Plan ${i + 1}`
+        name: `Metrics Test Plan ${i + 1}`,
       }));
 
       for (const config of configs) {
@@ -287,7 +311,12 @@ describe('MultiCloudDeploymentEngine - Zero Coverage Target', () => {
 
   describe('Error Handling', () => {
     it('should handle deployment plan creation with various configurations', async () => {
-      const strategyTypes = ['multi-region', 'multi-cloud', 'hybrid', 'edge-first'] as const;
+      const strategyTypes = [
+        'multi-region',
+        'multi-cloud',
+        'hybrid',
+        'edge-first',
+      ] as const;
 
       for (const strategyType of strategyTypes) {
         const config = createTestPlanConfig(strategyType);
@@ -300,12 +329,14 @@ describe('MultiCloudDeploymentEngine - Zero Coverage Target', () => {
     it('should handle concurrent deployment plan creation', async () => {
       const configs = Array.from({ length: 5 }, (_, i) => ({
         ...createTestPlanConfig('multi-region'),
-        name: `Concurrent Test Plan ${i + 1}`
+        name: `Concurrent Test Plan ${i + 1}`,
       }));
 
-      const promises = configs.map(config => deploymentEngine.createDeploymentPlan(config));
+      const promises = configs.map(config =>
+        deploymentEngine.createDeploymentPlan(config)
+      );
       const plans = await Promise.all(promises);
-      
+
       expect(plans).toHaveLength(5);
       plans.forEach((plan, index) => {
         expect(plan).toBeDefined();
@@ -318,20 +349,20 @@ describe('MultiCloudDeploymentEngine - Zero Coverage Target', () => {
   describe('Performance Tests', () => {
     it('should handle rapid deployment plan creation', async () => {
       const startTime = Date.now();
-      
-      const promises = Array.from({ length: 10 }, (_, i) => 
+
+      const promises = Array.from({ length: 10 }, (_, i) =>
         deploymentEngine.createDeploymentPlan({
           ...createTestPlanConfig('multi-region'),
-          name: `Performance Test Plan ${i + 1}`
+          name: `Performance Test Plan ${i + 1}`,
         })
       );
 
       const plans = await Promise.all(promises);
       const endTime = Date.now();
-      
+
       expect(plans).toHaveLength(10);
       expect(endTime - startTime).toBeLessThan(5000);
-      
+
       plans.forEach((plan, index) => {
         expect(plan.id).toBeDefined();
         expect(plan.name).toBe(`Performance Test Plan ${index + 1}`);
@@ -340,23 +371,25 @@ describe('MultiCloudDeploymentEngine - Zero Coverage Target', () => {
 
     it('should handle concurrent deployment executions', async () => {
       const plans = await Promise.all(
-        Array.from({ length: 3 }, (_, i) => 
+        Array.from({ length: 3 }, (_, i) =>
           deploymentEngine.createDeploymentPlan({
             ...createTestPlanConfig('multi-region'),
-            name: `Concurrent Execution Test ${i + 1}`
+            name: `Concurrent Execution Test ${i + 1}`,
           })
         )
       );
 
       const startTime = Date.now();
       const statuses = await Promise.all(
-        plans.map(plan => deploymentEngine.executeDeployment(plan.id, { dryRun: true }))
+        plans.map(plan =>
+          deploymentEngine.executeDeployment(plan.id, { dryRun: true })
+        )
       );
       const endTime = Date.now();
 
       expect(statuses).toHaveLength(3);
       expect(endTime - startTime).toBeLessThan(3000);
-      
+
       statuses.forEach((status, index) => {
         expect(status.planId).toBe(plans[index].id);
       });

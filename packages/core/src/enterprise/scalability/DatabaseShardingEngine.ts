@@ -1,10 +1,10 @@
 /**
  * Database Sharding Engine for Memorai
- * 
+ *
  * Advanced database sharding system that automatically partitions data
  * across multiple database instances based on configurable strategies,
  * with automatic rebalancing, query routing, and consistency management.
- * 
+ *
  * Features:
  * - Multiple sharding strategies (hash, range, directory, hybrid)
  * - Automatic shard rebalancing
@@ -13,13 +13,13 @@
  * - Hot shard detection and mitigation
  * - Replica management and failover
  * - Consistent hashing for scalability
- * 
+ *
  * @version 3.0.0
  * @author Memorai Enterprise Team
  */
 
-import { EventEmitter } from 'events';
 import { createHash } from 'crypto';
+import { EventEmitter } from 'events';
 
 /**
  * Database shard configuration
@@ -66,7 +66,7 @@ export interface DatabaseReplica {
 /**
  * Sharding strategies
  */
-export type ShardingStrategy = 
+export type ShardingStrategy =
   | 'hash_based'
   | 'range_based'
   | 'directory_based'
@@ -170,7 +170,11 @@ export interface DistributedTransaction {
   operations: TransactionOperation[];
   startTime: Date;
   timeout: number;
-  isolationLevel: 'read_uncommitted' | 'read_committed' | 'repeatable_read' | 'serializable';
+  isolationLevel:
+    | 'read_uncommitted'
+    | 'read_committed'
+    | 'repeatable_read'
+    | 'serializable';
 }
 
 /**
@@ -187,7 +191,7 @@ export interface TransactionOperation {
 
 /**
  * Database Sharding Engine
- * 
+ *
  * Manages data distribution across multiple database shards with automatic
  * routing, rebalancing, and consistency guarantees for enterprise workloads.
  */
@@ -212,7 +216,7 @@ export class DatabaseShardingEngine extends EventEmitter {
       migrationBatchSize: 1000,
       migrationThrottleMs: 100,
       autoApproval: false,
-      ...rebalancingConfig
+      ...rebalancingConfig,
     };
     this.setupDefaultShardKeys();
   }
@@ -225,20 +229,20 @@ export class DatabaseShardingEngine extends EventEmitter {
     this.shardKeys.set('memories', {
       fields: ['tenant_id'],
       strategy: 'hash_based',
-      algorithm: 'sha256'
+      algorithm: 'sha256',
     });
 
     // User data sharded by user ID
     this.shardKeys.set('users', {
       fields: ['user_id'],
       strategy: 'hash_based',
-      algorithm: 'sha256'
+      algorithm: 'sha256',
     });
 
     // Sessions sharded by session ID
     this.shardKeys.set('sessions', {
       fields: ['session_id'],
-      strategy: 'consistent_hash'
+      strategy: 'consistent_hash',
     });
 
     // Analytics data sharded by date range
@@ -246,9 +250,19 @@ export class DatabaseShardingEngine extends EventEmitter {
       fields: ['date'],
       strategy: 'range_based',
       ranges: [
-        { shardId: 'analytics-2024', minValue: '2024-01-01', maxValue: '2024-12-31', inclusive: true },
-        { shardId: 'analytics-2025', minValue: '2025-01-01', maxValue: '2025-12-31', inclusive: true }
-      ]
+        {
+          shardId: 'analytics-2024',
+          minValue: '2024-01-01',
+          maxValue: '2024-12-31',
+          inclusive: true,
+        },
+        {
+          shardId: 'analytics-2025',
+          minValue: '2025-01-01',
+          maxValue: '2025-12-31',
+          inclusive: true,
+        },
+      ],
     });
   }
 
@@ -297,8 +311,8 @@ export class DatabaseShardingEngine extends EventEmitter {
         lastHealthCheck: new Date(),
         cpuUsage: 0,
         memoryUsage: 0,
-        diskUsage: 0
-      }
+        diskUsage: 0,
+      },
     };
 
     this.shards.set(shard.id, fullShard);
@@ -316,7 +330,9 @@ export class DatabaseShardingEngine extends EventEmitter {
     }
 
     if (!force && shard.stats.dataSize > 0) {
-      throw new Error(`Cannot remove shard ${shardId} with data. Migrate data first or use force=true`);
+      throw new Error(
+        `Cannot remove shard ${shardId} with data. Migrate data first or use force=true`
+      );
     }
 
     this.shards.delete(shardId);
@@ -327,7 +343,10 @@ export class DatabaseShardingEngine extends EventEmitter {
   /**
    * Update shard statistics
    */
-  updateShardStats(shardId: string, stats: Partial<DatabaseShard['stats']>): void {
+  updateShardStats(
+    shardId: string,
+    stats: Partial<DatabaseShard['stats']>
+  ): void {
     const shard = this.shards.get(shardId);
     if (shard) {
       Object.assign(shard.stats, stats);
@@ -340,7 +359,7 @@ export class DatabaseShardingEngine extends EventEmitter {
    */
   configureShardKey(table: string, shardKey: ShardKey): void {
     this.shardKeys.set(table, shardKey);
-    
+
     if (shardKey.strategy === 'consistent_hash') {
       this.rebuildConsistentHashRing();
     }
@@ -354,7 +373,7 @@ export class DatabaseShardingEngine extends EventEmitter {
   async routeQuery(context: QueryContext): Promise<RoutingDecision> {
     const startTime = Date.now();
     const shardKey = this.shardKeys.get(context.table);
-    
+
     if (!shardKey) {
       throw new Error(`No shard key configured for table ${context.table}`);
     }
@@ -428,7 +447,7 @@ export class DatabaseShardingEngine extends EventEmitter {
       reason,
       requiresAggregation,
       estimatedCost: this.estimateQueryCost(context, targetShards),
-      routingTime: Date.now() - startTime
+      routingTime: Date.now() - startTime,
     };
 
     // Update shard query counts
@@ -449,24 +468,32 @@ export class DatabaseShardingEngine extends EventEmitter {
   /**
    * Hash-based routing
    */
-  private async routeHashBased(context: QueryContext, shardKey: ShardKey): Promise<string> {
+  private async routeHashBased(
+    context: QueryContext,
+    shardKey: ShardKey
+  ): Promise<string> {
     if (!context.shardKey) {
       throw new Error('Shard key values required for hash-based routing');
     }
 
     const keyValue = this.extractKeyValue(context.shardKey, shardKey.fields);
     const hash = this.calculateHash(keyValue, shardKey.algorithm || 'sha256');
-    
-    const activeShards = Array.from(this.shards.values()).filter(s => s.status === 'active');
+
+    const activeShards = Array.from(this.shards.values()).filter(
+      s => s.status === 'active'
+    );
     const shardIndex = parseInt(hash.substring(0, 8), 16) % activeShards.length;
-    
+
     return activeShards[shardIndex].id;
   }
 
   /**
    * Range-based routing
    */
-  private async routeRangeBased(context: QueryContext, shardKey: ShardKey): Promise<string[]> {
+  private async routeRangeBased(
+    context: QueryContext,
+    shardKey: ShardKey
+  ): Promise<string[]> {
     if (!shardKey.ranges) {
       throw new Error('Ranges required for range-based routing');
     }
@@ -485,13 +512,18 @@ export class DatabaseShardingEngine extends EventEmitter {
       }
     }
 
-    return targetShards.length > 0 ? targetShards : shardKey.ranges.map(r => r.shardId);
+    return targetShards.length > 0
+      ? targetShards
+      : shardKey.ranges.map(r => r.shardId);
   }
 
   /**
    * Directory-based routing
    */
-  private async routeDirectoryBased(context: QueryContext, shardKey: ShardKey): Promise<string> {
+  private async routeDirectoryBased(
+    context: QueryContext,
+    shardKey: ShardKey
+  ): Promise<string> {
     if (!shardKey.directory) {
       throw new Error('Directory required for directory-based routing');
     }
@@ -502,7 +534,7 @@ export class DatabaseShardingEngine extends EventEmitter {
 
     const keyValue = this.extractKeyValue(context.shardKey, shardKey.fields);
     const shardId = shardKey.directory.get(keyValue);
-    
+
     if (!shardId) {
       throw new Error(`No shard mapping found for key: ${keyValue}`);
     }
@@ -513,23 +545,26 @@ export class DatabaseShardingEngine extends EventEmitter {
   /**
    * Consistent hash routing
    */
-  private async routeConsistentHash(context: QueryContext, shardKey: ShardKey): Promise<string> {
+  private async routeConsistentHash(
+    context: QueryContext,
+    shardKey: ShardKey
+  ): Promise<string> {
     if (!context.shardKey) {
       throw new Error('Shard key values required for consistent hash routing');
     }
 
     const keyValue = this.extractKeyValue(context.shardKey, shardKey.fields);
     const hash = this.calculateHash(keyValue, 'sha256');
-    
+
     // Find the first shard in the ring that has a hash >= our key hash
     const sortedHashes = Array.from(this.consistentHashRing.keys()).sort();
-    
+
     for (const ringHash of sortedHashes) {
       if (hash <= ringHash) {
         return this.consistentHashRing.get(ringHash)!;
       }
     }
-    
+
     // Wrap around to the first shard
     return this.consistentHashRing.get(sortedHashes[0])!;
   }
@@ -537,38 +572,54 @@ export class DatabaseShardingEngine extends EventEmitter {
   /**
    * Geographic routing
    */
-  private async routeGeographic(context: QueryContext, shardKey: ShardKey): Promise<string[]> {
+  private async routeGeographic(
+    context: QueryContext,
+    shardKey: ShardKey
+  ): Promise<string[]> {
     // Route based on user's geographic location
     // In production, this would use actual geolocation data
-    const userRegion = context.userId ? this.getUserRegion(context.userId) : 'us-east-1';
-    
+    const userRegion = context.userId
+      ? this.getUserRegion(context.userId)
+      : 'us-east-1';
+
     const regionalShards = Array.from(this.shards.values())
       .filter(shard => shard.region === userRegion && shard.status === 'active')
       .map(shard => shard.id);
 
-    return regionalShards.length > 0 ? regionalShards : [this.getDefaultShard()];
+    return regionalShards.length > 0
+      ? regionalShards
+      : [this.getDefaultShard()];
   }
 
   /**
    * Tenant-based routing
    */
-  private async routeTenantBased(context: QueryContext, shardKey: ShardKey): Promise<string> {
+  private async routeTenantBased(
+    context: QueryContext,
+    shardKey: ShardKey
+  ): Promise<string> {
     // Route based on tenant ID for multi-tenant isolation
     const tenantHash = this.calculateHash(context.tenantId, 'sha256');
-    const activeShards = Array.from(this.shards.values()).filter(s => s.status === 'active');
-    const shardIndex = parseInt(tenantHash.substring(0, 8), 16) % activeShards.length;
-    
+    const activeShards = Array.from(this.shards.values()).filter(
+      s => s.status === 'active'
+    );
+    const shardIndex =
+      parseInt(tenantHash.substring(0, 8), 16) % activeShards.length;
+
     return activeShards[shardIndex].id;
   }
 
   /**
    * Hybrid routing strategy
    */
-  private async routeHybrid(context: QueryContext, shardKey: ShardKey): Promise<string[]> {
+  private async routeHybrid(
+    context: QueryContext,
+    shardKey: ShardKey
+  ): Promise<string[]> {
     // Combine tenant-based and geographic routing
     const tenantShard = await this.routeTenantBased(context, shardKey);
     const geoShards = await this.routeGeographic(context, shardKey);
-    
+
     // Return union of both strategies
     const hybridShards = new Set([tenantShard, ...geoShards]);
     return Array.from(hybridShards);
@@ -579,30 +630,33 @@ export class DatabaseShardingEngine extends EventEmitter {
    */
   private selectReadReplicas(shardIds: string[]): string[] {
     const replicaShards: string[] = [];
-    
+
     for (const shardId of shardIds) {
       const shard = this.shards.get(shardId);
       if (!shard) continue;
-      
+
       // Find best replica (lowest lag)
       const bestReplica = shard.replicas
         .filter(r => r.status === 'active' && r.role !== 'primary')
         .sort((a, b) => a.lag - b.lag)[0];
-      
+
       if (bestReplica) {
         replicaShards.push(bestReplica.id);
       } else {
         replicaShards.push(shardId); // Fallback to primary
       }
     }
-    
+
     return replicaShards.length > 0 ? replicaShards : shardIds;
   }
 
   /**
    * Extract key value from shard key fields
    */
-  private extractKeyValue(shardKey: Record<string, any>, fields: string[]): string {
+  private extractKeyValue(
+    shardKey: Record<string, any>,
+    fields: string[]
+  ): string {
     const values = fields.map(field => shardKey[field] || '').join('|');
     return values;
   }
@@ -618,8 +672,12 @@ export class DatabaseShardingEngine extends EventEmitter {
    * Check if value is in range
    */
   private isValueInRange(value: any, range: ShardRange): boolean {
-    const minCheck = range.inclusive ? value >= range.minValue : value > range.minValue;
-    const maxCheck = range.inclusive ? value <= range.maxValue : value < range.maxValue;
+    const minCheck = range.inclusive
+      ? value >= range.minValue
+      : value > range.minValue;
+    const maxCheck = range.inclusive
+      ? value <= range.maxValue
+      : value < range.maxValue;
     return minCheck && maxCheck;
   }
 
@@ -628,9 +686,9 @@ export class DatabaseShardingEngine extends EventEmitter {
    */
   private buildConsistentHashRing(): void {
     this.consistentHashRing.clear();
-    
+
     const virtualNodes = 150; // Virtual nodes per shard for better distribution
-    
+
     for (const shard of this.shards.values()) {
       if (shard.status === 'active') {
         for (let i = 0; i < virtualNodes; i++) {
@@ -664,35 +722,40 @@ export class DatabaseShardingEngine extends EventEmitter {
    * Get default shard
    */
   private getDefaultShard(): string {
-    const activeShards = Array.from(this.shards.values()).filter(s => s.status === 'active');
+    const activeShards = Array.from(this.shards.values()).filter(
+      s => s.status === 'active'
+    );
     return activeShards.length > 0 ? activeShards[0].id : '';
   }
 
   /**
    * Estimate query cost
    */
-  private estimateQueryCost(context: QueryContext, targetShards: string[]): number {
+  private estimateQueryCost(
+    context: QueryContext,
+    targetShards: string[]
+  ): number {
     let cost = 0;
-    
+
     for (const shardId of targetShards) {
       const shard = this.shards.get(shardId);
       if (shard) {
         // Base cost per shard
         cost += 1;
-        
+
         // Add cost based on shard load
         cost += (shard.stats.queryCount / 1000) * 0.1;
-        
+
         // Add cost based on data size
         cost += (shard.stats.dataSize / (1024 * 1024 * 1024)) * 0.05; // GB
       }
     }
-    
+
     // Cross-shard operations are more expensive
     if (targetShards.length > 1) {
       cost *= 1.5;
     }
-    
+
     return cost;
   }
 
@@ -720,10 +783,10 @@ export class DatabaseShardingEngine extends EventEmitter {
    */
   private async checkRebalancing(): Promise<void> {
     const imbalance = this.calculateImbalance();
-    
+
     if (imbalance > this.rebalancingConfig.triggerThreshold) {
       this.emit('rebalancing_needed', { imbalance });
-      
+
       if (this.rebalancingConfig.autoApproval) {
         await this.startRebalancing();
       }
@@ -734,18 +797,26 @@ export class DatabaseShardingEngine extends EventEmitter {
    * Calculate data imbalance across shards
    */
   private calculateImbalance(): number {
-    const shards = Array.from(this.shards.values()).filter(s => s.status === 'active');
+    const shards = Array.from(this.shards.values()).filter(
+      s => s.status === 'active'
+    );
     if (shards.length < 2) return 0;
-    
-    const totalData = shards.reduce((sum, shard) => sum + shard.stats.dataSize, 0);
+
+    const totalData = shards.reduce(
+      (sum, shard) => sum + shard.stats.dataSize,
+      0
+    );
     const averageData = totalData / shards.length;
-    
+
     if (averageData === 0) return 0;
-    
-    const maxDeviation = Math.max(...shards.map(shard => 
-      Math.abs(shard.stats.dataSize - averageData) / averageData * 100
-    ));
-    
+
+    const maxDeviation = Math.max(
+      ...shards.map(
+        shard =>
+          (Math.abs(shard.stats.dataSize - averageData) / averageData) * 100
+      )
+    );
+
     return maxDeviation;
   }
 
@@ -754,16 +825,22 @@ export class DatabaseShardingEngine extends EventEmitter {
    */
   private async startRebalancing(): Promise<void> {
     this.emit('rebalancing_started', { timestamp: Date.now() });
-    
+
     // Implementation would identify hot spots and create migration tasks
     // This is a simplified version
-    const shards = Array.from(this.shards.values()).filter(s => s.status === 'active');
-    const totalData = shards.reduce((sum, shard) => sum + shard.stats.dataSize, 0);
+    const shards = Array.from(this.shards.values()).filter(
+      s => s.status === 'active'
+    );
+    const totalData = shards.reduce(
+      (sum, shard) => sum + shard.stats.dataSize,
+      0
+    );
     const targetSize = totalData / shards.length;
-    
+
     for (const shard of shards) {
-      const deviation = (shard.stats.dataSize - targetSize) / targetSize * 100;
-      
+      const deviation =
+        ((shard.stats.dataSize - targetSize) / targetSize) * 100;
+
       if (deviation > this.rebalancingConfig.triggerThreshold) {
         // This shard has too much data, create migration tasks
         await this.createMigrationTasks(shard.id, deviation);
@@ -774,7 +851,10 @@ export class DatabaseShardingEngine extends EventEmitter {
   /**
    * Create migration tasks for rebalancing
    */
-  private async createMigrationTasks(sourceShardId: string, overloadPercentage: number): Promise<void> {
+  private async createMigrationTasks(
+    sourceShardId: string,
+    overloadPercentage: number
+  ): Promise<void> {
     const migration: ShardMigration = {
       id: `migration-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       sourceShardId,
@@ -784,11 +864,11 @@ export class DatabaseShardingEngine extends EventEmitter {
       startTime: new Date(),
       dataRange: {
         startKey: '',
-        endKey: ''
+        endKey: '',
       },
       recordsToMigrate: 0,
       recordsMigrated: 0,
-      errors: []
+      errors: [],
     };
 
     this.migrations.set(migration.id, migration);
@@ -802,7 +882,7 @@ export class DatabaseShardingEngine extends EventEmitter {
     const shards = Array.from(this.shards.values())
       .filter(s => s.status === 'active' && s.id !== excludeShardId)
       .sort((a, b) => a.stats.dataSize - b.stats.dataSize);
-    
+
     return shards.length > 0 ? shards[0].id : '';
   }
 
@@ -814,10 +894,12 @@ export class DatabaseShardingEngine extends EventEmitter {
     isolationLevel: DistributedTransaction['isolationLevel'] = 'read_committed'
   ): Promise<string> {
     const transactionId = `tx-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    
-    const participantShards = Array.from(new Set(operations.map(op => op.shardId)));
+
+    const participantShards = Array.from(
+      new Set(operations.map(op => op.shardId))
+    );
     const coordinatorShard = participantShards[0]; // Use first shard as coordinator
-    
+
     const transaction: DistributedTransaction = {
       id: transactionId,
       status: 'active',
@@ -826,12 +908,12 @@ export class DatabaseShardingEngine extends EventEmitter {
       operations,
       startTime: new Date(),
       timeout: 30000, // 30 seconds
-      isolationLevel
+      isolationLevel,
     };
 
     this.transactions.set(transactionId, transaction);
     this.emit('transaction_started', { transactionId, transaction });
-    
+
     return transactionId;
   }
 
@@ -846,20 +928,24 @@ export class DatabaseShardingEngine extends EventEmitter {
 
     try {
       transaction.status = 'preparing';
-      
+
       // Two-phase commit protocol
       // Phase 1: Prepare
       const prepareResults = await Promise.all(
-        transaction.participantShards.map(shardId => this.prepareShard(shardId, transactionId))
+        transaction.participantShards.map(shardId =>
+          this.prepareShard(shardId, transactionId)
+        )
       );
-      
+
       if (prepareResults.every(result => result)) {
         // Phase 2: Commit
         transaction.status = 'committed';
         await Promise.all(
-          transaction.participantShards.map(shardId => this.commitShard(shardId, transactionId))
+          transaction.participantShards.map(shardId =>
+            this.commitShard(shardId, transactionId)
+          )
         );
-        
+
         this.emit('transaction_committed', { transactionId, transaction });
       } else {
         // Abort transaction
@@ -883,11 +969,13 @@ export class DatabaseShardingEngine extends EventEmitter {
     }
 
     transaction.status = 'aborted';
-    
+
     await Promise.all(
-      transaction.participantShards.map(shardId => this.abortShard(shardId, transactionId))
+      transaction.participantShards.map(shardId =>
+        this.abortShard(shardId, transactionId)
+      )
     );
-    
+
     this.emit('transaction_aborted', { transactionId, transaction });
     this.transactions.delete(transactionId);
   }
@@ -895,7 +983,10 @@ export class DatabaseShardingEngine extends EventEmitter {
   /**
    * Prepare shard for commit (mock implementation)
    */
-  private async prepareShard(shardId: string, transactionId: string): Promise<boolean> {
+  private async prepareShard(
+    shardId: string,
+    transactionId: string
+  ): Promise<boolean> {
     // Mock implementation - in production would send prepare message to shard
     return Math.random() > 0.1; // 90% success rate
   }
@@ -903,14 +994,20 @@ export class DatabaseShardingEngine extends EventEmitter {
   /**
    * Commit shard (mock implementation)
    */
-  private async commitShard(shardId: string, transactionId: string): Promise<void> {
+  private async commitShard(
+    shardId: string,
+    transactionId: string
+  ): Promise<void> {
     // Mock implementation - in production would send commit message to shard
   }
 
   /**
    * Abort shard (mock implementation)
    */
-  private async abortShard(shardId: string, transactionId: string): Promise<void> {
+  private async abortShard(
+    shardId: string,
+    transactionId: string
+  ): Promise<void> {
     // Mock implementation - in production would send abort message to shard
   }
 
@@ -937,8 +1034,12 @@ export class DatabaseShardingEngine extends EventEmitter {
   } {
     const shards = Array.from(this.shards.values());
     const activeShards = shards.filter(s => s.status === 'active');
-    const totalDataSize = activeShards.reduce((sum, s) => sum + s.stats.dataSize, 0);
-    const averageDataSize = activeShards.length > 0 ? totalDataSize / activeShards.length : 0;
+    const totalDataSize = activeShards.reduce(
+      (sum, s) => sum + s.stats.dataSize,
+      0
+    );
+    const averageDataSize =
+      activeShards.length > 0 ? totalDataSize / activeShards.length : 0;
 
     const queryDistribution: Record<string, number> = {};
     for (const shard of shards) {
@@ -949,14 +1050,14 @@ export class DatabaseShardingEngine extends EventEmitter {
     const migrationStats = {
       active: migrations.filter(m => m.status === 'running').length,
       completed: migrations.filter(m => m.status === 'completed').length,
-      failed: migrations.filter(m => m.status === 'failed').length
+      failed: migrations.filter(m => m.status === 'failed').length,
     };
 
     const transactions = Array.from(this.transactions.values());
     const transactionStats = {
       active: transactions.filter(t => t.status === 'active').length,
       committed: transactions.filter(t => t.status === 'committed').length,
-      aborted: transactions.filter(t => t.status === 'aborted').length
+      aborted: transactions.filter(t => t.status === 'aborted').length,
     };
 
     return {
@@ -967,7 +1068,7 @@ export class DatabaseShardingEngine extends EventEmitter {
       dataImbalance: this.calculateImbalance(),
       queryDistribution,
       migrationStats,
-      transactionStats
+      transactionStats,
     };
   }
 
@@ -991,8 +1092,9 @@ export class DatabaseShardingEngine extends EventEmitter {
    * Get active migrations
    */
   getActiveMigrations(): ShardMigration[] {
-    return Array.from(this.migrations.values())
-      .filter(m => m.status === 'running' || m.status === 'pending');
+    return Array.from(this.migrations.values()).filter(
+      m => m.status === 'running' || m.status === 'pending'
+    );
   }
 }
 

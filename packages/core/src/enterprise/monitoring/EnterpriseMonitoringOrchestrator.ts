@@ -1,9 +1,9 @@
 /**
  * Enterprise Monitoring Orchestrator for Memorai
- * 
+ *
  * Central orchestration system that integrates all monitoring components
  * to provide comprehensive observability and operational insights.
- * 
+ *
  * Features:
  * - Unified monitoring dashboard and control
  * - Integrated tracing, metrics, health checks, and alerting
@@ -12,32 +12,31 @@
  * - Enterprise-grade monitoring and observability
  */
 
-import DistributedTracingEngine, { 
-  MemoryTraceContext, 
-  TracingConfig,
-  createDistributedTracingEngine 
-} from './DistributedTracingEngine';
-import CustomMetricsEngine, { 
+import CustomMetricsEngine, {
+  BusinessMetrics,
   MemoryOperationMetrics,
   SystemPerformanceMetrics,
-  BusinessMetrics,
-  createCustomMetricsEngine 
+  createCustomMetricsEngine,
 } from './CustomMetricsEngine';
-import HealthCheckEngine, { 
+import DistributedTracingEngine, {
+  MemoryTraceContext,
+  TracingConfig,
+  createDistributedTracingEngine,
+} from './DistributedTracingEngine';
+import HealthCheckEngine, {
   SystemHealthReport,
-  createHealthCheckEngine 
+  createHealthCheckEngine,
 } from './HealthCheckEngine';
-import LogAggregationEngine, { 
+import LogAggregationEngine, {
   LogLevel,
-  LogEntry,
-  createLogAggregationEngine 
+  createLogAggregationEngine,
 } from './LogAggregationEngine';
-import PerformanceAlertingEngine, { 
-  AlertRule,
+import PerformanceAlertingEngine, {
   Alert,
-  MetricDataPoint,
+  AlertRule,
   AlertSeverity,
-  createPerformanceAlertingEngine 
+  MetricDataPoint,
+  createPerformanceAlertingEngine,
 } from './PerformanceAlertingEngine';
 
 /**
@@ -169,7 +168,7 @@ export interface OptimizationRecommendation {
 
 /**
  * Enterprise Monitoring Orchestrator
- * 
+ *
  * Central system that coordinates all monitoring components and provides
  * unified observability with intelligent insights and automated optimization.
  */
@@ -200,39 +199,39 @@ export class EnterpriseMonitoringOrchestrator {
         environment: process.env.NODE_ENV || 'development',
         samplingRate: 1.0,
         enableJaegerExporter: true,
-        ...partial.tracing
+        ...partial.tracing,
       },
       metrics: {
         collectionInterval: 30000,
         retentionDays: 7,
         enableBusinessMetrics: true,
-        ...partial.metrics
+        ...partial.metrics,
       },
       healthChecks: {
         interval: 60000,
         timeout: 10000,
         retryCount: 2,
-        ...partial.healthChecks
+        ...partial.healthChecks,
       },
       logging: {
         level: LogLevel.INFO,
         maxEntries: 50000,
         analysisInterval: 5,
-        ...partial.logging
+        ...partial.logging,
       },
       alerting: {
         enabled: true,
         defaultCooldown: 10,
         escalationEnabled: true,
-        ...partial.alerting
+        ...partial.alerting,
       },
       general: {
         environment: process.env.NODE_ENV || 'development',
         serviceName: 'memorai-enterprise',
         version: '3.0.0',
         enableAutoOptimization: true,
-        ...partial.general
-      }
+        ...partial.general,
+      },
     };
   }
 
@@ -254,7 +253,7 @@ export class EnterpriseMonitoringOrchestrator {
     this.loggingEngine = createLogAggregationEngine({
       logLevel: this.config.logging.level,
       maxEntries: this.config.logging.maxEntries,
-      analysisInterval: this.config.logging.analysisInterval
+      analysisInterval: this.config.logging.analysisInterval,
     });
 
     // Initialize alerting
@@ -285,14 +284,15 @@ export class EnterpriseMonitoringOrchestrator {
       operationId: context.operationId,
       userId: context.userId,
       tenantId: context.tenantId,
-      correlationId: context.correlationId || this.tracingEngine.generateCorrelationId()
+      correlationId:
+        context.correlationId || this.tracingEngine.generateCorrelationId(),
     };
 
     // Start distributed tracing
     return await this.tracingEngine.startMemoryTrace(
       context.operation,
       traceContext,
-      async (span) => {
+      async span => {
         try {
           // Log operation start
           this.loggingEngine.info(
@@ -303,7 +303,7 @@ export class EnterpriseMonitoringOrchestrator {
               correlationId: traceContext.correlationId,
               tenantId: context.tenantId,
               userId: context.userId,
-              metadata: context.metadata
+              metadata: context.metadata,
             }
           );
 
@@ -317,7 +317,7 @@ export class EnterpriseMonitoringOrchestrator {
             duration,
             success: true,
             tenantId: context.tenantId,
-            userId: context.userId
+            userId: context.userId,
           };
           this.metricsEngine.recordMemoryOperation(operationMetrics);
 
@@ -330,9 +330,9 @@ export class EnterpriseMonitoringOrchestrator {
               labels: {
                 operation: context.operation,
                 component: context.component,
-                tenant_id: context.tenantId
-              }
-            }
+                tenant_id: context.tenantId,
+              },
+            },
           ];
           await this.alertingEngine.processMetrics(performanceMetrics);
 
@@ -340,13 +340,16 @@ export class EnterpriseMonitoringOrchestrator {
           this.tracingEngine.addSpanAttributes(context.operationId, {
             'memory.operation': context.operation,
             'memory.tenant_id': context.tenantId,
-            'memory.result_count': typeof result === 'object' && result && 'length' in result ? (result as any).length : 1
+            'memory.result_count':
+              typeof result === 'object' && result && 'length' in result
+                ? (result as any).length
+                : 1,
           });
 
           // Record performance metrics
           this.tracingEngine.recordPerformanceMetrics(context.operationId, {
             duration,
-            memoryUsage: process.memoryUsage().heapUsed
+            memoryUsage: process.memoryUsage().heapUsed,
           });
 
           // Log successful completion
@@ -357,24 +360,25 @@ export class EnterpriseMonitoringOrchestrator {
               operationId: context.operationId,
               duration,
               correlationId: traceContext.correlationId,
-              success: true
+              success: true,
             }
           );
 
           return result;
-
         } catch (error) {
           const duration = Date.now() - startTime;
-          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          const errorMessage =
+            error instanceof Error ? error.message : 'Unknown error';
 
           // Record failed operation metrics
           const operationMetrics: MemoryOperationMetrics = {
             operationType: context.operation,
             duration,
             success: false,
-            errorType: error instanceof Error ? error.constructor.name : 'UnknownError',
+            errorType:
+              error instanceof Error ? error.constructor.name : 'UnknownError',
             tenantId: context.tenantId,
-            userId: context.userId
+            userId: context.userId,
           };
           this.metricsEngine.recordMemoryOperation(operationMetrics);
 
@@ -387,10 +391,13 @@ export class EnterpriseMonitoringOrchestrator {
               labels: {
                 operation: context.operation,
                 component: context.component,
-                error_type: error instanceof Error ? error.constructor.name : 'UnknownError',
-                tenant_id: context.tenantId
-              }
-            }
+                error_type:
+                  error instanceof Error
+                    ? error.constructor.name
+                    : 'UnknownError',
+                tenant_id: context.tenantId,
+              },
+            },
           ];
           await this.alertingEngine.processMetrics(errorMetrics);
 
@@ -403,11 +410,14 @@ export class EnterpriseMonitoringOrchestrator {
               duration,
               correlationId: traceContext.correlationId,
               error: {
-                name: error instanceof Error ? error.constructor.name : 'UnknownError',
+                name:
+                  error instanceof Error
+                    ? error.constructor.name
+                    : 'UnknownError',
                 message: errorMessage,
-                stack: error instanceof Error ? error.stack : undefined
+                stack: error instanceof Error ? error.stack : undefined,
               },
-              success: false
+              success: false,
             }
           );
 
@@ -429,18 +439,18 @@ export class EnterpriseMonitoringOrchestrator {
       {
         metric: 'cpu_usage',
         value: metrics.cpuUsage,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       },
       {
         metric: 'memory_usage',
         value: metrics.memoryUsage,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       },
       {
         metric: 'active_connections',
         value: metrics.activeConnections,
-        timestamp: Date.now()
-      }
+        timestamp: Date.now(),
+      },
     ];
 
     // Process for alerting
@@ -479,9 +489,13 @@ export class EnterpriseMonitoringOrchestrator {
     const report = await this.healthEngine.runAllHealthChecks();
 
     // Log health status
-    const healthLevel = report.overall === 'healthy' ? LogLevel.INFO : 
-                       report.overall === 'degraded' ? LogLevel.WARN : LogLevel.ERROR;
-    
+    const healthLevel =
+      report.overall === 'healthy'
+        ? LogLevel.INFO
+        : report.overall === 'degraded'
+          ? LogLevel.WARN
+          : LogLevel.ERROR;
+
     this.loggingEngine.log(
       healthLevel,
       `Health check completed: ${report.overall} (${report.summary.healthy}/${report.summary.total} healthy)`,
@@ -493,13 +507,13 @@ export class EnterpriseMonitoringOrchestrator {
       {
         metric: 'response_time',
         value: report.performance.response.averageTime,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       },
       {
         metric: 'error_rate',
         value: (report.summary.unhealthy / report.summary.total) * 100,
-        timestamp: Date.now()
-      }
+        timestamp: Date.now(),
+      },
     ];
 
     await this.alertingEngine.processMetrics(healthMetrics);
@@ -526,10 +540,16 @@ export class EnterpriseMonitoringOrchestrator {
     const logAnalysis = await this.loggingEngine.analyzeRecent(10);
 
     // Calculate overall status
-    const overallStatus = this.calculateOverallStatus(healthReport, alertingStats);
+    const overallStatus = this.calculateOverallStatus(
+      healthReport,
+      alertingStats
+    );
 
     // Get performance metrics
-    const performance = this.calculatePerformanceMetrics(healthReport, logAnalysis);
+    const performance = this.calculatePerformanceMetrics(
+      healthReport,
+      logAnalysis
+    );
 
     // Generate recommendations
     const recommendations = this.generateRecommendations(
@@ -551,44 +571,46 @@ export class EnterpriseMonitoringOrchestrator {
       components: {
         tracing: {
           activeSpans: tracingStats.activeSpansCount,
-          tracingEnabled: true
+          tracingEnabled: true,
         },
         metrics: {
           totalMetrics: metricsStats.totalMetrics,
           recentDataPoints: 0, // Would calculate from metrics buffer
-          businessMetricsEnabled: this.config.metrics.enableBusinessMetrics
+          businessMetricsEnabled: this.config.metrics.enableBusinessMetrics,
         },
         healthChecks: healthReport,
         logging: {
           totalLogs: loggingStats.buffer.totalEntries,
-          recentErrors: loggingStats.buffer.levelCounts[LogLevel.ERROR] + loggingStats.buffer.levelCounts[LogLevel.FATAL],
+          recentErrors:
+            loggingStats.buffer.levelCounts[LogLevel.ERROR] +
+            loggingStats.buffer.levelCounts[LogLevel.FATAL],
           patternsDetected: loggingStats.patterns.activeMatches,
-          anomaliesDetected: logAnalysis.anomalies.length
+          anomaliesDetected: logAnalysis.anomalies.length,
         },
         alerting: {
           activeAlerts: alertingStats.activeAlerts,
           totalRules: alertingStats.totalRules,
-          recentlyTriggered: alertingStats.totalAlerts
-        }
+          recentlyTriggered: alertingStats.totalAlerts,
+        },
       },
       performance,
       recommendations,
-      trends
+      trends,
     };
 
     this.lastReport = report;
-    
+
     // Log report summary
     this.loggingEngine.info(
       `Monitoring report generated: ${overallStatus} status, ${alertingStats.activeAlerts} active alerts`,
       'MonitoringOrchestrator',
-      { 
+      {
         reportSummary: {
           overallStatus,
           activeAlerts: alertingStats.activeAlerts,
           healthyComponents: healthReport.summary.healthy,
-          totalComponents: healthReport.summary.total
-        }
+          totalComponents: healthReport.summary.total,
+        },
       }
     );
 
@@ -602,18 +624,24 @@ export class EnterpriseMonitoringOrchestrator {
     health: SystemHealthReport,
     alerting: any
   ): MonitoringReport['overallStatus'] {
-    if (alerting.activeAlerts > 0 && alerting.alertsBySevierty[AlertSeverity.EMERGENCY] > 0) {
+    if (
+      alerting.activeAlerts > 0 &&
+      alerting.alertsBySevierty[AlertSeverity.EMERGENCY] > 0
+    ) {
       return 'critical';
     }
-    
-    if (health.overall === 'unhealthy' || alerting.alertsBySevierty[AlertSeverity.CRITICAL] > 0) {
+
+    if (
+      health.overall === 'unhealthy' ||
+      alerting.alertsBySevierty[AlertSeverity.CRITICAL] > 0
+    ) {
       return 'unhealthy';
     }
-    
+
     if (health.overall === 'degraded' || alerting.activeAlerts > 0) {
       return 'degraded';
     }
-    
+
     return 'healthy';
   }
 
@@ -628,21 +656,22 @@ export class EnterpriseMonitoringOrchestrator {
       responseTime: {
         current: health.performance.response.averageTime,
         average: health.performance.response.averageTime,
-        p95: health.performance.response.p95Time
+        p95: health.performance.response.p95Time,
       },
       throughput: {
         requestsPerSecond: 0, // Would calculate from metrics
-        operationsPerSecond: 0 // Would calculate from metrics
+        operationsPerSecond: 0, // Would calculate from metrics
       },
       resources: {
         cpuUsage: health.performance.cpu.usage,
         memoryUsage: health.performance.memory.percentage,
-        activeConnections: 0 // Would get from metrics
+        activeConnections: 0, // Would get from metrics
       },
       errors: {
         errorRate: 0, // Would calculate from recent logs
-        recentErrors: logs.levelCounts[LogLevel.ERROR] + logs.levelCounts[LogLevel.FATAL]
-      }
+        recentErrors:
+          logs.levelCounts[LogLevel.ERROR] + logs.levelCounts[LogLevel.FATAL],
+      },
     };
   }
 
@@ -659,16 +688,20 @@ export class EnterpriseMonitoringOrchestrator {
 
     // Health-based recommendations
     if (health.overall !== 'healthy') {
-      recommendations.push(...health.recommendations || []);
+      recommendations.push(...(health.recommendations || []));
     }
 
     // Performance-based recommendations
     if (performance.responseTime.current > 1000) {
-      recommendations.push('Consider performance optimization - response times are elevated');
+      recommendations.push(
+        'Consider performance optimization - response times are elevated'
+      );
     }
 
     if (performance.resources.cpuUsage > 70) {
-      recommendations.push('CPU usage is high - consider scaling or optimization');
+      recommendations.push(
+        'CPU usage is high - consider scaling or optimization'
+      );
     }
 
     if (performance.resources.memoryUsage > 80) {
@@ -695,7 +728,9 @@ export class EnterpriseMonitoringOrchestrator {
   /**
    * Calculate performance trends
    */
-  private calculateTrends(performance: MonitoringReport['performance']): MonitoringReport['trends'] {
+  private calculateTrends(
+    performance: MonitoringReport['performance']
+  ): MonitoringReport['trends'] {
     // This would implement actual trend analysis
     // For now, return basic trends
     return [
@@ -703,14 +738,14 @@ export class EnterpriseMonitoringOrchestrator {
         metric: 'response_time',
         direction: 'stable',
         change: 0,
-        significance: 'low'
+        significance: 'low',
       },
       {
         metric: 'cpu_usage',
         direction: 'stable',
         change: 0,
-        significance: 'low'
-      }
+        significance: 'low',
+      },
     ];
   }
 
@@ -778,8 +813,8 @@ export class EnterpriseMonitoringOrchestrator {
         metrics: true,
         healthChecks: true,
         logging: true,
-        alerting: this.config.alerting.enabled
-      }
+        alerting: this.config.alerting.enabled,
+      },
     };
   }
 
@@ -822,10 +857,7 @@ export class EnterpriseMonitoringOrchestrator {
     this.alertingEngine.stopMonitoring();
     this.loggingEngine.stopAnalysis();
 
-    this.loggingEngine.info(
-      'Monitoring stopped',
-      'MonitoringOrchestrator'
-    );
+    this.loggingEngine.info('Monitoring stopped', 'MonitoringOrchestrator');
   }
 
   /**
@@ -834,7 +866,7 @@ export class EnterpriseMonitoringOrchestrator {
   async shutdown(): Promise<void> {
     this.stopMonitoring();
     await this.tracingEngine.flush();
-    
+
     this.loggingEngine.info(
       'Monitoring system shutdown complete',
       'MonitoringOrchestrator'

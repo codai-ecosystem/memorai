@@ -14,7 +14,7 @@ describe('SystemOptimizationEngine - Zero Coverage Target', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     // Setup configurations based on actual API
     autoScalingConfig = {
       enabled: true,
@@ -22,15 +22,15 @@ describe('SystemOptimizationEngine - Zero Coverage Target', () => {
         cpuThreshold: 0.8,
         memoryThreshold: 0.85,
         responseTimeThreshold: 1000,
-        throughputThreshold: 500
+        throughputThreshold: 500,
       },
       scaling: {
         minInstances: 1,
         maxInstances: 10,
         scaleUpFactor: 1.5,
         scaleDownFactor: 0.7,
-        cooldownPeriodMs: 300000
-      }
+        cooldownPeriodMs: 300000,
+      },
     };
 
     cacheConfig = {
@@ -39,13 +39,13 @@ describe('SystemOptimizationEngine - Zero Coverage Target', () => {
         preemptiveLoading: true,
         intelligentEviction: true,
         hotDataIdentification: true,
-        crossTenantOptimization: false
+        crossTenantOptimization: false,
       },
       thresholds: {
         hitRatioTarget: 0.85,
         memoryUsageLimit: 0.8,
-        accessFrequencyMin: 10
-      }
+        accessFrequencyMin: 10,
+      },
     };
 
     queryConfig = {
@@ -54,17 +54,21 @@ describe('SystemOptimizationEngine - Zero Coverage Target', () => {
         queryPlanOptimization: true,
         indexSuggestions: true,
         batchingOptimization: true,
-        vectorSearchTuning: true
+        vectorSearchTuning: true,
       },
       analysis: {
         slowQueryThreshold: 500,
         frequentQueryThreshold: 100,
-        optimizationWindowMs: 3600000
-      }
+        optimizationWindowMs: 3600000,
+      },
     };
-    
+
     // Initialize with 3-parameter constructor
-    engine = new SystemOptimizationEngine(autoScalingConfig, cacheConfig, queryConfig);
+    engine = new SystemOptimizationEngine(
+      autoScalingConfig,
+      cacheConfig,
+      queryConfig
+    );
   });
 
   describe('Constructor and Initialization', () => {
@@ -75,7 +79,11 @@ describe('SystemOptimizationEngine - Zero Coverage Target', () => {
 
     it('should handle disabled configurations', () => {
       const disabledConfig = { ...autoScalingConfig, enabled: false };
-      const disabledEngine = new SystemOptimizationEngine(disabledConfig, cacheConfig, queryConfig);
+      const disabledEngine = new SystemOptimizationEngine(
+        disabledConfig,
+        cacheConfig,
+        queryConfig
+      );
       expect(disabledEngine).toBeDefined();
     });
   });
@@ -84,7 +92,9 @@ describe('SystemOptimizationEngine - Zero Coverage Target', () => {
     it('should start the optimization engine', () => {
       const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
       engine.start();
-      expect(consoleSpy).toHaveBeenCalledWith('[OptimizationEngine] Started with intelligent optimization');
+      expect(consoleSpy).toHaveBeenCalledWith(
+        '[OptimizationEngine] Started with intelligent optimization'
+      );
       engine.stop();
       consoleSpy.mockRestore();
     });
@@ -98,7 +108,7 @@ describe('SystemOptimizationEngine - Zero Coverage Target', () => {
     });
 
     it('should emit started event', () => {
-      return new Promise<void>((resolve) => {
+      return new Promise<void>(resolve => {
         engine.on('started', () => {
           engine.stop();
           resolve();
@@ -108,7 +118,7 @@ describe('SystemOptimizationEngine - Zero Coverage Target', () => {
     });
 
     it('should emit stopped event', () => {
-      return new Promise<void>((resolve) => {
+      return new Promise<void>(resolve => {
         engine.on('stopped', () => {
           resolve();
         });
@@ -132,17 +142,19 @@ describe('SystemOptimizationEngine - Zero Coverage Target', () => {
           impact: {
             expectedImprovement: 10,
             affectedMetrics: ['test'],
-            riskLevel: 'low' as const
+            riskLevel: 'low' as const,
           },
-          changes: {}
+          changes: {},
         }),
         priority: 5,
-        cooldownMs: 60000
+        cooldownMs: 60000,
       };
 
       const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
       engine.addOptimizationRule(mockRule);
-      expect(consoleSpy).toHaveBeenCalledWith('[OptimizationEngine] Added optimization rule: Test Rule');
+      expect(consoleSpy).toHaveBeenCalledWith(
+        '[OptimizationEngine] Added optimization rule: Test Rule'
+      );
       consoleSpy.mockRestore();
     });
   });
@@ -156,9 +168,9 @@ describe('SystemOptimizationEngine - Zero Coverage Target', () => {
       const promises = [
         engine.runOptimizationCycle(),
         engine.runOptimizationCycle(),
-        engine.runOptimizationCycle()
+        engine.runOptimizationCycle(),
       ];
-      
+
       await Promise.all(promises);
     });
   });
@@ -173,7 +185,7 @@ describe('SystemOptimizationEngine - Zero Coverage Target', () => {
       const history1h = engine.getOptimizationHistory(1);
       const history24h = engine.getOptimizationHistory(24);
       const history168h = engine.getOptimizationHistory(168);
-      
+
       expect(Array.isArray(history1h)).toBe(true);
       expect(Array.isArray(history24h)).toBe(true);
       expect(Array.isArray(history168h)).toBe(true);
@@ -183,7 +195,7 @@ describe('SystemOptimizationEngine - Zero Coverage Target', () => {
       const historyZero = engine.getOptimizationHistory(0);
       const historyNegative = engine.getOptimizationHistory(-5);
       const historyLarge = engine.getOptimizationHistory(8760);
-      
+
       expect(Array.isArray(historyZero)).toBe(true);
       expect(Array.isArray(historyNegative)).toBe(true);
       expect(Array.isArray(historyLarge)).toBe(true);
@@ -205,11 +217,12 @@ describe('SystemOptimizationEngine - Zero Coverage Target', () => {
         trendData: {
           responseTimeGrowth: -0.1,
           throughputChange: 0.2,
-          errorRateChange: -0.05
-        }
+          errorRateChange: -0.05,
+        },
       };
 
-      const recommendations = await engine.getOptimizationRecommendations(goodMetrics);
+      const recommendations =
+        await engine.getOptimizationRecommendations(goodMetrics);
       expect(Array.isArray(recommendations)).toBe(true);
     });
 
@@ -227,16 +240,19 @@ describe('SystemOptimizationEngine - Zero Coverage Target', () => {
         trendData: {
           responseTimeGrowth: 0.2,
           throughputChange: -0.1,
-          errorRateChange: 0.05
-        }
+          errorRateChange: 0.05,
+        },
       };
 
-      const recommendations = await engine.getOptimizationRecommendations(poorCacheMetrics);
+      const recommendations =
+        await engine.getOptimizationRecommendations(poorCacheMetrics);
       expect(Array.isArray(recommendations)).toBe(true);
-      
-      const cacheRecs = recommendations.filter(r => r.category === 'performance');
+
+      const cacheRecs = recommendations.filter(
+        r => r.category === 'performance'
+      );
       expect(cacheRecs.length).toBeGreaterThan(0);
-      
+
       if (cacheRecs.length > 0) {
         expect(cacheRecs[0].title).toBe('Improve Cache Hit Ratio');
         expect(cacheRecs[0].priority).toBe('high');
@@ -258,16 +274,19 @@ describe('SystemOptimizationEngine - Zero Coverage Target', () => {
         trendData: {
           responseTimeGrowth: 0.1,
           throughputChange: 0.0,
-          errorRateChange: 0.0
-        }
+          errorRateChange: 0.0,
+        },
       };
 
-      const recommendations = await engine.getOptimizationRecommendations(highMemoryMetrics);
+      const recommendations =
+        await engine.getOptimizationRecommendations(highMemoryMetrics);
       expect(Array.isArray(recommendations)).toBe(true);
-      
-      const resourceRecs = recommendations.filter(r => r.category === 'resource');
+
+      const resourceRecs = recommendations.filter(
+        r => r.category === 'resource'
+      );
       expect(resourceRecs.length).toBeGreaterThan(0);
-      
+
       if (resourceRecs.length > 0) {
         expect(resourceRecs[0].title).toBe('High Memory Usage');
         expect(resourceRecs[0].priority).toBe('critical');
@@ -289,16 +308,16 @@ describe('SystemOptimizationEngine - Zero Coverage Target', () => {
           impact: {
             expectedImprovement: 10,
             affectedMetrics: ['test'],
-            riskLevel: 'low' as const
+            riskLevel: 'low' as const,
           },
-          changes: { test: true }
+          changes: { test: true },
         }),
         priority: 5,
-        cooldownMs: 0
+        cooldownMs: 0,
       };
 
       engine.addOptimizationRule(testRule);
-      
+
       const mockContext = {
         currentMetrics: {
           averageResponseTime: 150,
@@ -313,23 +332,26 @@ describe('SystemOptimizationEngine - Zero Coverage Target', () => {
           trendData: {
             responseTimeGrowth: 0.05,
             throughputChange: 0.1,
-            errorRateChange: -0.02
-          }
+            errorRateChange: -0.02,
+          },
         },
         historicalData: [],
         systemConfig: {
           cacheSize: 1000,
           poolSize: 10,
-          timeoutMs: 5000
+          timeoutMs: 5000,
         },
         resourceLimits: {
           maxMemory: 4.0,
           maxCpu: 0.8,
-          maxConnections: 100
-        }
+          maxConnections: 100,
+        },
       };
-      
-      const result = await engine.executeOptimization('direct-execution-test', mockContext);
+
+      const result = await engine.executeOptimization(
+        'direct-execution-test',
+        mockContext
+      );
       expect(result).toBeDefined();
       expect(result.success).toBe(true);
       expect(result.action).toBe('direct_test');
@@ -350,43 +372,47 @@ describe('SystemOptimizationEngine - Zero Coverage Target', () => {
           trendData: {
             responseTimeGrowth: 0.05,
             throughputChange: 0.1,
-            errorRateChange: -0.02
-          }
+            errorRateChange: -0.02,
+          },
         },
         historicalData: [],
         systemConfig: {
           cacheSize: 1000,
           poolSize: 10,
-          timeoutMs: 5000
+          timeoutMs: 5000,
         },
         resourceLimits: {
           maxMemory: 4.0,
           maxCpu: 0.8,
-          maxConnections: 100
-        }
+          maxConnections: 100,
+        },
       };
-      
-      await expect(engine.executeOptimization('non-existent-rule', mockContext))
-        .rejects.toThrow();
+
+      await expect(
+        engine.executeOptimization('non-existent-rule', mockContext)
+      ).rejects.toThrow();
     });
   });
 
   describe('Error Handling', () => {
     it('should handle null/undefined metrics in recommendations', async () => {
-      await expect(engine.getOptimizationRecommendations(null as any))
-        .rejects.toThrow();
-      
-      await expect(engine.getOptimizationRecommendations(undefined as any))
-        .rejects.toThrow();
+      await expect(
+        engine.getOptimizationRecommendations(null as any)
+      ).rejects.toThrow();
+
+      await expect(
+        engine.getOptimizationRecommendations(undefined as any)
+      ).rejects.toThrow();
     });
 
     it('should handle incomplete metrics objects', async () => {
       const incompleteMetrics = {
-        averageResponseTime: 150
+        averageResponseTime: 150,
       } as any;
-      
-      await expect(engine.getOptimizationRecommendations(incompleteMetrics))
-        .rejects.toThrow();
+
+      await expect(
+        engine.getOptimizationRecommendations(incompleteMetrics)
+      ).rejects.toThrow();
     });
   });
 });

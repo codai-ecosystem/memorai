@@ -16,18 +16,22 @@ vi.mock('ioredis', () => {
     setex: vi.fn().mockResolvedValue('OK'),
     get: vi.fn().mockImplementation((key: string) => {
       if (key === 'memory:test-123') {
-        return Promise.resolve(JSON.stringify({
-          id: 'test-123',
-          content: 'Test content',
-          tenant_id: 'tenant-1',
-          agent_id: 'agent-1',
-        }));
+        return Promise.resolve(
+          JSON.stringify({
+            id: 'test-123',
+            content: 'Test content',
+            tenant_id: 'tenant-1',
+            agent_id: 'agent-1',
+          })
+        );
       }
       return Promise.resolve(null);
     }),
     del: vi.fn().mockResolvedValue(1),
     keys: vi.fn().mockResolvedValue(['memory:test-123']),
-    mget: vi.fn().mockResolvedValue(['{"id":"test-123","content":"Test"}', null]),
+    mget: vi
+      .fn()
+      .mockResolvedValue(['{"id":"test-123","content":"Test"}', null]),
     sadd: vi.fn().mockResolvedValue(1),
     srem: vi.fn().mockResolvedValue(1),
     smembers: vi.fn().mockResolvedValue(['test-123']),
@@ -508,7 +512,9 @@ describe('StorageAdapter', () => {
     });
 
     it('should handle update operation for non-existent memory', async () => {
-      await expect(adapter.update('non-existent', { content: 'test' })).rejects.toThrow();
+      await expect(
+        adapter.update('non-existent', { content: 'test' })
+      ).rejects.toThrow();
     });
 
     it('should delete memory successfully', async () => {

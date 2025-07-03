@@ -1,9 +1,9 @@
-import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { EmbeddingService } from '../../src/embedding/EmbeddingService.js';
 import { AdvancedMemoryEngine } from '../../src/engine/AdvancedMemoryEngine.js';
-import { MemoryError } from '../../src/types/index.js';
-import type { MemoryConfig, MemoryMetadata, MemoryType } from '../../src/types/index.js';
 import type { StorageAdapter } from '../../src/storage/StorageAdapter.js';
-import type { EmbeddingService, EmbeddingResult } from '../../src/embedding/EmbeddingService.js';
+import type { MemoryConfig, MemoryMetadata } from '../../src/types/index.js';
+import { MemoryError } from '../../src/types/index.js';
 
 // Mock dependencies
 vi.mock('../../src/storage/StorageAdapter.js', () => ({
@@ -121,9 +121,9 @@ describe('AdvancedMemoryEngine - Comprehensive Coverage Suite', () => {
   describe('initialize()', () => {
     it('should initialize successfully', async () => {
       mockStorage.list.mockResolvedValue([]);
-      
+
       await engine.initialize();
-      
+
       expect((engine as any).initialized).toBe(true);
       expect(mockStorage.list).toHaveBeenCalled();
     });
@@ -137,7 +137,7 @@ describe('AdvancedMemoryEngine - Comprehensive Coverage Suite', () => {
     it('should allow re-initialization if already initialized', async () => {
       await engine.initialize();
       await engine.initialize(); // Should not throw
-      
+
       expect(mockStorage.list).toHaveBeenCalledTimes(2);
     });
 
@@ -218,7 +218,9 @@ describe('AdvancedMemoryEngine - Comprehensive Coverage Suite', () => {
       (uninitializedEngine as any).storage = mockStorage;
       (uninitializedEngine as any).embedding = mockEmbedding;
 
-      await expect(uninitializedEngine.remember('test')).rejects.toThrow(MemoryError);
+      await expect(uninitializedEngine.remember('test')).rejects.toThrow(
+        MemoryError
+      );
     });
 
     it('should throw error for empty content', async () => {
@@ -229,13 +231,17 @@ describe('AdvancedMemoryEngine - Comprehensive Coverage Suite', () => {
     it('should handle embedding generation failure', async () => {
       mockEmbedding.embed.mockRejectedValue(new Error('Embedding failed'));
 
-      await expect(engine.remember('test content')).rejects.toThrow(MemoryError);
+      await expect(engine.remember('test content')).rejects.toThrow(
+        MemoryError
+      );
     });
 
     it('should handle storage failure', async () => {
       mockStorage.store.mockRejectedValue(new Error('Storage failed'));
 
-      await expect(engine.remember('test content')).rejects.toThrow(MemoryError);
+      await expect(engine.remember('test content')).rejects.toThrow(
+        MemoryError
+      );
     });
 
     it('should trim whitespace from content', async () => {
@@ -340,7 +346,9 @@ describe('AdvancedMemoryEngine - Comprehensive Coverage Suite', () => {
       (uninitializedEngine as any).storage = mockStorage;
       (uninitializedEngine as any).embedding = mockEmbedding;
 
-      await expect(uninitializedEngine.recall('test')).rejects.toThrow(MemoryError);
+      await expect(uninitializedEngine.recall('test')).rejects.toThrow(
+        MemoryError
+      );
     });
   });
 
@@ -448,7 +456,9 @@ describe('AdvancedMemoryEngine - Comprehensive Coverage Suite', () => {
       (uninitializedEngine as any).storage = mockStorage;
       (uninitializedEngine as any).embedding = mockEmbedding;
 
-      await expect(uninitializedEngine.forget('test')).rejects.toThrow(MemoryError);
+      await expect(uninitializedEngine.forget('test')).rejects.toThrow(
+        MemoryError
+      );
     });
 
     it('should handle storage retrieve failure gracefully', async () => {
@@ -584,7 +594,9 @@ describe('AdvancedMemoryEngine - Comprehensive Coverage Suite', () => {
 
     it('should handle null/undefined values gracefully', async () => {
       await expect(engine.remember(null as any)).rejects.toThrow(MemoryError);
-      await expect(engine.remember(undefined as any)).rejects.toThrow(MemoryError);
+      await expect(engine.remember(undefined as any)).rejects.toThrow(
+        MemoryError
+      );
     });
   });
 
@@ -603,7 +615,8 @@ describe('AdvancedMemoryEngine - Comprehensive Coverage Suite', () => {
     });
 
     it('should handle special characters in content', async () => {
-      const specialContent = '🚀 Special chars: àáâãäåæçèéêë 中文 русский العربية';
+      const specialContent =
+        '🚀 Special chars: àáâãäåæçèéêë 中文 русский العربية';
 
       const result = await engine.remember(specialContent);
 
@@ -680,7 +693,7 @@ describe('AdvancedMemoryEngine - Comprehensive Coverage Suite', () => {
       await Promise.all(promises);
 
       const duration = Date.now() - start;
-      
+
       // Should complete within reasonable time (less than 5 seconds)
       expect(duration).toBeLessThan(5000);
     });

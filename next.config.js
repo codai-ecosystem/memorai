@@ -28,7 +28,7 @@ const nextConfig = {
     }
     return config;
   },
-  // Reduce memory usage  
+  // Reduce memory usage
   compress: true,
   poweredByHeader: false,
 };

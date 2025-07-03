@@ -1,23 +1,18 @@
 /**
  * Enterprise Integration Patterns Engine Test Suite - Focused Implementation
- * 
+ *
  * Comprehensive test coverage for enterprise-grade integration patterns,
  * focusing on actual API surface and existing functionality.
- * 
+ *
  * @author Memorai Enterprise Team
  * @version 3.0.0
  * @since 2024-12-28
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   EnterpriseIntegrationPatternsEngine,
-  IntegrationEndpoint,
-  IntegrationPattern,
-  DataTransformation,
-  EnterpriseConnector,
-  IntegrationFlow,
-  IntegrationMessage
+  IntegrationMessage,
 } from '../../packages/core/src/integration/EnterpriseIntegrationPatternsEngine';
 
 describe('EnterpriseIntegrationPatternsEngine - Focused Tests', () => {
@@ -35,10 +30,10 @@ describe('EnterpriseIntegrationPatternsEngine - Focused Tests', () => {
   describe('Core Engine Initialization', () => {
     it('should initialize with built-in connectors', () => {
       const connectors = engine.getConnectors();
-      
+
       expect(Array.isArray(connectors)).toBe(true);
       expect(connectors.length).toBeGreaterThan(0);
-      
+
       // Verify connector structure
       const firstConnector = connectors[0];
       expect(firstConnector).toHaveProperty('id');
@@ -63,8 +58,10 @@ describe('EnterpriseIntegrationPatternsEngine - Focused Tests', () => {
   describe('Enterprise Connector Validation', () => {
     it('should have Salesforce connector', () => {
       const connectors = engine.getConnectors();
-      const salesforceConnector = connectors.find(c => c.vendor === 'salesforce');
-      
+      const salesforceConnector = connectors.find(
+        c => c.vendor === 'salesforce'
+      );
+
       expect(salesforceConnector).toBeDefined();
       expect(salesforceConnector?.name).toContain('Salesforce');
       expect(salesforceConnector?.type).toBe('crm');
@@ -77,7 +74,7 @@ describe('EnterpriseIntegrationPatternsEngine - Focused Tests', () => {
     it('should have SAP connector', () => {
       const connectors = engine.getConnectors();
       const sapConnector = connectors.find(c => c.vendor === 'sap');
-      
+
       expect(sapConnector).toBeDefined();
       expect(sapConnector?.name).toContain('SAP');
       expect(sapConnector?.type).toBe('erp');
@@ -85,8 +82,15 @@ describe('EnterpriseIntegrationPatternsEngine - Focused Tests', () => {
 
     it('should validate connector authentication types', () => {
       const connectors = engine.getConnectors();
-      const authTypes = ['oauth2', 'basic', 'bearer', 'api-key', 'certificate', 'jwt'];
-      
+      const authTypes = [
+        'oauth2',
+        'basic',
+        'bearer',
+        'api-key',
+        'certificate',
+        'jwt',
+      ];
+
       connectors.forEach(connector => {
         expect(authTypes).toContain(connector.authentication.type);
       });
@@ -95,7 +99,7 @@ describe('EnterpriseIntegrationPatternsEngine - Focused Tests', () => {
     it('should have diverse connector types', () => {
       const connectors = engine.getConnectors();
       const types = [...new Set(connectors.map(c => c.type))];
-      
+
       expect(types.length).toBeGreaterThan(1);
       expect(types).toContain('crm');
       expect(types).toContain('erp');
@@ -109,43 +113,43 @@ describe('EnterpriseIntegrationPatternsEngine - Focused Tests', () => {
         type: 'api' as const,
         protocol: 'rest' as const,
         configuration: {
-          url: 'https://api.example.com'
+          url: 'https://api.example.com',
         },
         authentication: {
-          type: 'none' as const
+          type: 'none' as const,
         },
         dataFormat: {
           input: 'json' as const,
-          output: 'json' as const
+          output: 'json' as const,
         },
         validation: {
-          enabled: false
+          enabled: false,
         },
         metadata: {
           version: '1.0',
           tags: ['test'],
-          description: 'Test endpoint'
+          description: 'Test endpoint',
         },
         status: {
           state: 'active' as const,
           lastCheck: new Date(),
           uptime: 100,
           avgResponseTime: 100,
-          errorRate: 0
+          errorRate: 0,
         },
         monitoring: {
-          enabled: false
-        }
+          enabled: false,
+        },
       };
 
       const result = await engine.registerEndpoint(endpointConfig);
-      
+
       expect(result).toBeDefined();
       expect(result.id).toBeDefined();
       expect(result.name).toBe('Test API');
       expect(result.type).toBe('api');
       expect(result.protocol).toBe('rest');
-      
+
       const endpoints = engine.getEndpoints();
       expect(endpoints).toHaveLength(1);
     });
@@ -161,8 +165,14 @@ describe('EnterpriseIntegrationPatternsEngine - Focused Tests', () => {
           dataFormat: { input: 'json' as const, output: 'json' as const },
           validation: { enabled: false },
           metadata: { version: '1.0', tags: ['rest'], description: 'REST API' },
-          status: { state: 'active' as const, lastCheck: new Date(), uptime: 100, avgResponseTime: 100, errorRate: 0 },
-          monitoring: { enabled: false }
+          status: {
+            state: 'active' as const,
+            lastCheck: new Date(),
+            uptime: 100,
+            avgResponseTime: 100,
+            errorRate: 0,
+          },
+          monitoring: { enabled: false },
         },
         {
           name: 'GraphQL API',
@@ -172,10 +182,20 @@ describe('EnterpriseIntegrationPatternsEngine - Focused Tests', () => {
           authentication: { type: 'none' as const },
           dataFormat: { input: 'json' as const, output: 'json' as const },
           validation: { enabled: false },
-          metadata: { version: '1.0', tags: ['graphql'], description: 'GraphQL API' },
-          status: { state: 'active' as const, lastCheck: new Date(), uptime: 100, avgResponseTime: 100, errorRate: 0 },
-          monitoring: { enabled: false }
-        }
+          metadata: {
+            version: '1.0',
+            tags: ['graphql'],
+            description: 'GraphQL API',
+          },
+          status: {
+            state: 'active' as const,
+            lastCheck: new Date(),
+            uptime: 100,
+            avgResponseTime: 100,
+            errorRate: 0,
+          },
+          monitoring: { enabled: false },
+        },
       ];
 
       for (const config of endpoints) {
@@ -195,41 +215,41 @@ describe('EnterpriseIntegrationPatternsEngine - Focused Tests', () => {
         configuration: {
           url: 'https://api.example.com',
           timeout: 5000,
-          retries: 3
+          retries: 3,
         },
         authentication: {
           type: 'bearer' as const,
-          credentials: { token: 'test-token' }
+          credentials: { token: 'test-token' },
         },
         dataFormat: {
           input: 'json' as const,
           output: 'json' as const,
-          encoding: 'utf8' as const
+          encoding: 'utf8' as const,
         },
         validation: {
           enabled: true,
-          strict: false
+          strict: false,
         },
         metadata: {
           version: '1.0',
           tags: ['validation', 'test'],
-          description: 'Endpoint for validation testing'
+          description: 'Endpoint for validation testing',
         },
         status: {
           state: 'active' as const,
           lastCheck: new Date(),
           uptime: 99.9,
           avgResponseTime: 150,
-          errorRate: 0.1
+          errorRate: 0.1,
         },
         monitoring: {
           enabled: true,
-          metrics: ['latency', 'throughput']
-        }
+          metrics: ['latency', 'throughput'],
+        },
       };
 
       const result = await engine.registerEndpoint(endpointConfig);
-      
+
       expect(result.configuration.timeout).toBe(5000);
       expect(result.authentication.type).toBe('bearer');
       expect(result.dataFormat.input).toBe('json');
@@ -247,29 +267,25 @@ describe('EnterpriseIntegrationPatternsEngine - Focused Tests', () => {
         configuration: {
           source: 'endpoint1',
           target: 'endpoint2',
-          routing: 'direct'
+          routing: 'direct',
         },
-        triggers: [
-          { type: 'message-received', condition: 'source.ready' }
-        ],
-        actions: [
-          { type: 'route-message', target: 'destination' }
-        ],
+        triggers: [{ type: 'message-received', condition: 'source.ready' }],
+        actions: [{ type: 'route-message', target: 'destination' }],
         errorHandling: {
           retries: 3,
           backoff: 'exponential',
-          fallback: 'dead-letter'
+          fallback: 'dead-letter',
         },
-        createdBy: 'test-user'
+        createdBy: 'test-user',
       };
 
       const result = await engine.createPattern(patternConfig);
-      
+
       expect(result).toBeDefined();
       expect(result.id).toBeDefined();
       expect(result.name).toBe('Point-to-Point Pattern');
       expect(result.type).toBe('point-to-point');
-      
+
       const patterns = engine.getPatterns();
       expect(patterns).toHaveLength(1);
     });
@@ -281,36 +297,30 @@ describe('EnterpriseIntegrationPatternsEngine - Focused Tests', () => {
         description: 'Event publishing pattern',
         configuration: {
           topic: 'events',
-          subscribers: ['service1', 'service2']
+          subscribers: ['service1', 'service2'],
         },
-        triggers: [
-          { type: 'event-published', condition: 'topic.events' }
-        ],
-        actions: [
-          { type: 'notify-subscribers', target: 'all' }
-        ],
+        triggers: [{ type: 'event-published', condition: 'topic.events' }],
+        actions: [{ type: 'notify-subscribers', target: 'all' }],
         errorHandling: {
           retries: 2,
           backoff: 'linear',
-          fallback: 'skip'
+          fallback: 'skip',
         },
-        createdBy: 'test-user'
+        createdBy: 'test-user',
       };
 
       const result = await engine.createPattern(patternConfig);
-      
+
       expect(result.type).toBe('publish-subscribe');
-      
+
       const patterns = engine.getPatterns();
       expect(patterns.some(p => p.type === 'publish-subscribe')).toBe(true);
     });
 
     it('should support multiple pattern types', async () => {
-      const patternTypes: Array<'point-to-point' | 'publish-subscribe' | 'request-response'> = [
-        'point-to-point',
-        'publish-subscribe',
-        'request-response'
-      ];
+      const patternTypes: Array<
+        'point-to-point' | 'publish-subscribe' | 'request-response'
+      > = ['point-to-point', 'publish-subscribe', 'request-response'];
 
       for (const type of patternTypes) {
         const config = {
@@ -321,7 +331,7 @@ describe('EnterpriseIntegrationPatternsEngine - Focused Tests', () => {
           triggers: [],
           actions: [],
           errorHandling: { retries: 0, backoff: 'none', fallback: 'ignore' },
-          createdBy: 'test-user'
+          createdBy: 'test-user',
         };
 
         const result = await engine.createPattern(config);
@@ -342,28 +352,28 @@ describe('EnterpriseIntegrationPatternsEngine - Focused Tests', () => {
         createdBy: 'test-user',
         inputSchema: {
           type: 'object',
-          properties: { name: { type: 'string' } }
+          properties: { name: { type: 'string' } },
         },
         outputSchema: {
           type: 'object',
-          properties: { fullName: { type: 'string' } }
+          properties: { fullName: { type: 'string' } },
         },
         transformation: {
           type: 'jq',
-          expression: '.name as $name | {fullName: $name}'
+          expression: '.name as $name | {fullName: $name}',
         },
         configuration: {
           async: false,
-          timeout: 5000
+          timeout: 5000,
         },
         metadata: {
           tags: ['json', 'transform'],
-          category: 'data-processing'
-        }
+          category: 'data-processing',
+        },
       };
 
       const result = await engine.createTransformation(transformationConfig);
-      
+
       expect(result).toBeDefined();
       expect(result.id).toBeDefined();
       expect(result.name).toBe('JSON Transform');
@@ -377,13 +387,15 @@ describe('EnterpriseIntegrationPatternsEngine - Focused Tests', () => {
         description: 'Maps input data to output format',
         version: '1.0',
         createdBy: 'test-user',
-        inputSchema: { 
+        inputSchema: {
           type: 'json' as const,
-          schema: '{"type": "object", "properties": {"firstName": {"type": "string"}, "lastName": {"type": "string"}}}' 
+          schema:
+            '{"type": "object", "properties": {"firstName": {"type": "string"}, "lastName": {"type": "string"}}}',
         },
-        outputSchema: { 
+        outputSchema: {
           type: 'json' as const,
-          schema: '{"type": "object", "properties": {"fullName": {"type": "string"}}}' 
+          schema:
+            '{"type": "object", "properties": {"fullName": {"type": "string"}}}',
         },
         mappings: [
           {
@@ -393,10 +405,10 @@ describe('EnterpriseIntegrationPatternsEngine - Focused Tests', () => {
             transform: {
               type: 'javascript' as const,
               expression: 'firstName + " " + lastName',
-              parameters: {}
+              parameters: {},
             },
-            required: true
-          }
+            required: true,
+          },
         ],
         functions: [],
         constants: {},
@@ -404,19 +416,20 @@ describe('EnterpriseIntegrationPatternsEngine - Focused Tests', () => {
         testCases: [],
         configuration: {
           async: false,
-          timeout: 5000
+          timeout: 5000,
         },
         metadata: {
           tags: ['mapping', 'transform'],
-          category: 'data-processing'
-        }
+          category: 'data-processing',
+        },
       };
 
-      const transformation = await engine.createTransformation(transformationConfig);
+      const transformation =
+        await engine.createTransformation(transformationConfig);
 
       const inputData = { firstName: 'John', lastName: 'Doe' };
       const result = await engine.transformData(transformation.id, inputData);
-      
+
       // The method should execute without error
       expect(result).toBeDefined();
     });
@@ -427,35 +440,41 @@ describe('EnterpriseIntegrationPatternsEngine - Focused Tests', () => {
         description: 'Transformation that may fail',
         version: '1.0',
         createdBy: 'test-user',
-        inputSchema: { 
+        inputSchema: {
           type: 'json' as const,
-          schema: '{"type": "object", "required": ["required_field"], "properties": {"required_field": {"type": "string"}}}' 
+          schema:
+            '{"type": "object", "required": ["required_field"], "properties": {"required_field": {"type": "string"}}}',
         },
-        outputSchema: { 
+        outputSchema: {
           type: 'json' as const,
-          schema: '{"type": "object", "properties": {"output": {"type": "string"}}}' 
+          schema:
+            '{"type": "object", "properties": {"output": {"type": "string"}}}',
         },
         mappings: [
           {
             id: 'required-mapping',
             source: 'required_field',
             target: 'output',
-            required: true
-          }
+            required: true,
+          },
         ],
         functions: [],
         constants: {},
         lookupTables: {},
         testCases: [],
-        metadata: { tags: ['error-test'], category: 'validation' }
+        metadata: { tags: ['error-test'], category: 'validation' },
       };
 
-      const transformation = await engine.createTransformation(transformationConfig);
+      const transformation =
+        await engine.createTransformation(transformationConfig);
 
       const invalidData = { optional_field: 'value' }; // Missing required field
 
       try {
-        const result = await engine.transformData(transformation.id, invalidData);
+        const result = await engine.transformData(
+          transformation.id,
+          invalidData
+        );
         // Method may return result or throw error - both are valid
         expect(result !== undefined || result === undefined).toBe(true);
       } catch (error) {
@@ -473,7 +492,10 @@ describe('EnterpriseIntegrationPatternsEngine - Focused Tests', () => {
         type: 'api',
         protocol: 'rest',
         configuration: { url: 'https://source.api.example.com' },
-        authentication: { type: 'api-key', credentials: { apiKey: 'test-key' } }
+        authentication: {
+          type: 'api-key',
+          credentials: { apiKey: 'test-key' },
+        },
       });
 
       const destinationEndpoint = await engine.registerEndpoint({
@@ -481,7 +503,10 @@ describe('EnterpriseIntegrationPatternsEngine - Focused Tests', () => {
         type: 'api',
         protocol: 'rest',
         configuration: { url: 'https://dest.api.example.com' },
-        authentication: { type: 'api-key', credentials: { apiKey: 'test-key' } }
+        authentication: {
+          type: 'api-key',
+          credentials: { apiKey: 'test-key' },
+        },
       });
 
       const patternConfig = {
@@ -491,32 +516,32 @@ describe('EnterpriseIntegrationPatternsEngine - Focused Tests', () => {
         configuration: {
           source: {
             endpointId: sourceEndpoint.id,
-            triggers: [{ type: 'manual' as const, config: {} }]
+            triggers: [{ type: 'manual' as const, config: {} }],
           },
           destination: {
-            endpointId: destinationEndpoint.id
+            endpointId: destinationEndpoint.id,
           },
           transformation: {
             enabled: false,
-            mappings: []
+            mappings: [],
           },
           errorHandling: {
-            strategy: 'ignore' as const
+            strategy: 'ignore' as const,
           },
           monitoring: {
-            metricsEnabled: false
-          }
+            metricsEnabled: false,
+          },
         },
-        createdBy: 'test-user'
+        createdBy: 'test-user',
       };
 
       const pattern = await engine.createPattern(patternConfig);
-      
+
       const payload = { test: 'data' };
       const context = { user: 'test-user', timestamp: Date.now() };
 
       const result = await engine.executePattern(pattern.id, payload, context);
-      
+
       expect(result).toBeDefined();
       expect(result.id).toBeDefined();
       expect(result.payload.original).toEqual(payload);
@@ -525,7 +550,7 @@ describe('EnterpriseIntegrationPatternsEngine - Focused Tests', () => {
     });
 
     it('should handle different payload types', async () => {
-      // Register endpoints for this pattern  
+      // Register endpoints for this pattern
       const source = await engine.registerEndpoint({
         name: 'Multi Source',
         type: 'api',
@@ -534,8 +559,14 @@ describe('EnterpriseIntegrationPatternsEngine - Focused Tests', () => {
         authentication: { type: 'api-key', credentials: { apiKey: 'test' } },
         dataFormat: { input: 'json' as const, output: 'json' as const },
         validation: { enabled: false },
-        status: { state: 'active' as const, lastCheck: new Date(), uptime: 100, avgResponseTime: 50, errorRate: 0 },
-        metadata: { tags: ['multi'], environment: 'development' as const }
+        status: {
+          state: 'active' as const,
+          lastCheck: new Date(),
+          uptime: 100,
+          avgResponseTime: 50,
+          errorRate: 0,
+        },
+        metadata: { tags: ['multi'], environment: 'development' as const },
       });
 
       const dest = await engine.registerEndpoint({
@@ -546,8 +577,14 @@ describe('EnterpriseIntegrationPatternsEngine - Focused Tests', () => {
         authentication: { type: 'api-key', credentials: { apiKey: 'test' } },
         dataFormat: { input: 'json' as const, output: 'json' as const },
         validation: { enabled: false },
-        status: { state: 'active' as const, lastCheck: new Date(), uptime: 100, avgResponseTime: 50, errorRate: 0 },
-        metadata: { tags: ['multi'], environment: 'development' as const }
+        status: {
+          state: 'active' as const,
+          lastCheck: new Date(),
+          uptime: 100,
+          avgResponseTime: 50,
+          errorRate: 0,
+        },
+        metadata: { tags: ['multi'], environment: 'development' as const },
       });
 
       const patternConfig = {
@@ -557,28 +594,28 @@ describe('EnterpriseIntegrationPatternsEngine - Focused Tests', () => {
         configuration: {
           source: {
             endpointId: source.id,
-            triggers: [{ type: 'manual' as const, config: {} }]
+            triggers: [{ type: 'manual' as const, config: {} }],
           },
           destination: {
-            endpointId: dest.id
+            endpointId: dest.id,
           },
           transformation: {
             enabled: false,
-            mappings: []
+            mappings: [],
           },
           errorHandling: {
-            strategy: 'ignore' as const
+            strategy: 'ignore' as const,
           },
           monitoring: {
             metricsEnabled: false,
             logging: {
               level: 'none' as const,
               includePayload: false,
-              retention: 1
-            }
-          }
+              retention: 1,
+            },
+          },
         },
-        createdBy: 'test-user'
+        createdBy: 'test-user',
       };
 
       const pattern = await engine.createPattern(patternConfig);
@@ -588,7 +625,7 @@ describe('EnterpriseIntegrationPatternsEngine - Focused Tests', () => {
         42,
         { object: 'payload' },
         [1, 2, 3],
-        null
+        null,
       ];
 
       for (const payload of payloads) {
@@ -608,20 +645,20 @@ describe('EnterpriseIntegrationPatternsEngine - Focused Tests', () => {
         payload: {
           original: { data: 'test' },
           headers: { 'Content-Type': 'application/json' },
-          metadata: { timestamp: Date.now() }
+          metadata: { timestamp: Date.now() },
         },
         metadata: {
           priority: 'normal',
           timestamp: Date.now(),
           correlationId: 'corr-001',
           retry: 0,
-          maxRetries: 3
+          maxRetries: 3,
         },
         routing: {
           pattern: 'direct',
           key: 'test.message',
-          exchange: 'test-exchange'
-        }
+          exchange: 'test-exchange',
+        },
       };
 
       expect(message.id).toBe('test-msg-001');
@@ -634,14 +671,19 @@ describe('EnterpriseIntegrationPatternsEngine - Focused Tests', () => {
 
     it('should track message status', () => {
       const messageId = 'status-test-msg';
-      
+
       // Initially, message should not exist
       const status = engine.getMessageStatus(messageId);
       expect(status).toBeUndefined();
     });
 
     it('should support different message priorities', () => {
-      const priorities: Array<'low' | 'normal' | 'high' | 'critical'> = ['low', 'normal', 'high', 'critical'];
+      const priorities: Array<'low' | 'normal' | 'high' | 'critical'> = [
+        'low',
+        'normal',
+        'high',
+        'critical',
+      ];
 
       priorities.forEach((priority, index) => {
         const message: IntegrationMessage = {
@@ -651,17 +693,17 @@ describe('EnterpriseIntegrationPatternsEngine - Focused Tests', () => {
           payload: {
             original: { priority },
             headers: {},
-            metadata: {}
+            metadata: {},
           },
           metadata: {
             priority,
             timestamp: Date.now(),
-            correlationId: `priority-corr-${index}`
+            correlationId: `priority-corr-${index}`,
           },
           routing: {
             pattern: 'direct',
-            key: 'test.priority'
-          }
+            key: 'test.priority',
+          },
         };
 
         expect(message.metadata.priority).toBe(priority);
@@ -685,8 +727,14 @@ describe('EnterpriseIntegrationPatternsEngine - Focused Tests', () => {
             dataFormat: { input: 'json', output: 'json' },
             validation: { enabled: false },
             metadata: { version: '1.0', tags: [], description: '' },
-            status: { state: 'active', lastCheck: new Date(), uptime: 100, avgResponseTime: 100, errorRate: 0 },
-            monitoring: { enabled: false }
+            status: {
+              state: 'active',
+              lastCheck: new Date(),
+              uptime: 100,
+              avgResponseTime: 100,
+              errorRate: 0,
+            },
+            monitoring: { enabled: false },
           })
         );
       }
@@ -707,38 +755,41 @@ describe('EnterpriseIntegrationPatternsEngine - Focused Tests', () => {
         description: 'Transformation for large datasets',
         version: '1.0',
         createdBy: 'test-user',
-        inputSchema: { 
+        inputSchema: {
           type: 'json' as const,
-          schema: '{"type": "object", "properties": {"items": {"type": "array"}}}' 
+          schema:
+            '{"type": "object", "properties": {"items": {"type": "array"}}}',
         },
-        outputSchema: { 
+        outputSchema: {
           type: 'json' as const,
-          schema: '{"type": "object", "properties": {"processed": {"type": "array"}}}' 
+          schema:
+            '{"type": "object", "properties": {"processed": {"type": "array"}}}',
         },
         mappings: [
           {
             id: 'items-mapping',
             source: 'items',
             target: 'processed',
-            required: true
-          }
+            required: true,
+          },
         ],
         functions: [],
         constants: {},
         lookupTables: {},
         testCases: [],
-        metadata: { tags: ['bulk'], environment: 'development' as const }
+        metadata: { tags: ['bulk'], environment: 'development' as const },
       };
 
-      const transformation = await engine.createTransformation(transformationConfig);
+      const transformation =
+        await engine.createTransformation(transformationConfig);
 
       // Create large test dataset
       const largeData = {
         items: Array.from({ length: 1000 }, (_, i) => ({
           id: i,
           value: `item-${i}`,
-          timestamp: Date.now()
-        }))
+          timestamp: Date.now(),
+        })),
       };
 
       const startTime = Date.now();
@@ -762,8 +813,14 @@ describe('EnterpriseIntegrationPatternsEngine - Focused Tests', () => {
         dataFormat: { input: 'json', output: 'json' },
         validation: { enabled: false },
         metadata: { version: '1.0', tags: [], description: '' },
-        status: { state: 'active', lastCheck: new Date(), uptime: 100, avgResponseTime: 100, errorRate: 0 },
-        monitoring: { enabled: false }
+        status: {
+          state: 'active',
+          lastCheck: new Date(),
+          uptime: 100,
+          avgResponseTime: 100,
+          errorRate: 0,
+        },
+        monitoring: { enabled: false },
       });
 
       await engine.createPattern({
@@ -774,7 +831,7 @@ describe('EnterpriseIntegrationPatternsEngine - Focused Tests', () => {
         triggers: [],
         actions: [],
         errorHandling: { retries: 0, backoff: 'none', fallback: 'ignore' },
-        createdBy: 'test-user'
+        createdBy: 'test-user',
       });
 
       // Verify resources exist
@@ -810,54 +867,54 @@ describe('EnterpriseIntegrationPatternsEngine - Focused Tests', () => {
           method: 'POST' as const,
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer token',
-            'X-API-Version': '2.0'
+            Authorization: 'Bearer token',
+            'X-API-Version': '2.0',
           },
           timeout: 30000,
           retries: 5,
           rateLimit: {
             requests: 1000,
-            window: 3600
-          }
+            window: 3600,
+          },
         },
         authentication: {
           type: 'oauth2' as const,
           credentials: {
             clientId: 'enterprise-client',
-            clientSecret: 'secret'
-          }
+            clientSecret: 'secret',
+          },
         },
         dataFormat: {
           input: 'json' as const,
           output: 'json' as const,
           encoding: 'utf8' as const,
-          compression: 'gzip' as const
+          compression: 'gzip' as const,
         },
         validation: {
           enabled: true,
           strict: true,
-          sanitization: true
+          sanitization: true,
         },
         metadata: {
           version: '2.0',
           tags: ['enterprise', 'production', 'high-availability'],
-          description: 'Enterprise-grade API endpoint with advanced features'
+          description: 'Enterprise-grade API endpoint with advanced features',
         },
         status: {
           state: 'active' as const,
           lastCheck: new Date(),
           uptime: 99.99,
           avgResponseTime: 250,
-          errorRate: 0.01
+          errorRate: 0.01,
         },
         monitoring: {
           enabled: true,
           metrics: ['latency', 'throughput', 'errors', 'success-rate'],
           alerting: {
             threshold: 500,
-            recipients: ['ops@company.com', 'dev@company.com']
-          }
-        }
+            recipients: ['ops@company.com', 'dev@company.com'],
+          },
+        },
       };
 
       const result = await engine.registerEndpoint(complexEndpoint);
@@ -880,38 +937,44 @@ describe('EnterpriseIntegrationPatternsEngine - Focused Tests', () => {
           routing: {
             strategy: 'content-based',
             rules: [
-              { condition: 'priority === "high"', target: 'high-priority-queue' },
+              {
+                condition: 'priority === "high"',
+                target: 'high-priority-queue',
+              },
               { condition: 'region === "us"', target: 'us-processing-service' },
-              { condition: 'amount > 10000', target: 'large-transaction-service' }
-            ]
+              {
+                condition: 'amount > 10000',
+                target: 'large-transaction-service',
+              },
+            ],
           },
           persistence: {
             enabled: true,
             durability: 'persistent',
-            replication: 3
+            replication: 3,
           },
           security: {
             encryption: 'AES-256',
             signing: true,
-            audit: true
-          }
+            audit: true,
+          },
         },
         triggers: [
           { type: 'message-received', condition: 'queue.enterprise-intake' },
-          { type: 'scheduled', condition: 'cron:0 */15 * * * *' }
+          { type: 'scheduled', condition: 'cron:0 */15 * * * *' },
         ],
         actions: [
           { type: 'evaluate-rules', processor: 'business-rules-engine' },
           { type: 'route-message', strategy: 'content-based' },
-          { type: 'audit-log', destination: 'enterprise-audit-service' }
+          { type: 'audit-log', destination: 'enterprise-audit-service' },
         ],
         errorHandling: {
           retries: 3,
           backoff: 'exponential',
           fallback: 'dead-letter-queue',
-          notifications: ['ops@company.com']
+          notifications: ['ops@company.com'],
         },
-        createdBy: 'enterprise-admin'
+        createdBy: 'enterprise-admin',
       };
 
       const result = await engine.createPattern(enterprisePattern);

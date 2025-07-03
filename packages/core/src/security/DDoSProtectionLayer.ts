@@ -2,10 +2,14 @@ import type { SecurityConfig } from '../types/Security.js';
 
 // Simple logger implementation
 const logger = {
-  info: (message: string, meta?: any) => console.log(`[INFO] ${message}`, meta || ''),
-  warn: (message: string, meta?: any) => console.warn(`[WARN] ${message}`, meta || ''),
-  error: (message: string, meta?: any) => console.error(`[ERROR] ${message}`, meta || ''),
-  debug: (message: string, meta?: any) => console.debug(`[DEBUG] ${message}`, meta || ''),
+  info: (message: string, meta?: any) =>
+    console.log(`[INFO] ${message}`, meta || ''),
+  warn: (message: string, meta?: any) =>
+    console.warn(`[WARN] ${message}`, meta || ''),
+  error: (message: string, meta?: any) =>
+    console.error(`[ERROR] ${message}`, meta || ''),
+  debug: (message: string, meta?: any) =>
+    console.debug(`[DEBUG] ${message}`, meta || ''),
 };
 
 interface ConnectionData {
@@ -24,7 +28,7 @@ interface TrafficPattern {
 
 /**
  * DDoS Protection Layer
- * 
+ *
  * Provides comprehensive protection against distributed denial of service attacks
  * with intelligent traffic analysis and automatic response.
  */
@@ -82,12 +86,17 @@ export class DDoSProtectionLayer {
     // Check if IP is already blocked
     if (this.blockedIPs.has(clientIP)) {
       const connectionData = this.connectionData.get(clientIP);
-      if (connectionData?.blockExpiry && Date.now() < connectionData.blockExpiry) {
+      if (
+        connectionData?.blockExpiry &&
+        Date.now() < connectionData.blockExpiry
+      ) {
         return {
           allowed: false,
           action: 'block',
           reason: 'IP temporarily blocked due to DDoS activity',
-          retryAfter: Math.ceil((connectionData.blockExpiry - Date.now()) / 1000)
+          retryAfter: Math.ceil(
+            (connectionData.blockExpiry - Date.now()) / 1000
+          ),
         };
       } else {
         // Block expired, remove from blocked list
@@ -146,7 +155,7 @@ export class DDoSProtectionLayer {
       this.connectionData.set(clientIP, {
         connections: 1,
         lastSeen: now,
-        blocked: false
+        blocked: false,
       });
     }
   }
@@ -154,7 +163,11 @@ export class DDoSProtectionLayer {
   /**
    * Update traffic patterns for analysis
    */
-  private updateTrafficPatterns(clientIP: string, endpoint: string, requestSize: number): void {
+  private updateTrafficPatterns(
+    clientIP: string,
+    endpoint: string,
+    requestSize: number
+  ): void {
     const pattern = this.trafficPatterns.get(clientIP);
     const now = Date.now();
 
@@ -163,7 +176,7 @@ export class DDoSProtectionLayer {
       pattern.requestsPerSecond = this.calculateRequestsPerSecond(clientIP);
       pattern.averageSize = (pattern.averageSize + requestSize) / 2;
       pattern.uniqueEndpoints.add(endpoint);
-      
+
       // Check for suspicious patterns
       if (pattern.requestsPerSecond > 100) {
         pattern.suspiciousPatterns.push('high_frequency');
@@ -171,7 +184,8 @@ export class DDoSProtectionLayer {
       if (pattern.uniqueEndpoints.size > 50) {
         pattern.suspiciousPatterns.push('endpoint_scanning');
       }
-      if (requestSize > 1024 * 1024) { // 1MB
+      if (requestSize > 1024 * 1024) {
+        // 1MB
         pattern.suspiciousPatterns.push('large_payload');
       }
     } else {
@@ -179,7 +193,7 @@ export class DDoSProtectionLayer {
         requestsPerSecond: 1,
         averageSize: requestSize,
         uniqueEndpoints: new Set([endpoint]),
-        suspiciousPatterns: []
+        suspiciousPatterns: [],
       });
     }
   }
@@ -207,7 +221,7 @@ export class DDoSProtectionLayer {
         allowed: false,
         action: 'block',
         reason: `Request frequency too high: ${requestsPerSecond} req/s`,
-        retryAfter: this.config.ddosProtection.blockDurationMs / 1000
+        retryAfter: this.config.ddosProtection.blockDurationMs / 1000,
       };
     }
 
@@ -216,7 +230,7 @@ export class DDoSProtectionLayer {
       return {
         allowed: false,
         action: 'throttle',
-        reason: 'Request frequency elevated - throttling applied'
+        reason: 'Request frequency elevated - throttling applied',
       };
     }
 
@@ -244,7 +258,7 @@ export class DDoSProtectionLayer {
       return {
         allowed: false,
         action: 'block',
-        reason: `Suspicious traffic patterns detected (score: ${suspiciousScore.toFixed(2)})`
+        reason: `Suspicious traffic patterns detected (score: ${suspiciousScore.toFixed(2)})`,
       };
     }
 
@@ -253,7 +267,7 @@ export class DDoSProtectionLayer {
       return {
         allowed: false,
         action: 'throttle',
-        reason: 'Potentially suspicious traffic patterns'
+        reason: 'Potentially suspicious traffic patterns',
       };
     }
 
@@ -270,17 +284,19 @@ export class DDoSProtectionLayer {
   } {
     const now = Date.now();
     const timeSinceReset = now - this.lastResetTime;
-    const globalRequestsPerSecond = this.globalRequestCount / (timeSinceReset / 1000);
+    const globalRequestsPerSecond =
+      this.globalRequestCount / (timeSinceReset / 1000);
 
     // Check if we should enter emergency mode
-    if (globalRequestsPerSecond > 10000) { // 10k req/s global threshold
+    if (globalRequestsPerSecond > 10000) {
+      // 10k req/s global threshold
       if (!this.emergencyMode) {
         this.activateEmergencyMode();
       }
       return {
         allowed: false,
         action: 'emergency',
-        reason: 'System under heavy load - emergency mode activated'
+        reason: 'System under heavy load - emergency mode activated',
       };
     }
 
@@ -299,7 +315,7 @@ export class DDoSProtectionLayer {
       /bot|crawler|spider|scraper/i,
       /attack|hack|exploit/i,
       /stress|load|test|benchmark/i,
-      /^$/,  // Empty user agent
+      /^$/, // Empty user agent
       /.{200,}/, // Very long user agent
     ];
 
@@ -308,7 +324,7 @@ export class DDoSProtectionLayer {
         return {
           allowed: false,
           action: 'throttle',
-          reason: 'Suspicious user agent pattern detected'
+          reason: 'Suspicious user agent pattern detected',
         };
       }
     }
@@ -331,12 +347,13 @@ export class DDoSProtectionLayer {
 
     // In emergency mode, be very restrictive
     const requestsPerSecond = this.calculateRequestsPerSecond(clientIP);
-    
-    if (requestsPerSecond > 5) { // Much lower threshold in emergency mode
+
+    if (requestsPerSecond > 5) {
+      // Much lower threshold in emergency mode
       return {
         allowed: false,
         action: 'block',
-        reason: 'Emergency mode active - strict limits enforced'
+        reason: 'Emergency mode active - strict limits enforced',
       };
     }
 
@@ -344,7 +361,7 @@ export class DDoSProtectionLayer {
       return {
         allowed: false,
         action: 'throttle',
-        reason: 'Emergency mode active - throttling applied'
+        reason: 'Emergency mode active - throttling applied',
       };
     }
 
@@ -360,9 +377,9 @@ export class DDoSProtectionLayer {
 
     const now = Date.now();
     const timeDiff = (now - connectionData.lastSeen) / 1000;
-    
+
     if (timeDiff === 0) return connectionData.connections;
-    
+
     return connectionData.connections / Math.max(timeDiff, 1);
   }
 
@@ -406,11 +423,12 @@ export class DDoSProtectionLayer {
    */
   private blockIP(clientIP: string, reason: string): void {
     this.blockedIPs.add(clientIP);
-    
+
     const connectionData = this.connectionData.get(clientIP);
     if (connectionData) {
       connectionData.blocked = true;
-      connectionData.blockExpiry = Date.now() + this.config.ddosProtection.blockDurationMs;
+      connectionData.blockExpiry =
+        Date.now() + this.config.ddosProtection.blockDurationMs;
     }
 
     logger.warn('IP blocked for DDoS activity', { clientIP, reason });
@@ -421,7 +439,7 @@ export class DDoSProtectionLayer {
    */
   public unblockIP(clientIP: string): void {
     this.blockedIPs.delete(clientIP);
-    
+
     const connectionData = this.connectionData.get(clientIP);
     if (connectionData) {
       connectionData.blocked = false;
@@ -437,7 +455,7 @@ export class DDoSProtectionLayer {
   private activateEmergencyMode(): void {
     this.emergencyMode = true;
     logger.error('EMERGENCY MODE ACTIVATED - System under DDoS attack');
-    
+
     // In emergency mode, temporarily block new IPs more aggressively
     setTimeout(() => {
       if (this.emergencyMode) {
@@ -463,21 +481,29 @@ export class DDoSProtectionLayer {
     emergencyMode: boolean;
     globalRequestsPerSecond: number;
     topSuspiciousIPs: Array<{ ip: string; score: number; reason: string }>;
-    protectionEvents: Array<{ timestamp: Date; ip: string; action: string; reason: string }>;
+    protectionEvents: Array<{
+      timestamp: Date;
+      ip: string;
+      action: string;
+      reason: string;
+    }>;
   } {
     const now = Date.now();
     const timeSinceReset = now - this.lastResetTime;
-    const globalRequestsPerSecond = this.globalRequestCount / (timeSinceReset / 1000);
+    const globalRequestsPerSecond =
+      this.globalRequestCount / (timeSinceReset / 1000);
 
     // Calculate top suspicious IPs
-    const suspiciousIPs: Array<{ ip: string; score: number; reason: string }> = [];
+    const suspiciousIPs: Array<{ ip: string; score: number; reason: string }> =
+      [];
     for (const [ip, pattern] of this.trafficPatterns) {
       const score = this.calculateSuspiciousScore(pattern);
       if (score > 0.3) {
         suspiciousIPs.push({
           ip,
           score,
-          reason: pattern.suspiciousPatterns.join(', ') || 'High request frequency'
+          reason:
+            pattern.suspiciousPatterns.join(', ') || 'High request frequency',
         });
       }
     }
@@ -490,7 +516,7 @@ export class DDoSProtectionLayer {
       emergencyMode: this.emergencyMode,
       globalRequestsPerSecond: Math.round(globalRequestsPerSecond * 100) / 100,
       topSuspiciousIPs: suspiciousIPs.slice(0, 10),
-      protectionEvents: [] // Would be populated with actual events
+      protectionEvents: [], // Would be populated with actual events
     };
   }
 
@@ -514,7 +540,7 @@ export class DDoSProtectionLayer {
     // Reset global counters every minute
     setInterval(() => {
       if (!this.isActive) return;
-      
+
       this.globalRequestCount = 0;
       this.lastResetTime = Date.now();
     }, 60000);
@@ -522,14 +548,14 @@ export class DDoSProtectionLayer {
     // Cleanup expired data every 5 minutes
     setInterval(() => {
       if (!this.isActive) return;
-      
+
       this.cleanupExpiredData();
     }, 300000);
 
     // Monitor system health every 30 seconds
     setInterval(() => {
       if (!this.isActive) return;
-      
+
       this.monitorSystemHealth();
     }, 30000);
   }
@@ -564,7 +590,7 @@ export class DDoSProtectionLayer {
     if (keysToRemove.length > 0) {
       logger.debug('DDoS protection cleanup completed', {
         removedConnections: keysToRemove.length,
-        activeConnections: this.connectionData.size
+        activeConnections: this.connectionData.size,
       });
     }
   }
@@ -574,7 +600,7 @@ export class DDoSProtectionLayer {
    */
   private monitorSystemHealth(): void {
     const stats = this.getStatistics();
-    
+
     // Auto-deactivate emergency mode if traffic normalizes
     if (this.emergencyMode && stats.globalRequestsPerSecond < 1000) {
       this.deactivateEmergencyMode();
@@ -585,7 +611,7 @@ export class DDoSProtectionLayer {
       activeConnections: stats.activeConnections,
       blockedIPs: stats.blockedIPs,
       emergencyMode: stats.emergencyMode,
-      globalRPS: stats.globalRequestsPerSecond
+      globalRPS: stats.globalRequestsPerSecond,
     });
   }
 }

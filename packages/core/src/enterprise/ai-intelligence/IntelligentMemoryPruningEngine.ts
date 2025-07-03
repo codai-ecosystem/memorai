@@ -1,14 +1,14 @@
 /**
  * @fileoverview Intelligent Memory Pruning Engine - Advanced AI system for
  * smart memory lifecycle management and optimization.
- * 
+ *
  * Implements sophisticated pruning algorithms including:
  * - Multi-criteria memory importance scoring and lifecycle management
  * - Intelligent decay algorithms with temporal and usage-based weighting
  * - Content quality analysis with semantic and structural evaluation
  * - User behavior analysis for personalized memory retention
  * - Automated archival and cleanup with recovery mechanisms
- * 
+ *
  * @author Memorai AI Intelligence Team
  * @version 3.1.0
  * @since 2025-07-03
@@ -30,7 +30,7 @@ export const MemoryImportanceScoreSchema = z.object({
     relevance: z.number().min(0).max(1),
     uniqueness: z.number().min(0).max(1),
     connections: z.number().min(0).max(1),
-    userValue: z.number().min(0).max(1)
+    userValue: z.number().min(0).max(1),
   }),
   weights: z.object({
     recency: z.number(),
@@ -39,11 +39,11 @@ export const MemoryImportanceScoreSchema = z.object({
     relevance: z.number(),
     uniqueness: z.number(),
     connections: z.number(),
-    userValue: z.number()
+    userValue: z.number(),
   }),
   lastCalculated: z.date(),
   trend: z.enum(['increasing', 'stable', 'decreasing']),
-  confidence: z.number().min(0).max(1)
+  confidence: z.number().min(0).max(1),
 });
 
 /**
@@ -55,27 +55,45 @@ export const PruningPolicySchema = z.object({
   description: z.string(),
   enabled: z.boolean(),
   priority: z.number(),
-  conditions: z.array(z.object({
-    type: z.enum(['age', 'access_count', 'importance_score', 'storage_size', 'content_quality', 'user_preference']),
-    operator: z.enum(['>', '<', '>=', '<=', '==', '!=']),
-    value: z.union([z.number(), z.string(), z.boolean()]),
-    weight: z.number()
-  })),
-  actions: z.array(z.object({
-    type: z.enum(['delete', 'archive', 'compress', 'migrate', 'tag', 'downgrade']),
-    parameters: z.record(z.any())
-  })),
+  conditions: z.array(
+    z.object({
+      type: z.enum([
+        'age',
+        'access_count',
+        'importance_score',
+        'storage_size',
+        'content_quality',
+        'user_preference',
+      ]),
+      operator: z.enum(['>', '<', '>=', '<=', '==', '!=']),
+      value: z.union([z.number(), z.string(), z.boolean()]),
+      weight: z.number(),
+    })
+  ),
+  actions: z.array(
+    z.object({
+      type: z.enum([
+        'delete',
+        'archive',
+        'compress',
+        'migrate',
+        'tag',
+        'downgrade',
+      ]),
+      parameters: z.record(z.any()),
+    })
+  ),
   schedule: z.object({
     frequency: z.enum(['continuous', 'hourly', 'daily', 'weekly', 'monthly']),
     maxBatchSize: z.number(),
-    throttle: z.number() // ms between operations
+    throttle: z.number(), // ms between operations
   }),
   safeguards: z.object({
     requireConfirmation: z.boolean(),
     enableRecovery: z.boolean(),
     retentionPeriod: z.number(), // days
-    backupBeforeDelete: z.boolean()
-  })
+    backupBeforeDelete: z.boolean(),
+  }),
 });
 
 /**
@@ -95,7 +113,7 @@ export const PruningConfigSchema = z.object({
   enableRecovery: z.boolean().default(true),
   recoveryPeriod: z.number().default(604800000), // 7 days
   compressionThreshold: z.number().default(0.5),
-  archivalThreshold: z.number().default(0.2)
+  archivalThreshold: z.number().default(0.2),
 });
 
 /**
@@ -108,33 +126,33 @@ export const MemoryAnalyticsSchema = z.object({
     complexity: z.number(),
     readability: z.number(),
     uniqueness: z.number(),
-    structure: z.number()
+    structure: z.number(),
   }),
   usageMetrics: z.object({
     accessCount: z.number(),
     lastAccessed: z.date(),
     avgAccessInterval: z.number(),
     accessPattern: z.enum(['regular', 'burst', 'declining', 'random']),
-    userInteraction: z.number()
+    userInteraction: z.number(),
   }),
   relationshipMetrics: z.object({
     connections: z.number(),
     centrality: z.number(),
     clustering: z.number(),
-    influence: z.number()
+    influence: z.number(),
   }),
   temporalMetrics: z.object({
     age: z.number(),
     staleness: z.number(),
     relevancyDecay: z.number(),
-    seasonality: z.number()
+    seasonality: z.number(),
   }),
   qualityMetrics: z.object({
     accuracy: z.number(),
     completeness: z.number(),
     consistency: z.number(),
-    reliability: z.number()
-  })
+    reliability: z.number(),
+  }),
 });
 
 export type MemoryImportanceScore = z.infer<typeof MemoryImportanceScoreSchema>;
@@ -224,7 +242,7 @@ export interface RecoveryRecord {
 
 /**
  * Advanced Intelligent Memory Pruning Engine
- * 
+ *
  * Provides smart memory lifecycle management with:
  * - Multi-dimensional importance scoring and trend analysis
  * - Policy-based pruning with configurable rules and safeguards
@@ -254,7 +272,7 @@ export default class IntelligentMemoryPruningEngine extends EventEmitter {
 
   constructor(config?: Partial<PruningConfig>) {
     super();
-    
+
     this.config = PruningConfigSchema.parse(config || {});
     this.policies = new Map();
     this.importanceScores = new Map();
@@ -267,7 +285,7 @@ export default class IntelligentMemoryPruningEngine extends EventEmitter {
       avgImportanceScore: 0,
       userSatisfactionScore: 0,
       recoveryRequests: 0,
-      successfulRecoveries: 0
+      successfulRecoveries: 0,
     };
 
     this.initializeDefaultPolicies();
@@ -278,11 +296,13 @@ export default class IntelligentMemoryPruningEngine extends EventEmitter {
   /**
    * Analyze and score memory importance
    */
-  public async analyzeMemoryImportance(memory: MemoryItem): Promise<MemoryImportanceScore> {
+  public async analyzeMemoryImportance(
+    memory: MemoryItem
+  ): Promise<MemoryImportanceScore> {
     try {
       this.emit('importanceAnalysisStarted', {
         memoryId: memory.id,
-        timestamp: new Date()
+        timestamp: new Date(),
       });
 
       // Calculate individual component scores
@@ -297,16 +317,16 @@ export default class IntelligentMemoryPruningEngine extends EventEmitter {
       // Define weights (can be customized per user/context)
       const weights = {
         recency: 0.15,
-        frequency: 0.20,
-        quality: 0.20,
+        frequency: 0.2,
+        quality: 0.2,
         relevance: 0.15,
-        uniqueness: 0.10,
-        connections: 0.10,
-        userValue: 0.10
+        uniqueness: 0.1,
+        connections: 0.1,
+        userValue: 0.1,
       };
 
       // Calculate overall score
-      const overallScore = 
+      const overallScore =
         recencyScore * weights.recency +
         frequencyScore * weights.frequency +
         qualityScore * weights.quality +
@@ -326,7 +346,7 @@ export default class IntelligentMemoryPruningEngine extends EventEmitter {
         relevance: relevanceScore,
         uniqueness: uniquenessScore,
         connections: connectionsScore,
-        userValue: userValueScore
+        userValue: userValueScore,
       });
 
       const importanceScore: MemoryImportanceScore = {
@@ -339,12 +359,12 @@ export default class IntelligentMemoryPruningEngine extends EventEmitter {
           relevance: relevanceScore,
           uniqueness: uniquenessScore,
           connections: connectionsScore,
-          userValue: userValueScore
+          userValue: userValueScore,
         },
         weights,
         lastCalculated: new Date(),
         trend,
-        confidence
+        confidence,
       };
 
       // Store for future reference
@@ -354,16 +374,15 @@ export default class IntelligentMemoryPruningEngine extends EventEmitter {
         memoryId: memory.id,
         score: overallScore,
         trend,
-        confidence
+        confidence,
       });
 
       return importanceScore;
-
     } catch (error) {
       this.emit('error', {
         operation: 'analyzeMemoryImportance',
         memoryId: memory.id,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
       throw error;
     }
@@ -378,24 +397,30 @@ export default class IntelligentMemoryPruningEngine extends EventEmitter {
     dryRun: boolean = false
   ): Promise<PruningResult> {
     const startTime = Date.now();
-    
+
     try {
       this.emit('pruningStarted', {
         memoryCount: memories.length,
         policyId,
         dryRun,
-        timestamp: new Date()
+        timestamp: new Date(),
       });
 
       // Analyze all memories if not already done
-      const memoriesToAnalyze = memories.filter(m => !this.importanceScores.has(m.id));
+      const memoriesToAnalyze = memories.filter(
+        m => !this.importanceScores.has(m.id)
+      );
       if (memoriesToAnalyze.length > 0) {
-        await Promise.all(memoriesToAnalyze.map(m => this.analyzeMemoryImportance(m)));
+        await Promise.all(
+          memoriesToAnalyze.map(m => this.analyzeMemoryImportance(m))
+        );
       }
 
       // Get applicable policies
-      const policies = policyId 
-        ? [this.policies.get(policyId)].filter((p): p is PruningPolicy => p !== undefined)
+      const policies = policyId
+        ? [this.policies.get(policyId)].filter(
+            (p): p is PruningPolicy => p !== undefined
+          )
         : Array.from(this.policies.values()).filter(p => p.enabled);
 
       if (policies.length === 0) {
@@ -420,13 +445,16 @@ export default class IntelligentMemoryPruningEngine extends EventEmitter {
         compressed: 0,
         migrated: 0,
         storageFreed: 0,
-        processingTime: 0
+        processingTime: 0,
       };
 
       if (!dryRun) {
         for (const decision of decisions) {
-          await this.executePruningDecision(decision, memories.find(m => m.id === decision.memoryId)!);
-          
+          await this.executePruningDecision(
+            decision,
+            memories.find(m => m.id === decision.memoryId)!
+          );
+
           // Update statistics
           statistics[decision.action as keyof typeof statistics]++;
           if (decision.action === 'delete' || decision.action === 'archive') {
@@ -448,13 +476,19 @@ export default class IntelligentMemoryPruningEngine extends EventEmitter {
       statistics.processingTime = Date.now() - startTime;
 
       // Calculate performance metrics
-      const performance = await this.calculatePruningPerformance(decisions, memories);
+      const performance = await this.calculatePruningPerformance(
+        decisions,
+        memories
+      );
 
       // Generate warnings
       const warnings = this.generatePruningWarnings(decisions, memories);
 
       // Generate recommendations
-      const recommendations = await this.generatePruningRecommendations(statistics, performance);
+      const recommendations = await this.generatePruningRecommendations(
+        statistics,
+        performance
+      );
 
       const result: PruningResult = {
         totalProcessed: memories.length,
@@ -462,7 +496,7 @@ export default class IntelligentMemoryPruningEngine extends EventEmitter {
         statistics,
         performance,
         warnings,
-        recommendations
+        recommendations,
       };
 
       // Store result in history
@@ -470,7 +504,7 @@ export default class IntelligentMemoryPruningEngine extends EventEmitter {
         this.pruningHistory.push({
           timestamp: new Date(),
           result,
-          policy: policyId || 'multiple'
+          policy: policyId || 'multiple',
         });
 
         // Update performance metrics
@@ -480,17 +514,16 @@ export default class IntelligentMemoryPruningEngine extends EventEmitter {
       this.emit('pruningCompleted', {
         result,
         dryRun,
-        policyId
+        policyId,
       });
 
       return result;
-
     } catch (error) {
       this.emit('error', {
         operation: 'executePruning',
         memoryCount: memories.length,
         policyId,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
       throw error;
     }
@@ -506,25 +539,25 @@ export default class IntelligentMemoryPruningEngine extends EventEmitter {
   }> {
     try {
       const recoveryRecord = this.recoveryRecords.get(memoryId);
-      
+
       if (!recoveryRecord) {
         return {
           success: false,
-          reason: 'Memory not found in recovery records'
+          reason: 'Memory not found in recovery records',
         };
       }
 
       if (!recoveryRecord.recoverable) {
         return {
           success: false,
-          reason: 'Memory is not recoverable'
+          reason: 'Memory is not recoverable',
         };
       }
 
       if (new Date() > recoveryRecord.expirationDate) {
         return {
           success: false,
-          reason: 'Recovery period has expired'
+          reason: 'Recovery period has expired',
         };
       }
 
@@ -538,7 +571,7 @@ export default class IntelligentMemoryPruningEngine extends EventEmitter {
         accessCount: recoveryRecord.metadata.accessCount || 0,
         size: recoveryRecord.originalContent.length,
         tags: recoveryRecord.metadata.tags || [],
-        userId: recoveryRecord.metadata.userId || 'unknown'
+        userId: recoveryRecord.metadata.userId || 'unknown',
       };
 
       // Remove from recovery records
@@ -550,19 +583,18 @@ export default class IntelligentMemoryPruningEngine extends EventEmitter {
       this.emit('memoryRecovered', {
         memoryId,
         originalDeletionDate: recoveryRecord.deletionDate,
-        recoveryDate: new Date()
+        recoveryDate: new Date(),
       });
 
       return {
         success: true,
-        memory: restoredMemory
+        memory: restoredMemory,
       };
-
     } catch (error) {
       this.emit('error', {
         operation: 'recoverMemory',
         memoryId,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
       throw error;
     }
@@ -573,17 +605,17 @@ export default class IntelligentMemoryPruningEngine extends EventEmitter {
    */
   public createPruningPolicy(policy: Omit<PruningPolicy, 'id'>): string {
     const policyId = `policy_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
+
     const fullPolicy: PruningPolicy = {
       id: policyId,
-      ...policy
+      ...policy,
     };
 
     this.policies.set(policyId, fullPolicy);
 
     this.emit('policyCreated', {
       policyId,
-      policy: fullPolicy
+      policy: fullPolicy,
     });
 
     return policyId;
@@ -594,8 +626,9 @@ export default class IntelligentMemoryPruningEngine extends EventEmitter {
    */
   private calculateRecencyScore(memory: MemoryItem): number {
     const now = Date.now();
-    const daysSinceAccess = (now - memory.lastAccessed.getTime()) / (1000 * 60 * 60 * 24);
-    
+    const daysSinceAccess =
+      (now - memory.lastAccessed.getTime()) / (1000 * 60 * 60 * 24);
+
     // Exponential decay: score decreases as days increase
     return Math.exp(-daysSinceAccess / 30); // 30-day half-life
   }
@@ -606,10 +639,10 @@ export default class IntelligentMemoryPruningEngine extends EventEmitter {
   private calculateFrequencyScore(memory: MemoryItem): number {
     const age = Date.now() - memory.created.getTime();
     const ageInDays = age / (1000 * 60 * 60 * 24);
-    
+
     // Access frequency normalized by age
     const accessFrequency = memory.accessCount / Math.max(1, ageInDays);
-    
+
     // Normalize to 0-1 scale (assuming max 1 access per day is high)
     return Math.min(1, accessFrequency);
   }
@@ -653,9 +686,9 @@ export default class IntelligentMemoryPruningEngine extends EventEmitter {
     // For now, use a simple heuristic based on recent access patterns
     const recentAccessScore = this.calculateRecencyScore(memory);
     const frequencyScore = this.calculateFrequencyScore(memory);
-    
+
     // Combine recency and frequency for relevance
-    return (recentAccessScore * 0.6 + frequencyScore * 0.4);
+    return recentAccessScore * 0.6 + frequencyScore * 0.4;
   }
 
   /**
@@ -665,10 +698,10 @@ export default class IntelligentMemoryPruningEngine extends EventEmitter {
     // Simple uniqueness based on content length and complexity
     const contentComplexity = this.calculateContentComplexity(memory.content);
     const hasUniqueIdentifiers = /\b\d{3,}\b/.test(memory.content); // Numbers, IDs, etc.
-    
+
     let score = contentComplexity;
     if (hasUniqueIdentifiers) score += 0.2;
-    
+
     return Math.min(1, score);
   }
 
@@ -677,8 +710,9 @@ export default class IntelligentMemoryPruningEngine extends EventEmitter {
    */
   private async calculateConnectionsScore(memory: MemoryItem): Promise<number> {
     // Simple heuristic: memories with more metadata connections are more valuable
-    const connectionCount = Object.keys(memory.metadata).length + (memory.tags?.length || 0);
-    
+    const connectionCount =
+      Object.keys(memory.metadata).length + (memory.tags?.length || 0);
+
     // Normalize (assuming 10 connections is high)
     return Math.min(1, connectionCount / 10);
   }
@@ -690,22 +724,25 @@ export default class IntelligentMemoryPruningEngine extends EventEmitter {
     // Combine access patterns with explicit user signals
     const accessScore = this.calculateFrequencyScore(memory);
     const recencyScore = this.calculateRecencyScore(memory);
-    
+
     // Check for explicit user signals (bookmarks, favorites, etc.)
-    const hasUserSignals = memory.metadata.bookmarked || 
-                          memory.metadata.favorite || 
-                          memory.metadata.important;
-    
+    const hasUserSignals =
+      memory.metadata.bookmarked ||
+      memory.metadata.favorite ||
+      memory.metadata.important;
+
     let score = (accessScore + recencyScore) / 2;
     if (hasUserSignals) score = Math.min(1, score + 0.3);
-    
+
     return score;
   }
 
   /**
    * Calculate importance trend
    */
-  private async calculateImportanceTrend(memoryId: string): Promise<'increasing' | 'stable' | 'decreasing'> {
+  private async calculateImportanceTrend(
+    memoryId: string
+  ): Promise<'increasing' | 'stable' | 'decreasing'> {
     // Simple trend calculation based on recent access pattern
     // In a real implementation, you'd analyze historical importance scores
     return 'stable';
@@ -718,8 +755,10 @@ export default class IntelligentMemoryPruningEngine extends EventEmitter {
     // Confidence based on variance of component scores
     const scores = Object.values(components);
     const mean = scores.reduce((sum, score) => sum + score, 0) / scores.length;
-    const variance = scores.reduce((sum, score) => sum + Math.pow(score - mean, 2), 0) / scores.length;
-    
+    const variance =
+      scores.reduce((sum, score) => sum + Math.pow(score - mean, 2), 0) /
+      scores.length;
+
     // Lower variance = higher confidence
     return Math.max(0.3, 1 - variance);
   }
@@ -727,17 +766,24 @@ export default class IntelligentMemoryPruningEngine extends EventEmitter {
   /**
    * Make pruning decision for a memory
    */
-  private async makePruningDecision(memory: MemoryItem, policies: PruningPolicy[]): Promise<PruningDecision> {
+  private async makePruningDecision(
+    memory: MemoryItem,
+    policies: PruningPolicy[]
+  ): Promise<PruningDecision> {
     const importanceScore = this.importanceScores.get(memory.id);
-    
+
     if (!importanceScore) {
       throw new Error(`No importance score found for memory ${memory.id}`);
     }
 
     // Evaluate against each policy
     for (const policy of policies) {
-      const evaluation = await this.evaluatePolicy(memory, importanceScore, policy);
-      
+      const evaluation = await this.evaluatePolicy(
+        memory,
+        importanceScore,
+        policy
+      );
+
       if (evaluation.matches) {
         return {
           memoryId: memory.id,
@@ -748,7 +794,7 @@ export default class IntelligentMemoryPruningEngine extends EventEmitter {
           policy: policy.id,
           scheduledFor: new Date(),
           recoverable: policy.safeguards.enableRecovery,
-          backupCreated: policy.safeguards.backupBeforeDelete
+          backupCreated: policy.safeguards.backupBeforeDelete,
         };
       }
     }
@@ -763,7 +809,7 @@ export default class IntelligentMemoryPruningEngine extends EventEmitter {
       policy: 'default',
       scheduledFor: new Date(),
       recoverable: false,
-      backupCreated: false
+      backupCreated: false,
     };
   }
 
@@ -771,8 +817,8 @@ export default class IntelligentMemoryPruningEngine extends EventEmitter {
    * Evaluate policy against memory
    */
   private async evaluatePolicy(
-    memory: MemoryItem, 
-    importanceScore: MemoryImportanceScore, 
+    memory: MemoryItem,
+    importanceScore: MemoryImportanceScore,
     policy: PruningPolicy
   ): Promise<{
     matches: boolean;
@@ -785,8 +831,12 @@ export default class IntelligentMemoryPruningEngine extends EventEmitter {
 
     for (const condition of policy.conditions) {
       totalWeight += condition.weight;
-      
-      const matches = await this.evaluateCondition(memory, importanceScore, condition);
+
+      const matches = await this.evaluateCondition(
+        memory,
+        importanceScore,
+        condition
+      );
       if (matches) {
         matchedWeight += condition.weight;
       }
@@ -800,7 +850,7 @@ export default class IntelligentMemoryPruningEngine extends EventEmitter {
         matches: true,
         action: policy.actions[0].type as any,
         reason: `Matched policy: ${policy.name}`,
-        confidence: matchRatio
+        confidence: matchRatio,
       };
     }
 
@@ -808,7 +858,7 @@ export default class IntelligentMemoryPruningEngine extends EventEmitter {
       matches: false,
       action: 'keep',
       reason: 'Conditions not met',
-      confidence: 1 - matchRatio
+      confidence: 1 - matchRatio,
     };
   }
 
@@ -817,21 +867,25 @@ export default class IntelligentMemoryPruningEngine extends EventEmitter {
    */
   private hasStructuredContent(content: string): boolean {
     // Check for JSON, XML, markdown headers, lists, etc.
-    return /^[\{\[]/.test(content.trim()) || // JSON/Array
-           /<\w+>/.test(content) || // XML/HTML
-           /^#+\s/.test(content) || // Markdown headers
-           /^\*\s|\d+\.\s/m.test(content); // Lists
+    return (
+      /^[\{\[]/.test(content.trim()) || // JSON/Array
+      /<\w+>/.test(content) || // XML/HTML
+      /^#+\s/.test(content) || // Markdown headers
+      /^\*\s|\d+\.\s/m.test(content)
+    ); // Lists
   }
 
   private calculateContentComplexity(content: string): number {
     const uniqueWords = new Set(content.toLowerCase().split(/\s+/)).size;
     const totalWords = content.split(/\s+/).length;
-    const avgWordLength = content.split(/\s+/).reduce((sum, word) => sum + word.length, 0) / totalWords;
-    
+    const avgWordLength =
+      content.split(/\s+/).reduce((sum, word) => sum + word.length, 0) /
+      totalWords;
+
     // Normalize complexity score
     const wordDiversity = uniqueWords / totalWords;
     const lengthComplexity = Math.min(1, avgWordLength / 10);
-    
+
     return (wordDiversity + lengthComplexity) / 2;
   }
 
@@ -850,26 +904,26 @@ export default class IntelligentMemoryPruningEngine extends EventEmitter {
             type: 'importance_score' as const,
             operator: '<' as const,
             value: 0.2,
-            weight: 1.0
-          }
+            weight: 1.0,
+          },
         ],
         actions: [
           {
             type: 'delete' as const,
-            parameters: {}
-          }
+            parameters: {},
+          },
         ],
         schedule: {
           frequency: 'daily' as const,
           maxBatchSize: 50,
-          throttle: 1000
+          throttle: 1000,
         },
         safeguards: {
           requireConfirmation: false,
           enableRecovery: true,
           retentionPeriod: 7,
-          backupBeforeDelete: true
-        }
+          backupBeforeDelete: true,
+        },
       },
       {
         name: 'Archive Old Memories',
@@ -881,39 +935,39 @@ export default class IntelligentMemoryPruningEngine extends EventEmitter {
             type: 'age' as const,
             operator: '>' as const,
             value: 31536000000, // 1 year in ms
-            weight: 0.7
+            weight: 0.7,
           },
           {
             type: 'access_count' as const,
             operator: '<' as const,
             value: 5,
-            weight: 0.3
-          }
+            weight: 0.3,
+          },
         ],
         actions: [
           {
             type: 'archive' as const,
-            parameters: {}
-          }
+            parameters: {},
+          },
         ],
         schedule: {
           frequency: 'weekly' as const,
           maxBatchSize: 100,
-          throttle: 500
+          throttle: 500,
         },
         safeguards: {
           requireConfirmation: false,
           enableRecovery: true,
           retentionPeriod: 30,
-          backupBeforeDelete: false
-        }
-      }
+          backupBeforeDelete: false,
+        },
+      },
     ];
 
     for (const policyData of defaultPolicies) {
       const policy: PruningPolicy = {
         id: `default_${policyData.name.toLowerCase().replace(/\s+/g, '_')}`,
-        ...policyData
+        ...policyData,
       };
       this.policies.set(policy.id, policy);
     }
@@ -973,15 +1027,42 @@ export default class IntelligentMemoryPruningEngine extends EventEmitter {
   }
 
   // Placeholder implementations for complex methods
-  private async evaluateCondition(memory: MemoryItem, score: MemoryImportanceScore, condition: any): Promise<boolean> { return Math.random() > 0.5; }
-  private async executePruningDecision(decision: PruningDecision, memory: MemoryItem): Promise<void> {}
-  private async calculatePruningPerformance(decisions: PruningDecision[], memories: MemoryItem[]): Promise<any> {
-    return { accuracyScore: 0.85, efficiencyScore: 0.9, userSatisfactionScore: 0.8 };
+  private async evaluateCondition(
+    memory: MemoryItem,
+    score: MemoryImportanceScore,
+    condition: any
+  ): Promise<boolean> {
+    return Math.random() > 0.5;
   }
-  private generatePruningWarnings(decisions: PruningDecision[], memories: MemoryItem[]): any[] { return []; }
-  private async generatePruningRecommendations(statistics: any, performance: any): Promise<any[]> { return []; }
+  private async executePruningDecision(
+    decision: PruningDecision,
+    memory: MemoryItem
+  ): Promise<void> {}
+  private async calculatePruningPerformance(
+    decisions: PruningDecision[],
+    memories: MemoryItem[]
+  ): Promise<any> {
+    return {
+      accuracyScore: 0.85,
+      efficiencyScore: 0.9,
+      userSatisfactionScore: 0.8,
+    };
+  }
+  private generatePruningWarnings(
+    decisions: PruningDecision[],
+    memories: MemoryItem[]
+  ): any[] {
+    return [];
+  }
+  private async generatePruningRecommendations(
+    statistics: any,
+    performance: any
+  ): Promise<any[]> {
+    return [];
+  }
   private updatePerformanceMetrics(result: PruningResult): void {
-    this.performanceMetrics.totalPruned += result.statistics.deleted + result.statistics.archived;
+    this.performanceMetrics.totalPruned +=
+      result.statistics.deleted + result.statistics.archived;
     this.performanceMetrics.storageFreed += result.statistics.storageFreed;
   }
   private async performAutomaticPruning(): Promise<void> {}

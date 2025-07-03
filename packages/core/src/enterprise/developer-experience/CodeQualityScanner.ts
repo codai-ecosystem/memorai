@@ -1,7 +1,7 @@
 /**
  * @fileoverview Code Quality Scanner - Comprehensive automated code analysis
  * with security scanning, performance optimization, and compliance validation.
- * 
+ *
  * Features:
  * - Multi-language static code analysis
  * - Security vulnerability detection
@@ -9,7 +9,7 @@
  * - Code complexity analysis
  * - Compliance framework validation (GDPR, HIPAA, SOX)
  * - Automated fix suggestions and application
- * 
+ *
  * @author Memorai Development Team
  * @version 2.1.0
  * @since 2025-07-02
@@ -24,8 +24,28 @@ import { z } from 'zod';
 const ScanConfigSchema = z.object({
   scanId: z.string(),
   projectPath: z.string(),
-  languages: z.array(z.enum(['typescript', 'javascript', 'python', 'java', 'csharp', 'go', 'rust', 'php'])),
-  scanTypes: z.array(z.enum(['quality', 'security', 'performance', 'compliance', 'dependencies', 'documentation'])),
+  languages: z.array(
+    z.enum([
+      'typescript',
+      'javascript',
+      'python',
+      'java',
+      'csharp',
+      'go',
+      'rust',
+      'php',
+    ])
+  ),
+  scanTypes: z.array(
+    z.enum([
+      'quality',
+      'security',
+      'performance',
+      'compliance',
+      'dependencies',
+      'documentation',
+    ])
+  ),
   severity: z.enum(['low', 'medium', 'high', 'critical']),
   excludePatterns: z.array(z.string()),
   includePatterns: z.array(z.string()),
@@ -36,8 +56,8 @@ const ScanConfigSchema = z.object({
     generateReport: z.boolean(),
     failOnHigh: z.boolean(),
     maxIssues: z.number(),
-    timeout: z.number()
-  })
+    timeout: z.number(),
+  }),
 });
 
 /**
@@ -45,7 +65,13 @@ const ScanConfigSchema = z.object({
  */
 const CodeIssueSchema = z.object({
   id: z.string(),
-  type: z.enum(['quality', 'security', 'performance', 'compliance', 'documentation']),
+  type: z.enum([
+    'quality',
+    'security',
+    'performance',
+    'compliance',
+    'documentation',
+  ]),
   severity: z.enum(['low', 'medium', 'high', 'critical']),
   category: z.string(),
   rule: z.string(),
@@ -56,7 +82,7 @@ const CodeIssueSchema = z.object({
     line: z.number(),
     column: z.number(),
     endLine: z.number().optional(),
-    endColumn: z.number().optional()
+    endColumn: z.number().optional(),
   }),
   codeSnippet: z.string(),
   suggestion: z.string(),
@@ -67,7 +93,7 @@ const CodeIssueSchema = z.object({
   confidence: z.number(),
   impact: z.enum(['low', 'medium', 'high', 'critical']),
   effort: z.enum(['trivial', 'easy', 'medium', 'hard']),
-  estimatedTime: z.number()
+  estimatedTime: z.number(),
 });
 
 /**
@@ -83,9 +109,17 @@ const SecurityVulnerabilitySchema = z.object({
   location: z.object({
     file: z.string(),
     line: z.number(),
-    function: z.string().optional()
+    function: z.string().optional(),
   }),
-  category: z.enum(['injection', 'xss', 'csrf', 'authentication', 'authorization', 'crypto', 'configuration']),
+  category: z.enum([
+    'injection',
+    'xss',
+    'csrf',
+    'authentication',
+    'authorization',
+    'crypto',
+    'configuration',
+  ]),
   owasp: z.string().optional(),
   recommendation: z.string(),
   fix: z.string().optional(),
@@ -93,7 +127,7 @@ const SecurityVulnerabilitySchema = z.object({
   references: z.array(z.string()),
   cvssScore: z.number().optional(),
   exploitability: z.enum(['low', 'medium', 'high']),
-  impact: z.enum(['low', 'medium', 'high', 'critical'])
+  impact: z.enum(['low', 'medium', 'high', 'critical']),
 });
 
 export type ScanConfig = z.infer<typeof ScanConfigSchema>;
@@ -238,7 +272,7 @@ export interface Recommendation {
 
 /**
  * Code Quality Scanner
- * 
+ *
  * Comprehensive automated code analysis system providing security scanning,
  * performance optimization, compliance validation, and quality assessment.
  */
@@ -272,7 +306,7 @@ export class CodeQualityScanner extends EventEmitter {
 
     try {
       const validatedConfig = ScanConfigSchema.parse(config);
-      
+
       // Initialize scan results
       const results: ScanResults = {
         scanId: validatedConfig.scanId,
@@ -285,9 +319,15 @@ export class CodeQualityScanner extends EventEmitter {
           scannedFiles: 0,
           linesOfCode: 0,
           issues: { total: 0, critical: 0, high: 0, medium: 0, low: 0 },
-          security: { vulnerabilities: 0, critical: 0, high: 0, medium: 0, low: 0 },
+          security: {
+            vulnerabilities: 0,
+            critical: 0,
+            high: 0,
+            medium: 0,
+            low: 0,
+          },
           performance: { issues: 0, optimizations: 0, estimatedImprovement: 0 },
-          compliance: { violations: 0, frameworks: [], score: 0 }
+          compliance: { violations: 0, frameworks: [], score: 0 },
         },
         issues: [],
         vulnerabilities: [],
@@ -295,7 +335,7 @@ export class CodeQualityScanner extends EventEmitter {
         metrics: this.createEmptyMetrics(),
         recommendations: [],
         fixableIssues: 0,
-        autoFixApplied: false
+        autoFixApplied: false,
       };
 
       this.scans.set(validatedConfig.scanId, results);
@@ -350,11 +390,10 @@ export class CodeQualityScanner extends EventEmitter {
 
       this.emit('scan:completed', {
         scanId: validatedConfig.scanId,
-        results
+        results,
       });
 
       return results;
-
     } catch (error) {
       this.emit('scan:failed', { config, error });
       throw error;
@@ -375,19 +414,27 @@ export class CodeQualityScanner extends EventEmitter {
   /**
    * Get all scans
    */
-  public getAllScans(): Array<{ scanId: string; timestamp: number; status: string; summary: any }> {
+  public getAllScans(): Array<{
+    scanId: string;
+    timestamp: number;
+    status: string;
+    summary: any;
+  }> {
     return Array.from(this.scans.values()).map(scan => ({
       scanId: scan.scanId,
       timestamp: scan.timestamp,
       status: scan.status,
-      summary: scan.summary
+      summary: scan.summary,
     }));
   }
 
   /**
    * Apply fixes for specific issues
    */
-  public async applyFixes(scanId: string, issueIds: string[]): Promise<{
+  public async applyFixes(
+    scanId: string,
+    issueIds: string[]
+  ): Promise<{
     applied: number;
     failed: number;
     results: Array<{
@@ -405,15 +452,14 @@ export class CodeQualityScanner extends EventEmitter {
       this.emit('fixes:applied', {
         scanId,
         issueIds,
-        results: fixResults
+        results: fixResults,
       });
 
       return {
         applied: fixResults.filter(r => r.success).length,
         failed: fixResults.filter(r => !r.success).length,
-        results: fixResults
+        results: fixResults,
       };
-
     } catch (error) {
       this.emit('fixes:application_failed', { scanId, issueIds, error });
       throw error;
@@ -423,7 +469,10 @@ export class CodeQualityScanner extends EventEmitter {
   /**
    * Get issue details
    */
-  public getIssueDetails(scanId: string, issueId: string): CodeIssue & {
+  public getIssueDetails(
+    scanId: string,
+    issueId: string
+  ): CodeIssue & {
     context: {
       surroundingCode: string;
       relatedIssues: string[];
@@ -436,16 +485,19 @@ export class CodeQualityScanner extends EventEmitter {
   } {
     const results = this.getScanResults(scanId);
     const issue = results.issues.find(i => i.id === issueId);
-    
+
     if (!issue) {
       throw new Error(`Issue not found: ${issueId}`);
     }
 
     // Get additional context
     const context = {
-      surroundingCode: this.getSurroundingCode(issue.location.file, issue.location.line),
+      surroundingCode: this.getSurroundingCode(
+        issue.location.file,
+        issue.location.line
+      ),
       relatedIssues: this.findRelatedIssues(results.issues, issue),
-      fixHistory: this.getFixHistory(issueId)
+      fixHistory: this.getFixHistory(issueId),
     };
 
     return { ...issue, context };
@@ -454,7 +506,10 @@ export class CodeQualityScanner extends EventEmitter {
   /**
    * Export scan results
    */
-  public async exportResults(scanId: string, format: 'json' | 'csv' | 'html' | 'pdf'): Promise<string> {
+  public async exportResults(
+    scanId: string,
+    format: 'json' | 'csv' | 'html' | 'pdf'
+  ): Promise<string> {
     try {
       const results = this.getScanResults(scanId);
       const exportPath = await this.exportInFormat(results, format);
@@ -462,11 +517,10 @@ export class CodeQualityScanner extends EventEmitter {
       this.emit('results:exported', {
         scanId,
         format,
-        exportPath
+        exportPath,
       });
 
       return exportPath;
-
     } catch (error) {
       this.emit('results:export_failed', { scanId, format, error });
       throw error;
@@ -495,18 +549,24 @@ export class CodeQualityScanner extends EventEmitter {
     return [
       '/src/index.ts',
       '/src/components/Component.tsx',
-      '/src/utils/helpers.js'
+      '/src/utils/helpers.js',
     ];
   }
 
   /**
    * Run quality analysis
    */
-  private async runQualityAnalysis(config: ScanConfig, files: string[], results: ScanResults): Promise<void> {
+  private async runQualityAnalysis(
+    config: ScanConfig,
+    files: string[],
+    results: ScanResults
+  ): Promise<void> {
     for (const language of config.languages) {
       const analyzer = this.scanners.get(language);
       if (analyzer) {
-        const languageFiles = files.filter(f => this.isLanguageFile(f, language));
+        const languageFiles = files.filter(f =>
+          this.isLanguageFile(f, language)
+        );
         const issues = await analyzer.analyzeQuality(languageFiles);
         results.issues.push(...issues);
       }
@@ -520,7 +580,11 @@ export class CodeQualityScanner extends EventEmitter {
   /**
    * Run security analysis
    */
-  private async runSecurityAnalysis(config: ScanConfig, files: string[], results: ScanResults): Promise<void> {
+  private async runSecurityAnalysis(
+    config: ScanConfig,
+    files: string[],
+    results: ScanResults
+  ): Promise<void> {
     const vulnerabilities = await this.securityScanner.scanFiles(files);
     results.vulnerabilities.push(...vulnerabilities);
     results.summary.security = this.calculateSecuritySummary(vulnerabilities);
@@ -529,39 +593,65 @@ export class CodeQualityScanner extends EventEmitter {
   /**
    * Run performance analysis
    */
-  private async runPerformanceAnalysis(config: ScanConfig, files: string[], results: ScanResults): Promise<void> {
+  private async runPerformanceAnalysis(
+    config: ScanConfig,
+    files: string[],
+    results: ScanResults
+  ): Promise<void> {
     const performanceIssues = await this.performanceAnalyzer.analyze(files);
     results.issues.push(...performanceIssues);
-    results.summary.performance = this.calculatePerformanceSummary(performanceIssues);
+    results.summary.performance =
+      this.calculatePerformanceSummary(performanceIssues);
   }
 
   /**
    * Run compliance analysis
    */
-  private async runComplianceAnalysis(config: ScanConfig, files: string[], results: ScanResults): Promise<void> {
-    const violations = await this.complianceValidator.validate(files, config.compliance);
+  private async runComplianceAnalysis(
+    config: ScanConfig,
+    files: string[],
+    results: ScanResults
+  ): Promise<void> {
+    const violations = await this.complianceValidator.validate(
+      files,
+      config.compliance
+    );
     results.issues.push(...violations);
-    results.summary.compliance = this.calculateComplianceSummary(violations, config.compliance);
+    results.summary.compliance = this.calculateComplianceSummary(
+      violations,
+      config.compliance
+    );
   }
 
   /**
    * Run dependency analysis
    */
-  private async runDependencyAnalysis(config: ScanConfig, results: ScanResults): Promise<void> {
-    results.dependencies = await this.dependencyAnalyzer.analyze(config.projectPath);
+  private async runDependencyAnalysis(
+    config: ScanConfig,
+    results: ScanResults
+  ): Promise<void> {
+    results.dependencies = await this.dependencyAnalyzer.analyze(
+      config.projectPath
+    );
   }
 
   /**
    * Run documentation analysis
    */
-  private async runDocumentationAnalysis(config: ScanConfig, files: string[], results: ScanResults): Promise<void> {
+  private async runDocumentationAnalysis(
+    config: ScanConfig,
+    files: string[],
+    results: ScanResults
+  ): Promise<void> {
     // Implementation would analyze documentation coverage and quality
   }
 
   /**
    * Generate recommendations
    */
-  private async generateRecommendations(results: ScanResults): Promise<Recommendation[]> {
+  private async generateRecommendations(
+    results: ScanResults
+  ): Promise<Recommendation[]> {
     const recommendations: Recommendation[] = [];
 
     // High complexity functions
@@ -571,11 +661,17 @@ export class CodeQualityScanner extends EventEmitter {
         priority: 'high',
         title: 'Reduce code complexity',
         description: 'Several functions have high cyclomatic complexity',
-        benefits: ['Improved maintainability', 'Reduced bug risk', 'Better testability'],
+        benefits: [
+          'Improved maintainability',
+          'Reduced bug risk',
+          'Better testability',
+        ],
         effort: 'medium',
         estimatedTime: 240,
-        files: results.metrics.complexity.functions.filter(f => f.complexity > 10).map(f => f.file),
-        automated: false
+        files: results.metrics.complexity.functions
+          .filter(f => f.complexity > 10)
+          .map(f => f.file),
+        automated: false,
       });
     }
 
@@ -590,7 +686,7 @@ export class CodeQualityScanner extends EventEmitter {
         effort: 'medium',
         estimatedTime: results.vulnerabilities.length * 30,
         files: [...new Set(results.vulnerabilities.map(v => v.location.file))],
-        automated: true
+        automated: true,
       });
     }
 
@@ -600,9 +696,12 @@ export class CodeQualityScanner extends EventEmitter {
   /**
    * Apply auto-fixes
    */
-  private async applyAutoFixes(config: ScanConfig, results: ScanResults): Promise<void> {
+  private async applyAutoFixes(
+    config: ScanConfig,
+    results: ScanResults
+  ): Promise<void> {
     const fixableIssues = results.issues.filter(i => i.autoFixable);
-    
+
     if (fixableIssues.length > 0) {
       const fixResults = await this.autoFixer.applyFixes(fixableIssues);
       results.autoFixApplied = fixResults.some(r => r.success);
@@ -629,7 +728,7 @@ export class CodeQualityScanner extends EventEmitter {
       csharp: ['.cs'],
       go: ['.go'],
       rust: ['.rs'],
-      php: ['.php']
+      php: ['.php'],
     };
 
     const exts = extensions[language] || [];
@@ -642,17 +741,19 @@ export class CodeQualityScanner extends EventEmitter {
       critical: issues.filter(i => i.severity === 'critical').length,
       high: issues.filter(i => i.severity === 'high').length,
       medium: issues.filter(i => i.severity === 'medium').length,
-      low: issues.filter(i => i.severity === 'low').length
+      low: issues.filter(i => i.severity === 'low').length,
     };
   }
 
-  private calculateSecuritySummary(vulnerabilities: SecurityVulnerability[]): any {
+  private calculateSecuritySummary(
+    vulnerabilities: SecurityVulnerability[]
+  ): any {
     return {
       vulnerabilities: vulnerabilities.length,
       critical: vulnerabilities.filter(v => v.severity === 'critical').length,
       high: vulnerabilities.filter(v => v.severity === 'high').length,
       medium: vulnerabilities.filter(v => v.severity === 'medium').length,
-      low: vulnerabilities.filter(v => v.severity === 'low').length
+      low: vulnerabilities.filter(v => v.severity === 'low').length,
     };
   }
 
@@ -660,17 +761,24 @@ export class CodeQualityScanner extends EventEmitter {
     const performanceIssues = issues.filter(i => i.type === 'performance');
     return {
       issues: performanceIssues.length,
-      optimizations: performanceIssues.filter(i => i.category === 'optimization').length,
-      estimatedImprovement: performanceIssues.length * 5 // Mock percentage
+      optimizations: performanceIssues.filter(
+        i => i.category === 'optimization'
+      ).length,
+      estimatedImprovement: performanceIssues.length * 5, // Mock percentage
     };
   }
 
-  private calculateComplianceSummary(violations: CodeIssue[], frameworks: string[]): any {
-    const complianceViolations = violations.filter(i => i.type === 'compliance');
+  private calculateComplianceSummary(
+    violations: CodeIssue[],
+    frameworks: string[]
+  ): any {
+    const complianceViolations = violations.filter(
+      i => i.type === 'compliance'
+    );
     return {
       violations: complianceViolations.length,
       frameworks,
-      score: Math.max(0, 100 - (complianceViolations.length * 5))
+      score: Math.max(0, 100 - complianceViolations.length * 5),
     };
   }
 
@@ -681,7 +789,7 @@ export class CodeQualityScanner extends EventEmitter {
       vulnerable: 0,
       licenses: new Map(),
       vulnerabilities: [],
-      updates: []
+      updates: [],
     };
   }
 
@@ -691,7 +799,7 @@ export class CodeQualityScanner extends EventEmitter {
       maintainability: { index: 0, score: 'A', factors: [] },
       coverage: { lines: 0, functions: 0, branches: 0, statements: 0 },
       duplication: { percentage: 0, blocks: 0, lines: 0, files: [] },
-      technical_debt: { ratio: 0, time: 0, issues: 0, estimate: '0h' }
+      technical_debt: { ratio: 0, time: 0, issues: 0, estimate: '0h' },
     };
   }
 
@@ -705,12 +813,17 @@ export class CodeQualityScanner extends EventEmitter {
     return [];
   }
 
-  private getFixHistory(issueId: string): Array<{ timestamp: number; action: string; success: boolean; }> {
+  private getFixHistory(
+    issueId: string
+  ): Array<{ timestamp: number; action: string; success: boolean }> {
     // Implementation would get fix history
     return [];
   }
 
-  private async exportInFormat(results: ScanResults, format: string): Promise<string> {
+  private async exportInFormat(
+    results: ScanResults,
+    format: string
+  ): Promise<string> {
     // Implementation would export in specified format
     return `/exports/scan_${results.scanId}.${format}`;
   }
@@ -799,7 +912,7 @@ class DependencyAnalyzer {
       vulnerable: 0,
       licenses: new Map(),
       vulnerabilities: [],
-      updates: []
+      updates: [],
     };
   }
 }
@@ -811,16 +924,18 @@ class MetricsCalculator {
       maintainability: { index: 0, score: 'A', factors: [] },
       coverage: { lines: 0, functions: 0, branches: 0, statements: 0 },
       duplication: { percentage: 0, blocks: 0, lines: 0, files: [] },
-      technical_debt: { ratio: 0, time: 0, issues: 0, estimate: '0h' }
+      technical_debt: { ratio: 0, time: 0, issues: 0, estimate: '0h' },
     };
   }
 }
 
 class AutoFixer {
-  async applyFixes(issues: CodeIssue[]): Promise<Array<{ issueId: string; success: boolean; error?: string; }>> {
+  async applyFixes(
+    issues: CodeIssue[]
+  ): Promise<Array<{ issueId: string; success: boolean; error?: string }>> {
     return issues.map(issue => ({
       issueId: issue.id,
-      success: true
+      success: true,
     }));
   }
 }

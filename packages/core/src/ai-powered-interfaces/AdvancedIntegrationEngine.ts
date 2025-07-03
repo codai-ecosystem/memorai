@@ -1,7 +1,7 @@
 /**
  * 🔗 Advanced Integration & Ecosystem Engine
  * Complete integration capabilities for seamless ecosystem connectivity
- * 
+ *
  * @version 3.2.0
  * @author Memorai AI Team
  * @description Enterprise-grade integration platform providing SDK development,
@@ -39,7 +39,13 @@ export interface WebhookConfig {
 }
 
 export interface WebhookEvent {
-  type: 'memory.created' | 'memory.updated' | 'memory.deleted' | 'memory.recalled' | 'system.error' | 'plugin.installed';
+  type:
+    | 'memory.created'
+    | 'memory.updated'
+    | 'memory.deleted'
+    | 'memory.recalled'
+    | 'system.error'
+    | 'plugin.installed';
   data: any;
   timestamp: number;
   source: string;
@@ -70,7 +76,12 @@ export interface PluginManifest {
 }
 
 export interface PluginPermission {
-  type: 'memory.read' | 'memory.write' | 'memory.delete' | 'system.monitor' | 'api.execute';
+  type:
+    | 'memory.read'
+    | 'memory.write'
+    | 'memory.delete'
+    | 'system.monitor'
+    | 'api.execute';
   scope: string[];
 }
 
@@ -185,17 +196,17 @@ export class WebhookManager extends EventEmitter {
    */
   async registerWebhook(webhookConfig: WebhookConfig): Promise<string> {
     const webhookId = this.generateWebhookId();
-    
+
     // Validate webhook configuration
     await this.validateWebhookConfig(webhookConfig);
-    
+
     this.webhooks.set(webhookId, {
       ...webhookConfig,
-      enabled: true
+      enabled: true,
     });
 
     this.emit('webhook_registered', { webhookId, config: webhookConfig });
-    
+
     return webhookId;
   }
 
@@ -203,30 +214,31 @@ export class WebhookManager extends EventEmitter {
    * Trigger webhook delivery for an event
    */
   async triggerWebhooks(event: WebhookEvent): Promise<void> {
-    const relevantWebhooks = Array.from(this.webhooks.entries())
-      .filter(([_, config]) => 
-        config.enabled && 
-        config.events.some(e => e.type === event.type)
-      );
+    const relevantWebhooks = Array.from(this.webhooks.entries()).filter(
+      ([_, config]) =>
+        config.enabled && config.events.some(e => e.type === event.type)
+    );
 
-    const deliveryPromises = relevantWebhooks.map(async ([webhookId, config]) => {
-      const delivery: WebhookDelivery = {
-        id: this.generateDeliveryId(),
-        webhookId,
-        event,
-        attempt: 1,
-        status: 'pending'
-      };
+    const deliveryPromises = relevantWebhooks.map(
+      async ([webhookId, config]) => {
+        const delivery: WebhookDelivery = {
+          id: this.generateDeliveryId(),
+          webhookId,
+          event,
+          attempt: 1,
+          status: 'pending',
+        };
 
-      this.deliveries.set(delivery.id, delivery);
-      
-      try {
-        await this.deliverWebhook(delivery, config);
-      } catch (error) {
-        console.error(`Webhook delivery failed for ${webhookId}:`, error);
-        await this.handleDeliveryFailure(delivery, config);
+        this.deliveries.set(delivery.id, delivery);
+
+        try {
+          await this.deliverWebhook(delivery, config);
+        } catch (error) {
+          console.error(`Webhook delivery failed for ${webhookId}:`, error);
+          await this.handleDeliveryFailure(delivery, config);
+        }
       }
-    });
+    );
 
     await Promise.allSettled(deliveryPromises);
   }
@@ -234,22 +246,28 @@ export class WebhookManager extends EventEmitter {
   /**
    * Deliver webhook to endpoint
    */
-  private async deliverWebhook(delivery: WebhookDelivery, config: WebhookConfig): Promise<void> {
+  private async deliverWebhook(
+    delivery: WebhookDelivery,
+    config: WebhookConfig
+  ): Promise<void> {
     const payload = {
       event: delivery.event,
       delivery_id: delivery.id,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       'User-Agent': 'Memorai-Webhooks/1.0',
-      ...config.headers
+      ...config.headers,
     };
 
     // Add signature if secret is provided
     if (config.secret) {
-      const signature = await this.generateWebhookSignature(payload, config.secret);
+      const signature = await this.generateWebhookSignature(
+        payload,
+        config.secret
+      );
       headers['X-Memorai-Signature'] = signature;
     }
 
@@ -261,7 +279,7 @@ export class WebhookManager extends EventEmitter {
         method: 'POST',
         headers,
         body: JSON.stringify(payload),
-        signal: controller.signal
+        signal: controller.signal,
       });
 
       clearTimeout(timeoutId);
@@ -278,7 +296,6 @@ export class WebhookManager extends EventEmitter {
       }
 
       this.emit('webhook_delivered', delivery);
-      
     } catch (error) {
       clearTimeout(timeoutId);
       delivery.status = 'failed';
@@ -291,7 +308,10 @@ export class WebhookManager extends EventEmitter {
   /**
    * Handle webhook delivery failure
    */
-  private async handleDeliveryFailure(delivery: WebhookDelivery, config: WebhookConfig): Promise<void> {
+  private async handleDeliveryFailure(
+    delivery: WebhookDelivery,
+    config: WebhookConfig
+  ): Promise<void> {
     if (delivery.attempt < config.retryAttempts) {
       delivery.attempt++;
       delivery.status = 'pending';
@@ -311,7 +331,7 @@ export class WebhookManager extends EventEmitter {
 
       const delivery = this.retryQueue.shift()!;
       const webhookConfig = this.webhooks.get(delivery.webhookId);
-      
+
       if (!webhookConfig) return;
 
       try {
@@ -333,7 +353,10 @@ export class WebhookManager extends EventEmitter {
    * List all registered webhooks
    */
   listWebhooks(): Array<{ id: string; config: WebhookConfig }> {
-    return Array.from(this.webhooks.entries()).map(([id, config]) => ({ id, config }));
+    return Array.from(this.webhooks.entries()).map(([id, config]) => ({
+      id,
+      config,
+    }));
   }
 
   /**
@@ -364,11 +387,14 @@ export class WebhookManager extends EventEmitter {
     }
   }
 
-  private async generateWebhookSignature(payload: any, secret: string): Promise<string> {
+  private async generateWebhookSignature(
+    payload: any,
+    secret: string
+  ): Promise<string> {
     const encoder = new TextEncoder();
     const data = encoder.encode(JSON.stringify(payload));
     const key = encoder.encode(secret);
-    
+
     // Mock signature generation (in real implementation, use crypto.subtle)
     return `sha256=${Buffer.from(key).toString('hex')}`;
   }
@@ -391,10 +417,10 @@ export class PluginManager extends EventEmitter {
    */
   async installPlugin(manifest: PluginManifest, code: string): Promise<string> {
     const pluginId = this.generatePluginId(manifest.name);
-    
+
     // Validate plugin manifest
     await this.validatePluginManifest(manifest);
-    
+
     // Create plugin instance
     const instance: PluginInstance = {
       id: pluginId,
@@ -402,7 +428,7 @@ export class PluginManager extends EventEmitter {
       code,
       context: this.createPluginContext(pluginId, manifest),
       enabled: true,
-      installedAt: Date.now()
+      installedAt: Date.now(),
     };
 
     // Register plugin hooks
@@ -412,7 +438,7 @@ export class PluginManager extends EventEmitter {
       }
       this.hooks.get(hook.event)!.push({
         ...hook,
-        pluginId
+        pluginId,
       } as any);
     });
 
@@ -439,7 +465,11 @@ export class PluginManager extends EventEmitter {
       if (!plugin || !plugin.enabled) continue;
 
       try {
-        const handlerResult = await this.executePluginHandler(plugin, hook.handler, result);
+        const handlerResult = await this.executePluginHandler(
+          plugin,
+          hook.handler,
+          result
+        );
         if (handlerResult !== undefined) {
           result = handlerResult;
         }
@@ -503,16 +533,22 @@ export class PluginManager extends EventEmitter {
     return true;
   }
 
-  private createPluginContext(pluginId: string, manifest: PluginManifest): PluginContext {
+  private createPluginContext(
+    pluginId: string,
+    manifest: PluginManifest
+  ): PluginContext {
     return {
       config: manifest.configuration || {},
       logger: {
-        info: (message: string, data?: any) => console.log(`[Plugin:${pluginId}] ${message}`, data),
-        error: (message: string, data?: any) => console.error(`[Plugin:${pluginId}] ${message}`, data),
-        warn: (message: string, data?: any) => console.warn(`[Plugin:${pluginId}] ${message}`, data)
+        info: (message: string, data?: any) =>
+          console.log(`[Plugin:${pluginId}] ${message}`, data),
+        error: (message: string, data?: any) =>
+          console.error(`[Plugin:${pluginId}] ${message}`, data),
+        warn: (message: string, data?: any) =>
+          console.warn(`[Plugin:${pluginId}] ${message}`, data),
       },
       api: this.createPluginAPI(pluginId),
-      storage: this.createPluginStorage(pluginId)
+      storage: this.createPluginStorage(pluginId),
     };
   }
 
@@ -530,12 +566,12 @@ export class PluginManager extends EventEmitter {
         forget: async (id: string) => {
           // Implementation would integrate with actual memory system
           return true;
-        }
+        },
       },
       webhooks: {
         trigger: async (event: WebhookEvent) => {
           this.emit('plugin_webhook_trigger', { pluginId, event });
-        }
+        },
       },
       system: {
         getMetrics: async () => {
@@ -543,14 +579,14 @@ export class PluginManager extends EventEmitter {
         },
         log: (level: string, message: string, data?: any) => {
           console.log(`[Plugin:${pluginId}:${level}] ${message}`, data);
-        }
-      }
+        },
+      },
     };
   }
 
   private createPluginStorage(pluginId: string): PluginStorage {
     const storage = new Map<string, any>();
-    
+
     return {
       get: async (key: string) => storage.get(`${pluginId}:${key}`),
       set: async (key: string, value: any) => {
@@ -561,27 +597,36 @@ export class PluginManager extends EventEmitter {
         const keys = Array.from(storage.keys())
           .filter(k => k.startsWith(`${pluginId}:`))
           .map(k => k.substring(`${pluginId}:`.length));
-        
+
         if (prefix) {
           return keys.filter(k => k.startsWith(prefix));
         }
         return keys;
-      }
+      },
     };
   }
 
-  private async executePluginHandler(plugin: PluginInstance, handler: string, data: any): Promise<any> {
+  private async executePluginHandler(
+    plugin: PluginInstance,
+    handler: string,
+    data: any
+  ): Promise<any> {
     // In a real implementation, this would execute the plugin code in a sandbox
     // For now, we'll simulate plugin execution
-    console.log(`Executing plugin handler: ${plugin.id}:${handler} with data:`, data);
+    console.log(
+      `Executing plugin handler: ${plugin.id}:${handler} with data:`,
+      data
+    );
     return data;
   }
 
-  private async validatePluginManifest(manifest: PluginManifest): Promise<void> {
+  private async validatePluginManifest(
+    manifest: PluginManifest
+  ): Promise<void> {
     if (!manifest.name || !manifest.version || !manifest.entryPoint) {
       throw new Error('Invalid plugin manifest: missing required fields');
     }
-    
+
     // Validate permissions
     if (manifest.permissions) {
       for (const permission of manifest.permissions) {
@@ -593,7 +638,13 @@ export class PluginManager extends EventEmitter {
   }
 
   private isValidPermission(permission: PluginPermission): boolean {
-    const validTypes = ['memory.read', 'memory.write', 'memory.delete', 'system.monitor', 'api.execute'];
+    const validTypes = [
+      'memory.read',
+      'memory.write',
+      'memory.delete',
+      'system.monitor',
+      'api.execute',
+    ];
     return validTypes.includes(permission.type);
   }
 
@@ -686,7 +737,10 @@ export class MemoraiClient {
 
 // Example usage:
 /*
-${spec.examples.filter(ex => ex.language === 'typescript').map(ex => ex.code).join('\n\n')}
+${spec.examples
+  .filter(ex => ex.language === 'typescript')
+  .map(ex => ex.code)
+  .join('\n\n')}
 */
     `.trim();
   }
@@ -732,7 +786,10 @@ ${spec.methods.map(method => this.generatePythonMethod(method)).join('\n\n')}
 
 # Example usage:
 """
-${spec.examples.filter(ex => ex.language === 'python').map(ex => ex.code).join('\n\n')}
+${spec.examples
+  .filter(ex => ex.language === 'python')
+  .map(ex => ex.code)
+  .join('\n\n')}
 """
     `.trim();
   }
@@ -810,7 +867,10 @@ ${spec.methods.map(method => this.generateJavaMethod(method)).join('\n\n')}
 
 /*
 Example usage:
-${spec.examples.filter(ex => ex.language === 'java').map(ex => ex.code).join('\n\n')}
+${spec.examples
+  .filter(ex => ex.language === 'java')
+  .map(ex => ex.code)
+  .join('\n\n')}
 */
     `.trim();
   }
@@ -905,7 +965,10 @@ func (c *Client) request(method, endpoint string, data interface{}, result inter
 
 /*
 Example usage:
-${spec.examples.filter(ex => ex.language === 'go').map(ex => ex.code).join('\n\n')}
+${spec.examples
+  .filter(ex => ex.language === 'go')
+  .map(ex => ex.code)
+  .join('\n\n')}
 */
     `.trim();
   }
@@ -991,15 +1054,18 @@ ${spec.methods.map(method => this.generateRustMethod(method)).join('\n\n')}
 
 /*
 Example usage:
-${spec.examples.filter(ex => ex.language === 'rust').map(ex => ex.code).join('\n\n')}
+${spec.examples
+  .filter(ex => ex.language === 'rust')
+  .map(ex => ex.code)
+  .join('\n\n')}
 */
     `.trim();
   }
 
   private generateTypeScriptMethod(method: SDKMethod): string {
-    const params = method.parameters.map(p => 
-      `${p.name}${p.required ? '' : '?'}: ${p.type}`
-    ).join(', ');
+    const params = method.parameters
+      .map(p => `${p.name}${p.required ? '' : '?'}: ${p.type}`)
+      .join(', ');
 
     return `
   /**
@@ -1014,9 +1080,12 @@ ${spec.examples.filter(ex => ex.language === 'rust').map(ex => ex.code).join('\n
   }
 
   private generatePythonMethod(method: SDKMethod): string {
-    const params = method.parameters.map(p => 
-      `${p.name}: ${this.pythonType(p.type)}${p.required ? '' : ' = None'}`
-    ).join(', ');
+    const params = method.parameters
+      .map(
+        p =>
+          `${p.name}: ${this.pythonType(p.type)}${p.required ? '' : ' = None'}`
+      )
+      .join(', ');
 
     return `
     def ${method.name}(self, ${params}) -> ${this.pythonType(method.returnType)}:
@@ -1026,9 +1095,9 @@ ${spec.examples.filter(ex => ex.language === 'rust').map(ex => ex.code).join('\n
   }
 
   private generateJavaMethod(method: SDKMethod): string {
-    const params = method.parameters.map(p => 
-      `${this.javaType(p.type)} ${p.name}`
-    ).join(', ');
+    const params = method.parameters
+      .map(p => `${this.javaType(p.type)} ${p.name}`)
+      .join(', ');
 
     return `
     /**
@@ -1042,9 +1111,9 @@ ${spec.examples.filter(ex => ex.language === 'rust').map(ex => ex.code).join('\n
   }
 
   private generateGoMethod(method: SDKMethod): string {
-    const params = method.parameters.map(p => 
-      `${p.name} ${this.goType(p.type)}`
-    ).join(', ');
+    const params = method.parameters
+      .map(p => `${p.name} ${this.goType(p.type)}`)
+      .join(', ');
 
     return `
 // ${method.description}
@@ -1060,9 +1129,9 @@ func (c *Client) ${this.capitalizeFirst(method.name)}(${params}) (${this.goType(
   }
 
   private generateRustMethod(method: SDKMethod): string {
-    const params = method.parameters.map(p => 
-      `${p.name}: ${this.rustType(p.type)}`
-    ).join(', ');
+    const params = method.parameters
+      .map(p => `${p.name}: ${this.rustType(p.type)}`)
+      .join(', ');
 
     return `
     /// ${method.description}
@@ -1079,44 +1148,44 @@ func (c *Client) ${this.capitalizeFirst(method.name)}(${params}) (${this.goType(
 
   private pythonType(tsType: string): string {
     const typeMap: Record<string, string> = {
-      'string': 'str',
-      'number': 'float',
-      'boolean': 'bool',
-      'any': 'Any',
-      'void': 'None'
+      string: 'str',
+      number: 'float',
+      boolean: 'bool',
+      any: 'Any',
+      void: 'None',
     };
     return typeMap[tsType] || tsType;
   }
 
   private javaType(tsType: string): string {
     const typeMap: Record<string, string> = {
-      'string': 'String',
-      'number': 'Double',
-      'boolean': 'Boolean',
-      'any': 'Object',
-      'void': 'Void'
+      string: 'String',
+      number: 'Double',
+      boolean: 'Boolean',
+      any: 'Object',
+      void: 'Void',
     };
     return typeMap[tsType] || tsType;
   }
 
   private goType(tsType: string): string {
     const typeMap: Record<string, string> = {
-      'string': 'string',
-      'number': 'float64',
-      'boolean': 'bool',
-      'any': 'interface{}',
-      'void': 'interface{}'
+      string: 'string',
+      number: 'float64',
+      boolean: 'bool',
+      any: 'interface{}',
+      void: 'interface{}',
     };
     return typeMap[tsType] || tsType;
   }
 
   private rustType(tsType: string): string {
     const typeMap: Record<string, string> = {
-      'string': 'String',
-      'number': 'f64',
-      'boolean': 'bool',
-      'any': 'serde_json::Value',
-      'void': '()'
+      string: 'String',
+      number: 'f64',
+      boolean: 'bool',
+      any: 'serde_json::Value',
+      void: '()',
     };
     return typeMap[tsType] || tsType;
   }
@@ -1152,12 +1221,14 @@ export class ThirdPartyIntegrationManager {
   /**
    * Register third-party integration
    */
-  async registerIntegration(integration: ThirdPartyIntegration): Promise<string> {
+  async registerIntegration(
+    integration: ThirdPartyIntegration
+  ): Promise<string> {
     const integrationId = this.generateIntegrationId(integration.name);
-    
+
     this.integrations.set(integrationId, {
       ...integration,
-      enabled: true
+      enabled: true,
     });
 
     return integrationId;
@@ -1167,8 +1238,8 @@ export class ThirdPartyIntegrationManager {
    * Execute integration feature
    */
   async executeIntegrationFeature(
-    integrationId: string, 
-    featureName: string, 
+    integrationId: string,
+    featureName: string,
     data: any
   ): Promise<any> {
     const integration = this.integrations.get(integrationId);
@@ -1188,13 +1259,19 @@ export class ThirdPartyIntegrationManager {
   /**
    * List available integrations
    */
-  listIntegrations(): Array<{ id: string; integration: ThirdPartyIntegration }> {
-    return Array.from(this.integrations.entries()).map(([id, integration]) => ({ id, integration }));
+  listIntegrations(): Array<{
+    id: string;
+    integration: ThirdPartyIntegration;
+  }> {
+    return Array.from(this.integrations.entries()).map(([id, integration]) => ({
+      id,
+      integration,
+    }));
   }
 
   private async executeFeature(
-    integration: ThirdPartyIntegration, 
-    feature: IntegrationFeature, 
+    integration: ThirdPartyIntegration,
+    feature: IntegrationFeature,
     data: any
   ): Promise<any> {
     // Implementation would vary based on integration type
@@ -1211,8 +1288,8 @@ export class ThirdPartyIntegrationManager {
   }
 
   private async executeSlackFeature(
-    integration: ThirdPartyIntegration, 
-    feature: IntegrationFeature, 
+    integration: ThirdPartyIntegration,
+    feature: IntegrationFeature,
     data: any
   ): Promise<any> {
     // Slack-specific implementation
@@ -1221,8 +1298,8 @@ export class ThirdPartyIntegrationManager {
   }
 
   private async executeTeamsFeature(
-    integration: ThirdPartyIntegration, 
-    feature: IntegrationFeature, 
+    integration: ThirdPartyIntegration,
+    feature: IntegrationFeature,
     data: any
   ): Promise<any> {
     // Teams-specific implementation
@@ -1231,8 +1308,8 @@ export class ThirdPartyIntegrationManager {
   }
 
   private async executeWebhookFeature(
-    integration: ThirdPartyIntegration, 
-    feature: IntegrationFeature, 
+    integration: ThirdPartyIntegration,
+    feature: IntegrationFeature,
     data: any
   ): Promise<any> {
     // Webhook-specific implementation
@@ -1260,7 +1337,7 @@ export class GraphQLManager {
    */
   initializeSchema(schema: GraphQLSchema): void {
     this.schema = schema;
-    
+
     // Register resolvers
     Object.entries(schema.resolvers).forEach(([type, resolvers]) => {
       this.resolvers.set(type, resolvers);
@@ -1270,7 +1347,11 @@ export class GraphQLManager {
   /**
    * Execute GraphQL query
    */
-  async executeQuery(query: string, variables?: any, context?: any): Promise<any> {
+  async executeQuery(
+    query: string,
+    variables?: any,
+    context?: any
+  ): Promise<any> {
     if (!this.schema) {
       throw new Error('GraphQL schema not initialized');
     }
@@ -1284,9 +1365,9 @@ export class GraphQLManager {
     return {
       data: {
         memories: [
-          { id: '1', content: 'Sample memory', createdAt: Date.now() }
-        ]
-      }
+          { id: '1', content: 'Sample memory', createdAt: Date.now() },
+        ],
+      },
     };
   }
 
@@ -1313,11 +1394,11 @@ export class GraphQLManager {
             fields: [
               { name: 'id', type: { name: 'ID' } },
               { name: 'content', type: { name: 'String' } },
-              { name: 'createdAt', type: { name: 'DateTime' } }
-            ]
-          }
-        ]
-      }
+              { name: 'createdAt', type: { name: 'DateTime' } },
+            ],
+          },
+        ],
+      },
     };
   }
 
@@ -1367,7 +1448,7 @@ export class AdvancedIntegrationEngine extends EventEmitter {
 
   constructor(private config: IntegrationConfig) {
     super();
-    
+
     this.webhookManager = new WebhookManager(config);
     this.pluginManager = new PluginManager(config);
     this.sdkGenerator = new SDKGenerator(config);
@@ -1425,14 +1506,14 @@ export class AdvancedIntegrationEngine extends EventEmitter {
         resolvers: {
           Query: {
             memories: () => [],
-            memory: () => null
+            memory: () => null,
           },
           Mutation: {
             createMemory: () => null,
             updateMemory: () => null,
-            deleteMemory: () => false
-          }
-        }
+            deleteMemory: () => false,
+          },
+        },
       };
       this.graphqlManager.initializeSchema(defaultSchema);
     }
@@ -1454,8 +1535,8 @@ export class AdvancedIntegrationEngine extends EventEmitter {
         plugin_execution: this.config.enablePlugins,
         sdk_generation: this.config.sdkLanguages.length > 0,
         third_party_integrations: true,
-        graphql_api: this.config.enableGraphQL
-      }
+        graphql_api: this.config.enableGraphQL,
+      },
     };
   }
 
@@ -1469,40 +1550,40 @@ export class AdvancedIntegrationEngine extends EventEmitter {
       components: {
         webhooks: {
           status: 'active',
-          registered: this.webhookManager.listWebhooks().length
+          registered: this.webhookManager.listWebhooks().length,
         },
         plugins: {
           status: 'active',
-          installed: this.pluginManager.listPlugins().length
+          installed: this.pluginManager.listPlugins().length,
         },
         integrations: {
           status: 'active',
-          registered: this.thirdPartyManager.listIntegrations().length
+          registered: this.thirdPartyManager.listIntegrations().length,
         },
         graphql: {
           status: this.config.enableGraphQL ? 'active' : 'disabled',
-          schema: this.config.enableGraphQL ? 'loaded' : 'none'
-        }
-      }
+          schema: this.config.enableGraphQL ? 'loaded' : 'none',
+        },
+      },
     };
   }
 
   private setupEventForwarding(): void {
     // Forward events from sub-managers
-    this.webhookManager.on('webhook_delivered', (event) => {
+    this.webhookManager.on('webhook_delivered', event => {
       this.emit('webhook_delivered', event);
     });
 
-    this.pluginManager.on('plugin_installed', (event) => {
+    this.pluginManager.on('plugin_installed', event => {
       this.emit('plugin_installed', event);
     });
 
     // Log all integration events
-    this.on('webhook_delivered', (event) => {
+    this.on('webhook_delivered', event => {
       console.log('Webhook delivered:', event.id);
     });
 
-    this.on('plugin_installed', (event) => {
+    this.on('plugin_installed', event => {
       console.log('Plugin installed:', event.pluginId);
     });
   }
@@ -1516,14 +1597,18 @@ export class IntegrationFactory {
   /**
    * Create complete integration platform
    */
-  static createIntegrationPlatform(config: IntegrationConfig): AdvancedIntegrationEngine {
+  static createIntegrationPlatform(
+    config: IntegrationConfig
+  ): AdvancedIntegrationEngine {
     return new AdvancedIntegrationEngine(config);
   }
 
   /**
    * Create webhook-only integration
    */
-  static createWebhookIntegration(config: Partial<IntegrationConfig>): WebhookManager {
+  static createWebhookIntegration(
+    config: Partial<IntegrationConfig>
+  ): WebhookManager {
     const fullConfig: IntegrationConfig = {
       environment: 'production',
       enableWebhooks: true,
@@ -1535,16 +1620,18 @@ export class IntegrationFactory {
       pluginSandbox: false,
       graphqlPlayground: false,
       apiVersioning: false,
-      ...config
+      ...config,
     };
-    
+
     return new WebhookManager(fullConfig);
   }
 
   /**
    * Create plugin-only integration
    */
-  static createPluginIntegration(config: Partial<IntegrationConfig>): PluginManager {
+  static createPluginIntegration(
+    config: Partial<IntegrationConfig>
+  ): PluginManager {
     const fullConfig: IntegrationConfig = {
       environment: 'production',
       enableWebhooks: false,
@@ -1556,9 +1643,9 @@ export class IntegrationFactory {
       pluginSandbox: true,
       graphqlPlayground: false,
       apiVersioning: false,
-      ...config
+      ...config,
     };
-    
+
     return new PluginManager(fullConfig);
   }
 }

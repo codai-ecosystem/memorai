@@ -1,9 +1,9 @@
 /**
  * Health Check System for Memorai Enterprise
- * 
+ *
  * Implements comprehensive health checking with detailed diagnostics
  * for all system components and dependencies.
- * 
+ *
  * Features:
  * - Multi-tier health checks (shallow, deep, critical)
  * - Dependency monitoring and validation
@@ -25,7 +25,12 @@ export type HealthSeverity = 'low' | 'medium' | 'high' | 'critical';
 /**
  * Health check types
  */
-export type HealthCheckType = 'liveness' | 'readiness' | 'startup' | 'dependency' | 'performance';
+export type HealthCheckType =
+  | 'liveness'
+  | 'readiness'
+  | 'startup'
+  | 'dependency'
+  | 'performance';
 
 /**
  * Individual health check result
@@ -140,7 +145,9 @@ export interface HealthCheckConfig {
 /**
  * Health check function type
  */
-export type HealthCheckFunction = () => Promise<Omit<HealthCheckResult, 'duration' | 'timestamp'>>;
+export type HealthCheckFunction = () => Promise<
+  Omit<HealthCheckResult, 'duration' | 'timestamp'>
+>;
 
 /**
  * Database health checker
@@ -156,14 +163,16 @@ export class DatabaseHealthChecker {
     try {
       // Test basic connectivity
       const startTime = Date.now();
-      const result = await this.connectionPool.query('SELECT 1 as health_check');
+      const result = await this.connectionPool.query(
+        'SELECT 1 as health_check'
+      );
       const responseTime = Date.now() - startTime;
 
       // Check connection pool status
       const poolStats = {
         total: this.connectionPool.totalCount || 0,
         idle: this.connectionPool.idleCount || 0,
-        waiting: this.connectionPool.waitingCount || 0
+        waiting: this.connectionPool.waitingCount || 0,
       };
 
       let status: HealthStatus = 'healthy';
@@ -180,8 +189,8 @@ export class DatabaseHealthChecker {
           responseTime,
           poolStats,
           query: 'SELECT 1 as health_check',
-          result: result.rows?.[0]
-        }
+          result: result.rows?.[0],
+        },
       };
     } catch (error) {
       return {
@@ -192,8 +201,9 @@ export class DatabaseHealthChecker {
         message: `Database connection failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
         details: {
           error: error instanceof Error ? error.message : 'Unknown error',
-          errorType: error instanceof Error ? error.constructor.name : 'Unknown'
-        }
+          errorType:
+            error instanceof Error ? error.constructor.name : 'Unknown',
+        },
       };
     }
   }
@@ -219,7 +229,7 @@ export class CacheHealthChecker {
       await this.cacheClient.set(testKey, testValue, 'EX', 10);
       const retrievedValue = await this.cacheClient.get(testKey);
       await this.cacheClient.del(testKey);
-      
+
       const responseTime = Date.now() - startTime;
 
       let status: HealthStatus = 'healthy';
@@ -238,8 +248,8 @@ export class CacheHealthChecker {
           writeReadTest: retrievedValue === testValue ? 'passed' : 'failed',
           testKey,
           expectedValue: testValue,
-          actualValue: retrievedValue
-        }
+          actualValue: retrievedValue,
+        },
       };
     } catch (error) {
       return {
@@ -250,8 +260,9 @@ export class CacheHealthChecker {
         message: `Cache connection failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
         details: {
           error: error instanceof Error ? error.message : 'Unknown error',
-          errorType: error instanceof Error ? error.constructor.name : 'Unknown'
-        }
+          errorType:
+            error instanceof Error ? error.constructor.name : 'Unknown',
+        },
       };
     }
   }
@@ -270,7 +281,7 @@ export class VectorDatabaseHealthChecker {
   async check(): Promise<Omit<HealthCheckResult, 'duration' | 'timestamp'>> {
     try {
       const startTime = Date.now();
-      
+
       // Test basic connectivity and collection info
       const collections = await this.qdrantClient.getCollections();
       const responseTime = Date.now() - startTime;
@@ -288,8 +299,9 @@ export class VectorDatabaseHealthChecker {
         details: {
           responseTime,
           collectionsCount: collections?.result?.collections?.length || 0,
-          collections: collections?.result?.collections?.map((c: any) => c.name) || []
-        }
+          collections:
+            collections?.result?.collections?.map((c: any) => c.name) || [],
+        },
       };
     } catch (error) {
       return {
@@ -300,8 +312,9 @@ export class VectorDatabaseHealthChecker {
         message: `Vector database connection failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
         details: {
           error: error instanceof Error ? error.message : 'Unknown error',
-          errorType: error instanceof Error ? error.constructor.name : 'Unknown'
-        }
+          errorType:
+            error instanceof Error ? error.constructor.name : 'Unknown',
+        },
       };
     }
   }
@@ -320,16 +333,16 @@ export class MemoryEngineHealthChecker {
   async check(): Promise<Omit<HealthCheckResult, 'duration' | 'timestamp'>> {
     try {
       const startTime = Date.now();
-      
+
       // Test basic memory operations
       const testMemory = {
         content: `Health check test ${Date.now()}`,
-        metadata: { type: 'health_check', timestamp: Date.now() }
+        metadata: { type: 'health_check', timestamp: Date.now() },
       };
 
       const stored = await this.memoryEngine.remember(
         'health-check-tenant',
-        'health-check-agent', 
+        'health-check-agent',
         testMemory.content,
         testMemory.metadata
       );
@@ -364,8 +377,8 @@ export class MemoryEngineHealthChecker {
           responseTime,
           operationsTest: 'passed',
           storeId: stored?.id,
-          recallSuccess: true
-        }
+          recallSuccess: true,
+        },
       };
     } catch (error) {
       return {
@@ -376,8 +389,9 @@ export class MemoryEngineHealthChecker {
         message: `Memory engine test failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
         details: {
           error: error instanceof Error ? error.message : 'Unknown error',
-          errorType: error instanceof Error ? error.constructor.name : 'Unknown'
-        }
+          errorType:
+            error instanceof Error ? error.constructor.name : 'Unknown',
+        },
       };
     }
   }
@@ -393,8 +407,9 @@ export class SystemResourceHealthChecker {
       const cpuUsage = process.cpuUsage();
 
       // Calculate memory percentage (assuming 1GB as baseline)
-      const memoryPercentage = (memoryUsage.heapUsed / (1024 * 1024 * 1024)) * 100;
-      
+      const memoryPercentage =
+        (memoryUsage.heapUsed / (1024 * 1024 * 1024)) * 100;
+
       // Simple CPU usage calculation
       const cpuPercentage = ((cpuUsage.user + cpuUsage.system) / 1000000) * 100;
 
@@ -419,22 +434,23 @@ export class SystemResourceHealthChecker {
         type: 'performance',
         status,
         severity: 'medium',
-        message: issues.length > 0 ? issues.join(', ') : 'System resources healthy',
+        message:
+          issues.length > 0 ? issues.join(', ') : 'System resources healthy',
         details: {
           memory: {
             heapUsed: memoryUsage.heapUsed,
             heapTotal: memoryUsage.heapTotal,
             external: memoryUsage.external,
-            percentage: memoryPercentage
+            percentage: memoryPercentage,
           },
           cpu: {
             user: cpuUsage.user,
             system: cpuUsage.system,
-            percentage: cpuPercentage
+            percentage: cpuPercentage,
           },
           uptime: process.uptime(),
-          pid: process.pid
-        }
+          pid: process.pid,
+        },
       };
     } catch (error) {
       return {
@@ -444,8 +460,8 @@ export class SystemResourceHealthChecker {
         severity: 'medium',
         message: `Failed to check system resources: ${error instanceof Error ? error.message : 'Unknown error'}`,
         details: {
-          error: error instanceof Error ? error.message : 'Unknown error'
-        }
+          error: error instanceof Error ? error.message : 'Unknown error',
+        },
       };
     }
   }
@@ -453,7 +469,7 @@ export class SystemResourceHealthChecker {
 
 /**
  * Comprehensive Health Check Engine
- * 
+ *
  * Orchestrates all health checks and provides detailed system health reporting
  * with multiple check types and severity levels.
  */
@@ -473,28 +489,32 @@ export class HealthCheckEngine {
   private initializeDefaultCheckers(): void {
     // System resources checker
     const systemChecker = new SystemResourceHealthChecker();
-    this.registerChecker('system_resources', systemChecker.check.bind(systemChecker), {
-      name: 'system_resources',
-      type: 'performance',
-      severity: 'medium',
-      timeout: 5000,
-      interval: 30000,
-      retryCount: 2,
-      retryDelay: 1000,
-      enabled: true,
-      thresholds: {
-        degraded: 70,
-        unhealthy: 90
+    this.registerChecker(
+      'system_resources',
+      systemChecker.check.bind(systemChecker),
+      {
+        name: 'system_resources',
+        type: 'performance',
+        severity: 'medium',
+        timeout: 5000,
+        interval: 30000,
+        retryCount: 2,
+        retryDelay: 1000,
+        enabled: true,
+        thresholds: {
+          degraded: 70,
+          unhealthy: 90,
+        },
       }
-    });
+    );
   }
 
   /**
    * Register a health checker
    */
   registerChecker(
-    name: string, 
-    checker: HealthCheckFunction, 
+    name: string,
+    checker: HealthCheckFunction,
     config: HealthCheckConfig
   ): void {
     this.checkers.set(name, checker);
@@ -521,7 +541,7 @@ export class HealthCheckEngine {
         interval: 60000,
         retryCount: 3,
         retryDelay: 2000,
-        enabled: true
+        enabled: true,
       });
     }
 
@@ -536,38 +556,50 @@ export class HealthCheckEngine {
         interval: 30000,
         retryCount: 2,
         retryDelay: 1000,
-        enabled: true
+        enabled: true,
       });
     }
 
     if (dependencies.vectorDatabase) {
       this.dependencies.set('vectorDatabase', dependencies.vectorDatabase);
-      const vectorChecker = new VectorDatabaseHealthChecker(dependencies.vectorDatabase);
-      this.registerChecker('vector_database', vectorChecker.check.bind(vectorChecker), {
-        name: 'vector_database',
-        type: 'dependency',
-        severity: 'critical',
-        timeout: 8000,
-        interval: 45000,
-        retryCount: 2,
-        retryDelay: 1500,
-        enabled: true
-      });
+      const vectorChecker = new VectorDatabaseHealthChecker(
+        dependencies.vectorDatabase
+      );
+      this.registerChecker(
+        'vector_database',
+        vectorChecker.check.bind(vectorChecker),
+        {
+          name: 'vector_database',
+          type: 'dependency',
+          severity: 'critical',
+          timeout: 8000,
+          interval: 45000,
+          retryCount: 2,
+          retryDelay: 1500,
+          enabled: true,
+        }
+      );
     }
 
     if (dependencies.memoryEngine) {
       this.dependencies.set('memoryEngine', dependencies.memoryEngine);
-      const memoryChecker = new MemoryEngineHealthChecker(dependencies.memoryEngine);
-      this.registerChecker('memory_engine', memoryChecker.check.bind(memoryChecker), {
-        name: 'memory_engine',
-        type: 'performance',
-        severity: 'critical',
-        timeout: 10000,
-        interval: 60000,
-        retryCount: 2,
-        retryDelay: 2000,
-        enabled: true
-      });
+      const memoryChecker = new MemoryEngineHealthChecker(
+        dependencies.memoryEngine
+      );
+      this.registerChecker(
+        'memory_engine',
+        memoryChecker.check.bind(memoryChecker),
+        {
+          name: 'memory_engine',
+          type: 'performance',
+          severity: 'critical',
+          timeout: 10000,
+          interval: 60000,
+          retryCount: 2,
+          retryDelay: 2000,
+          enabled: true,
+        }
+      );
     }
   }
 
@@ -590,9 +622,12 @@ export class HealthCheckEngine {
       try {
         const result = await Promise.race([
           checker(),
-          new Promise<never>((_, reject) => 
-            setTimeout(() => reject(new Error('Health check timeout')), config.timeout)
-          )
+          new Promise<never>((_, reject) =>
+            setTimeout(
+              () => reject(new Error('Health check timeout')),
+              config.timeout
+            )
+          ),
         ]);
 
         const finalResult: HealthCheckResult = {
@@ -603,17 +638,16 @@ export class HealthCheckEngine {
             ...result.metadata,
             attempt: attempt + 1,
             retryCount: config.retryCount,
-            environment: process.env.NODE_ENV || 'development'
-          }
+            environment: process.env.NODE_ENV || 'development',
+          },
         };
 
         this.lastResults.set(name, finalResult);
         return finalResult;
-
       } catch (error) {
         lastError = error as Error;
         attempt++;
-        
+
         if (attempt <= config.retryCount) {
           await new Promise(resolve => setTimeout(resolve, config.retryDelay));
         }
@@ -632,13 +666,13 @@ export class HealthCheckEngine {
       details: {
         error: lastError?.message || 'Unknown error',
         attempts: attempt,
-        timeout: config.timeout
+        timeout: config.timeout,
       },
       metadata: {
         attempt,
         retryCount: config.retryCount,
-        environment: process.env.NODE_ENV || 'development'
-      }
+        environment: process.env.NODE_ENV || 'development',
+      },
     };
 
     this.lastResults.set(name, failedResult);
@@ -672,7 +706,7 @@ export class HealthCheckEngine {
           severity: 'high',
           message: `Health check promise failed: ${result.reason?.message || 'Unknown error'}`,
           duration: 0,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         });
       }
     }
@@ -686,7 +720,7 @@ export class HealthCheckEngine {
       healthy: results.filter(r => r.status === 'healthy').length,
       degraded: results.filter(r => r.status === 'degraded').length,
       unhealthy: results.filter(r => r.status === 'unhealthy').length,
-      unknown: results.filter(r => r.status === 'unknown').length
+      unknown: results.filter(r => r.status === 'unknown').length,
     };
 
     // Generate dependencies health
@@ -708,7 +742,7 @@ export class HealthCheckEngine {
       summary,
       dependencies,
       performance,
-      recommendations
+      recommendations,
     };
   }
 
@@ -718,8 +752,8 @@ export class HealthCheckEngine {
   private calculateOverallStatus(results: HealthCheckResult[]): HealthStatus {
     if (results.length === 0) return 'unknown';
 
-    const criticalUnhealthy = results.filter(r => 
-      r.severity === 'critical' && r.status === 'unhealthy'
+    const criticalUnhealthy = results.filter(
+      r => r.severity === 'critical' && r.status === 'unhealthy'
     ).length;
 
     const anyUnhealthy = results.filter(r => r.status === 'unhealthy').length;
@@ -735,7 +769,9 @@ export class HealthCheckEngine {
   /**
    * Generate dependency health summary
    */
-  private generateDependencyHealth(results: HealthCheckResult[]): DependencyHealth[] {
+  private generateDependencyHealth(
+    results: HealthCheckResult[]
+  ): DependencyHealth[] {
     return results
       .filter(r => r.type === 'dependency')
       .map(r => ({
@@ -745,7 +781,7 @@ export class HealthCheckEngine {
         responseTime: r.details?.responseTime || 0,
         lastChecked: r.timestamp,
         error: r.status === 'unhealthy' ? r.message : undefined,
-        metrics: r.details
+        metrics: r.details,
       }));
   }
 
@@ -754,10 +790,10 @@ export class HealthCheckEngine {
    */
   private mapDependencyType(name: string): DependencyHealth['type'] {
     const typeMap: Record<string, DependencyHealth['type']> = {
-      'database': 'database',
-      'cache': 'cache',
-      'vector_database': 'database',
-      'memory_engine': 'service'
+      database: 'database',
+      cache: 'cache',
+      vector_database: 'database',
+      memory_engine: 'service',
     };
     return typeMap[name] || 'service';
   }
@@ -765,44 +801,62 @@ export class HealthCheckEngine {
   /**
    * Generate performance health summary
    */
-  private generatePerformanceHealth(results: HealthCheckResult[]): PerformanceHealth {
+  private generatePerformanceHealth(
+    results: HealthCheckResult[]
+  ): PerformanceHealth {
     const systemResult = results.find(r => r.name === 'system_resources');
     const memoryResult = results.find(r => r.name === 'memory_engine');
 
     return {
       cpu: {
         usage: systemResult?.details?.cpu?.percentage || 0,
-        status: this.getResourceStatus(systemResult?.details?.cpu?.percentage || 0, 70, 90)
+        status: this.getResourceStatus(
+          systemResult?.details?.cpu?.percentage || 0,
+          70,
+          90
+        ),
       },
       memory: {
         usage: systemResult?.details?.memory?.heapUsed || 0,
         total: systemResult?.details?.memory?.heapTotal || 0,
         percentage: systemResult?.details?.memory?.percentage || 0,
-        status: this.getResourceStatus(systemResult?.details?.memory?.percentage || 0, 70, 90)
+        status: this.getResourceStatus(
+          systemResult?.details?.memory?.percentage || 0,
+          70,
+          90
+        ),
       },
       disk: {
         usage: 0,
         total: 0,
         percentage: 0,
-        status: 'healthy'
+        status: 'healthy',
       },
       network: {
         latency: 0,
         throughput: 0,
-        status: 'healthy'
+        status: 'healthy',
       },
       response: {
         averageTime: memoryResult?.details?.responseTime || 0,
         p95Time: memoryResult?.details?.responseTime || 0,
-        status: this.getResourceStatus(memoryResult?.details?.responseTime || 0, 1000, 3000)
-      }
+        status: this.getResourceStatus(
+          memoryResult?.details?.responseTime || 0,
+          1000,
+          3000
+        ),
+      },
     };
   }
 
   /**
    * Get resource status based on thresholds
    */
-  private getResourceStatus(value: number, degradedThreshold: number, unhealthyThreshold: number): HealthStatus {
+  private getResourceStatus(
+    value: number,
+    degradedThreshold: number,
+    unhealthyThreshold: number
+  ): HealthStatus {
     if (value >= unhealthyThreshold) return 'unhealthy';
     if (value >= degradedThreshold) return 'degraded';
     return 'healthy';
@@ -818,22 +872,30 @@ export class HealthCheckEngine {
     const degradedChecks = results.filter(r => r.status === 'degraded');
 
     if (unhealthyChecks.length > 0) {
-      recommendations.push(`Critical: ${unhealthyChecks.length} components are unhealthy and require immediate attention`);
+      recommendations.push(
+        `Critical: ${unhealthyChecks.length} components are unhealthy and require immediate attention`
+      );
     }
 
     if (degradedChecks.length > 0) {
-      recommendations.push(`Warning: ${degradedChecks.length} components are degraded and should be monitored closely`);
+      recommendations.push(
+        `Warning: ${degradedChecks.length} components are degraded and should be monitored closely`
+      );
     }
 
     // Specific recommendations
     const systemCheck = results.find(r => r.name === 'system_resources');
     if (systemCheck?.details?.memory?.percentage > 70) {
-      recommendations.push('Consider increasing memory allocation or optimizing memory usage');
+      recommendations.push(
+        'Consider increasing memory allocation or optimizing memory usage'
+      );
     }
 
     const memoryEngineCheck = results.find(r => r.name === 'memory_engine');
     if (memoryEngineCheck?.details?.responseTime > 2000) {
-      recommendations.push('Memory engine response time is high, consider performance optimization');
+      recommendations.push(
+        'Memory engine response time is high, consider performance optimization'
+      );
     }
 
     if (recommendations.length === 0) {
@@ -853,18 +915,25 @@ export class HealthCheckEngine {
   /**
    * Get simple liveness check
    */
-  async getLivenessCheck(): Promise<{ status: HealthStatus; timestamp: number }> {
+  async getLivenessCheck(): Promise<{
+    status: HealthStatus;
+    timestamp: number;
+  }> {
     // Simple check - just verify the service is responding
     return {
       status: 'healthy',
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
   }
 
   /**
    * Get readiness check
    */
-  async getReadinessCheck(): Promise<{ status: HealthStatus; timestamp: number; dependencies: string[] }> {
+  async getReadinessCheck(): Promise<{
+    status: HealthStatus;
+    timestamp: number;
+    dependencies: string[];
+  }> {
     // Check critical dependencies only
     const criticalChecks = ['database', 'vector_database'];
     const results = await Promise.all(
@@ -873,13 +942,15 @@ export class HealthCheckEngine {
         .map(name => this.runHealthCheck(name))
     );
 
-    const failedDependencies = results.filter(r => r.status === 'unhealthy').map(r => r.name);
+    const failedDependencies = results
+      .filter(r => r.status === 'unhealthy')
+      .map(r => r.name);
     const status = failedDependencies.length > 0 ? 'unhealthy' : 'healthy';
 
     return {
       status,
       timestamp: Date.now(),
-      dependencies: failedDependencies
+      dependencies: failedDependencies,
     };
   }
 
@@ -892,17 +963,23 @@ export class HealthCheckEngine {
     lastRunTimestamp?: number;
     averageDuration: number;
   } {
-    const enabledCount = Array.from(this.configs.values()).filter(c => c.enabled).length;
+    const enabledCount = Array.from(this.configs.values()).filter(
+      c => c.enabled
+    ).length;
     const results = Array.from(this.lastResults.values());
-    const averageDuration = results.length > 0 
-      ? results.reduce((sum, r) => sum + r.duration, 0) / results.length 
-      : 0;
+    const averageDuration =
+      results.length > 0
+        ? results.reduce((sum, r) => sum + r.duration, 0) / results.length
+        : 0;
 
     return {
       totalCheckers: this.checkers.size,
       enabledCheckers: enabledCount,
-      lastRunTimestamp: results.length > 0 ? Math.max(...results.map(r => r.timestamp)) : undefined,
-      averageDuration
+      lastRunTimestamp:
+        results.length > 0
+          ? Math.max(...results.map(r => r.timestamp))
+          : undefined,
+      averageDuration,
     };
   }
 }

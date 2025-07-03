@@ -1,7 +1,7 @@
 /**
  * 🎤 Voice to Memory Conversion Engine
  * Advanced speech processing for hands-free memory management
- * 
+ *
  * Features:
  * - Real-time speech-to-text conversion
  * - Voice activity detection
@@ -9,7 +9,7 @@
  * - Noise reduction and audio enhancement
  * - Voice command recognition
  * - Memory creation from voice notes
- * 
+ *
  * @version 3.2.0
  * @author Memorai AI Team
  */
@@ -23,13 +23,13 @@ declare global {
     SpeechRecognition?: any;
     webkitSpeechRecognition?: any;
   }
-  
+
   interface Navigator {
     mediaDevices?: {
       getUserMedia(constraints: any): Promise<any>;
     };
   }
-  
+
   const navigator: Navigator;
   const window: Window;
   const AudioContext: any;
@@ -77,7 +77,13 @@ interface VoiceCommand {
   command: string;
   parameters: Record<string, any>;
   confidence: number;
-  action: 'create_memory' | 'search_memory' | 'update_memory' | 'delete_memory' | 'start_recording' | 'stop_recording';
+  action:
+    | 'create_memory'
+    | 'search_memory'
+    | 'update_memory'
+    | 'delete_memory'
+    | 'start_recording'
+    | 'stop_recording';
 }
 
 interface VoiceMemory {
@@ -124,8 +130,10 @@ class SpeechRecognitionEngine {
   private initializeSpeechRecognition(): void {
     // Check if speech recognition is available
     if (typeof window !== 'undefined') {
-      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-      
+      const SpeechRecognition =
+        (window as any).SpeechRecognition ||
+        (window as any).webkitSpeechRecognition;
+
       if (SpeechRecognition) {
         this.recognition = new SpeechRecognition();
         this.configureSpeechRecognition();
@@ -168,9 +176,11 @@ class SpeechRecognitionEngine {
     this.isListening = false;
   }
 
-  async processAudioStream(audioStream: MediaStream): Promise<SpeechRecognitionResult[]> {
+  async processAudioStream(
+    audioStream: MediaStream
+  ): Promise<SpeechRecognitionResult[]> {
     const results: SpeechRecognitionResult[] = [];
-    
+
     return new Promise((resolve, reject) => {
       if (!this.recognition) {
         reject(new Error('Speech recognition not available'));
@@ -180,14 +190,14 @@ class SpeechRecognitionEngine {
       this.recognition.onresult = (event: any) => {
         for (let i = event.resultIndex; i < event.results.length; i++) {
           const result = event.results[i];
-          
+
           if (result.isFinal) {
             const alternatives: SpeechAlternative[] = [];
-            
+
             for (let j = 0; j < result.length; j++) {
               alternatives.push({
                 text: result[j].transcript,
-                confidence: result[j].confidence
+                confidence: result[j].confidence,
               });
             }
 
@@ -197,7 +207,7 @@ class SpeechRecognitionEngine {
               language: this.recognition.lang,
               alternatives,
               timestamp: new Date(),
-              duration: 0 // Will be calculated by caller
+              duration: 0, // Will be calculated by caller
             };
 
             results.push(speechResult);
@@ -226,7 +236,10 @@ class SpeechRecognitionEngine {
   }
 
   setLanguage(language: string): void {
-    if (this.recognition && this.options.supportedLanguages.includes(language)) {
+    if (
+      this.recognition &&
+      this.options.supportedLanguages.includes(language)
+    ) {
       this.recognition.lang = language;
     }
   }
@@ -247,14 +260,16 @@ class VoiceActivityDetector {
     try {
       this.audioContext = new AudioContext();
       const source = this.audioContext.createMediaStreamSource(audioStream);
-      
+
       this.analyser = this.audioContext.createAnalyser();
       this.analyser.fftSize = 256;
       this.analyser.smoothingTimeConstant = this.smoothingTimeConstant;
-      
+
       source.connect(this.analyser);
     } catch (error) {
-      throw new Error(`Failed to initialize voice activity detection: ${error}`);
+      throw new Error(
+        `Failed to initialize voice activity detection: ${error}`
+      );
     }
   }
 
@@ -264,7 +279,7 @@ class VoiceActivityDetector {
         isActive: false,
         confidence: 0,
         timestamp: new Date(),
-        duration: 0
+        duration: 0,
       };
     }
 
@@ -286,7 +301,7 @@ class VoiceActivityDetector {
       isActive,
       confidence,
       timestamp: new Date(),
-      duration: 0 // Will be tracked by caller
+      duration: 0, // Will be tracked by caller
     };
   }
 
@@ -319,37 +334,37 @@ class VoiceCommandProcessor {
     this.commandPatterns.set('create_memory', [
       /^(remember|save|store|note down|create memory)/i,
       /^(add to memory|keep this|make a note)/i,
-      /^(memorize|record this|save this information)/i
+      /^(memorize|record this|save this information)/i,
     ]);
 
     // Memory search commands
     this.commandPatterns.set('search_memory', [
       /^(find|search|look for|retrieve|get)/i,
       /^(show me|tell me about|what do I know about)/i,
-      /^(recall|remind me|find memories about)/i
+      /^(recall|remind me|find memories about)/i,
     ]);
 
     // Memory update commands
     this.commandPatterns.set('update_memory', [
       /^(update|modify|change|edit)/i,
-      /^(correct|fix|update memory|change memory)/i
+      /^(correct|fix|update memory|change memory)/i,
     ]);
 
     // Memory deletion commands
     this.commandPatterns.set('delete_memory', [
       /^(delete|remove|forget|clear)/i,
-      /^(erase|get rid of|remove memory)/i
+      /^(erase|get rid of|remove memory)/i,
     ]);
 
     // Recording control commands
     this.commandPatterns.set('start_recording', [
       /^(start recording|begin recording|start listening)/i,
-      /^(record|listen|start)/i
+      /^(record|listen|start)/i,
     ]);
 
     this.commandPatterns.set('stop_recording', [
       /^(stop recording|end recording|stop listening)/i,
-      /^(stop|finish|end)/i
+      /^(stop|finish|end)/i,
     ]);
   }
 
@@ -363,8 +378,11 @@ class VoiceCommandProcessor {
           return {
             command: match[0],
             parameters: this.extractCommandParameters(normalizedText, action),
-            confidence: this.calculateCommandConfidence(normalizedText, pattern),
-            action: action as any
+            confidence: this.calculateCommandConfidence(
+              normalizedText,
+              pattern
+            ),
+            action: action as any,
           };
         }
       }
@@ -373,31 +391,46 @@ class VoiceCommandProcessor {
     return null;
   }
 
-  private extractCommandParameters(text: string, action: string): Record<string, any> {
+  private extractCommandParameters(
+    text: string,
+    action: string
+  ): Record<string, any> {
     const params: Record<string, any> = {};
 
     switch (action) {
       case 'create_memory':
         // Extract content after command
-        const createContent = text.replace(/^(remember|save|store|note down|create memory)\s*/i, '');
+        const createContent = text.replace(
+          /^(remember|save|store|note down|create memory)\s*/i,
+          ''
+        );
         params.content = createContent.trim();
         break;
 
       case 'search_memory':
         // Extract search query
-        const searchQuery = text.replace(/^(find|search|look for|retrieve|get|show me|tell me about|what do I know about)\s*/i, '');
+        const searchQuery = text.replace(
+          /^(find|search|look for|retrieve|get|show me|tell me about|what do I know about)\s*/i,
+          ''
+        );
         params.query = searchQuery.trim();
         break;
 
       case 'update_memory':
         // Extract update content
-        const updateContent = text.replace(/^(update|modify|change|edit)\s*/i, '');
+        const updateContent = text.replace(
+          /^(update|modify|change|edit)\s*/i,
+          ''
+        );
         params.content = updateContent.trim();
         break;
 
       case 'delete_memory':
         // Extract deletion target
-        const deleteTarget = text.replace(/^(delete|remove|forget|clear)\s*/i, '');
+        const deleteTarget = text.replace(
+          /^(delete|remove|forget|clear)\s*/i,
+          ''
+        );
         params.target = deleteTarget.trim();
         break;
     }
@@ -427,10 +460,13 @@ class AudioEnhancementEngine {
   private noiseReducer: AudioNode | null = null;
   private echoCanceller: AudioNode | null = null;
 
-  async initializeAudioProcessing(audioStream: MediaStream, config: AudioConfig): Promise<MediaStream> {
+  async initializeAudioProcessing(
+    audioStream: MediaStream,
+    config: AudioConfig
+  ): Promise<MediaStream> {
     try {
       this.audioContext = new AudioContext({
-        sampleRate: config.sampleRate
+        sampleRate: config.sampleRate,
       });
 
       const source = this.audioContext.createMediaStreamSource(audioStream);
@@ -489,7 +525,7 @@ export class VoiceToMemoryEngine extends EventEmitter {
 
   constructor(options: VoiceProcessingOptions) {
     super();
-    
+
     this.options = options;
     this.speechRecognition = new SpeechRecognitionEngine(options);
     this.voiceActivityDetector = new VoiceActivityDetector();
@@ -510,14 +546,14 @@ export class VoiceToMemoryEngine extends EventEmitter {
       if (!navigator.mediaDevices) {
         throw new Error('Media devices not supported');
       }
-      
+
       this.currentAudioStream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
           autoGainControl: true,
-          sampleRate: 16000
-        }
+          sampleRate: 16000,
+        },
       });
 
       // Initialize audio enhancement
@@ -529,7 +565,7 @@ export class VoiceToMemoryEngine extends EventEmitter {
           bitDepth: 16,
           bufferSize: 4096,
           enableNoiseReduction: true,
-          enableEchoCancellation: true
+          enableEchoCancellation: true,
         }
       );
 
@@ -541,9 +577,11 @@ export class VoiceToMemoryEngine extends EventEmitter {
       this.startContinuousProcessing(enhancedStream);
 
       this.emit('voice_processing_started');
-
     } catch (error) {
-      this.emit('error', new Error(`Failed to start voice processing: ${error}`));
+      this.emit(
+        'error',
+        new Error(`Failed to start voice processing: ${error}`)
+      );
       throw error;
     }
   }
@@ -573,14 +611,17 @@ export class VoiceToMemoryEngine extends EventEmitter {
   /**
    * Process a single voice note and convert to memory
    */
-  async processVoiceNote(audioData: ArrayBuffer, language?: string): Promise<VoiceMemory> {
+  async processVoiceNote(
+    audioData: ArrayBuffer,
+    language?: string
+  ): Promise<VoiceMemory> {
     const voiceMemoryId = uuidv4();
-    
+
     try {
       // For now, we'll simulate speech recognition
       // In a real implementation, this would use actual ASR
       const mockTranscription = await this.simulateSpeechRecognition(audioData);
-      
+
       const voiceMemory: VoiceMemory = {
         id: voiceMemoryId,
         transcription: mockTranscription.text,
@@ -592,25 +633,26 @@ export class VoiceToMemoryEngine extends EventEmitter {
         metadata: {
           audioQuality: 0.8,
           backgroundNoise: 0.2,
-          speakingRate: 150 // words per minute
-        }
+          speakingRate: 150, // words per minute
+        },
       };
 
       this.voiceMemories.set(voiceMemoryId, voiceMemory);
 
       // Check for voice commands
-      const command = this.commandProcessor.processCommand(voiceMemory.transcription);
+      const command = this.commandProcessor.processCommand(
+        voiceMemory.transcription
+      );
       if (command) {
         this.emit('voice_command_detected', {
           voiceMemory,
-          command
+          command,
         });
       }
 
       this.emit('voice_memory_created', voiceMemory);
-      
-      return voiceMemory;
 
+      return voiceMemory;
     } catch (error) {
       this.emit('error', new Error(`Failed to process voice note: ${error}`));
       throw error;
@@ -661,15 +703,20 @@ export class VoiceToMemoryEngine extends EventEmitter {
     }
   }
 
-  private async startContinuousProcessing(audioStream: MediaStream): Promise<void> {
+  private async startContinuousProcessing(
+    audioStream: MediaStream
+  ): Promise<void> {
     const processVoiceActivity = () => {
       if (!this.isProcessing) return;
 
       const activity = this.voiceActivityDetector.detectActivity();
-      
-      if (activity.isActive && activity.confidence > this.options.confidenceThreshold) {
+
+      if (
+        activity.isActive &&
+        activity.confidence > this.options.confidenceThreshold
+      ) {
         this.emit('voice_activity_detected', activity);
-        
+
         // Start speech recognition when voice is detected
         if (!this.speechRecognition.isCurrentlyListening()) {
           this.speechRecognition.startListening();
@@ -683,22 +730,30 @@ export class VoiceToMemoryEngine extends EventEmitter {
     processVoiceActivity();
   }
 
-  private async simulateSpeechRecognition(audioData: ArrayBuffer): Promise<SpeechRecognitionResult> {
+  private async simulateSpeechRecognition(
+    audioData: ArrayBuffer
+  ): Promise<SpeechRecognitionResult> {
     // This is a simulation - in a real implementation, you would:
     // 1. Send audio to a speech recognition service (Google, Azure, AWS, etc.)
     // 2. Or use a local speech recognition library
     // 3. Process the audio buffer and return transcription
-    
+
     return {
-      text: "This is a simulated transcription of the voice note.",
+      text: 'This is a simulated transcription of the voice note.',
       confidence: 0.85,
       language: this.options.supportedLanguages[0],
       alternatives: [
-        { text: "This is a simulated transcription of the voice note.", confidence: 0.85 },
-        { text: "This is a generated transcription of the voice note.", confidence: 0.75 }
+        {
+          text: 'This is a simulated transcription of the voice note.',
+          confidence: 0.85,
+        },
+        {
+          text: 'This is a generated transcription of the voice note.',
+          confidence: 0.75,
+        },
       ],
       timestamp: new Date(),
-      duration: 3000 // 3 seconds
+      duration: 3000, // 3 seconds
     };
   }
 }
@@ -706,10 +761,10 @@ export class VoiceToMemoryEngine extends EventEmitter {
 // Export types for external use
 export type {
   AudioConfig,
-  VoiceActivity,
-  SpeechRecognitionResult,
   SpeechAlternative,
+  SpeechRecognitionResult,
+  VoiceActivity,
   VoiceCommand,
   VoiceMemory,
-  VoiceProcessingOptions
+  VoiceProcessingOptions,
 };

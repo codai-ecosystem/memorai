@@ -1,6 +1,6 @@
 /**
  * Advanced Performance Monitor
- * 
+ *
  * Enterprise-grade performance monitoring for Memorai memory operations.
  * Provides real-time metrics, historical analysis, and optimization insights.
  */
@@ -84,7 +84,7 @@ export interface AnalyticsConfig {
 
 /**
  * Advanced Performance Monitor
- * 
+ *
  * Comprehensive monitoring system for memory operations and system health.
  */
 export class AdvancedPerformanceMonitor extends EventEmitter {
@@ -132,7 +132,7 @@ export class AdvancedPerformanceMonitor extends EventEmitter {
   public recordMetric(metric: Omit<PerformanceMetric, 'timestamp'>): void {
     const fullMetric: PerformanceMetric = {
       ...metric,
-      timestamp: new Date()
+      timestamp: new Date(),
     };
 
     // Apply sampling if enabled
@@ -169,10 +169,11 @@ export class AdvancedPerformanceMonitor extends EventEmitter {
     p95ResponseTime: number;
     p99ResponseTime: number;
   } {
-    const relevantMetrics = this.metrics.filter(m => 
-      m.timestamp >= startTime && 
-      m.timestamp <= endTime &&
-      (!operationType || m.operationType === operationType)
+    const relevantMetrics = this.metrics.filter(
+      m =>
+        m.timestamp >= startTime &&
+        m.timestamp <= endTime &&
+        (!operationType || m.operationType === operationType)
     );
 
     if (relevantMetrics.length === 0) {
@@ -182,21 +183,24 @@ export class AdvancedPerformanceMonitor extends EventEmitter {
         successRate: 0,
         operationsPerSecond: 0,
         p95ResponseTime: 0,
-        p99ResponseTime: 0
+        p99ResponseTime: 0,
       };
     }
 
-    const durations = relevantMetrics.map(m => m.duration).sort((a, b) => a - b);
+    const durations = relevantMetrics
+      .map(m => m.duration)
+      .sort((a, b) => a - b);
     const successCount = relevantMetrics.filter(m => m.success).length;
     const timeRangeSeconds = (endTime.getTime() - startTime.getTime()) / 1000;
 
     return {
       totalOperations: relevantMetrics.length,
-      averageResponseTime: durations.reduce((a, b) => a + b, 0) / durations.length,
+      averageResponseTime:
+        durations.reduce((a, b) => a + b, 0) / durations.length,
       successRate: successCount / relevantMetrics.length,
       operationsPerSecond: relevantMetrics.length / timeRangeSeconds,
       p95ResponseTime: durations[Math.floor(durations.length * 0.95)] || 0,
-      p99ResponseTime: durations[Math.floor(durations.length * 0.99)] || 0
+      p99ResponseTime: durations[Math.floor(durations.length * 0.99)] || 0,
     };
   }
 
@@ -205,34 +209,41 @@ export class AdvancedPerformanceMonitor extends EventEmitter {
    */
   public getMemoryAnalytics(): MemoryUsageStats {
     const recentMetrics = this.getRecentMetrics(300000); // Last 5 minutes
-    
+
     const memoriesPerTenant: Record<string, number> = {};
     const memoriesPerAgent: Record<string, number> = {};
     const memoriesPerType: Record<string, number> = {};
     let totalDuration = 0;
 
     recentMetrics.forEach(metric => {
-      memoriesPerTenant[metric.tenantId] = (memoriesPerTenant[metric.tenantId] || 0) + metric.memoryCount;
-      
+      memoriesPerTenant[metric.tenantId] =
+        (memoriesPerTenant[metric.tenantId] || 0) + metric.memoryCount;
+
       if (metric.agentId) {
-        memoriesPerAgent[metric.agentId] = (memoriesPerAgent[metric.agentId] || 0) + metric.memoryCount;
+        memoriesPerAgent[metric.agentId] =
+          (memoriesPerAgent[metric.agentId] || 0) + metric.memoryCount;
       }
-      
-      memoriesPerType[metric.operationType] = (memoriesPerType[metric.operationType] || 0) + metric.memoryCount;
+
+      memoriesPerType[metric.operationType] =
+        (memoriesPerType[metric.operationType] || 0) + metric.memoryCount;
       totalDuration += metric.duration;
     });
 
-    const totalMemories = Object.values(memoriesPerTenant).reduce((a, b) => a + b, 0);
-    
+    const totalMemories = Object.values(memoriesPerTenant).reduce(
+      (a, b) => a + b,
+      0
+    );
+
     return {
       totalMemories,
       memoriesPerTenant,
       memoriesPerAgent,
       memoriesPerType,
-      averageAccessTime: recentMetrics.length > 0 ? totalDuration / recentMetrics.length : 0,
+      averageAccessTime:
+        recentMetrics.length > 0 ? totalDuration / recentMetrics.length : 0,
       cacheHitRatio: this.calculateCacheHitRatio(),
       vectorSearchLatency: this.calculateVectorSearchLatency(),
-      embeddingProcessingTime: this.calculateEmbeddingProcessingTime()
+      embeddingProcessingTime: this.calculateEmbeddingProcessingTime(),
     };
   }
 
@@ -273,15 +284,15 @@ export class AdvancedPerformanceMonitor extends EventEmitter {
   } {
     const cutoffTime = new Date(Date.now() - hours * 60 * 60 * 1000);
     const relevantMetrics = this.metrics.filter(m => m.timestamp >= cutoffTime);
-    
+
     // Group metrics by hour
     const hourlyGroups: Record<string, PerformanceMetric[]> = {};
-    
+
     relevantMetrics.forEach(metric => {
       const hour = new Date(metric.timestamp);
       hour.setMinutes(0, 0, 0);
       const key = hour.toISOString();
-      
+
       if (!hourlyGroups[key]) {
         hourlyGroups[key] = [];
       }
@@ -294,9 +305,11 @@ export class AdvancedPerformanceMonitor extends EventEmitter {
 
     Object.entries(hourlyGroups).forEach(([key, metrics]) => {
       const timestamp = new Date(key);
-      const avgResponseTime = metrics.reduce((sum, m) => sum + m.duration, 0) / metrics.length;
+      const avgResponseTime =
+        metrics.reduce((sum, m) => sum + m.duration, 0) / metrics.length;
       const throughput = metrics.length;
-      const errorRate = 1 - (metrics.filter(m => m.success).length / metrics.length);
+      const errorRate =
+        1 - metrics.filter(m => m.success).length / metrics.length;
 
       responseTimeTrend.push({ timestamp, value: avgResponseTime });
       throughputTrend.push({ timestamp, value: throughput });
@@ -304,9 +317,15 @@ export class AdvancedPerformanceMonitor extends EventEmitter {
     });
 
     return {
-      responseTimeTrend: responseTimeTrend.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime()),
-      throughputTrend: throughputTrend.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime()),
-      errorRateTrend: errorRateTrend.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime())
+      responseTimeTrend: responseTimeTrend.sort(
+        (a, b) => a.timestamp.getTime() - b.timestamp.getTime()
+      ),
+      throughputTrend: throughputTrend.sort(
+        (a, b) => a.timestamp.getTime() - b.timestamp.getTime()
+      ),
+      errorRateTrend: errorRateTrend.sort(
+        (a, b) => a.timestamp.getTime() - b.timestamp.getTime()
+      ),
     };
   }
 
@@ -336,14 +355,17 @@ export class AdvancedPerformanceMonitor extends EventEmitter {
     );
 
     // Response time optimization
-    if (recentStats.averageResponseTime > this.config.alertThresholds.responseTime) {
+    if (
+      recentStats.averageResponseTime > this.config.alertThresholds.responseTime
+    ) {
       recommendations.push({
         category: 'performance',
         priority: 'high',
         title: 'High Response Time Detected',
         description: `Average response time is ${recentStats.averageResponseTime.toFixed(2)}ms, exceeding threshold of ${this.config.alertThresholds.responseTime}ms`,
         impact: 'Improved user experience and system throughput',
-        implementation: 'Consider implementing caching, optimizing database queries, or scaling compute resources'
+        implementation:
+          'Consider implementing caching, optimizing database queries, or scaling compute resources',
       });
     }
 
@@ -355,13 +377,18 @@ export class AdvancedPerformanceMonitor extends EventEmitter {
         title: 'High Error Rate',
         description: `Success rate is ${(recentStats.successRate * 100).toFixed(1)}%, below acceptable threshold of 95%`,
         impact: 'Reduced system reliability and user satisfaction',
-        implementation: 'Investigate error patterns, improve error handling, and address resource constraints'
+        implementation:
+          'Investigate error patterns, improve error handling, and address resource constraints',
       });
     }
 
     // Memory usage optimization
-    if (this.healthStats?.memory.heapUsed && this.healthStats.memory.heapTotal) {
-      const memoryUsage = this.healthStats.memory.heapUsed / this.healthStats.memory.heapTotal;
+    if (
+      this.healthStats?.memory.heapUsed &&
+      this.healthStats.memory.heapTotal
+    ) {
+      const memoryUsage =
+        this.healthStats.memory.heapUsed / this.healthStats.memory.heapTotal;
       if (memoryUsage > 0.8) {
         recommendations.push({
           category: 'resource',
@@ -369,20 +396,25 @@ export class AdvancedPerformanceMonitor extends EventEmitter {
           title: 'High Memory Usage',
           description: `Memory usage is at ${(memoryUsage * 100).toFixed(1)}% of heap capacity`,
           impact: 'Prevents memory leaks and improves system stability',
-          implementation: 'Implement memory cleanup routines, optimize data structures, or increase heap size'
+          implementation:
+            'Implement memory cleanup routines, optimize data structures, or increase heap size',
         });
       }
     }
 
     // Throughput optimization
-    if (recentStats.operationsPerSecond > 0 && recentStats.operationsPerSecond < 10) {
+    if (
+      recentStats.operationsPerSecond > 0 &&
+      recentStats.operationsPerSecond < 10
+    ) {
       recommendations.push({
         category: 'scaling',
         priority: 'medium',
         title: 'Low Throughput',
         description: `Current throughput is ${recentStats.operationsPerSecond.toFixed(2)} operations/second`,
         impact: 'Increased system capacity and better resource utilization',
-        implementation: 'Consider horizontal scaling, load balancing, or performance tuning'
+        implementation:
+          'Consider horizontal scaling, load balancing, or performance tuning',
       });
     }
 
@@ -394,32 +426,35 @@ export class AdvancedPerformanceMonitor extends EventEmitter {
    */
   private updateSystemHealth(): void {
     const process = globalThis.process;
-    
+
     if (process && typeof process.memoryUsage === 'function') {
       const memUsage = process.memoryUsage();
-      
+
       this.healthStats = {
         cpu: {
           usage: this.calculateCpuUsage(),
-          loadAverage: process.platform === 'win32' ? [0, 0, 0] : (process as any).loadavg?.() || [0, 0, 0]
+          loadAverage:
+            process.platform === 'win32'
+              ? [0, 0, 0]
+              : (process as any).loadavg?.() || [0, 0, 0],
         },
         memory: {
           heapUsed: memUsage.heapUsed,
           heapTotal: memUsage.heapTotal,
           external: memUsage.external,
-          rss: memUsage.rss
+          rss: memUsage.rss,
         },
         database: {
           connections: this.estimateDatabaseConnections(),
           queryLatency: this.calculateDatabaseLatency(),
-          errorRate: this.calculateDatabaseErrorRate()
+          errorRate: this.calculateDatabaseErrorRate(),
         },
         vector: {
           collections: 1, // Estimated
           totalVectors: this.estimateTotalVectors(),
           indexingLatency: this.calculateIndexingLatency(),
-          searchLatency: this.calculateVectorSearchLatency()
-        }
+          searchLatency: this.calculateVectorSearchLatency(),
+        },
       };
 
       if (this.config.realTimeUpdates) {
@@ -441,7 +476,9 @@ export class AdvancedPerformanceMonitor extends EventEmitter {
     );
 
     // Response time alert
-    if (recentStats.averageResponseTime > this.config.alertThresholds.responseTime) {
+    if (
+      recentStats.averageResponseTime > this.config.alertThresholds.responseTime
+    ) {
       this.createAlert(
         'critical',
         'High Response Time',
@@ -452,7 +489,7 @@ export class AdvancedPerformanceMonitor extends EventEmitter {
     }
 
     // Error rate alert
-    if (recentStats.successRate < (1 - this.config.alertThresholds.errorRate)) {
+    if (recentStats.successRate < 1 - this.config.alertThresholds.errorRate) {
       this.createAlert(
         'critical',
         'High Error Rate',
@@ -463,7 +500,8 @@ export class AdvancedPerformanceMonitor extends EventEmitter {
     }
 
     // Memory usage alert
-    const memoryUsage = this.healthStats.memory.heapUsed / this.healthStats.memory.heapTotal;
+    const memoryUsage =
+      this.healthStats.memory.heapUsed / this.healthStats.memory.heapTotal;
     if (memoryUsage > this.config.alertThresholds.memoryUsage) {
       this.createAlert(
         'warning',
@@ -513,12 +551,13 @@ export class AdvancedPerformanceMonitor extends EventEmitter {
     threshold: number
   ): void {
     const alertId = `alert_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    
+
     // Check if similar alert already exists
-    const existingAlert = this.alerts.find(a => 
-      !a.acknowledged && 
-      a.title === title && 
-      Date.now() - a.timestamp.getTime() < 300000 // Within 5 minutes
+    const existingAlert = this.alerts.find(
+      a =>
+        !a.acknowledged &&
+        a.title === title &&
+        Date.now() - a.timestamp.getTime() < 300000 // Within 5 minutes
     );
 
     if (existingAlert) {
@@ -534,7 +573,7 @@ export class AdvancedPerformanceMonitor extends EventEmitter {
       metrics,
       threshold,
       actualValue: Object.values(metrics)[0] || 0,
-      acknowledged: false
+      acknowledged: false,
     };
 
     this.alerts.push(alert);
@@ -551,26 +590,30 @@ export class AdvancedPerformanceMonitor extends EventEmitter {
    */
   private cleanupOldMetrics(): void {
     const now = Date.now();
-    
+
     // Only cleanup every 5 minutes
     if (now - this.lastCleanup < 300000) {
       return;
     }
 
-    const cutoffTime = new Date(now - this.config.metricsRetentionDays * 24 * 60 * 60 * 1000);
+    const cutoffTime = new Date(
+      now - this.config.metricsRetentionDays * 24 * 60 * 60 * 1000
+    );
     const originalLength = this.metrics.length;
-    
+
     this.metrics = this.metrics.filter(m => m.timestamp >= cutoffTime);
-    
+
     // Also cleanup old alerts
-    this.alerts = this.alerts.filter(a => 
-      a.timestamp >= new Date(now - 24 * 60 * 60 * 1000) // Keep alerts for 24 hours
+    this.alerts = this.alerts.filter(
+      a => a.timestamp >= new Date(now - 24 * 60 * 60 * 1000) // Keep alerts for 24 hours
     );
 
     this.lastCleanup = now;
-    
+
     if (originalLength !== this.metrics.length) {
-      console.log(`[PerformanceMonitor] Cleaned up ${originalLength - this.metrics.length} old metrics`);
+      console.log(
+        `[PerformanceMonitor] Cleaned up ${originalLength - this.metrics.length} old metrics`
+      );
     }
   }
 
@@ -587,10 +630,10 @@ export class AdvancedPerformanceMonitor extends EventEmitter {
    */
   private calculateCacheHitRatio(): number {
     const recentMetrics = this.getRecentMetrics(300000);
-    const cacheHits = recentMetrics.filter(m => 
-      m.metadata?.cacheHit === true || m.duration < 10
+    const cacheHits = recentMetrics.filter(
+      m => m.metadata?.cacheHit === true || m.duration < 10
     ).length;
-    
+
     return recentMetrics.length > 0 ? cacheHits / recentMetrics.length : 0;
   }
 
@@ -598,26 +641,34 @@ export class AdvancedPerformanceMonitor extends EventEmitter {
    * Calculate vector search latency
    */
   private calculateVectorSearchLatency(): number {
-    const searchMetrics = this.getRecentMetrics(300000).filter(m => 
-      m.operationType === 'search' || m.operationType === 'recall'
+    const searchMetrics = this.getRecentMetrics(300000).filter(
+      m => m.operationType === 'search' || m.operationType === 'recall'
     );
-    
+
     if (searchMetrics.length === 0) return 0;
-    
-    return searchMetrics.reduce((sum, m) => sum + m.duration, 0) / searchMetrics.length;
+
+    return (
+      searchMetrics.reduce((sum, m) => sum + m.duration, 0) /
+      searchMetrics.length
+    );
   }
 
   /**
    * Calculate embedding processing time
    */
   private calculateEmbeddingProcessingTime(): number {
-    const embeddingMetrics = this.getRecentMetrics(300000).filter(m => 
-      m.metadata?.embeddingTime
+    const embeddingMetrics = this.getRecentMetrics(300000).filter(
+      m => m.metadata?.embeddingTime
     );
-    
+
     if (embeddingMetrics.length === 0) return 0;
-    
-    return embeddingMetrics.reduce((sum, m) => sum + (m.metadata?.embeddingTime || 0), 0) / embeddingMetrics.length;
+
+    return (
+      embeddingMetrics.reduce(
+        (sum, m) => sum + (m.metadata?.embeddingTime || 0),
+        0
+      ) / embeddingMetrics.length
+    );
   }
 
   /**
@@ -627,7 +678,7 @@ export class AdvancedPerformanceMonitor extends EventEmitter {
     // Simplified CPU calculation based on recent operations
     const recentMetrics = this.getRecentMetrics(60000); // Last minute
     const operationsPerSecond = recentMetrics.length / 60;
-    
+
     // Estimate CPU usage based on operation frequency
     return Math.min(operationsPerSecond * 2, 100); // Cap at 100%
   }
@@ -639,7 +690,7 @@ export class AdvancedPerformanceMonitor extends EventEmitter {
     const activeTenants = new Set(
       this.getRecentMetrics(300000).map(m => m.tenantId)
     ).size;
-    
+
     return Math.max(activeTenants, 1);
   }
 
@@ -647,13 +698,15 @@ export class AdvancedPerformanceMonitor extends EventEmitter {
    * Calculate database latency
    */
   private calculateDatabaseLatency(): number {
-    const dbOperations = this.getRecentMetrics(300000).filter(m => 
-      m.operationType === 'remember' || m.operationType === 'forget'
+    const dbOperations = this.getRecentMetrics(300000).filter(
+      m => m.operationType === 'remember' || m.operationType === 'forget'
     );
-    
+
     if (dbOperations.length === 0) return 0;
-    
-    return dbOperations.reduce((sum, m) => sum + m.duration, 0) / dbOperations.length;
+
+    return (
+      dbOperations.reduce((sum, m) => sum + m.duration, 0) / dbOperations.length
+    );
   }
 
   /**
@@ -662,7 +715,7 @@ export class AdvancedPerformanceMonitor extends EventEmitter {
   private calculateDatabaseErrorRate(): number {
     const dbOperations = this.getRecentMetrics(300000);
     if (dbOperations.length === 0) return 0;
-    
+
     const errors = dbOperations.filter(m => !m.success).length;
     return errors / dbOperations.length;
   }
@@ -671,7 +724,9 @@ export class AdvancedPerformanceMonitor extends EventEmitter {
    * Estimate total vectors
    */
   private estimateTotalVectors(): number {
-    const rememberOperations = this.metrics.filter(m => m.operationType === 'remember');
+    const rememberOperations = this.metrics.filter(
+      m => m.operationType === 'remember'
+    );
     return rememberOperations.reduce((sum, m) => sum + m.memoryCount, 0);
   }
 
@@ -679,12 +734,17 @@ export class AdvancedPerformanceMonitor extends EventEmitter {
    * Calculate indexing latency
    */
   private calculateIndexingLatency(): number {
-    const indexingMetrics = this.getRecentMetrics(300000).filter(m => 
-      m.operationType === 'remember' && m.metadata?.indexingTime
+    const indexingMetrics = this.getRecentMetrics(300000).filter(
+      m => m.operationType === 'remember' && m.metadata?.indexingTime
     );
-    
+
     if (indexingMetrics.length === 0) return 0;
-    
-    return indexingMetrics.reduce((sum, m) => sum + (m.metadata?.indexingTime || 0), 0) / indexingMetrics.length;
+
+    return (
+      indexingMetrics.reduce(
+        (sum, m) => sum + (m.metadata?.indexingTime || 0),
+        0
+      ) / indexingMetrics.length
+    );
   }
 }

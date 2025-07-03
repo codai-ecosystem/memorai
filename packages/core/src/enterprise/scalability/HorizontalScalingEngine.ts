@@ -1,9 +1,9 @@
 /**
  * Horizontal Scaling Engine for Memorai
- * 
+ *
  * Advanced auto-scaling system that automatically manages service instances
  * based on real-time load patterns, performance metrics, and predictive analytics.
- * 
+ *
  * Features:
  * - Intelligent auto-scaling with predictive algorithms
  * - Multi-metric scaling decisions (CPU, memory, response time, queue depth)
@@ -11,7 +11,7 @@
  * - Cost-optimized scaling strategies
  * - Integration with cloud providers (AWS, Azure, GCP)
  * - Custom scaling policies and rules
- * 
+ *
  * @version 3.0.0
  * @author Memorai Enterprise Team
  */
@@ -110,7 +110,12 @@ export interface ScalingDecision {
 export interface ScalingEvent {
   id: string;
   timestamp: number;
-  type: 'scale_up' | 'scale_down' | 'instance_start' | 'instance_stop' | 'health_check';
+  type:
+    | 'scale_up'
+    | 'scale_down'
+    | 'instance_start'
+    | 'instance_stop'
+    | 'health_check';
   serviceType: ServiceInstance['type'];
   instanceId?: string;
   details: Record<string, any>;
@@ -154,7 +159,7 @@ export interface CloudProvider {
 
 /**
  * Horizontal Scaling Engine
- * 
+ *
  * Manages automatic scaling of Memorai service instances based on real-time
  * metrics, predictive analytics, and cost optimization algorithms.
  */
@@ -207,7 +212,7 @@ export class HorizontalScalingEngine extends EventEmitter {
           action: 'scale_up',
           cooldown: 300,
           priority: 1,
-          weight: 0.3
+          weight: 0.3,
         },
         {
           id: 'high-memory',
@@ -221,7 +226,7 @@ export class HorizontalScalingEngine extends EventEmitter {
           action: 'scale_up',
           cooldown: 300,
           priority: 1,
-          weight: 0.25
+          weight: 0.25,
         },
         {
           id: 'high-response-time',
@@ -235,7 +240,7 @@ export class HorizontalScalingEngine extends EventEmitter {
           action: 'scale_up',
           cooldown: 300,
           priority: 1,
-          weight: 0.25
+          weight: 0.25,
         },
         {
           id: 'high-queue-depth',
@@ -249,7 +254,7 @@ export class HorizontalScalingEngine extends EventEmitter {
           action: 'scale_up',
           cooldown: 180,
           priority: 2,
-          weight: 0.2
+          weight: 0.2,
         },
         {
           id: 'low-utilization',
@@ -263,9 +268,9 @@ export class HorizontalScalingEngine extends EventEmitter {
           action: 'scale_down',
           cooldown: 600,
           priority: 0,
-          weight: 0.4
-        }
-      ]
+          weight: 0.4,
+        },
+      ],
     };
 
     // Worker Service scaling policy
@@ -297,7 +302,7 @@ export class HorizontalScalingEngine extends EventEmitter {
           action: 'scale_up',
           cooldown: 240,
           priority: 1,
-          weight: 0.6
+          weight: 0.6,
         },
         {
           id: 'low-queue-worker',
@@ -311,9 +316,9 @@ export class HorizontalScalingEngine extends EventEmitter {
           action: 'scale_down',
           cooldown: 480,
           priority: 0,
-          weight: 0.4
-        }
-      ]
+          weight: 0.4,
+        },
+      ],
     };
 
     this.policies.set(apiPolicy.id, apiPolicy);
@@ -397,13 +402,13 @@ export class HorizontalScalingEngine extends EventEmitter {
     // Store metrics with timestamp
     const timestampedMetrics = {
       ...metrics,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
-    
+
     this.metricsHistory.push(timestampedMetrics);
-    
+
     // Keep only last 24 hours of metrics
-    const cutoff = Date.now() - (24 * 60 * 60 * 1000);
+    const cutoff = Date.now() - 24 * 60 * 60 * 1000;
     this.metricsHistory = this.metricsHistory.filter(m => m.timestamp > cutoff);
 
     this.emit('metrics_updated', timestampedMetrics);
@@ -432,7 +437,10 @@ export class HorizontalScalingEngine extends EventEmitter {
   /**
    * Update instance status
    */
-  updateInstanceStatus(instanceId: string, status: ServiceInstance['status']): void {
+  updateInstanceStatus(
+    instanceId: string,
+    status: ServiceInstance['status']
+  ): void {
     const instance = this.instances.get(instanceId);
     if (instance) {
       instance.status = status;
@@ -477,7 +485,7 @@ export class HorizontalScalingEngine extends EventEmitter {
       } catch (error) {
         this.emit('scaling_error', {
           policyId: policy.id,
-          error: error instanceof Error ? error.message : 'Unknown error'
+          error: error instanceof Error ? error.message : 'Unknown error',
         });
       }
     }
@@ -487,11 +495,13 @@ export class HorizontalScalingEngine extends EventEmitter {
    * Make a scaling decision for a policy
    */
   private async makeScalingDecision(
-    policy: ScalingPolicy, 
+    policy: ScalingPolicy,
     currentMetrics: ScalingMetrics
   ): Promise<ScalingDecision> {
     const instances = this.getInstancesByType(policy.serviceType);
-    const currentInstances = instances.filter(i => i.status === 'running').length;
+    const currentInstances = instances.filter(
+      i => i.status === 'running'
+    ).length;
 
     // Check cooldown periods
     const lastDecision = this.lastScalingDecisions.get(policy.id);
@@ -507,13 +517,13 @@ export class HorizontalScalingEngine extends EventEmitter {
         triggeredRules: [],
         confidence: 0,
         estimatedCost: 0,
-        predictedLoad: 0
+        predictedLoad: 0,
       };
     }
 
     // Evaluate rules
     const triggeredRules = this.evaluateRules(policy.rules, currentMetrics);
-    
+
     if (triggeredRules.length === 0) {
       return {
         timestamp: Date.now(),
@@ -526,15 +536,15 @@ export class HorizontalScalingEngine extends EventEmitter {
         triggeredRules: [],
         confidence: 0,
         estimatedCost: 0,
-        predictedLoad: 0
+        predictedLoad: 0,
       };
     }
 
     // Calculate scaling action and target instances
     const scalingAction = this.calculateScalingAction(triggeredRules, policy);
     const targetInstances = this.calculateTargetInstances(
-      currentInstances, 
-      scalingAction, 
+      currentInstances,
+      scalingAction,
       policy
     );
 
@@ -543,12 +553,12 @@ export class HorizontalScalingEngine extends EventEmitter {
     if (policy.predictiveScaling) {
       const prediction = await this.predictLoad(policy.serviceType);
       predictedLoad = prediction.predictedLoad;
-      
+
       // Adjust target based on prediction
       if (prediction.confidence > 0.7) {
         const predictiveAdjustment = this.calculatePredictiveAdjustment(
-          prediction, 
-          targetInstances, 
+          prediction,
+          targetInstances,
           policy
         );
         // Apply predictive adjustment
@@ -565,31 +575,41 @@ export class HorizontalScalingEngine extends EventEmitter {
       reason: `Rules triggered: ${triggeredRules.map(r => r.name).join(', ')}`,
       triggeredRules: triggeredRules.map(r => r.id),
       confidence: this.calculateConfidence(triggeredRules),
-      estimatedCost: this.estimateCost(currentInstances, targetInstances, policy),
-      predictedLoad
+      estimatedCost: this.estimateCost(
+        currentInstances,
+        targetInstances,
+        policy
+      ),
+      predictedLoad,
     };
   }
 
   /**
    * Check if cooldown period is active
    */
-  private isCooldownActive(lastDecision: ScalingDecision, policy: ScalingPolicy): boolean {
+  private isCooldownActive(
+    lastDecision: ScalingDecision,
+    policy: ScalingPolicy
+  ): boolean {
     const now = Date.now();
     const timeSinceLastAction = now - lastDecision.timestamp;
-    
+
     if (lastDecision.action === 'scale_up') {
       return timeSinceLastAction < policy.scaleUpCooldown * 1000;
     } else if (lastDecision.action === 'scale_down') {
       return timeSinceLastAction < policy.scaleDownCooldown * 1000;
     }
-    
+
     return false;
   }
 
   /**
    * Evaluate scaling rules against current metrics
    */
-  private evaluateRules(rules: ScalingRule[], metrics: ScalingMetrics): ScalingRule[] {
+  private evaluateRules(
+    rules: ScalingRule[],
+    metrics: ScalingMetrics
+  ): ScalingRule[] {
     const triggeredRules: ScalingRule[] = [];
     const now = Date.now();
 
@@ -600,7 +620,11 @@ export class HorizontalScalingEngine extends EventEmitter {
 
       // Check if rule condition is met
       const metricValue = metrics[rule.metric];
-      const conditionMet = this.evaluateCondition(metricValue, rule.operator, rule.threshold);
+      const conditionMet = this.evaluateCondition(
+        metricValue,
+        rule.operator,
+        rule.threshold
+      );
 
       if (conditionMet) {
         // Check if condition has persisted for required duration
@@ -608,7 +632,7 @@ export class HorizontalScalingEngine extends EventEmitter {
           m => now - m.timestamp <= rule.duration * 1000
         );
 
-        const allMeetCondition = persistentMetrics.every(m => 
+        const allMeetCondition = persistentMetrics.every(m =>
           this.evaluateCondition(m[rule.metric], rule.operator, rule.threshold)
         );
 
@@ -624,15 +648,26 @@ export class HorizontalScalingEngine extends EventEmitter {
   /**
    * Evaluate a condition
    */
-  private evaluateCondition(value: number, operator: string, threshold: number): boolean {
+  private evaluateCondition(
+    value: number,
+    operator: string,
+    threshold: number
+  ): boolean {
     switch (operator) {
-      case '>': return value > threshold;
-      case '<': return value < threshold;
-      case '>=': return value >= threshold;
-      case '<=': return value <= threshold;
-      case '==': return value === threshold;
-      case '!=': return value !== threshold;
-      default: return false;
+      case '>':
+        return value > threshold;
+      case '<':
+        return value < threshold;
+      case '>=':
+        return value >= threshold;
+      case '<=':
+        return value <= threshold;
+      case '==':
+        return value === threshold;
+      case '!=':
+        return value !== threshold;
+      default:
+        return false;
     }
   }
 
@@ -640,7 +675,7 @@ export class HorizontalScalingEngine extends EventEmitter {
    * Calculate scaling action from triggered rules
    */
   private calculateScalingAction(
-    triggeredRules: ScalingRule[], 
+    triggeredRules: ScalingRule[],
     policy: ScalingPolicy
   ): 'scale_up' | 'scale_down' | 'no_action' {
     if (triggeredRules.length === 0) {
@@ -702,10 +737,12 @@ export class HorizontalScalingEngine extends EventEmitter {
   /**
    * Predict future load using historical data
    */
-  private async predictLoad(serviceType: ServiceInstance['type']): Promise<LoadPrediction> {
+  private async predictLoad(
+    serviceType: ServiceInstance['type']
+  ): Promise<LoadPrediction> {
     // Simple prediction based on recent trends
     // In production, this would use more sophisticated ML models
-    
+
     const recentMetrics = this.metricsHistory.slice(-12); // Last 6 minutes
     if (recentMetrics.length < 2) {
       return {
@@ -714,7 +751,7 @@ export class HorizontalScalingEngine extends EventEmitter {
         predictedLoad: 0,
         confidence: 0,
         timeHorizon: 15,
-        factors: { historical: 0, seasonal: 0, trending: 0, external: 0 }
+        factors: { historical: 0, seasonal: 0, trending: 0, external: 0 },
       };
     }
 
@@ -722,7 +759,7 @@ export class HorizontalScalingEngine extends EventEmitter {
     const loads = recentMetrics.map(m => m.cpuUtilization);
     const trend = this.calculateTrend(loads);
     const currentLoad = loads[loads.length - 1];
-    const predictedLoad = Math.max(0, currentLoad + (trend * 3)); // 15 minutes ahead
+    const predictedLoad = Math.max(0, currentLoad + trend * 3); // 15 minutes ahead
 
     return {
       timestamp: Date.now(),
@@ -734,8 +771,8 @@ export class HorizontalScalingEngine extends EventEmitter {
         historical: 0.3,
         seasonal: 0.2,
         trending: 0.4,
-        external: 0.1
-      }
+        external: 0.1,
+      },
     };
   }
 
@@ -744,16 +781,16 @@ export class HorizontalScalingEngine extends EventEmitter {
    */
   private calculateTrend(values: number[]): number {
     if (values.length < 2) return 0;
-    
+
     const n = values.length;
     const x = Array.from({ length: n }, (_, i) => i);
     const y = values;
-    
+
     const sumX = x.reduce((a, b) => a + b, 0);
     const sumY = y.reduce((a, b) => a + b, 0);
     const sumXY = x.reduce((sum, xi, i) => sum + xi * y[i], 0);
     const sumXX = x.reduce((sum, xi) => sum + xi * xi, 0);
-    
+
     const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
     return slope || 0;
   }
@@ -769,7 +806,9 @@ export class HorizontalScalingEngine extends EventEmitter {
     // Adjust based on predicted load vs target utilization
     const loadDelta = prediction.predictedLoad - policy.targetUtilization;
     const adjustmentFactor = loadDelta / 100;
-    return Math.round(targetInstances * adjustmentFactor * prediction.confidence);
+    return Math.round(
+      targetInstances * adjustmentFactor * prediction.confidence
+    );
   }
 
   /**
@@ -777,14 +816,17 @@ export class HorizontalScalingEngine extends EventEmitter {
    */
   private calculateConfidence(triggeredRules: ScalingRule[]): number {
     if (triggeredRules.length === 0) return 0;
-    
-    const totalWeight = triggeredRules.reduce((sum, rule) => sum + rule.weight, 0);
-    const weightedPriority = triggeredRules.reduce(
-      (sum, rule) => sum + (rule.priority * rule.weight), 
+
+    const totalWeight = triggeredRules.reduce(
+      (sum, rule) => sum + rule.weight,
       0
     );
-    
-    return Math.min(1, (weightedPriority / totalWeight) / 2);
+    const weightedPriority = triggeredRules.reduce(
+      (sum, rule) => sum + rule.priority * rule.weight,
+      0
+    );
+
+    return Math.min(1, weightedPriority / totalWeight / 2);
   }
 
   /**
@@ -796,32 +838,36 @@ export class HorizontalScalingEngine extends EventEmitter {
     policy: ScalingPolicy
   ): number {
     if (!this.cloudProvider) return 0;
-    
+
     const instanceDelta = targetInstances - currentInstances;
     const instanceType = 'standard'; // Would be configurable
-    const instanceCost = this.cloudProvider.instanceTypes[instanceType]?.costPerHour || 0.1;
-    
+    const instanceCost =
+      this.cloudProvider.instanceTypes[instanceType]?.costPerHour || 0.1;
+
     return instanceDelta * instanceCost;
   }
 
   /**
    * Execute scaling decision
    */
-  private async executeScalingDecision(decision: ScalingDecision): Promise<void> {
+  private async executeScalingDecision(
+    decision: ScalingDecision
+  ): Promise<void> {
     const instances = this.getInstancesByType(decision.serviceType);
     const runningInstances = instances.filter(i => i.status === 'running');
-    
+
     if (decision.action === 'scale_up') {
       const instancesToAdd = decision.targetInstances - runningInstances.length;
       for (let i = 0; i < instancesToAdd; i++) {
         await this.startInstance(decision.serviceType);
       }
     } else if (decision.action === 'scale_down') {
-      const instancesToRemove = runningInstances.length - decision.targetInstances;
+      const instancesToRemove =
+        runningInstances.length - decision.targetInstances;
       const instancesToStop = runningInstances
         .sort((a, b) => b.startedAt.getTime() - a.startedAt.getTime()) // Stop newest first
         .slice(0, instancesToRemove);
-      
+
       for (const instance of instancesToStop) {
         await this.stopInstance(instance.id);
       }
@@ -836,9 +882,9 @@ export class HorizontalScalingEngine extends EventEmitter {
       details: {
         decision,
         currentInstances: decision.currentInstances,
-        targetInstances: decision.targetInstances
+        targetInstances: decision.targetInstances,
       },
-      success: true
+      success: true,
     };
 
     this.scalingHistory.push(event);
@@ -848,9 +894,11 @@ export class HorizontalScalingEngine extends EventEmitter {
   /**
    * Start a new service instance
    */
-  private async startInstance(serviceType: ServiceInstance['type']): Promise<ServiceInstance> {
+  private async startInstance(
+    serviceType: ServiceInstance['type']
+  ): Promise<ServiceInstance> {
     const instanceId = `${serviceType}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    
+
     // Mock instance creation - in production this would call cloud provider APIs
     const instance: ServiceInstance = {
       id: instanceId,
@@ -864,8 +912,8 @@ export class HorizontalScalingEngine extends EventEmitter {
       lastHealthCheck: new Date(),
       metadata: {
         scalingEngine: true,
-        autoScaled: true
-      }
+        autoScaled: true,
+      },
     };
 
     this.registerInstance(instance);
@@ -882,7 +930,7 @@ export class HorizontalScalingEngine extends EventEmitter {
       serviceType,
       instanceId,
       details: { instance },
-      success: true
+      success: true,
     };
 
     this.scalingHistory.push(event);
@@ -916,7 +964,7 @@ export class HorizontalScalingEngine extends EventEmitter {
       serviceType: instance.type,
       instanceId,
       details: { instance },
-      success: true
+      success: true,
     };
 
     this.scalingHistory.push(event);
@@ -936,20 +984,27 @@ export class HorizontalScalingEngine extends EventEmitter {
   } {
     const instances = Array.from(this.instances.values());
     const runningInstances = instances.filter(i => i.status === 'running');
-    
-    const instancesByType = runningInstances.reduce((acc, instance) => {
-      acc[instance.type] = (acc[instance.type] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
+
+    const instancesByType = runningInstances.reduce(
+      (acc, instance) => {
+        acc[instance.type] = (acc[instance.type] || 0) + 1;
+        return acc;
+      },
+      {} as Record<string, number>
+    );
 
     const recentMetrics = this.metricsHistory.slice(-10);
-    const averageResponseTime = recentMetrics.length > 0 
-      ? recentMetrics.reduce((sum, m) => sum + m.averageResponseTime, 0) / recentMetrics.length
-      : 0;
+    const averageResponseTime =
+      recentMetrics.length > 0
+        ? recentMetrics.reduce((sum, m) => sum + m.averageResponseTime, 0) /
+          recentMetrics.length
+        : 0;
 
-    const systemUtilization = recentMetrics.length > 0
-      ? recentMetrics.reduce((sum, m) => sum + m.cpuUtilization, 0) / recentMetrics.length
-      : 0;
+    const systemUtilization =
+      recentMetrics.length > 0
+        ? recentMetrics.reduce((sum, m) => sum + m.cpuUtilization, 0) /
+          recentMetrics.length
+        : 0;
 
     return {
       totalInstances: runningInstances.length,
@@ -957,7 +1012,7 @@ export class HorizontalScalingEngine extends EventEmitter {
       scalingEvents: this.scalingHistory.length,
       lastScalingDecisions: Array.from(this.lastScalingDecisions.values()),
       averageResponseTime,
-      systemUtilization
+      systemUtilization,
     };
   }
 
@@ -974,7 +1029,7 @@ export class HorizontalScalingEngine extends EventEmitter {
    * Get current metrics
    */
   getCurrentMetrics(): ScalingMetrics | null {
-    return this.metricsHistory.length > 0 
+    return this.metricsHistory.length > 0
       ? this.metricsHistory[this.metricsHistory.length - 1]
       : null;
   }

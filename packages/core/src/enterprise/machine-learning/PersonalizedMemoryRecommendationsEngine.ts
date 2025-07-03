@@ -1,14 +1,14 @@
 /**
  * @fileoverview Personalized Memory Recommendations Engine - Advanced AI system for
  * generating intelligent, context-aware memory recommendations.
- * 
+ *
  * Implements sophisticated recommendation algorithms including:
  * - Collaborative filtering with matrix factorization
  * - Content-based filtering with semantic analysis
  * - Hybrid recommendation systems with ensemble learning
  * - Real-time contextual recommendations
  * - Adaptive learning with user feedback integration
- * 
+ *
  * @author Memorai Machine Learning Team
  * @version 3.2.0
  * @since 2025-07-03
@@ -25,9 +25,18 @@ export const MemoryRecommendationSchema = z.object({
   userId: z.string(),
   memoryId: z.string(),
   recommendationType: z.enum([
-    'similar_content', 'related_topic', 'recent_relevant', 'trending',
-    'collaborative', 'contextual', 'predictive', 'serendipitous',
-    'completion_assist', 'knowledge_gap', 'workflow_continuation', 'social'
+    'similar_content',
+    'related_topic',
+    'recent_relevant',
+    'trending',
+    'collaborative',
+    'contextual',
+    'predictive',
+    'serendipitous',
+    'completion_assist',
+    'knowledge_gap',
+    'workflow_continuation',
+    'social',
   ]),
   score: z.number().min(0).max(1),
   confidence: z.number().min(0).max(1),
@@ -37,7 +46,7 @@ export const MemoryRecommendationSchema = z.object({
     algorithm: z.string(), // algorithm used
     features: z.array(z.string()), // key features that influenced decision
     userFactors: z.array(z.string()), // user-specific factors
-    contextFactors: z.array(z.string()) // contextual factors
+    contextFactors: z.array(z.string()), // contextual factors
   }),
   metadata: z.object({
     generatedAt: z.date(),
@@ -48,7 +57,7 @@ export const MemoryRecommendationSchema = z.object({
     sourceAlgorithms: z.array(z.string()),
     ensembleWeights: z.record(z.number()),
     featureImportance: z.record(z.number()),
-    contextHash: z.string() // for caching similar contexts
+    contextHash: z.string(), // for caching similar contexts
   }),
   contextData: z.object({
     currentActivity: z.string().optional(),
@@ -59,7 +68,7 @@ export const MemoryRecommendationSchema = z.object({
     location: z.string().optional(),
     device: z.string().optional(),
     workflowStage: z.string().optional(),
-    collaborators: z.array(z.string()).optional()
+    collaborators: z.array(z.string()).optional(),
   }),
   interactionData: z.object({
     viewed: z.boolean().default(false),
@@ -70,7 +79,7 @@ export const MemoryRecommendationSchema = z.object({
     rating: z.number().min(1).max(5).optional(),
     feedback: z.string().optional(),
     viewDuration: z.number().optional(),
-    actionTaken: z.string().optional()
+    actionTaken: z.string().optional(),
   }),
   performance: z.object({
     precision: z.number().optional(),
@@ -79,8 +88,8 @@ export const MemoryRecommendationSchema = z.object({
     novelty: z.number().optional(),
     diversity: z.number().optional(),
     serendipity: z.number().optional(),
-    userSatisfaction: z.number().optional()
-  })
+    userSatisfaction: z.number().optional(),
+  }),
 });
 
 /**
@@ -91,25 +100,33 @@ export const RecommendationRequestSchema = z.object({
   context: z.object({
     currentMemoryId: z.string().optional(),
     currentActivity: z.string().optional(),
-    recentActions: z.array(z.object({
-      type: z.string(),
-      memoryId: z.string(),
-      timestamp: z.date()
-    })).optional(),
+    recentActions: z
+      .array(
+        z.object({
+          type: z.string(),
+          memoryId: z.string(),
+          timestamp: z.date(),
+        })
+      )
+      .optional(),
     searchQuery: z.string().optional(),
-    filters: z.object({
-      categories: z.array(z.string()).optional(),
-      tags: z.array(z.string()).optional(),
-      dateRange: z.object({
-        start: z.date(),
-        end: z.date()
-      }).optional(),
-      contentTypes: z.array(z.string()).optional(),
-      minRelevance: z.number().optional()
-    }).optional(),
+    filters: z
+      .object({
+        categories: z.array(z.string()).optional(),
+        tags: z.array(z.string()).optional(),
+        dateRange: z
+          .object({
+            start: z.date(),
+            end: z.date(),
+          })
+          .optional(),
+        contentTypes: z.array(z.string()).optional(),
+        minRelevance: z.number().optional(),
+      })
+      .optional(),
     preferences: z.record(z.any()).optional(),
     workflowStage: z.string().optional(),
-    timeConstraint: z.number().optional() // max time for recommendations
+    timeConstraint: z.number().optional(), // max time for recommendations
   }),
   parameters: z.object({
     maxRecommendations: z.number().default(10),
@@ -117,10 +134,12 @@ export const RecommendationRequestSchema = z.object({
     noveltyLevel: z.number().min(0).max(1).default(0.2),
     includeSerendipitous: z.boolean().default(false),
     algorithms: z.array(z.string()).optional(), // specific algorithms to use
-    ensembleStrategy: z.enum(['weighted', 'voting', 'stacking', 'blending']).default('weighted'),
+    ensembleStrategy: z
+      .enum(['weighted', 'voting', 'stacking', 'blending'])
+      .default('weighted'),
     realTimePersonalization: z.boolean().default(true),
-    explainRecommendations: z.boolean().default(true)
-  })
+    explainRecommendations: z.boolean().default(true),
+  }),
 });
 
 /**
@@ -132,9 +151,15 @@ export const RecommendationConfigSchema = z.object({
   enableHybridFiltering: z.boolean().default(true),
   enableRealTimeRecommendations: z.boolean().default(true),
   enableSerendipitousRecommendations: z.boolean().default(true),
-  collaborativeFilteringMethod: z.enum(['user_based', 'item_based', 'matrix_factorization', 'deep_learning']).default('matrix_factorization'),
-  contentSimilarityMethod: z.enum(['cosine', 'euclidean', 'jaccard', 'semantic']).default('semantic'),
-  hybridCombinationMethod: z.enum(['weighted', 'switching', 'cascade', 'feature_combination']).default('weighted'),
+  collaborativeFilteringMethod: z
+    .enum(['user_based', 'item_based', 'matrix_factorization', 'deep_learning'])
+    .default('matrix_factorization'),
+  contentSimilarityMethod: z
+    .enum(['cosine', 'euclidean', 'jaccard', 'semantic'])
+    .default('semantic'),
+  hybridCombinationMethod: z
+    .enum(['weighted', 'switching', 'cascade', 'feature_combination'])
+    .default('weighted'),
   minInteractionsForCF: z.number().default(5), // minimum interactions for collaborative filtering
   similarityThreshold: z.number().min(0).max(1).default(0.1),
   diversityWeight: z.number().min(0).max(1).default(0.3),
@@ -146,11 +171,25 @@ export const RecommendationConfigSchema = z.object({
   cacheRecommendations: z.boolean().default(true),
   cacheTimeout: z.number().default(3600000), // 1 hour
   retrainFrequency: z.number().default(86400000), // 24 hours
-  evaluationMetrics: z.array(z.enum(['precision', 'recall', 'f1', 'ndcg', 'map', 'diversity', 'novelty'])).default(['precision', 'recall', 'diversity']),
+  evaluationMetrics: z
+    .array(
+      z.enum([
+        'precision',
+        'recall',
+        'f1',
+        'ndcg',
+        'map',
+        'diversity',
+        'novelty',
+      ])
+    )
+    .default(['precision', 'recall', 'diversity']),
   onlineEvaluation: z.boolean().default(true),
   feedbackWeight: z.number().min(0).max(1).default(0.7),
-  coldStartStrategy: z.enum(['popular', 'content_based', 'demographic', 'hybrid']).default('hybrid'),
-  maxRecommendationAge: z.number().default(86400000) // 24 hours
+  coldStartStrategy: z
+    .enum(['popular', 'content_based', 'demographic', 'hybrid'])
+    .default('hybrid'),
+  maxRecommendationAge: z.number().default(86400000), // 24 hours
 });
 
 export type MemoryRecommendation = z.infer<typeof MemoryRecommendationSchema>;
@@ -225,7 +264,7 @@ export interface RecommendationResult {
 
 /**
  * Advanced Personalized Memory Recommendations Engine
- * 
+ *
  * Provides intelligent memory recommendations with:
  * - Collaborative filtering using matrix factorization and deep learning
  * - Content-based filtering with semantic similarity analysis
@@ -254,7 +293,7 @@ export default class PersonalizedMemoryRecommendationsEngine extends EventEmitte
 
   constructor(config?: Partial<RecommendationConfig>) {
     super();
-    
+
     this.config = RecommendationConfigSchema.parse(config || {});
     this.userInteractions = new Map();
     this.memoryItems = new Map();
@@ -270,7 +309,7 @@ export default class PersonalizedMemoryRecommendationsEngine extends EventEmitte
       averageNovelty: 0,
       userSatisfaction: 0,
       cacheHitRate: 0,
-      averageResponseTime: 0
+      averageResponseTime: 0,
     };
 
     this.initializeModels();
@@ -280,14 +319,16 @@ export default class PersonalizedMemoryRecommendationsEngine extends EventEmitte
   /**
    * Generate personalized recommendations
    */
-  public async generateRecommendations(request: RecommendationRequest): Promise<RecommendationResult> {
+  public async generateRecommendations(
+    request: RecommendationRequest
+  ): Promise<RecommendationResult> {
     const startTime = Date.now();
-    
+
     try {
       this.emit('recommendationStarted', {
         userId: request.userId,
         context: request.context,
-        timestamp: new Date()
+        timestamp: new Date(),
       });
 
       // Check cache first
@@ -295,14 +336,14 @@ export default class PersonalizedMemoryRecommendationsEngine extends EventEmitte
       if (this.config.cacheRecommendations && this.cache.has(cacheKey)) {
         const cached = this.cache.get(cacheKey)!;
         this.performanceMetrics.cacheHitRate++;
-        
+
         this.emit('recommendationCompleted', {
           userId: request.userId,
           recommendationCount: cached.recommendations.length,
           cacheHit: true,
-          processingTime: Date.now() - startTime
+          processingTime: Date.now() - startTime,
         });
-        
+
         return cached;
       }
 
@@ -310,7 +351,10 @@ export default class PersonalizedMemoryRecommendationsEngine extends EventEmitte
       const candidates = await this.getCandidateMemories(request);
 
       // Apply different recommendation algorithms
-      const algorithmResults = await this.applyRecommendationAlgorithms(request, candidates);
+      const algorithmResults = await this.applyRecommendationAlgorithms(
+        request,
+        candidates
+      );
 
       // Combine results using ensemble method
       const combinedRecommendations = await this.combineAlgorithmResults(
@@ -325,32 +369,48 @@ export default class PersonalizedMemoryRecommendationsEngine extends EventEmitte
       );
 
       // Generate explanations
-      const explanations = await this.generateExplanations(optimizedRecommendations, request);
+      const explanations = await this.generateExplanations(
+        optimizedRecommendations,
+        request
+      );
 
       // Calculate performance metrics
-      const performance = await this.calculatePerformanceMetrics(optimizedRecommendations, request);
+      const performance = await this.calculatePerformanceMetrics(
+        optimizedRecommendations,
+        request
+      );
 
       const result: RecommendationResult = {
-        recommendations: optimizedRecommendations.slice(0, request.parameters.maxRecommendations),
+        recommendations: optimizedRecommendations.slice(
+          0,
+          request.parameters.maxRecommendations
+        ),
         metadata: {
           totalCandidates: candidates.length,
           algorithmsUsed: Object.keys(algorithmResults),
           processingTime: Date.now() - startTime,
           cacheHit: false,
           diversity: await this.calculateDiversity(optimizedRecommendations),
-          novelty: await this.calculateNovelty(optimizedRecommendations, request.userId),
-          confidence: optimizedRecommendations.length > 0 
-            ? optimizedRecommendations.reduce((sum, r) => sum + r.confidence, 0) / optimizedRecommendations.length 
-            : 0
+          novelty: await this.calculateNovelty(
+            optimizedRecommendations,
+            request.userId
+          ),
+          confidence:
+            optimizedRecommendations.length > 0
+              ? optimizedRecommendations.reduce(
+                  (sum, r) => sum + r.confidence,
+                  0
+                ) / optimizedRecommendations.length
+              : 0,
         },
         explanations,
-        performance
+        performance,
       };
 
       // Cache result
       if (this.config.cacheRecommendations) {
         this.cache.set(cacheKey, result);
-        
+
         // Clean up expired cache entries
         setTimeout(() => {
           this.cache.delete(cacheKey);
@@ -369,16 +429,15 @@ export default class PersonalizedMemoryRecommendationsEngine extends EventEmitte
         cacheHit: false,
         processingTime: result.metadata.processingTime,
         diversity: result.metadata.diversity,
-        novelty: result.metadata.novelty
+        novelty: result.metadata.novelty,
       });
 
       return result;
-
     } catch (error) {
       this.emit('error', {
         operation: 'generateRecommendations',
         userId: request.userId,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
       throw error;
     }
@@ -410,14 +469,13 @@ export default class PersonalizedMemoryRecommendationsEngine extends EventEmitte
         userId: interaction.userId,
         memoryId: interaction.memoryId,
         type: interaction.interactionType,
-        timestamp: interaction.timestamp
+        timestamp: interaction.timestamp,
       });
-
     } catch (error) {
       this.emit('error', {
         operation: 'recordInteraction',
         interaction,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
     }
   }
@@ -438,14 +496,13 @@ export default class PersonalizedMemoryRecommendationsEngine extends EventEmitte
 
       this.emit('memoryItemsUpdated', {
         count: memories.length,
-        timestamp: new Date()
+        timestamp: new Date(),
       });
-
     } catch (error) {
       this.emit('error', {
         operation: 'updateMemoryItems',
         memoryCount: memories.length,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
     }
   }
@@ -484,9 +541,18 @@ export default class PersonalizedMemoryRecommendationsEngine extends EventEmitte
         );
       }
 
-      const precision = await this.calculatePrecision(userRecommendations, filteredInteractions);
-      const recall = await this.calculateRecall(userRecommendations, filteredInteractions);
-      const f1Score = precision + recall > 0 ? (2 * precision * recall) / (precision + recall) : 0;
+      const precision = await this.calculatePrecision(
+        userRecommendations,
+        filteredInteractions
+      );
+      const recall = await this.calculateRecall(
+        userRecommendations,
+        filteredInteractions
+      );
+      const f1Score =
+        precision + recall > 0
+          ? (2 * precision * recall) / (precision + recall)
+          : 0;
       const diversity = await this.calculateDiversity(userRecommendations);
       const novelty = await this.calculateNovelty(userRecommendations, userId);
       const userSatisfaction = await this.calculateUserSatisfaction(userId);
@@ -499,14 +565,13 @@ export default class PersonalizedMemoryRecommendationsEngine extends EventEmitte
         diversity,
         novelty,
         userSatisfaction,
-        coverage
+        coverage,
       };
-
     } catch (error) {
       this.emit('error', {
         operation: 'evaluateRecommendations',
         userId,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
       throw error;
     }
@@ -522,14 +587,14 @@ export default class PersonalizedMemoryRecommendationsEngine extends EventEmitte
       factors: 100,
       regularization: 0.01,
       iterations: 100,
-      learningRate: 0.01
+      learningRate: 0.01,
     });
 
     // Content-based filtering model
     this.models.set('content_based', {
       type: 'content_similarity',
       method: this.config.contentSimilarityMethod,
-      features: ['content', 'categories', 'tags', 'metadata']
+      features: ['content', 'categories', 'tags', 'metadata'],
     });
 
     // Deep learning model
@@ -538,14 +603,14 @@ export default class PersonalizedMemoryRecommendationsEngine extends EventEmitte
       embeddings: 64,
       layers: [128, 64, 32],
       dropout: 0.2,
-      activation: 'relu'
+      activation: 'relu',
     });
 
     // Contextual model
     this.models.set('contextual', {
       type: 'contextual_bandits',
       features: ['time_of_day', 'day_of_week', 'activity', 'location'],
-      exploration: 0.1
+      exploration: 0.1,
     });
   }
 
@@ -560,19 +625,31 @@ export default class PersonalizedMemoryRecommendationsEngine extends EventEmitte
 
     // Collaborative filtering
     if (this.config.enableCollaborativeFiltering) {
-      results.collaborative = await this.applyCollaborativeFiltering(request, candidates);
+      results.collaborative = await this.applyCollaborativeFiltering(
+        request,
+        candidates
+      );
     }
 
     // Content-based filtering
     if (this.config.enableContentBasedFiltering) {
-      results.content_based = await this.applyContentBasedFiltering(request, candidates);
+      results.content_based = await this.applyContentBasedFiltering(
+        request,
+        candidates
+      );
     }
 
     // Contextual recommendations
-    results.contextual = await this.applyContextualRecommendations(request, candidates);
+    results.contextual = await this.applyContextualRecommendations(
+      request,
+      candidates
+    );
 
     // Trending recommendations
-    results.trending = await this.applyTrendingRecommendations(request, candidates);
+    results.trending = await this.applyTrendingRecommendations(
+      request,
+      candidates
+    );
 
     return results;
   }
@@ -610,54 +687,115 @@ export default class PersonalizedMemoryRecommendationsEngine extends EventEmitte
   private generateCacheKey(request: RecommendationRequest): string {
     return `${request.userId}_${JSON.stringify(request.context)}_${Date.now()}`;
   }
-  private async getCandidateMemories(request: RecommendationRequest): Promise<MemoryItem[]> {
+  private async getCandidateMemories(
+    request: RecommendationRequest
+  ): Promise<MemoryItem[]> {
     return Array.from(this.memoryItems.values()).slice(0, 1000);
   }
-  private async combineAlgorithmResults(results: Record<string, MemoryRecommendation[]>, strategy: string): Promise<MemoryRecommendation[]> {
+  private async combineAlgorithmResults(
+    results: Record<string, MemoryRecommendation[]>,
+    strategy: string
+  ): Promise<MemoryRecommendation[]> {
     const combined: MemoryRecommendation[] = [];
     for (const recommendations of Object.values(results)) {
       combined.push(...recommendations);
     }
     return combined.slice(0, 50);
   }
-  private async optimizeRecommendations(recommendations: MemoryRecommendation[], request: RecommendationRequest): Promise<MemoryRecommendation[]> {
+  private async optimizeRecommendations(
+    recommendations: MemoryRecommendation[],
+    request: RecommendationRequest
+  ): Promise<MemoryRecommendation[]> {
     return recommendations.sort((a, b) => b.score - a.score);
   }
-  private async generateExplanations(recommendations: MemoryRecommendation[], request: RecommendationRequest): Promise<any[]> {
+  private async generateExplanations(
+    recommendations: MemoryRecommendation[],
+    request: RecommendationRequest
+  ): Promise<any[]> {
     return recommendations.map(r => ({
       recommendationId: r.id,
       explanation: `Recommended because ${r.reasoning.primary}`,
       confidence: r.confidence,
-      keyFactors: r.reasoning.features
+      keyFactors: r.reasoning.features,
     }));
   }
-  private async calculatePerformanceMetrics(recommendations: MemoryRecommendation[], request: RecommendationRequest): Promise<any> {
+  private async calculatePerformanceMetrics(
+    recommendations: MemoryRecommendation[],
+    request: RecommendationRequest
+  ): Promise<any> {
     return {
       precision: 0.8,
       recall: 0.7,
       diversity: 0.6,
       novelty: 0.5,
-      coverage: 0.9
+      coverage: 0.9,
     };
   }
-  private async calculateDiversity(recommendations: MemoryRecommendation[]): Promise<number> { return 0.6; }
-  private async calculateNovelty(recommendations: MemoryRecommendation[], userId: string): Promise<number> { return 0.5; }
+  private async calculateDiversity(
+    recommendations: MemoryRecommendation[]
+  ): Promise<number> {
+    return 0.6;
+  }
+  private async calculateNovelty(
+    recommendations: MemoryRecommendation[],
+    userId: string
+  ): Promise<number> {
+    return 0.5;
+  }
   private updateUserProfile(interaction: UserInteraction): void {}
   private updateRecommendationPerformance(interaction: UserInteraction): void {}
   private updateRealTimeProfile(interaction: UserInteraction): void {}
   private scheduleModelUpdate(): void {}
-  private async applyCollaborativeFiltering(request: RecommendationRequest, candidates: MemoryItem[]): Promise<MemoryRecommendation[]> { return []; }
-  private async applyContentBasedFiltering(request: RecommendationRequest, candidates: MemoryItem[]): Promise<MemoryRecommendation[]> { return []; }
-  private async applyContextualRecommendations(request: RecommendationRequest, candidates: MemoryItem[]): Promise<MemoryRecommendation[]> { return []; }
-  private async applyTrendingRecommendations(request: RecommendationRequest, candidates: MemoryItem[]): Promise<MemoryRecommendation[]> { return []; }
-  private async calculatePrecision(recommendations: MemoryRecommendation[], interactions: UserInteraction[]): Promise<number> { return 0.8; }
-  private async calculateRecall(recommendations: MemoryRecommendation[], interactions: UserInteraction[]): Promise<number> { return 0.7; }
-  private async calculateUserSatisfaction(userId: string): Promise<number> { return 0.85; }
-  private async calculateCoverage(recommendations: MemoryRecommendation[]): Promise<number> { return 0.9; }
+  private async applyCollaborativeFiltering(
+    request: RecommendationRequest,
+    candidates: MemoryItem[]
+  ): Promise<MemoryRecommendation[]> {
+    return [];
+  }
+  private async applyContentBasedFiltering(
+    request: RecommendationRequest,
+    candidates: MemoryItem[]
+  ): Promise<MemoryRecommendation[]> {
+    return [];
+  }
+  private async applyContextualRecommendations(
+    request: RecommendationRequest,
+    candidates: MemoryItem[]
+  ): Promise<MemoryRecommendation[]> {
+    return [];
+  }
+  private async applyTrendingRecommendations(
+    request: RecommendationRequest,
+    candidates: MemoryItem[]
+  ): Promise<MemoryRecommendation[]> {
+    return [];
+  }
+  private async calculatePrecision(
+    recommendations: MemoryRecommendation[],
+    interactions: UserInteraction[]
+  ): Promise<number> {
+    return 0.8;
+  }
+  private async calculateRecall(
+    recommendations: MemoryRecommendation[],
+    interactions: UserInteraction[]
+  ): Promise<number> {
+    return 0.7;
+  }
+  private async calculateUserSatisfaction(userId: string): Promise<number> {
+    return 0.85;
+  }
+  private async calculateCoverage(
+    recommendations: MemoryRecommendation[]
+  ): Promise<number> {
+    return 0.9;
+  }
   private async retrainModels(): Promise<void> {}
   private updatePerformanceMetrics(result: RecommendationResult): void {
-    this.performanceMetrics.totalRecommendations += result.recommendations.length;
-    this.performanceMetrics.averageResponseTime = result.metadata.processingTime;
+    this.performanceMetrics.totalRecommendations +=
+      result.recommendations.length;
+    this.performanceMetrics.averageResponseTime =
+      result.metadata.processingTime;
     this.performanceMetrics.averageDiversity = result.metadata.diversity;
     this.performanceMetrics.averageNovelty = result.metadata.novelty;
   }

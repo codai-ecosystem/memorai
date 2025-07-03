@@ -1,9 +1,9 @@
 /**
  * Custom Metrics and Dashboard Engine for Memorai Enterprise
- * 
+ *
  * Implements Prometheus-compatible metrics collection and Grafana dashboard
  * integration for comprehensive monitoring and observability.
- * 
+ *
  * Features:
  * - Custom application metrics
  * - Performance counters and gauges
@@ -169,7 +169,7 @@ class Counter {
     return {
       timestamp: Date.now(),
       value: this.value,
-      labels: this.labels
+      labels: this.labels,
     };
   }
 
@@ -212,7 +212,7 @@ class Gauge {
     return {
       timestamp: Date.now(),
       value: this.value,
-      labels: this.labels
+      labels: this.labels,
     };
   }
 }
@@ -235,7 +235,7 @@ class Histogram {
   observe(value: number, labels?: Record<string, string>): void {
     this.sum += value;
     this.count++;
-    
+
     if (labels) {
       this.labels = { ...this.labels, ...labels };
     }
@@ -257,7 +257,10 @@ class Histogram {
       dataPoints.push({
         timestamp,
         value: count,
-        labels: { ...this.labels, le: bucket === Infinity ? '+Inf' : bucket.toString() }
+        labels: {
+          ...this.labels,
+          le: bucket === Infinity ? '+Inf' : bucket.toString(),
+        },
       });
     }
 
@@ -265,13 +268,13 @@ class Histogram {
     dataPoints.push({
       timestamp,
       value: this.sum,
-      labels: { ...this.labels, __type: 'sum' }
+      labels: { ...this.labels, __type: 'sum' },
     });
 
     dataPoints.push({
       timestamp,
       value: this.count,
-      labels: { ...this.labels, __type: 'count' }
+      labels: { ...this.labels, __type: 'count' },
     });
 
     return dataPoints;
@@ -280,7 +283,7 @@ class Histogram {
 
 /**
  * Custom Metrics and Dashboard Engine
- * 
+ *
  * Provides comprehensive metrics collection, storage, and dashboard
  * management for enterprise monitoring and observability.
  */
@@ -305,7 +308,7 @@ export class CustomMetricsEngine {
       name: 'memorai_operations_total',
       type: 'counter',
       description: 'Total number of memory operations',
-      labels: ['operation_type', 'tenant_id', 'success']
+      labels: ['operation_type', 'tenant_id', 'success'],
     });
 
     this.registerMetric({
@@ -313,21 +316,21 @@ export class CustomMetricsEngine {
       type: 'histogram',
       description: 'Duration of memory operations in seconds',
       labels: ['operation_type', 'tenant_id'],
-      buckets: [0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10]
+      buckets: [0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10],
     });
 
     this.registerMetric({
       name: 'memorai_cache_hits_total',
       type: 'counter',
       description: 'Total number of cache hits',
-      labels: ['cache_type', 'tenant_id']
+      labels: ['cache_type', 'tenant_id'],
     });
 
     this.registerMetric({
       name: 'memorai_active_memories',
       type: 'gauge',
       description: 'Current number of active memories',
-      labels: ['tenant_id']
+      labels: ['tenant_id'],
     });
 
     // System metrics
@@ -335,20 +338,20 @@ export class CustomMetricsEngine {
       name: 'memorai_system_cpu_usage',
       type: 'gauge',
       description: 'System CPU usage percentage',
-      unit: 'percent'
+      unit: 'percent',
     });
 
     this.registerMetric({
       name: 'memorai_system_memory_usage',
       type: 'gauge',
       description: 'System memory usage in bytes',
-      unit: 'bytes'
+      unit: 'bytes',
     });
 
     this.registerMetric({
       name: 'memorai_active_connections',
       type: 'gauge',
-      description: 'Number of active database connections'
+      description: 'Number of active database connections',
     });
 
     // Business metrics
@@ -356,7 +359,7 @@ export class CustomMetricsEngine {
       name: 'memorai_active_users',
       type: 'gauge',
       description: 'Number of active users',
-      labels: ['tenant_id']
+      labels: ['tenant_id'],
     });
 
     this.registerMetric({
@@ -364,7 +367,7 @@ export class CustomMetricsEngine {
       type: 'gauge',
       description: 'Error rate percentage',
       labels: ['error_type'],
-      unit: 'percent'
+      unit: 'percent',
     });
   }
 
@@ -375,7 +378,7 @@ export class CustomMetricsEngine {
     this.metricDefinitions.set(definition.name, definition);
 
     let metric: Counter | Gauge | Histogram;
-    
+
     switch (definition.type) {
       case 'counter':
         metric = new Counter(definition);
@@ -400,27 +403,33 @@ export class CustomMetricsEngine {
     const labels = {
       operation_type: metrics.operationType,
       tenant_id: metrics.tenantId,
-      success: metrics.success.toString()
+      success: metrics.success.toString(),
     };
 
     // Increment operation counter
-    const operationCounter = this.metrics.get('memorai_operations_total') as Counter;
+    const operationCounter = this.metrics.get(
+      'memorai_operations_total'
+    ) as Counter;
     operationCounter?.increment(labels);
 
     // Record duration
-    const durationHistogram = this.metrics.get('memorai_operation_duration_seconds') as Histogram;
+    const durationHistogram = this.metrics.get(
+      'memorai_operation_duration_seconds'
+    ) as Histogram;
     durationHistogram?.observe(metrics.duration / 1000, {
       operation_type: metrics.operationType,
-      tenant_id: metrics.tenantId
+      tenant_id: metrics.tenantId,
     });
 
     // Record cache hit if applicable
     if (metrics.cacheHit !== undefined) {
-      const cacheCounter = this.metrics.get('memorai_cache_hits_total') as Counter;
+      const cacheCounter = this.metrics.get(
+        'memorai_cache_hits_total'
+      ) as Counter;
       if (metrics.cacheHit) {
         cacheCounter?.increment({
           cache_type: 'memory',
-          tenant_id: metrics.tenantId
+          tenant_id: metrics.tenantId,
         });
       }
     }
@@ -435,16 +444,24 @@ export class CustomMetricsEngine {
    * Record system performance metrics
    */
   recordSystemMetrics(metrics: SystemPerformanceMetrics): void {
-    (this.metrics.get('memorai_system_cpu_usage') as Gauge)?.set(metrics.cpuUsage);
-    (this.metrics.get('memorai_system_memory_usage') as Gauge)?.set(metrics.memoryUsage);
-    (this.metrics.get('memorai_active_connections') as Gauge)?.set(metrics.activeConnections);
+    (this.metrics.get('memorai_system_cpu_usage') as Gauge)?.set(
+      metrics.cpuUsage
+    );
+    (this.metrics.get('memorai_system_memory_usage') as Gauge)?.set(
+      metrics.memoryUsage
+    );
+    (this.metrics.get('memorai_active_connections') as Gauge)?.set(
+      metrics.activeConnections
+    );
   }
 
   /**
    * Record business metrics
    */
   recordBusinessMetrics(metrics: BusinessMetrics): void {
-    (this.metrics.get('memorai_active_users') as Gauge)?.set(metrics.activeUsers);
+    (this.metrics.get('memorai_active_users') as Gauge)?.set(
+      metrics.activeUsers
+    );
     (this.metrics.get('memorai_error_rate') as Gauge)?.set(metrics.errorRate);
   }
 
@@ -477,7 +494,7 @@ export class CustomMetricsEngine {
    */
   getPrometheusMetrics(): string {
     let output = '';
-    
+
     for (const [name, definition] of this.metricDefinitions) {
       const metric = this.metrics.get(name);
       if (!metric) continue;
@@ -499,7 +516,7 @@ export class CustomMetricsEngine {
         const labelStr = this.formatLabels(data.labels || {});
         output += `${name}${labelStr} ${data.value} ${data.timestamp}\n`;
       }
-      
+
       output += '\n';
     }
 
@@ -513,7 +530,7 @@ export class CustomMetricsEngine {
     const labelPairs = Object.entries(labels)
       .map(([key, value]) => `${key}="${value}"`)
       .join(',');
-    
+
     return labelPairs ? `{${labelPairs}}` : '';
   }
 
@@ -555,8 +572,11 @@ export class CustomMetricsEngine {
       const metric = this.getMetric(alert.metric);
       if (!metric || Array.isArray(metric)) continue;
 
-      const shouldTrigger = this.evaluateCondition(metric.value, alert.condition);
-      
+      const shouldTrigger = this.evaluateCondition(
+        metric.value,
+        alert.condition
+      );
+
       if (shouldTrigger) {
         await this.triggerAlert(id, alert, metric.value);
       }
@@ -566,24 +586,40 @@ export class CustomMetricsEngine {
   /**
    * Evaluate alert condition
    */
-  private evaluateCondition(value: number, condition: AlertConfig['condition']): boolean {
+  private evaluateCondition(
+    value: number,
+    condition: AlertConfig['condition']
+  ): boolean {
     switch (condition.operator) {
-      case '>': return value > condition.threshold;
-      case '<': return value < condition.threshold;
-      case '>=': return value >= condition.threshold;
-      case '<=': return value <= condition.threshold;
-      case '=': return value === condition.threshold;
-      case '!=': return value !== condition.threshold;
-      default: return false;
+      case '>':
+        return value > condition.threshold;
+      case '<':
+        return value < condition.threshold;
+      case '>=':
+        return value >= condition.threshold;
+      case '<=':
+        return value <= condition.threshold;
+      case '=':
+        return value === condition.threshold;
+      case '!=':
+        return value !== condition.threshold;
+      default:
+        return false;
     }
   }
 
   /**
    * Trigger alert actions
    */
-  private async triggerAlert(id: string, alert: AlertConfig, value: number): Promise<void> {
-    console.log(`[ALERT] ${alert.name}: ${alert.metric} = ${value} ${alert.condition.operator} ${alert.condition.threshold}`);
-    
+  private async triggerAlert(
+    id: string,
+    alert: AlertConfig,
+    value: number
+  ): Promise<void> {
+    console.log(
+      `[ALERT] ${alert.name}: ${alert.metric} = ${value} ${alert.condition.operator} ${alert.condition.threshold}`
+    );
+
     // In a real implementation, this would trigger actual alert actions
     for (const action of alert.actions) {
       console.log(`[ALERT ACTION] ${action.type}:`, action.config);
@@ -628,7 +664,7 @@ export class CustomMetricsEngine {
         diskUsage: 0, // Would be implemented with actual disk monitoring
         networkIO: { bytesIn: 0, bytesOut: 0 }, // Would be implemented with network monitoring
         activeConnections: 0, // Would be implemented with connection monitoring
-        queueSize: 0 // Would be implemented with queue monitoring
+        queueSize: 0, // Would be implemented with queue monitoring
       };
 
       this.recordSystemMetrics(metrics);
@@ -650,7 +686,7 @@ export class CustomMetricsEngine {
       totalMetrics: this.metrics.size,
       totalDashboards: this.dashboards.size,
       totalAlerts: this.alerts.size,
-      isCollecting: this.isCollecting
+      isCollecting: this.isCollecting,
     };
   }
 }
@@ -661,12 +697,13 @@ export class CustomMetricsEngine {
 export const DEFAULT_MEMORAI_DASHBOARD: DashboardConfig = {
   id: 'memorai-overview',
   title: 'Memorai Enterprise Overview',
-  description: 'Comprehensive overview of memorai system performance and health',
+  description:
+    'Comprehensive overview of memorai system performance and health',
   tags: ['memorai', 'enterprise', 'overview'],
   refreshInterval: 30,
   timeRange: {
     from: 'now-1h',
-    to: 'now'
+    to: 'now',
   },
   panels: [
     {
@@ -676,11 +713,11 @@ export const DEFAULT_MEMORAI_DASHBOARD: DashboardConfig = {
       queries: [
         {
           metric: 'memorai_operations_total',
-          aggregation: 'sum'
-        }
+          aggregation: 'sum',
+        },
       ],
       position: { x: 0, y: 0, width: 12, height: 8 },
-      options: {}
+      options: {},
     },
     {
       id: 'response-time',
@@ -689,11 +726,11 @@ export const DEFAULT_MEMORAI_DASHBOARD: DashboardConfig = {
       queries: [
         {
           metric: 'memorai_operation_duration_seconds',
-          aggregation: 'avg'
-        }
+          aggregation: 'avg',
+        },
       ],
       position: { x: 12, y: 0, width: 12, height: 8 },
-      options: {}
+      options: {},
     },
     {
       id: 'active-memories',
@@ -702,11 +739,11 @@ export const DEFAULT_MEMORAI_DASHBOARD: DashboardConfig = {
       queries: [
         {
           metric: 'memorai_active_memories',
-          aggregation: 'sum'
-        }
+          aggregation: 'sum',
+        },
       ],
       position: { x: 0, y: 8, width: 6, height: 4 },
-      options: {}
+      options: {},
     },
     {
       id: 'error-rate',
@@ -715,13 +752,13 @@ export const DEFAULT_MEMORAI_DASHBOARD: DashboardConfig = {
       queries: [
         {
           metric: 'memorai_error_rate',
-          aggregation: 'avg'
-        }
+          aggregation: 'avg',
+        },
       ],
       position: { x: 6, y: 8, width: 6, height: 4 },
-      options: {}
-    }
-  ]
+      options: {},
+    },
+  ],
 };
 
 /**

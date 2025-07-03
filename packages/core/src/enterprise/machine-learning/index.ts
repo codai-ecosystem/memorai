@@ -1,14 +1,14 @@
 /**
  * @fileoverview Machine Learning Module - Advanced AI capabilities for
  * self-improving memory system with intelligent optimization.
- * 
+ *
  * This module provides comprehensive machine learning capabilities including:
  * - Usage pattern analysis and behavioral prediction
  * - Personalized memory recommendations with collaborative filtering
  * - Adaptive query optimization with intelligent performance tuning
  * - Memory quality scoring with multi-dimensional assessment
  * - Anomaly detection with pattern-based security monitoring
- * 
+ *
  * @author Memorai Machine Learning Team
  * @version 3.2.0
  * @since 2025-07-03
@@ -17,55 +17,55 @@
 // Usage Pattern Analysis
 export { default as UsagePatternAnalysisEngine } from './UsagePatternAnalysisEngine';
 export type {
+  SessionData,
+  UsageAnalysisConfig,
   UsagePattern,
   UserBehaviorProfile,
-  UsageAnalysisConfig,
-  SessionData
 } from './UsagePatternAnalysisEngine';
 
-// Personalized Memory Recommendations  
+// Personalized Memory Recommendations
 export { default as PersonalizedMemoryRecommendationsEngine } from './PersonalizedMemoryRecommendationsEngine';
 export type {
   MemoryRecommendation,
-  RecommendationRequest,
   RecommendationConfig,
+  RecommendationRequest,
+  RecommendationResult,
   UserInteraction,
-  RecommendationResult
 } from './PersonalizedMemoryRecommendationsEngine';
 
 // Adaptive Query Optimization
 export { default as AdaptiveQueryOptimizationEngine } from './AdaptiveQueryOptimizationEngine';
 export type {
-  QueryOptimization,
   AdaptiveOptimizationConfig,
-  QueryPerformanceMetrics,
-  Query,
+  IndexRecommendation,
   OptimizationResult,
-  IndexRecommendation
+  Query,
+  QueryOptimization,
+  QueryPerformanceMetrics,
 } from './AdaptiveQueryOptimizationEngine';
 
 // Memory Quality Scoring
 export { default as MemoryQualityScoringEngine } from './MemoryQualityScoringEngine';
 export type {
+  MemoryForQualityAssessment,
   MemoryQualityScore,
   QualityAssessmentConfig,
+  QualityAssessmentResult,
   QualityImprovementRecommendation,
-  MemoryForQualityAssessment,
-  QualityAssessmentResult
 } from './MemoryQualityScoringEngine';
 
 // Anomaly Detection
 export { default as AnomalyDetectionEngine } from './AnomalyDetectionEngine';
 export type {
-  AnomalyDetectionResult,
   AnomalyDetectionConfig,
+  AnomalyDetectionResult,
+  MemoryForAnomalyDetection,
   MemoryPatternProfile,
-  MemoryForAnomalyDetection
 } from './AnomalyDetectionEngine';
 
 /**
  * Machine Learning Engine Orchestrator
- * 
+ *
  * Coordinates all ML components for integrated memory intelligence
  */
 export class MachineLearningOrchestrator {
@@ -83,8 +83,12 @@ export class MachineLearningOrchestrator {
     anomalyDetection?: any;
   }) {
     this.usageAnalyzer = new UsagePatternAnalysisEngine(config?.usageAnalysis);
-    this.recommendationsEngine = new PersonalizedMemoryRecommendationsEngine(config?.recommendations);
-    this.queryOptimizer = new AdaptiveQueryOptimizationEngine(config?.queryOptimization);
+    this.recommendationsEngine = new PersonalizedMemoryRecommendationsEngine(
+      config?.recommendations
+    );
+    this.queryOptimizer = new AdaptiveQueryOptimizationEngine(
+      config?.queryOptimization
+    );
     this.qualityScorer = new MemoryQualityScoringEngine(config?.qualityScoring);
     this.anomalyDetector = new AnomalyDetectionEngine(config?.anomalyDetection);
   }
@@ -98,7 +102,7 @@ export class MachineLearningOrchestrator {
       recommendationsEngine: this.recommendationsEngine,
       queryOptimizer: this.queryOptimizer,
       qualityScorer: this.qualityScorer,
-      anomalyDetector: this.anomalyDetector
+      anomalyDetector: this.anomalyDetector,
     };
   }
 
@@ -111,7 +115,7 @@ export class MachineLearningOrchestrator {
       this.recommendationsEngine.cleanup(),
       this.queryOptimizer.cleanup(),
       this.qualityScorer.cleanup(),
-      this.anomalyDetector.cleanup()
+      this.anomalyDetector.cleanup(),
     ]);
   }
 }
@@ -120,12 +124,17 @@ export class MachineLearningOrchestrator {
  * ML Component Status
  */
 export const ML_COMPONENT_STATUS = {
-  USAGE_PATTERN_ANALYSIS: '✅ COMPLETE - Advanced behavioral tracking and pattern recognition',
-  PERSONALIZED_RECOMMENDATIONS: '✅ COMPLETE - Intelligent memory recommendations with collaborative filtering',
-  ADAPTIVE_QUERY_OPTIMIZATION: '✅ COMPLETE - Self-optimizing query performance with ML-based optimization',
-  MEMORY_QUALITY_SCORING: '✅ COMPLETE - Multi-dimensional quality assessment with improvement recommendations',
-  ANOMALY_DETECTION: '✅ COMPLETE - Pattern-based anomaly detection with real-time monitoring',
-  OVERALL_STATUS: '✅ PHASE 3.2 MACHINE LEARNING INTEGRATION - 100% COMPLETE'
+  USAGE_PATTERN_ANALYSIS:
+    '✅ COMPLETE - Advanced behavioral tracking and pattern recognition',
+  PERSONALIZED_RECOMMENDATIONS:
+    '✅ COMPLETE - Intelligent memory recommendations with collaborative filtering',
+  ADAPTIVE_QUERY_OPTIMIZATION:
+    '✅ COMPLETE - Self-optimizing query performance with ML-based optimization',
+  MEMORY_QUALITY_SCORING:
+    '✅ COMPLETE - Multi-dimensional quality assessment with improvement recommendations',
+  ANOMALY_DETECTION:
+    '✅ COMPLETE - Pattern-based anomaly detection with real-time monitoring',
+  OVERALL_STATUS: '✅ PHASE 3.2 MACHINE LEARNING INTEGRATION - 100% COMPLETE',
 } as const;
 
 /**
@@ -140,13 +149,13 @@ export const ML_VERSION_INFO = {
     'Personalized Recommendations with Collaborative Filtering',
     'Adaptive Query Optimization with Performance Tuning',
     'Memory Quality Scoring with Multi-dimensional Assessment',
-    'Anomaly Detection with Pattern-based Security Monitoring'
+    'Anomaly Detection with Pattern-based Security Monitoring',
   ],
   capabilities: [
     'Self-Improving Memory System',
     'Intelligent User Behavior Analysis',
     'Real-time Performance Optimization',
     'Automated Quality Assessment',
-    'Advanced Security Monitoring'
-  ]
+    'Advanced Security Monitoring',
+  ],
 } as const;

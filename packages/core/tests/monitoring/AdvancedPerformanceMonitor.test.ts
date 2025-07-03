@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { AdvancedPerformanceMonitor } from '../../src/monitoring/AdvancedPerformanceMonitor';
 import type { AlertConfig } from '../../src/monitoring/AdvancedPerformanceMonitor';
+import { AdvancedPerformanceMonitor } from '../../src/monitoring/AdvancedPerformanceMonitor';
 
 // Mock fetch for webhook notifications
 global.fetch = vi.fn();
@@ -12,7 +12,7 @@ describe('AdvancedPerformanceMonitor', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    
+
     // Setup mock memory engine
     mockMemoryEngine = {
       recall: vi.fn().mockResolvedValue([{ id: 'test' }]),
@@ -92,16 +92,16 @@ describe('AdvancedPerformanceMonitor', () => {
   describe('Metrics Collection', () => {
     it('should generate system report', () => {
       const report = monitor.getSystemReport();
-      
+
       expect(report).toHaveProperty('currentMetrics');
       expect(report).toHaveProperty('trends');
       expect(report).toHaveProperty('healthSummary');
-      
+
       expect(report.healthSummary).toHaveProperty('uptime');
       expect(report.healthSummary).toHaveProperty('overallHealth');
       expect(report.healthSummary).toHaveProperty('totalAlerts');
       expect(report.healthSummary).toHaveProperty('recommendations');
-      
+
       expect(typeof report.healthSummary.uptime).toBe('number');
       expect(Array.isArray(report.healthSummary.recommendations)).toBe(true);
     });
@@ -110,7 +110,7 @@ describe('AdvancedPerformanceMonitor', () => {
       monitor.incrementConnections();
       monitor.incrementConnections();
       monitor.incrementConnections();
-      
+
       const report = monitor.getSystemReport();
       expect(report.currentMetrics).toBeDefined();
     });
@@ -119,7 +119,7 @@ describe('AdvancedPerformanceMonitor', () => {
       monitor.incrementConnections();
       monitor.incrementConnections();
       monitor.decrementConnections();
-      
+
       const report = monitor.getSystemReport();
       expect(report.currentMetrics).toBeDefined();
     });
@@ -127,7 +127,7 @@ describe('AdvancedPerformanceMonitor', () => {
     it('should track errors', () => {
       monitor.recordError();
       monitor.recordError();
-      
+
       const report = monitor.getSystemReport();
       expect(report.currentMetrics).toBeDefined();
     });
@@ -136,7 +136,7 @@ describe('AdvancedPerformanceMonitor', () => {
       monitor.recordSuccess();
       monitor.recordSuccess();
       monitor.recordSuccess();
-      
+
       const report = monitor.getSystemReport();
       expect(report.currentMetrics).toBeDefined();
     });
@@ -150,7 +150,9 @@ describe('AdvancedPerformanceMonitor', () => {
   describe('Predictive Analysis', () => {
     it('should return insufficient data message for empty history', () => {
       const analysis = monitor.generatePredictiveAnalysis();
-      expect(analysis.recommendedActions).toContain('Collect more data for accurate predictions');
+      expect(analysis.recommendedActions).toContain(
+        'Collect more data for accurate predictions'
+      );
       expect(analysis.confidence).toBe(0.1);
     });
 
@@ -158,25 +160,27 @@ describe('AdvancedPerformanceMonitor', () => {
       // Simulate metrics collection by directly adding to history
       // This would normally be done by the monitoring interval
       monitor.startMonitoring(100); // Very short interval for testing
-      
+
       // Allow some time for metrics collection
-      return new Promise((resolve) => {
+      return new Promise(resolve => {
         setTimeout(() => {
           monitor.stopMonitoring();
           const analysis = monitor.generatePredictiveAnalysis();
-          
+
           expect(analysis).toHaveProperty('memoryGrowthTrend');
           expect(analysis).toHaveProperty('estimatedOptimizationNeeded');
           expect(analysis).toHaveProperty('recommendedActions');
           expect(analysis).toHaveProperty('confidence');
-          
-          expect(['stable', 'growing', 'declining']).toContain(analysis.memoryGrowthTrend);
+
+          expect(['stable', 'growing', 'declining']).toContain(
+            analysis.memoryGrowthTrend
+          );
           expect(typeof analysis.estimatedOptimizationNeeded).toBe('number');
           expect(Array.isArray(analysis.recommendedActions)).toBe(true);
           expect(typeof analysis.confidence).toBe('number');
           expect(analysis.confidence).toBeGreaterThanOrEqual(0);
           expect(analysis.confidence).toBeLessThanOrEqual(1);
-          
+
           resolve(undefined);
         }, 250);
       });
@@ -188,7 +192,7 @@ describe('AdvancedPerformanceMonitor', () => {
       // Mock logger.warn instead of console.warn
       const { logger } = await import('../../src/utils/logger.js');
       const loggerSpy = vi.spyOn(logger, 'warn').mockImplementation(() => {});
-      
+
       // Mock high memory usage
       vi.spyOn(process, 'memoryUsage').mockReturnValue({
         rss: 3 * 1024 * 1024 * 1024, // 3GB (above threshold)
@@ -199,7 +203,7 @@ describe('AdvancedPerformanceMonitor', () => {
       });
 
       monitor.startMonitoring(100);
-      
+
       await new Promise(resolve => setTimeout(resolve, 150));
       monitor.stopMonitoring();
 
@@ -222,7 +226,7 @@ describe('AdvancedPerformanceMonitor', () => {
       monitor.recordError(); // Should trigger error rate alert
 
       monitor.startMonitoring(100);
-      
+
       await new Promise(resolve => setTimeout(resolve, 150));
       monitor.stopMonitoring();
 
@@ -231,8 +235,11 @@ describe('AdvancedPerformanceMonitor', () => {
 
     it('should disable alerts when configuration disabled', () => {
       const disabledConfig = { ...alertConfig, enabled: false };
-      const disabledMonitor = new AdvancedPerformanceMonitor(disabledConfig, mockMemoryEngine);
-      
+      const disabledMonitor = new AdvancedPerformanceMonitor(
+        disabledConfig,
+        mockMemoryEngine
+      );
+
       expect(disabledMonitor).toBeDefined();
       // Alerts should not trigger when disabled
     });
@@ -241,7 +248,7 @@ describe('AdvancedPerformanceMonitor', () => {
   describe('Performance Testing', () => {
     it('should handle memory engine performance tests', async () => {
       monitor.startMonitoring(100);
-      
+
       await new Promise(resolve => setTimeout(resolve, 150));
       monitor.stopMonitoring();
 
@@ -250,7 +257,7 @@ describe('AdvancedPerformanceMonitor', () => {
 
     it('should handle missing memory engine gracefully', () => {
       const monitorWithoutEngine = new AdvancedPerformanceMonitor(alertConfig);
-      
+
       expect(() => monitorWithoutEngine.startMonitoring(100)).not.toThrow();
       monitorWithoutEngine.stopMonitoring();
     });
@@ -259,7 +266,7 @@ describe('AdvancedPerformanceMonitor', () => {
   describe('System Health Assessment', () => {
     it('should assess system health correctly', () => {
       const report = monitor.getSystemReport();
-      
+
       if (report.currentMetrics) {
         expect(['excellent', 'good', 'warning', 'critical']).toContain(
           report.currentMetrics.systemHealth
@@ -273,7 +280,7 @@ describe('AdvancedPerformanceMonitor', () => {
     it('should provide relevant recommendations', () => {
       monitor.recordError();
       monitor.recordError();
-      
+
       const report = monitor.getSystemReport();
       expect(report.healthSummary.recommendations).toBeDefined();
       expect(Array.isArray(report.healthSummary.recommendations)).toBe(true);
@@ -283,7 +290,7 @@ describe('AdvancedPerformanceMonitor', () => {
   describe('Metrics History Management', () => {
     it('should maintain metrics history within limits', async () => {
       monitor.startMonitoring(50); // Very frequent collection
-      
+
       await new Promise(resolve => setTimeout(resolve, 300));
       monitor.stopMonitoring();
 
@@ -297,7 +304,7 @@ describe('AdvancedPerformanceMonitor', () => {
     it('should handle monitoring errors gracefully', () => {
       // Mock memory engine to throw error
       mockMemoryEngine.recall.mockRejectedValue(new Error('Test error'));
-      
+
       expect(() => monitor.startMonitoring(100)).not.toThrow();
       monitor.stopMonitoring();
     });
@@ -305,10 +312,10 @@ describe('AdvancedPerformanceMonitor', () => {
     it('should handle webhook notification failures', async () => {
       const fetchMock = vi.mocked(fetch);
       fetchMock.mockRejectedValue(new Error('Network error'));
-      
+
       monitor.recordError();
       monitor.startMonitoring(100);
-      
+
       await new Promise(resolve => setTimeout(resolve, 150));
       monitor.stopMonitoring();
 

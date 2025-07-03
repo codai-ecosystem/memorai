@@ -1,24 +1,37 @@
-import type { SecurityConfig, RateLimitRule, SecurityMetrics } from '../types/Security.js';
+import type {
+  RateLimitRule,
+  SecurityConfig,
+  SecurityMetrics,
+} from '../types/Security.js';
 
 // Simple logger implementation
 const logger = {
-  info: (message: string, meta?: any) => console.log(`[INFO] ${message}`, meta || ''),
-  warn: (message: string, meta?: any) => console.warn(`[WARN] ${message}`, meta || ''),
-  error: (message: string, meta?: any) => console.error(`[ERROR] ${message}`, meta || ''),
-  debug: (message: string, meta?: any) => console.debug(`[DEBUG] ${message}`, meta || ''),
+  info: (message: string, meta?: any) =>
+    console.log(`[INFO] ${message}`, meta || ''),
+  warn: (message: string, meta?: any) =>
+    console.warn(`[WARN] ${message}`, meta || ''),
+  error: (message: string, meta?: any) =>
+    console.error(`[ERROR] ${message}`, meta || ''),
+  debug: (message: string, meta?: any) =>
+    console.debug(`[DEBUG] ${message}`, meta || ''),
 };
 
 /**
  * Enterprise Rate Limiting System
- * 
+ *
  * Provides multi-tiered rate limiting with adaptive capabilities
  * to prevent abuse and ensure fair resource usage.
  */
 export class EnterpriseRateLimiter {
   private config: SecurityConfig;
-  private requestCounts: Map<string, { count: number; resetTime: number }> = new Map();
+  private requestCounts: Map<string, { count: number; resetTime: number }> =
+    new Map();
   private rateLimitRules: Map<string, RateLimitRule> = new Map();
-  private violationLog: Array<{ key: string; timestamp: Date; action: string }> = [];
+  private violationLog: Array<{
+    key: string;
+    timestamp: Date;
+    action: string;
+  }> = [];
   private isActive: boolean = false;
   private adaptiveThresholds: Map<string, number> = new Map();
 
@@ -36,31 +49,33 @@ export class EnterpriseRateLimiter {
     this.rateLimitRules.set('global', {
       maxRequests: 10000,
       windowMs: 60000, // 1 minute
-      action: 'throttle'
+      action: 'throttle',
     });
 
     // Default tenant rate limit
     this.rateLimitRules.set('tenant_default', {
       maxRequests: 1000,
       windowMs: 60000,
-      action: 'throttle'
+      action: 'throttle',
     });
 
     // Default agent rate limit
     this.rateLimitRules.set('agent_default', {
       maxRequests: 100,
       windowMs: 60000,
-      action: 'throttle'
+      action: 'throttle',
     });
 
     // IP-based rate limit
     this.rateLimitRules.set('ip_default', {
       maxRequests: 300,
       windowMs: 60000,
-      action: 'block'
+      action: 'block',
     });
 
-    logger.info(`Initialized ${this.rateLimitRules.size} default rate limit rules`);
+    logger.info(
+      `Initialized ${this.rateLimitRules.size} default rate limit rules`
+    );
   }
 
   /**
@@ -102,7 +117,7 @@ export class EnterpriseRateLimiter {
         resetTime: 0,
         remaining: Infinity,
         limit: Infinity,
-        limitType: 'disabled'
+        limitType: 'disabled',
       };
     }
 
@@ -137,7 +152,7 @@ export class EnterpriseRateLimiter {
       resetTime: 0,
       remaining: Math.min(...checks.map(c => c.remaining)),
       limit: Math.min(...checks.map(c => c.limit)),
-      limitType: 'none'
+      limitType: 'none',
     };
   }
 
@@ -154,7 +169,7 @@ export class EnterpriseRateLimiter {
   }> {
     const rule = this.rateLimitRules.get('global')!;
     const key = 'global';
-    
+
     return this.evaluateRateLimit(key, rule, 'global');
   }
 
@@ -171,22 +186,28 @@ export class EnterpriseRateLimiter {
   }> {
     const tenantRuleKey = `tenant_${tenantId}`;
     let rule = this.rateLimitRules.get(tenantRuleKey);
-    
+
     if (!rule) {
       rule = this.rateLimitRules.get('tenant_default')!;
     }
 
     // Apply adaptive thresholds
-    const adaptiveLimit = this.getAdaptiveLimit(tenantRuleKey, rule.maxRequests);
+    const adaptiveLimit = this.getAdaptiveLimit(
+      tenantRuleKey,
+      rule.maxRequests
+    );
     const adaptiveRule = { ...rule, maxRequests: adaptiveLimit };
-    
+
     return this.evaluateRateLimit(tenantRuleKey, adaptiveRule, 'tenant');
   }
 
   /**
    * Check agent-specific rate limit
    */
-  private async checkAgentRateLimit(tenantId: string, agentId: string): Promise<{
+  private async checkAgentRateLimit(
+    tenantId: string,
+    agentId: string
+  ): Promise<{
     allowed: boolean;
     action: 'allow' | 'throttle' | 'block';
     resetTime: number;
@@ -196,7 +217,7 @@ export class EnterpriseRateLimiter {
   }> {
     const agentRuleKey = `agent_${tenantId}_${agentId}`;
     let rule = this.rateLimitRules.get(agentRuleKey);
-    
+
     if (!rule) {
       rule = this.rateLimitRules.get('agent_default')!;
     }
@@ -217,7 +238,7 @@ export class EnterpriseRateLimiter {
   }> {
     const ipRuleKey = `ip_${ipAddress}`;
     let rule = this.rateLimitRules.get(ipRuleKey);
-    
+
     if (!rule) {
       rule = this.rateLimitRules.get('ip_default')!;
     }
@@ -247,16 +268,16 @@ export class EnterpriseRateLimiter {
       // Initialize or reset bucket
       this.requestCounts.set(key, {
         count: 0,
-        resetTime: now + rule.windowMs
+        resetTime: now + rule.windowMs,
       });
-      
+
       return {
         allowed: true,
         action: 'allow',
         resetTime: now + rule.windowMs,
         remaining: rule.maxRequests - 1,
         limit: rule.maxRequests,
-        limitType
+        limitType,
       };
     }
 
@@ -269,18 +290,19 @@ export class EnterpriseRateLimiter {
       resetTime: bucket.resetTime,
       remaining,
       limit: rule.maxRequests,
-      limitType
+      limitType,
     };
   }
 
   /**
    * Increment request counters
    */
-  private incrementCounters(tenantId: string, agentId?: string, ipAddress?: string): void {
-    const keys = [
-      'global',
-      `tenant_${tenantId}`
-    ];
+  private incrementCounters(
+    tenantId: string,
+    agentId?: string,
+    ipAddress?: string
+  ): void {
+    const keys = ['global', `tenant_${tenantId}`];
 
     if (agentId) {
       keys.push(`agent_${tenantId}_${agentId}`);
@@ -303,7 +325,7 @@ export class EnterpriseRateLimiter {
    */
   private getAdaptiveLimit(key: string, baseLimit: number): number {
     const adaptiveThreshold = this.adaptiveThresholds.get(key);
-    
+
     if (!adaptiveThreshold) {
       return baseLimit;
     }
@@ -321,10 +343,13 @@ export class EnterpriseRateLimiter {
   /**
    * Update adaptive thresholds based on system metrics
    */
-  public updateAdaptiveThresholds(systemLoad: number, responseTime: number): void {
+  public updateAdaptiveThresholds(
+    systemLoad: number,
+    responseTime: number
+  ): void {
     // Calculate adaptive threshold based on system performance
     const threshold = Math.min(
-      (systemLoad * 0.7) + (responseTime / 1000 * 0.3),
+      systemLoad * 0.7 + (responseTime / 1000) * 0.3,
       1.0
     );
 
@@ -338,7 +363,7 @@ export class EnterpriseRateLimiter {
     logger.debug('Updated adaptive rate limit thresholds', {
       systemLoad,
       responseTime,
-      threshold
+      threshold,
     });
   }
 
@@ -367,7 +392,7 @@ export class EnterpriseRateLimiter {
     this.violationLog.push({
       key: limitType,
       timestamp: new Date(),
-      action
+      action,
     });
 
     // Keep only recent violations
@@ -415,7 +440,7 @@ export class EnterpriseRateLimiter {
       activeRules: this.rateLimitRules.size,
       totalViolations: this.violationLog.length,
       recentViolations: recentViolations.length,
-      topViolatingKeys
+      topViolatingKeys,
     };
   }
 
@@ -452,14 +477,12 @@ export class EnterpriseRateLimiter {
 
       // Clean up old violations
       const cutoff = new Date(now - 86400000); // 24 hours
-      this.violationLog = this.violationLog.filter(
-        v => v.timestamp >= cutoff
-      );
+      this.violationLog = this.violationLog.filter(v => v.timestamp >= cutoff);
 
       if (keysToRemove.length > 0) {
         logger.debug('Rate limiter cleanup completed', {
           removedBuckets: keysToRemove.length,
-          remainingBuckets: this.requestCounts.size
+          remainingBuckets: this.requestCounts.size,
         });
       }
     }, 60000); // Run every minute

@@ -3,7 +3,7 @@
 **Version**: 3.2.0  
 **Date**: July 3, 2025  
 **Author**: Memorai DevOps Team  
-**Status**: Production-Ready  
+**Status**: Production-Ready
 
 ## 📋 Overview
 
@@ -14,6 +14,7 @@ This comprehensive guide covers deployment procedures, operational workflows, an
 ### Production Deployment Models
 
 #### 1. Cloud-Native Kubernetes Deployment (Recommended)
+
 ```yaml
 # Deployment architecture
 cluster_config:
@@ -43,6 +44,7 @@ services:
 ```
 
 #### 2. Docker Compose Deployment (Development/Small Production)
+
 ```yaml
 # docker-compose.yml
 version: '3.8'
@@ -59,7 +61,7 @@ services:
       - redis
       - qdrant
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      test: ['CMD', 'curl', '-f', 'http://localhost:3001/health']
       interval: 30s
       timeout: 10s
       retries: 3
@@ -80,7 +82,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U memorai"]
+      test: ['CMD-SHELL', 'pg_isready -U memorai']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -98,6 +100,7 @@ services:
 ```
 
 #### 3. Serverless Deployment (AWS Lambda/Vercel)
+
 ```yaml
 # serverless.yml
 service: memorai-serverless
@@ -107,7 +110,7 @@ provider:
   runtime: nodejs20.x
   region: us-east-1
   stage: ${opt:stage, 'dev'}
-  
+
 functions:
   api:
     handler: apps/api/src/lambda.handler
@@ -148,6 +151,7 @@ resources:
 ### Prerequisites Checklist
 
 #### System Requirements
+
 - [ ] Kubernetes cluster (1.26+) or Docker Compose environment
 - [ ] PostgreSQL 15+ database
 - [ ] Redis 7+ cache
@@ -157,6 +161,7 @@ resources:
 - [ ] Monitoring and logging infrastructure
 
 #### Resource Requirements
+
 ```yaml
 # Minimum production requirements
 compute:
@@ -208,6 +213,7 @@ vector_db:
 ### Environment Configuration
 
 #### Environment Variables
+
 ```bash
 # Core configuration
 MEMORAI_ENV=production
@@ -261,6 +267,7 @@ QUERY_TIMEOUT=30000
 ### Database Setup
 
 #### PostgreSQL Setup
+
 ```sql
 -- Create database and user
 CREATE DATABASE memorai;
@@ -293,6 +300,7 @@ ALTER SYSTEM SET checkpoint_completion_target = 0.9;
 ```
 
 #### Database Migration
+
 ```bash
 # Run migrations
 pnpm db:migrate
@@ -308,6 +316,7 @@ pnpm db:verify
 ```
 
 #### Qdrant Setup
+
 ```bash
 # Start Qdrant with custom configuration
 docker run -d \
@@ -341,6 +350,7 @@ curl -X PUT 'http://localhost:6333/collections/memorai_embeddings' \
 ### Kubernetes Deployment
 
 #### 1. Namespace and RBAC Setup
+
 ```yaml
 # namespace.yaml
 apiVersion: v1
@@ -365,12 +375,12 @@ kind: ClusterRole
 metadata:
   name: memorai-role
 rules:
-- apiGroups: [""]
-  resources: ["pods", "services", "endpoints"]
-  verbs: ["get", "list", "watch"]
-- apiGroups: ["apps"]
-  resources: ["deployments", "replicasets"]
-  verbs: ["get", "list", "watch"]
+  - apiGroups: ['']
+    resources: ['pods', 'services', 'endpoints']
+    verbs: ['get', 'list', 'watch']
+  - apiGroups: ['apps']
+    resources: ['deployments', 'replicasets']
+    verbs: ['get', 'list', 'watch']
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -382,12 +392,13 @@ roleRef:
   kind: ClusterRole
   name: memorai-role
 subjects:
-- kind: ServiceAccount
-  name: memorai-sa
-  namespace: memorai-production
+  - kind: ServiceAccount
+    name: memorai-sa
+    namespace: memorai-production
 ```
 
 #### 2. ConfigMaps and Secrets
+
 ```yaml
 # configmap.yaml
 apiVersion: v1
@@ -396,12 +407,12 @@ metadata:
   name: memorai-config
   namespace: memorai-production
 data:
-  MEMORAI_ENV: "production"
-  MEMORAI_PORT: "3001"
-  DATABASE_POOL_SIZE: "20"
-  REDIS_CLUSTER_MODE: "true"
-  ENABLE_AI_FEATURES: "true"
-  MAX_CONCURRENT_REQUESTS: "1000"
+  MEMORAI_ENV: 'production'
+  MEMORAI_PORT: '3001'
+  DATABASE_POOL_SIZE: '20'
+  REDIS_CLUSTER_MODE: 'true'
+  ENABLE_AI_FEATURES: 'true'
+  MAX_CONCURRENT_REQUESTS: '1000'
 
 ---
 # secrets.yaml
@@ -419,6 +430,7 @@ data:
 ```
 
 #### 3. Application Deployments
+
 ```yaml
 # api-deployment.yaml
 apiVersion: apps/v1
@@ -447,38 +459,38 @@ spec:
     spec:
       serviceAccountName: memorai-sa
       containers:
-      - name: memorai-api
-        image: memorai/api:3.2.0
-        ports:
-        - containerPort: 3001
-        envFrom:
-        - configMapRef:
-            name: memorai-config
-        - secretRef:
-            name: memorai-secrets
-        resources:
-          requests:
-            memory: "512Mi"
-            cpu: "500m"
-          limits:
-            memory: "1Gi"
-            cpu: "1000m"
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 3001
-          initialDelaySeconds: 30
-          periodSeconds: 10
-          timeoutSeconds: 5
-          failureThreshold: 3
-        readinessProbe:
-          httpGet:
-            path: /ready
-            port: 3001
-          initialDelaySeconds: 5
-          periodSeconds: 5
-          timeoutSeconds: 3
-          failureThreshold: 3
+        - name: memorai-api
+          image: memorai/api:3.2.0
+          ports:
+            - containerPort: 3001
+          envFrom:
+            - configMapRef:
+                name: memorai-config
+            - secretRef:
+                name: memorai-secrets
+          resources:
+            requests:
+              memory: '512Mi'
+              cpu: '500m'
+            limits:
+              memory: '1Gi'
+              cpu: '1000m'
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3001
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 3001
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
 
 ---
 # api-service.yaml
@@ -493,10 +505,10 @@ spec:
   selector:
     app: memorai-api
   ports:
-  - name: http
-    port: 80
-    targetPort: 3001
-    protocol: TCP
+    - name: http
+      port: 80
+      targetPort: 3001
+      protocol: TCP
   type: ClusterIP
 
 ---
@@ -514,21 +526,22 @@ spec:
   minReplicas: 3
   maxReplicas: 10
   metrics:
-  - type: Resource
-    resource:
-      name: cpu
-      target:
-        type: Utilization
-        averageUtilization: 70
-  - type: Resource
-    resource:
-      name: memory
-      target:
-        type: Utilization
-        averageUtilization: 80
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
 ```
 
 #### 4. Ingress Configuration
+
 ```yaml
 # ingress.yaml
 apiVersion: networking.k8s.io/v1
@@ -539,42 +552,43 @@ metadata:
   annotations:
     kubernetes.io/ingress.class: nginx
     cert-manager.io/cluster-issuer: letsencrypt-prod
-    nginx.ingress.kubernetes.io/rate-limit: "100"
-    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/rate-limit: '100'
+    nginx.ingress.kubernetes.io/rate-limit-window: '1m'
+    nginx.ingress.kubernetes.io/ssl-redirect: 'true'
+    nginx.ingress.kubernetes.io/force-ssl-redirect: 'true'
 spec:
   tls:
-  - hosts:
-    - api.memorai.com
-    - dashboard.memorai.com
-    secretName: memorai-tls
+    - hosts:
+        - api.memorai.com
+        - dashboard.memorai.com
+      secretName: memorai-tls
   rules:
-  - host: api.memorai.com
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: memorai-api-service
-            port:
-              number: 80
-  - host: dashboard.memorai.com
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: memorai-dashboard-service
-            port:
-              number: 80
+    - host: api.memorai.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: memorai-api-service
+                port:
+                  number: 80
+    - host: dashboard.memorai.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: memorai-dashboard-service
+                port:
+                  number: 80
 ```
 
 ### Deployment Commands
 
 #### Manual Deployment
+
 ```bash
 # Build and push images
 docker build -t memorai/api:3.2.0 .
@@ -596,6 +610,7 @@ kubectl get ingress -n memorai-production
 ```
 
 #### CI/CD Deployment
+
 ```yaml
 # .github/workflows/deploy-production.yml
 name: Deploy to Production
@@ -609,63 +624,63 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     environment: production
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        cache: 'pnpm'
-        
-    - name: Install dependencies
-      run: pnpm install --frozen-lockfile
-      
-    - name: Run tests
-      run: pnpm test:ci
-      
-    - name: Build application
-      run: pnpm build
-      
-    - name: Build Docker images
-      run: |
-        docker build -t memorai/api:${{ github.sha }} .
-        docker build -t memorai/dashboard:${{ github.sha }} -f apps/dashboard/Dockerfile .
-        
-    - name: Push to registry
-      run: |
-        echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
-        docker push memorai/api:${{ github.sha }}
-        docker push memorai/dashboard:${{ github.sha }}
-        
-    - name: Deploy to Kubernetes
-      uses: azure/k8s-deploy@v1
-      with:
-        manifests: |
-          k8s/deployments/api-deployment.yaml
-          k8s/deployments/dashboard-deployment.yaml
-        images: |
-          memorai/api:${{ github.sha }}
-          memorai/dashboard:${{ github.sha }}
-        kubectl-version: 'latest'
-        
-    - name: Verify deployment
-      run: |
-        kubectl rollout status deployment/memorai-api -n memorai-production
-        kubectl rollout status deployment/memorai-dashboard -n memorai-production
-        
-    - name: Run smoke tests
-      run: pnpm test:smoke --base-url=https://api.memorai.com
-      
-    - name: Notify deployment
-      uses: 8398a7/action-slack@v3
-      with:
-        status: ${{ job.status }}
-        text: "Production deployment completed successfully!"
-      env:
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run tests
+        run: pnpm test:ci
+
+      - name: Build application
+        run: pnpm build
+
+      - name: Build Docker images
+        run: |
+          docker build -t memorai/api:${{ github.sha }} .
+          docker build -t memorai/dashboard:${{ github.sha }} -f apps/dashboard/Dockerfile .
+
+      - name: Push to registry
+        run: |
+          echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+          docker push memorai/api:${{ github.sha }}
+          docker push memorai/dashboard:${{ github.sha }}
+
+      - name: Deploy to Kubernetes
+        uses: azure/k8s-deploy@v1
+        with:
+          manifests: |
+            k8s/deployments/api-deployment.yaml
+            k8s/deployments/dashboard-deployment.yaml
+          images: |
+            memorai/api:${{ github.sha }}
+            memorai/dashboard:${{ github.sha }}
+          kubectl-version: 'latest'
+
+      - name: Verify deployment
+        run: |
+          kubectl rollout status deployment/memorai-api -n memorai-production
+          kubectl rollout status deployment/memorai-dashboard -n memorai-production
+
+      - name: Run smoke tests
+        run: pnpm test:smoke --base-url=https://api.memorai.com
+
+      - name: Notify deployment
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: 'Production deployment completed successfully!'
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
 ```
 
 ## ⚙️ Operational Procedures
@@ -673,6 +688,7 @@ jobs:
 ### Health Monitoring
 
 #### Health Check Endpoints
+
 ```typescript
 // Health check implementation
 export const healthRoutes = {
@@ -682,10 +698,10 @@ export const healthRoutes = {
       status: 'healthy',
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
-      version: process.env.MEMORAI_VERSION
-    })
+      version: process.env.MEMORAI_VERSION,
+    }),
   },
-  
+
   // Detailed readiness check
   '/ready': {
     handler: async () => {
@@ -693,36 +709,37 @@ export const healthRoutes = {
         checkDatabase(),
         checkRedis(),
         checkQdrant(),
-        checkExternalServices()
+        checkExternalServices(),
       ]);
-      
+
       const isReady = checks.every(check => check.status === 'fulfilled');
-      
+
       return {
         status: isReady ? 'ready' : 'not ready',
         checks: checks.map((check, i) => ({
           name: ['database', 'redis', 'qdrant', 'external'][i],
           status: check.status,
-          ...(check.status === 'rejected' && { error: check.reason.message })
+          ...(check.status === 'rejected' && { error: check.reason.message }),
         })),
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
-    }
+    },
   },
-  
+
   // Live probe
   '/live': {
     handler: async () => ({
       status: 'alive',
       pid: process.pid,
       memory: process.memoryUsage(),
-      cpu: process.cpuUsage()
-    })
-  }
+      cpu: process.cpuUsage(),
+    }),
+  },
 };
 ```
 
 #### Monitoring Configuration
+
 ```yaml
 # Prometheus configuration
 global:
@@ -730,38 +747,39 @@ global:
   evaluation_interval: 15s
 
 rule_files:
-  - "memorai_rules.yml"
+  - 'memorai_rules.yml'
 
 scrape_configs:
-- job_name: 'memorai-api'
-  static_configs:
-  - targets: ['memorai-api:3001']
-  metrics_path: '/metrics'
-  scrape_interval: 10s
+  - job_name: 'memorai-api'
+    static_configs:
+      - targets: ['memorai-api:3001']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
 
-- job_name: 'memorai-dashboard'
-  static_configs:
-  - targets: ['memorai-dashboard:3000']
-  metrics_path: '/api/metrics'
+  - job_name: 'memorai-dashboard'
+    static_configs:
+      - targets: ['memorai-dashboard:3000']
+    metrics_path: '/api/metrics'
 
-- job_name: 'postgres'
-  static_configs:
-  - targets: ['postgres-exporter:9187']
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['postgres-exporter:9187']
 
-- job_name: 'redis'
-  static_configs:
-  - targets: ['redis-exporter:9121']
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis-exporter:9121']
 
 alerting:
   alertmanagers:
-  - static_configs:
-    - targets:
-      - alertmanager:9093
+    - static_configs:
+        - targets:
+            - alertmanager:9093
 ```
 
 ### Backup Procedures
 
 #### Database Backup
+
 ```bash
 #!/bin/bash
 # backup-database.sh
@@ -806,6 +824,7 @@ echo "Database backup completed: $BACKUP_FILE"
 ```
 
 #### Vector Database Backup
+
 ```bash
 #!/bin/bash
 # backup-qdrant.sh
@@ -849,6 +868,7 @@ echo "Qdrant backup completed: $BACKUP_FILE"
 ### Restore Procedures
 
 #### Database Restore
+
 ```bash
 #!/bin/bash
 # restore-database.sh
@@ -891,6 +911,7 @@ echo "Database restored to: $RESTORE_TARGET"
 ### Scaling Procedures
 
 #### Horizontal Scaling
+
 ```bash
 #!/bin/bash
 # scale-application.sh
@@ -921,6 +942,7 @@ echo "Scaled $COMPONENT to $REPLICAS replicas"
 ```
 
 #### Database Scaling
+
 ```sql
 -- Add read replica
 SELECT pg_promote();
@@ -938,6 +960,7 @@ SELECT pg_promote();
 ### Security Operations
 
 #### Certificate Management
+
 ```bash
 #!/bin/bash
 # renew-certificates.sh
@@ -958,6 +981,7 @@ echo "Certificates renewed and updated"
 ```
 
 #### Security Scanning
+
 ```bash
 #!/bin/bash
 # security-scan.sh
@@ -982,6 +1006,7 @@ echo "Security scan completed"
 ### Disaster Recovery
 
 #### Failover Procedure
+
 ```bash
 #!/bin/bash
 # failover-to-secondary.sh
@@ -1015,6 +1040,7 @@ echo "Failover completed successfully"
 ```
 
 #### Recovery Testing
+
 ```bash
 #!/bin/bash
 # test-disaster-recovery.sh
@@ -1039,6 +1065,7 @@ echo "Disaster recovery test completed"
 ### Database Optimization
 
 #### Query Optimization
+
 ```sql
 -- Analyze slow queries
 SELECT query, mean_time, calls, total_time
@@ -1047,23 +1074,24 @@ ORDER BY mean_time DESC
 LIMIT 10;
 
 -- Create missing indexes
-CREATE INDEX CONCURRENTLY idx_memories_user_created 
+CREATE INDEX CONCURRENTLY idx_memories_user_created
 ON memories(user_id, created_at DESC);
 
 -- Optimize expensive queries
-EXPLAIN (ANALYZE, BUFFERS) 
-SELECT * FROM memories 
-WHERE user_id = $1 
-ORDER BY created_at DESC 
+EXPLAIN (ANALYZE, BUFFERS)
+SELECT * FROM memories
+WHERE user_id = $1
+ORDER BY created_at DESC
 LIMIT 20;
 
 -- Partition large tables
-CREATE TABLE memories_2025_01 
-PARTITION OF memories 
+CREATE TABLE memories_2025_01
+PARTITION OF memories
 FOR VALUES FROM ('2025-01-01') TO ('2025-02-01');
 ```
 
 #### Connection Pool Tuning
+
 ```javascript
 // Database pool configuration
 const pool = new Pool({
@@ -1072,26 +1100,27 @@ const pool = new Pool({
   database: process.env.DB_NAME,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
-  
+
   // Connection pool settings
-  min: 5,                    // Minimum connections
-  max: 20,                   // Maximum connections
-  idleTimeoutMillis: 30000,  // Close idle connections after 30s
+  min: 5, // Minimum connections
+  max: 20, // Maximum connections
+  idleTimeoutMillis: 30000, // Close idle connections after 30s
   connectionTimeoutMillis: 5000, // Wait 5s for connection
-  acquireTimeoutMillis: 60000,   // Wait 60s to acquire connection
-  
+  acquireTimeoutMillis: 60000, // Wait 60s to acquire connection
+
   // Performance settings
   keepAlive: true,
   keepAliveInitialDelayMillis: 10000,
-  
+
   // Health checks
-  allowExitOnIdle: true
+  allowExitOnIdle: true,
 });
 ```
 
 ### Application Performance
 
 #### Caching Strategy
+
 ```typescript
 // Multi-level caching implementation
 class CacheManager {
@@ -1131,6 +1160,7 @@ class CacheManager {
 ```
 
 #### Request Optimization
+
 ```typescript
 // Request batching and optimization
 class OptimizedMemoryService {
@@ -1169,8 +1199,10 @@ class OptimizedMemoryService {
 ### Common Issues
 
 #### 1. High Response Times
+
 **Symptoms**: API response times > 100ms
 **Diagnosis**:
+
 ```bash
 # Check application metrics
 curl -s http://localhost:3001/metrics | grep http_request_duration
@@ -1183,14 +1215,17 @@ redis-cli --latency-history -i 1
 ```
 
 **Solutions**:
+
 - Scale application horizontally
 - Optimize database queries
 - Increase cache hit rates
 - Add database read replicas
 
 #### 2. Memory Leaks
+
 **Symptoms**: Increasing memory usage over time
 **Diagnosis**:
+
 ```bash
 # Monitor memory usage
 kubectl top pods -n memorai-production
@@ -1203,14 +1238,17 @@ kill -USR2 $(pgrep node)
 ```
 
 **Solutions**:
+
 - Restart affected pods
 - Review code for memory leaks
 - Adjust garbage collection settings
 - Implement memory limits
 
 #### 3. Database Connection Issues
+
 **Symptoms**: Connection timeout errors
 **Diagnosis**:
+
 ```bash
 # Check connection pool status
 psql -c "SELECT count(*) FROM pg_stat_activity WHERE datname='memorai';"
@@ -1220,6 +1258,7 @@ kubectl logs -f deployment/memorai-api -n memorai-production | grep -i connectio
 ```
 
 **Solutions**:
+
 - Increase connection pool size
 - Optimize long-running queries
 - Implement connection retry logic
@@ -1228,6 +1267,7 @@ kubectl logs -f deployment/memorai-api -n memorai-production | grep -i connectio
 ### Performance Monitoring
 
 #### Key Metrics to Monitor
+
 ```yaml
 # Application metrics
 - http_request_duration_seconds
@@ -1256,6 +1296,7 @@ kubectl logs -f deployment/memorai-api -n memorai-production | grep -i connectio
 ```
 
 #### Alerting Rules
+
 ```yaml
 # Critical alerts
 - alert: HighErrorRate
@@ -1264,7 +1305,7 @@ kubectl logs -f deployment/memorai-api -n memorai-production | grep -i connectio
   labels:
     severity: critical
   annotations:
-    summary: "High error rate detected"
+    summary: 'High error rate detected'
 
 - alert: DatabaseConnectionsExhausted
   expr: postgres_connections_active / postgres_connections_max > 0.9
@@ -1272,7 +1313,7 @@ kubectl logs -f deployment/memorai-api -n memorai-production | grep -i connectio
   labels:
     severity: critical
   annotations:
-    summary: "Database connections near limit"
+    summary: 'Database connections near limit'
 
 # Warning alerts
 - alert: HighResponseTime
@@ -1281,7 +1322,7 @@ kubectl logs -f deployment/memorai-api -n memorai-production | grep -i connectio
   labels:
     severity: warning
   annotations:
-    summary: "High response time detected"
+    summary: 'High response time detected'
 ```
 
 ---

@@ -1,14 +1,14 @@
 /**
  * @fileoverview Semantic Similarity Engine - Advanced AI-powered similarity analysis
  * and scoring system for next-generation memory intelligence.
- * 
+ *
  * Implements sophisticated semantic similarity algorithms including:
  * - Multi-dimensional vector similarity analysis
  * - Contextual semantic scoring with attention mechanisms
  * - Cross-lingual semantic understanding
  * - Temporal semantic drift detection and adaptation
  * - Hierarchical semantic clustering and categorization
- * 
+ *
  * @author Memorai AI Intelligence Team
  * @version 3.1.0
  * @since 2025-07-03
@@ -26,7 +26,7 @@ export const SemanticVectorSchema = z.object({
   dimensions: z.number(),
   model: z.string(),
   created: z.date(),
-  metadata: z.record(z.any()).optional()
+  metadata: z.record(z.any()).optional(),
 });
 
 /**
@@ -40,9 +40,9 @@ export const SimilarityScoreSchema = z.object({
     semantic: z.number(),
     syntactic: z.number(),
     contextual: z.number(),
-    temporal: z.number()
+    temporal: z.number(),
   }),
-  explanation: z.string().optional()
+  explanation: z.string().optional(),
 });
 
 /**
@@ -61,8 +61,8 @@ export const SemanticAnalysisConfigSchema = z.object({
     semantic: z.number().default(0.4),
     syntactic: z.number().default(0.3),
     contextual: z.number().default(0.2),
-    temporal: z.number().default(0.1)
-  })
+    temporal: z.number().default(0.1),
+  }),
 });
 
 /**
@@ -73,7 +73,7 @@ export const CrossLingualConfigSchema = z.object({
   targetLanguages: z.array(z.string()).default(['en', 'es', 'fr', 'de', 'zh']),
   translationModel: z.string().default('Helsinki-NLP/opus-mt'),
   alignmentModel: z.string().default('sentence-transformers/LaBSE'),
-  enableAutoDetection: z.boolean().default(true)
+  enableAutoDetection: z.boolean().default(true),
 });
 
 /**
@@ -84,14 +84,18 @@ export const TemporalAnalysisConfigSchema = z.object({
   decayFactor: z.number().default(0.95),
   driftThreshold: z.number().default(0.1),
   enableTrendAnalysis: z.boolean().default(true),
-  enableSeasonalAdjustment: z.boolean().default(false)
+  enableSeasonalAdjustment: z.boolean().default(false),
 });
 
 export type SemanticVector = z.infer<typeof SemanticVectorSchema>;
 export type SimilarityScore = z.infer<typeof SimilarityScoreSchema>;
-export type SemanticAnalysisConfig = z.infer<typeof SemanticAnalysisConfigSchema>;
+export type SemanticAnalysisConfig = z.infer<
+  typeof SemanticAnalysisConfigSchema
+>;
 export type CrossLingualConfig = z.infer<typeof CrossLingualConfigSchema>;
-export type TemporalAnalysisConfig = z.infer<typeof TemporalAnalysisConfigSchema>;
+export type TemporalAnalysisConfig = z.infer<
+  typeof TemporalAnalysisConfigSchema
+>;
 
 /**
  * Semantic Analysis Result
@@ -132,7 +136,7 @@ export interface BatchSimilarityRequest {
 
 /**
  * Advanced Semantic Similarity Engine
- * 
+ *
  * Provides next-generation AI-powered semantic similarity analysis with:
  * - Multi-dimensional vector analysis and hybrid scoring
  * - Cross-lingual semantic understanding and alignment
@@ -160,11 +164,15 @@ export default class SemanticSimilarityEngine extends EventEmitter {
     temporalConfig?: Partial<TemporalAnalysisConfig>
   ) {
     super();
-    
+
     this.config = SemanticAnalysisConfigSchema.parse(config || {});
-    this.crossLingualConfig = CrossLingualConfigSchema.parse(crossLingualConfig || {});
-    this.temporalConfig = TemporalAnalysisConfigSchema.parse(temporalConfig || {});
-    
+    this.crossLingualConfig = CrossLingualConfigSchema.parse(
+      crossLingualConfig || {}
+    );
+    this.temporalConfig = TemporalAnalysisConfigSchema.parse(
+      temporalConfig || {}
+    );
+
     this.vectorCache = new Map();
     this.similarityCache = new Map();
     this.modelCache = new Map();
@@ -172,7 +180,7 @@ export default class SemanticSimilarityEngine extends EventEmitter {
       totalQueries: 0,
       avgProcessingTime: 0,
       cacheHitRate: 0,
-      accuracy: 0
+      accuracy: 0,
     };
 
     this.setupCacheManagement();
@@ -192,10 +200,14 @@ export default class SemanticSimilarityEngine extends EventEmitter {
     } = {}
   ): Promise<SimilarityScore> {
     const startTime = Date.now();
-    
+
     try {
-      const { method = 'hybrid', includeExplanation = false, enableCaching = true } = options;
-      
+      const {
+        method = 'hybrid',
+        includeExplanation = false,
+        enableCaching = true,
+      } = options;
+
       // Check cache first
       const cacheKey = this.generateCacheKey(query, content, method);
       if (enableCaching && this.similarityCache.has(cacheKey)) {
@@ -208,17 +220,29 @@ export default class SemanticSimilarityEngine extends EventEmitter {
       const contentVector = await this.generateVector(content);
 
       // Calculate similarity components
-      const semanticScore = await this.calculateSemanticSimilarity(queryVector, contentVector);
-      const syntacticScore = await this.calculateSyntacticSimilarity(query, content);
-      const contextualScore = await this.calculateContextualSimilarity(query, content);
-      const temporalScore = await this.calculateTemporalSimilarity(query, content);
+      const semanticScore = await this.calculateSemanticSimilarity(
+        queryVector,
+        contentVector
+      );
+      const syntacticScore = await this.calculateSyntacticSimilarity(
+        query,
+        content
+      );
+      const contextualScore = await this.calculateContextualSimilarity(
+        query,
+        content
+      );
+      const temporalScore = await this.calculateTemporalSimilarity(
+        query,
+        content
+      );
 
       // Combine scores using weighted approach
       const combinedScore = this.combineScores({
         semantic: semanticScore,
         syntactic: syntacticScore,
         contextual: contextualScore,
-        temporal: temporalScore
+        temporal: temporalScore,
       });
 
       // Calculate confidence
@@ -226,7 +250,7 @@ export default class SemanticSimilarityEngine extends EventEmitter {
         semantic: semanticScore,
         syntactic: syntacticScore,
         contextual: contextualScore,
-        temporal: temporalScore
+        temporal: temporalScore,
       });
 
       const result: SimilarityScore = {
@@ -237,16 +261,20 @@ export default class SemanticSimilarityEngine extends EventEmitter {
           semantic: semanticScore,
           syntactic: syntacticScore,
           contextual: contextualScore,
-          temporal: temporalScore
+          temporal: temporalScore,
         },
         ...(includeExplanation && {
-          explanation: this.generateExplanation({
-            semantic: semanticScore,
-            syntactic: syntacticScore,
-            contextual: contextualScore,
-            temporal: temporalScore
-          }, combinedScore, confidence)
-        })
+          explanation: this.generateExplanation(
+            {
+              semantic: semanticScore,
+              syntactic: syntacticScore,
+              contextual: contextualScore,
+              temporal: temporalScore,
+            },
+            combinedScore,
+            confidence
+          ),
+        }),
       };
 
       // Cache result
@@ -262,17 +290,16 @@ export default class SemanticSimilarityEngine extends EventEmitter {
         query,
         content,
         result,
-        processingTime
+        processingTime,
       });
 
       return result;
-
     } catch (error) {
       this.emit('error', {
         operation: 'calculateSimilarity',
         query,
         content,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
       throw error;
     }
@@ -285,45 +312,56 @@ export default class SemanticSimilarityEngine extends EventEmitter {
     request: BatchSimilarityRequest
   ): Promise<SemanticAnalysisResult[]> {
     const startTime = Date.now();
-    
+
     try {
       const { queries, candidates, options } = request;
-      const { topK = 10, threshold = this.config.similarityThreshold, enableParallel = true } = options;
+      const {
+        topK = 10,
+        threshold = this.config.similarityThreshold,
+        enableParallel = true,
+      } = options;
 
       const results: SemanticAnalysisResult[] = [];
 
       if (enableParallel) {
         // Parallel processing for better performance
-        const promises = queries.map(query => 
-          this.processSingleQuery(query, candidates, { topK, threshold, ...options })
+        const promises = queries.map(query =>
+          this.processSingleQuery(query, candidates, {
+            topK,
+            threshold,
+            ...options,
+          })
         );
         const batchResults = await Promise.all(promises);
         results.push(...batchResults);
       } else {
         // Sequential processing for memory efficiency
         for (const query of queries) {
-          const result = await this.processSingleQuery(query, candidates, { topK, threshold, ...options });
+          const result = await this.processSingleQuery(query, candidates, {
+            topK,
+            threshold,
+            ...options,
+          });
           results.push(result);
         }
       }
 
       const processingTime = Date.now() - startTime;
-      
+
       this.emit('batchCompleted', {
         queryCount: queries.length,
         candidateCount: candidates.length,
         resultCount: results.length,
-        processingTime
+        processingTime,
       });
 
       return results;
-
     } catch (error) {
       this.emit('error', {
         operation: 'calculateBatchSimilarity',
         queryCount: request.queries.length,
         candidateCount: request.candidates.length,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
       throw error;
     }
@@ -337,11 +375,15 @@ export default class SemanticSimilarityEngine extends EventEmitter {
     content: string,
     sourceLanguage?: string,
     targetLanguage?: string
-  ): Promise<SimilarityScore & { translation: { query: string; content: string } }> {
+  ): Promise<
+    SimilarityScore & { translation: { query: string; content: string } }
+  > {
     try {
       // Auto-detect languages if not provided
-      const detectedSourceLang = sourceLanguage || await this.detectLanguage(query);
-      const detectedTargetLang = targetLanguage || await this.detectLanguage(content);
+      const detectedSourceLang =
+        sourceLanguage || (await this.detectLanguage(query));
+      const detectedTargetLang =
+        targetLanguage || (await this.detectLanguage(content));
 
       // Translate to common language if different
       let translatedQuery = query;
@@ -349,30 +391,41 @@ export default class SemanticSimilarityEngine extends EventEmitter {
 
       if (detectedSourceLang !== detectedTargetLang) {
         const commonLang = 'en'; // Use English as common language
-        translatedQuery = await this.translateText(query, detectedSourceLang, commonLang);
-        translatedContent = await this.translateText(content, detectedTargetLang, commonLang);
+        translatedQuery = await this.translateText(
+          query,
+          detectedSourceLang,
+          commonLang
+        );
+        translatedContent = await this.translateText(
+          content,
+          detectedTargetLang,
+          commonLang
+        );
       }
 
       // Calculate similarity on translated texts
-      const similarity = await this.calculateSimilarity(translatedQuery, translatedContent, {
-        method: 'hybrid',
-        includeExplanation: true
-      });
+      const similarity = await this.calculateSimilarity(
+        translatedQuery,
+        translatedContent,
+        {
+          method: 'hybrid',
+          includeExplanation: true,
+        }
+      );
 
       return {
         ...similarity,
         translation: {
           query: translatedQuery,
-          content: translatedContent
-        }
+          content: translatedContent,
+        },
       };
-
     } catch (error) {
       this.emit('error', {
         operation: 'calculateCrossLingualSimilarity',
         query,
         content,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
       throw error;
     }
@@ -390,7 +443,9 @@ export default class SemanticSimilarityEngine extends EventEmitter {
       metadata?: Record<string, any>;
     }>
   ): Promise<{
-    similarities: Array<SimilarityScore & { memoryId: string; timestamp: Date }>;
+    similarities: Array<
+      SimilarityScore & { memoryId: string; timestamp: Date }
+    >;
     driftAnalysis: {
       overallDrift: number;
       trendDirection: 'increasing' | 'decreasing' | 'stable';
@@ -401,14 +456,17 @@ export default class SemanticSimilarityEngine extends EventEmitter {
       // Calculate similarities with temporal weighting
       const similarities = await Promise.all(
         memories.map(async memory => {
-          const baseScore = await this.calculateSimilarity(query, memory.content);
+          const baseScore = await this.calculateSimilarity(
+            query,
+            memory.content
+          );
           const temporalWeight = this.calculateTemporalWeight(memory.timestamp);
-          
+
           return {
             ...baseScore,
             score: baseScore.score * temporalWeight,
             memoryId: memory.id,
-            timestamp: memory.timestamp
+            timestamp: memory.timestamp,
           };
         })
       );
@@ -419,18 +477,19 @@ export default class SemanticSimilarityEngine extends EventEmitter {
       this.emit('temporalAnalysisCompleted', {
         query,
         memoryCount: memories.length,
-        avgSimilarity: similarities.reduce((sum, s) => sum + s.score, 0) / similarities.length,
-        driftAnalysis
+        avgSimilarity:
+          similarities.reduce((sum, s) => sum + s.score, 0) /
+          similarities.length,
+        driftAnalysis,
       });
 
       return { similarities, driftAnalysis };
-
     } catch (error) {
       this.emit('error', {
         operation: 'analyzeTemporalSimilarity',
         query,
         memoryCount: memories.length,
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
       throw error;
     }
@@ -441,15 +500,18 @@ export default class SemanticSimilarityEngine extends EventEmitter {
    */
   private async generateVector(text: string): Promise<SemanticVector> {
     const cacheKey = `vector_${this.hashText(text)}`;
-    
+
     if (this.vectorCache.has(cacheKey)) {
       return this.vectorCache.get(cacheKey)!;
     }
 
     try {
       // Simulate vector generation (in real implementation, use actual model)
-      const embedding = Array.from({ length: this.config.dimensions }, () => Math.random() * 2 - 1);
-      
+      const embedding = Array.from(
+        { length: this.config.dimensions },
+        () => Math.random() * 2 - 1
+      );
+
       const vector: SemanticVector = {
         id: cacheKey,
         embedding,
@@ -458,18 +520,17 @@ export default class SemanticSimilarityEngine extends EventEmitter {
         created: new Date(),
         metadata: {
           textLength: text.length,
-          language: await this.detectLanguage(text)
-        }
+          language: await this.detectLanguage(text),
+        },
       };
 
       this.vectorCache.set(cacheKey, vector);
       return vector;
-
     } catch (error) {
       this.emit('error', {
         operation: 'generateVector',
         text: text.substring(0, 100),
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
       throw error;
     }
@@ -487,9 +548,16 @@ export default class SemanticSimilarityEngine extends EventEmitter {
     }
 
     // Cosine similarity
-    const dotProduct = vector1.embedding.reduce((sum, val, i) => sum + val * vector2.embedding[i], 0);
-    const magnitude1 = Math.sqrt(vector1.embedding.reduce((sum, val) => sum + val * val, 0));
-    const magnitude2 = Math.sqrt(vector2.embedding.reduce((sum, val) => sum + val * val, 0));
+    const dotProduct = vector1.embedding.reduce(
+      (sum, val, i) => sum + val * vector2.embedding[i],
+      0
+    );
+    const magnitude1 = Math.sqrt(
+      vector1.embedding.reduce((sum, val) => sum + val * val, 0)
+    );
+    const magnitude2 = Math.sqrt(
+      vector2.embedding.reduce((sum, val) => sum + val * val, 0)
+    );
 
     return dotProduct / (magnitude1 * magnitude2);
   }
@@ -497,7 +565,10 @@ export default class SemanticSimilarityEngine extends EventEmitter {
   /**
    * Calculate syntactic similarity (structure, grammar, etc.)
    */
-  private async calculateSyntacticSimilarity(text1: string, text2: string): Promise<number> {
+  private async calculateSyntacticSimilarity(
+    text1: string,
+    text2: string
+  ): Promise<number> {
     // Simplified syntactic analysis
     const features1 = this.extractSyntacticFeatures(text1);
     const features2 = this.extractSyntacticFeatures(text2);
@@ -509,7 +580,10 @@ export default class SemanticSimilarityEngine extends EventEmitter {
   /**
    * Calculate contextual similarity (topic, domain, etc.)
    */
-  private async calculateContextualSimilarity(text1: string, text2: string): Promise<number> {
+  private async calculateContextualSimilarity(
+    text1: string,
+    text2: string
+  ): Promise<number> {
     // Simplified contextual analysis
     const context1 = await this.extractContextualFeatures(text1);
     const context2 = await this.extractContextualFeatures(text2);
@@ -521,7 +595,10 @@ export default class SemanticSimilarityEngine extends EventEmitter {
   /**
    * Calculate temporal similarity (recency, relevance decay)
    */
-  private async calculateTemporalSimilarity(text1: string, text2: string): Promise<number> {
+  private async calculateTemporalSimilarity(
+    text1: string,
+    text2: string
+  ): Promise<number> {
     // For this implementation, return a default value
     // In real implementation, consider creation time, access patterns, etc.
     return 1.0;
@@ -537,8 +614,8 @@ export default class SemanticSimilarityEngine extends EventEmitter {
     temporal: number;
   }): number {
     const { weights } = this.config;
-    
-    const combinedScore = 
+
+    const combinedScore =
       scores.semantic * weights.semantic +
       scores.syntactic * weights.syntactic +
       scores.contextual * weights.contextual +
@@ -558,15 +635,18 @@ export default class SemanticSimilarityEngine extends EventEmitter {
   }): number {
     // Confidence based on score variance and individual component strengths
     const scoreArray = Object.values(scores);
-    const mean = scoreArray.reduce((sum, score) => sum + score, 0) / scoreArray.length;
-    const variance = scoreArray.reduce((sum, score) => sum + Math.pow(score - mean, 2), 0) / scoreArray.length;
-    
+    const mean =
+      scoreArray.reduce((sum, score) => sum + score, 0) / scoreArray.length;
+    const variance =
+      scoreArray.reduce((sum, score) => sum + Math.pow(score - mean, 2), 0) /
+      scoreArray.length;
+
     // Higher variance = lower confidence
     const confidenceFromVariance = Math.max(0, 1 - variance);
-    
+
     // Higher individual scores = higher confidence
     const confidenceFromScores = mean;
-    
+
     return (confidenceFromVariance + confidenceFromScores) / 2;
   }
 
@@ -574,21 +654,30 @@ export default class SemanticSimilarityEngine extends EventEmitter {
    * Generate explanation for similarity score
    */
   private generateExplanation(
-    scores: { semantic: number; syntactic: number; contextual: number; temporal: number },
+    scores: {
+      semantic: number;
+      syntactic: number;
+      contextual: number;
+      temporal: number;
+    },
     combinedScore: number,
     confidence: number
   ): string {
     const components = [];
-    
+
     if (scores.semantic > 0.7) components.push('strong semantic similarity');
-    if (scores.syntactic > 0.7) components.push('similar structure and grammar');
+    if (scores.syntactic > 0.7)
+      components.push('similar structure and grammar');
     if (scores.contextual > 0.7) components.push('related topics and context');
     if (scores.temporal > 0.7) components.push('temporally relevant');
 
-    const confidenceLevel = confidence > 0.8 ? 'high' : confidence > 0.5 ? 'medium' : 'low';
-    
+    const confidenceLevel =
+      confidence > 0.8 ? 'high' : confidence > 0.5 ? 'medium' : 'low';
+
     return `Similarity score of ${combinedScore.toFixed(3)} with ${confidenceLevel} confidence. ${
-      components.length > 0 ? `Driven by ${components.join(', ')}.` : 'Limited similarity detected.'
+      components.length > 0
+        ? `Driven by ${components.join(', ')}.`
+        : 'Limited similarity detected.'
     }`;
   }
 
@@ -604,16 +693,17 @@ export default class SemanticSimilarityEngine extends EventEmitter {
 
     for (const candidate of candidates) {
       const score = await this.calculateSimilarity(query, candidate.content, {
-        includeExplanation: options.includeExplanations
+        includeExplanation: options.includeExplanations,
       });
 
       if (score.score >= options.threshold) {
         results.push({
           memoryId: candidate.id,
           score,
-          vector: candidate.vector || await this.generateVector(candidate.content),
+          vector:
+            candidate.vector || (await this.generateVector(candidate.content)),
           content: candidate.content,
-          metadata: {}
+          metadata: {},
         });
       }
     }
@@ -629,7 +719,7 @@ export default class SemanticSimilarityEngine extends EventEmitter {
       totalMatches: results.length,
       processingTime: 0, // Will be set by caller
       model: this.config.model,
-      timestamp: new Date()
+      timestamp: new Date(),
     };
   }
 
@@ -641,8 +731,10 @@ export default class SemanticSimilarityEngine extends EventEmitter {
       length: text.length,
       words: text.split(/\s+/).length,
       sentences: text.split(/[.!?]+/).length,
-      avgWordLength: text.split(/\s+/).reduce((sum, word) => sum + word.length, 0) / text.split(/\s+/).length,
-      punctuationDensity: (text.match(/[.!?,:;]/g) || []).length / text.length
+      avgWordLength:
+        text.split(/\s+/).reduce((sum, word) => sum + word.length, 0) /
+        text.split(/\s+/).length,
+      punctuationDensity: (text.match(/[.!?,:;]/g) || []).length / text.length,
     };
   }
 
@@ -652,46 +744,69 @@ export default class SemanticSimilarityEngine extends EventEmitter {
   private async extractContextualFeatures(text: string): Promise<string[]> {
     // Simplified keyword extraction
     const words = text.toLowerCase().split(/\s+/);
-    const stopWords = new Set(['the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by']);
-    
-    return words.filter(word => 
-      word.length > 3 && 
-      !stopWords.has(word) && 
-      /^[a-zA-Z]+$/.test(word)
+    const stopWords = new Set([
+      'the',
+      'a',
+      'an',
+      'and',
+      'or',
+      'but',
+      'in',
+      'on',
+      'at',
+      'to',
+      'for',
+      'of',
+      'with',
+      'by',
+    ]);
+
+    return words.filter(
+      word =>
+        word.length > 3 && !stopWords.has(word) && /^[a-zA-Z]+$/.test(word)
     );
   }
 
   /**
    * Calculate feature similarity
    */
-  private calculateFeatureSimilarity(features1: Record<string, number>, features2: Record<string, number>): number {
-    const keys = new Set([...Object.keys(features1), ...Object.keys(features2)]);
+  private calculateFeatureSimilarity(
+    features1: Record<string, number>,
+    features2: Record<string, number>
+  ): number {
+    const keys = new Set([
+      ...Object.keys(features1),
+      ...Object.keys(features2),
+    ]);
     let similarity = 0;
-    
+
     for (const key of keys) {
       const val1 = features1[key] || 0;
       const val2 = features2[key] || 0;
-      
+
       // Normalized similarity for each feature
       const maxVal = Math.max(val1, val2);
       if (maxVal > 0) {
         similarity += 1 - Math.abs(val1 - val2) / maxVal;
       }
     }
-    
+
     return similarity / keys.size;
   }
 
   /**
    * Calculate contextual overlap
    */
-  private calculateContextualOverlap(context1: string[], context2: string[]): number {
+  private calculateContextualOverlap(
+    context1: string[],
+    context2: string[]
+  ): number {
     const set1 = new Set(context1);
     const set2 = new Set(context2);
-    
+
     const intersection = new Set([...set1].filter(x => set2.has(x)));
     const union = new Set([...set1, ...set2]);
-    
+
     return union.size > 0 ? intersection.size / union.size : 0;
   }
 
@@ -703,11 +818,11 @@ export default class SemanticSimilarityEngine extends EventEmitter {
     const timeDiff = now.getTime() - timestamp.getTime();
     const windowSize = this.temporalConfig.windowSize;
     const decayFactor = this.temporalConfig.decayFactor;
-    
+
     if (timeDiff <= windowSize) {
       return 1.0; // Full weight for recent content
     }
-    
+
     const periodsElapsed = timeDiff / windowSize;
     return Math.pow(decayFactor, periodsElapsed);
   }
@@ -715,27 +830,34 @@ export default class SemanticSimilarityEngine extends EventEmitter {
   /**
    * Analyze temporal drift in similarities
    */
-  private analyzeDrift(similarities: Array<{ score: number; timestamp: Date }>): {
+  private analyzeDrift(
+    similarities: Array<{ score: number; timestamp: Date }>
+  ): {
     overallDrift: number;
     trendDirection: 'increasing' | 'decreasing' | 'stable';
     seasonalPatterns: Record<string, number>;
   } {
     // Sort by timestamp
-    const sorted = similarities.slice().sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
-    
+    const sorted = similarities
+      .slice()
+      .sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
+
     // Calculate drift using linear regression
     const n = sorted.length;
     const sumX = sorted.reduce((sum, _, i) => sum + i, 0);
     const sumY = sorted.reduce((sum, s) => sum + s.score, 0);
     const sumXY = sorted.reduce((sum, s, i) => sum + i * s.score, 0);
     const sumXX = sorted.reduce((sum, _, i) => sum + i * i, 0);
-    
+
     const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
     const drift = Math.abs(slope);
-    
-    const trendDirection: 'increasing' | 'decreasing' | 'stable' = 
-      Math.abs(slope) < this.temporalConfig.driftThreshold ? 'stable' :
-      slope > 0 ? 'increasing' : 'decreasing';
+
+    const trendDirection: 'increasing' | 'decreasing' | 'stable' =
+      Math.abs(slope) < this.temporalConfig.driftThreshold
+        ? 'stable'
+        : slope > 0
+          ? 'increasing'
+          : 'decreasing';
 
     // Simple seasonal analysis (by hour of day)
     const seasonalPatterns: Record<string, number> = {};
@@ -748,7 +870,7 @@ export default class SemanticSimilarityEngine extends EventEmitter {
     return {
       overallDrift: drift,
       trendDirection,
-      seasonalPatterns
+      seasonalPatterns,
     };
   }
 
@@ -762,7 +884,7 @@ export default class SemanticSimilarityEngine extends EventEmitter {
       en: ['the', 'and', 'of', 'to', 'a', 'in', 'is', 'it', 'you', 'that'],
       es: ['el', 'la', 'de', 'que', 'y', 'a', 'en', 'un', 'es', 'se'],
       fr: ['le', 'de', 'et', 'à', 'un', 'il', 'être', 'et', 'en', 'avoir'],
-      de: ['der', 'die', 'und', 'in', 'den', 'von', 'zu', 'das', 'mit', 'sich']
+      de: ['der', 'die', 'und', 'in', 'den', 'von', 'zu', 'das', 'mit', 'sich'],
     };
 
     const words = text.toLowerCase().split(/\s+/);
@@ -783,12 +905,16 @@ export default class SemanticSimilarityEngine extends EventEmitter {
   /**
    * Translate text between languages
    */
-  private async translateText(text: string, sourceLang: string, targetLang: string): Promise<string> {
+  private async translateText(
+    text: string,
+    sourceLang: string,
+    targetLang: string
+  ): Promise<string> {
     // Simplified translation (in real implementation, use proper translation service)
     if (sourceLang === targetLang) {
       return text;
     }
-    
+
     // For demo purposes, return original text with language marker
     return `[${sourceLang}→${targetLang}] ${text}`;
   }
@@ -801,12 +927,15 @@ export default class SemanticSimilarityEngine extends EventEmitter {
     setInterval(() => {
       if (this.vectorCache.size > this.config.cacheSize) {
         const entries = Array.from(this.vectorCache.entries());
-        const toRemove = entries.slice(0, Math.floor(this.config.cacheSize * 0.2));
+        const toRemove = entries.slice(
+          0,
+          Math.floor(this.config.cacheSize * 0.2)
+        );
         toRemove.forEach(([key]) => this.vectorCache.delete(key));
-        
+
         this.emit('cacheCleanup', {
           removed: toRemove.length,
-          remaining: this.vectorCache.size
+          remaining: this.vectorCache.size,
         });
       }
     }, 300000); // Clean every 5 minutes
@@ -821,7 +950,7 @@ export default class SemanticSimilarityEngine extends EventEmitter {
       this.modelCache.set('semantic', {
         name: this.config.model,
         initialized: true,
-        version: '1.0.0'
+        version: '1.0.0',
       });
 
       // Initialize cross-lingual model if enabled
@@ -829,19 +958,18 @@ export default class SemanticSimilarityEngine extends EventEmitter {
         this.modelCache.set('crosslingual', {
           name: this.crossLingualConfig.alignmentModel,
           initialized: true,
-          version: '1.0.0'
+          version: '1.0.0',
         });
       }
 
       this.emit('modelsInitialized', {
         models: Array.from(this.modelCache.keys()),
-        timestamp: new Date()
+        timestamp: new Date(),
       });
-
     } catch (error) {
       this.emit('error', {
         operation: 'initializeModels',
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
       throw error;
     }
@@ -850,7 +978,11 @@ export default class SemanticSimilarityEngine extends EventEmitter {
   /**
    * Generate cache key for similarity calculation
    */
-  private generateCacheKey(query: string, content: string, method: string): string {
+  private generateCacheKey(
+    query: string,
+    content: string,
+    method: string
+  ): string {
     return `similarity_${this.hashText(query)}_${this.hashText(content)}_${method}`;
   }
 
@@ -861,7 +993,7 @@ export default class SemanticSimilarityEngine extends EventEmitter {
     let hash = 0;
     for (let i = 0; i < text.length; i++) {
       const char = text.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
+      hash = (hash << 5) - hash + char;
       hash = hash & hash; // Convert to 32-bit integer
     }
     return hash.toString(36);
@@ -872,20 +1004,25 @@ export default class SemanticSimilarityEngine extends EventEmitter {
    */
   private updateMetrics(processingTime: number, cacheHit: boolean): void {
     this.performanceMetrics.totalQueries++;
-    
+
     // Update average processing time
-    this.performanceMetrics.avgProcessingTime = 
-      (this.performanceMetrics.avgProcessingTime * (this.performanceMetrics.totalQueries - 1) + processingTime) / 
+    this.performanceMetrics.avgProcessingTime =
+      (this.performanceMetrics.avgProcessingTime *
+        (this.performanceMetrics.totalQueries - 1) +
+        processingTime) /
       this.performanceMetrics.totalQueries;
 
     // Update cache hit rate
     if (cacheHit) {
-      this.performanceMetrics.cacheHitRate = 
-        (this.performanceMetrics.cacheHitRate * (this.performanceMetrics.totalQueries - 1) + 1) / 
+      this.performanceMetrics.cacheHitRate =
+        (this.performanceMetrics.cacheHitRate *
+          (this.performanceMetrics.totalQueries - 1) +
+          1) /
         this.performanceMetrics.totalQueries;
     } else {
-      this.performanceMetrics.cacheHitRate = 
-        (this.performanceMetrics.cacheHitRate * (this.performanceMetrics.totalQueries - 1)) / 
+      this.performanceMetrics.cacheHitRate =
+        (this.performanceMetrics.cacheHitRate *
+          (this.performanceMetrics.totalQueries - 1)) /
         this.performanceMetrics.totalQueries;
     }
   }
@@ -908,13 +1045,13 @@ export default class SemanticSimilarityEngine extends EventEmitter {
       vectorCache: {
         size: this.vectorCache.size,
         maxSize: this.config.cacheSize,
-        hitRate: this.performanceMetrics.cacheHitRate
+        hitRate: this.performanceMetrics.cacheHitRate,
       },
       similarityCache: {
         size: this.similarityCache.size,
         maxSize: this.config.cacheSize,
-        hitRate: this.performanceMetrics.cacheHitRate
-      }
+        hitRate: this.performanceMetrics.cacheHitRate,
+      },
     };
   }
 
@@ -922,11 +1059,14 @@ export default class SemanticSimilarityEngine extends EventEmitter {
    * Update configuration
    */
   public updateConfiguration(newConfig: Partial<SemanticAnalysisConfig>): void {
-    this.config = SemanticAnalysisConfigSchema.parse({ ...this.config, ...newConfig });
-    
+    this.config = SemanticAnalysisConfigSchema.parse({
+      ...this.config,
+      ...newConfig,
+    });
+
     this.emit('configurationUpdated', {
       newConfig: this.config,
-      timestamp: new Date()
+      timestamp: new Date(),
     });
   }
 
@@ -936,9 +1076,9 @@ export default class SemanticSimilarityEngine extends EventEmitter {
   public clearCaches(): void {
     this.vectorCache.clear();
     this.similarityCache.clear();
-    
+
     this.emit('cachesCleared', {
-      timestamp: new Date()
+      timestamp: new Date(),
     });
   }
 
@@ -949,9 +1089,9 @@ export default class SemanticSimilarityEngine extends EventEmitter {
     this.clearCaches();
     this.modelCache.clear();
     this.removeAllListeners();
-    
+
     this.emit('cleanup', {
-      timestamp: new Date()
+      timestamp: new Date(),
     });
   }
 }

@@ -1,16 +1,20 @@
-import { ThreatDetectionEngine } from './ThreatDetectionEngine.js';
-import { EnterpriseRateLimiter } from './EnterpriseRateLimiter.js';
-import { DDoSProtectionLayer } from './DDoSProtectionLayer.js';
-import { AdvancedEncryptionService } from './AdvancedEncryptionService.js';
-import { SecurityAuditFramework } from './SecurityAuditFramework.js';
 import type { SecurityConfig, SecurityMetrics } from '../types/Security.js';
+import { AdvancedEncryptionService } from './AdvancedEncryptionService.js';
+import { DDoSProtectionLayer } from './DDoSProtectionLayer.js';
+import { EnterpriseRateLimiter } from './EnterpriseRateLimiter.js';
+import { SecurityAuditFramework } from './SecurityAuditFramework.js';
+import { ThreatDetectionEngine } from './ThreatDetectionEngine.js';
 
 // Simple logger implementation
 const logger = {
-  info: (message: string, meta?: any) => console.log(`[INFO] ${message}`, meta || ''),
-  warn: (message: string, meta?: any) => console.warn(`[WARN] ${message}`, meta || ''),
-  error: (message: string, meta?: any) => console.error(`[ERROR] ${message}`, meta || ''),
-  debug: (message: string, meta?: any) => console.debug(`[DEBUG] ${message}`, meta || ''),
+  info: (message: string, meta?: any) =>
+    console.log(`[INFO] ${message}`, meta || ''),
+  warn: (message: string, meta?: any) =>
+    console.warn(`[WARN] ${message}`, meta || ''),
+  error: (message: string, meta?: any) =>
+    console.error(`[ERROR] ${message}`, meta || ''),
+  debug: (message: string, meta?: any) =>
+    console.debug(`[DEBUG] ${message}`, meta || ''),
 };
 
 export interface SecurityValidationResult {
@@ -35,7 +39,7 @@ export interface MemorySecurityContext {
 
 /**
  * Enterprise Security Manager
- * 
+ *
  * Comprehensive security orchestration for Memorai enterprise memory system.
  * Integrates threat detection, rate limiting, DDoS protection, encryption, and auditing.
  */
@@ -51,15 +55,17 @@ export class EnterpriseSecurityManager {
 
   constructor(config: SecurityConfig) {
     this.config = config;
-    
+
     // Initialize security components
     this.threatDetection = new ThreatDetectionEngine(config);
     this.rateLimiter = new EnterpriseRateLimiter(config);
     this.ddosProtection = new DDoSProtectionLayer(config);
     this.encryption = new AdvancedEncryptionService(config);
     this.auditFramework = new SecurityAuditFramework(config);
-    
-    logger.info('EnterpriseSecurityManager initialized with all security components');
+
+    logger.info(
+      'EnterpriseSecurityManager initialized with all security components'
+    );
   }
 
   /**
@@ -72,11 +78,11 @@ export class EnterpriseSecurityManager {
       this.ddosProtection.start();
       this.encryption.start();
       this.auditFramework.start();
-      
+
       this.isActive = true;
-      
+
       logger.info('Enterprise security system fully activated');
-      
+
       // Log system startup
       this.auditFramework.logAuditEntry({
         timestamp: new Date(),
@@ -86,11 +92,19 @@ export class EnterpriseSecurityManager {
         result: 'success',
         ipAddress: '127.0.0.1',
         userAgent: 'system',
-        details: { components: ['threat_detection', 'rate_limiting', 'ddos_protection', 'encryption', 'audit'] }
+        details: {
+          components: [
+            'threat_detection',
+            'rate_limiting',
+            'ddos_protection',
+            'encryption',
+            'audit',
+          ],
+        },
       });
-      
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
       logger.error('Failed to start security system', { error: errorMessage });
       throw new Error(`Security system startup failed: ${errorMessage}`);
     }
@@ -106,13 +120,13 @@ export class EnterpriseSecurityManager {
       this.ddosProtection.stop();
       this.encryption.stop();
       this.auditFramework.stop();
-      
+
       this.isActive = false;
-      
+
       logger.info('Enterprise security system deactivated');
-      
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
       logger.error('Error stopping security system', { error: errorMessage });
     }
   }
@@ -134,7 +148,7 @@ export class EnterpriseSecurityManager {
         action: 'allow',
         reasons: ['Security system not active'],
         securityOverhead: 0,
-        requestId
+        requestId,
       };
     }
 
@@ -148,7 +162,9 @@ export class EnterpriseSecurityManager {
       );
 
       if (!ddosResult.allowed) {
-        reasons.push(`DDoS protection: ${ddosResult.reason || 'Traffic pattern suspicious'}`);
+        reasons.push(
+          `DDoS protection: ${ddosResult.reason || 'Traffic pattern suspicious'}`
+        );
         finalAction = this.escalateAction(finalAction, ddosResult.action);
       }
 
@@ -196,7 +212,7 @@ export class EnterpriseSecurityManager {
           action: finalAction,
           reasons,
           securityOverhead,
-          contentLength: context.content.length
+          contentLength: context.content.length,
         }
       );
 
@@ -208,24 +224,24 @@ export class EnterpriseSecurityManager {
         action: finalAction,
         reasons,
         securityOverhead,
-        requestId
+        requestId,
       };
 
       logger.debug('Security validation completed', {
         requestId,
         allowed,
         action: finalAction,
-        overhead: `${securityOverhead.toFixed(2)}ms`
+        overhead: `${securityOverhead.toFixed(2)}ms`,
       });
 
       return result;
-
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      logger.error('Security validation failed', { 
-        error: errorMessage, 
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      logger.error('Security validation failed', {
+        error: errorMessage,
         requestId,
-        tenantId: context.tenantId 
+        tenantId: context.tenantId,
       });
 
       // On security system failure, default to allow but log
@@ -238,7 +254,7 @@ export class EnterpriseSecurityManager {
         result: 'failure',
         ipAddress: context.clientIP,
         userAgent: context.userAgent,
-        details: { error: errorMessage, requestId }
+        details: { error: errorMessage, requestId },
       });
 
       return {
@@ -246,7 +262,7 @@ export class EnterpriseSecurityManager {
         action: 'allow',
         reasons: [`Security validation error: ${errorMessage}`],
         securityOverhead: performance.now() - startTime,
-        requestId
+        requestId,
       };
     }
   }
@@ -266,7 +282,7 @@ export class EnterpriseSecurityManager {
     return this.encryption.encryptMemoryContent({
       text: content,
       metadata,
-      sensitiveFields
+      sensitiveFields,
     });
   }
 
@@ -294,7 +310,10 @@ export class EnterpriseSecurityManager {
   /**
    * Verify data integrity
    */
-  public verifyContentIntegrity(content: string, expectedHash: string): boolean {
+  public verifyContentIntegrity(
+    content: string,
+    expectedHash: string
+  ): boolean {
     return this.encryption.verifyHash(content, expectedHash);
   }
 
@@ -316,7 +335,8 @@ export class EnterpriseSecurityManager {
 
     // Calculate overall metrics
     const totalRequests = rateLimitStats.totalRequests;
-    const blockedRequests = rateLimitStats.blockedRequests + threatStats.threatsStopped;
+    const blockedRequests =
+      rateLimitStats.blockedRequests + threatStats.threatsStopped;
     const threatsDetected = threatStats.totalEvents;
     const avgResponseTime = rateLimitStats.avgResponseTime;
     const securityOverhead = encryptionStats.encryptionOverhead;
@@ -332,7 +352,7 @@ export class EnterpriseSecurityManager {
       rateLimiting: rateLimitStats,
       ddosProtection: ddosStats,
       encryption: encryptionStats,
-      audit: auditDashboard
+      audit: auditDashboard,
     };
   }
 
@@ -366,7 +386,7 @@ export class EnterpriseSecurityManager {
    */
   public blockIPAddress(ipAddress: string, reason: string): void {
     logger.warn('Manually blocking IP address', { ipAddress, reason });
-    
+
     this.auditFramework.logAuditEntry({
       timestamp: new Date(),
       tenantId: 'system',
@@ -375,7 +395,7 @@ export class EnterpriseSecurityManager {
       result: 'success',
       ipAddress: '127.0.0.1', // Admin IP
       userAgent: 'admin',
-      details: { blockedIP: ipAddress, reason }
+      details: { blockedIP: ipAddress, reason },
     });
   }
 
@@ -385,9 +405,9 @@ export class EnterpriseSecurityManager {
   public unblockIPAddress(ipAddress: string): void {
     this.ddosProtection.unblockIP(ipAddress);
     this.threatDetection.clearSuspiciousIP(ipAddress);
-    
+
     logger.info('IP address unblocked', { ipAddress });
-    
+
     this.auditFramework.logAuditEntry({
       timestamp: new Date(),
       tenantId: 'system',
@@ -396,7 +416,7 @@ export class EnterpriseSecurityManager {
       result: 'success',
       ipAddress: '127.0.0.1', // Admin IP
       userAgent: 'admin',
-      details: { unblockedIP: ipAddress }
+      details: { unblockedIP: ipAddress },
     });
   }
 
@@ -405,7 +425,7 @@ export class EnterpriseSecurityManager {
    */
   public async rotateEncryptionKeys(): Promise<void> {
     await this.encryption.rotateKeys();
-    
+
     this.auditFramework.logAuditEntry({
       timestamp: new Date(),
       tenantId: 'system',
@@ -414,7 +434,7 @@ export class EnterpriseSecurityManager {
       result: 'success',
       ipAddress: '127.0.0.1',
       userAgent: 'system',
-      details: { rotationType: 'manual' }
+      details: { rotationType: 'manual' },
     });
   }
 
@@ -427,7 +447,7 @@ export class EnterpriseSecurityManager {
     this.ddosProtection.clearData();
     this.encryption.clearData();
     this.auditFramework.clearAuditData();
-    
+
     logger.info('All security data cleared');
   }
 
@@ -439,8 +459,10 @@ export class EnterpriseSecurityManager {
     newAction: 'allow' | 'throttle' | 'block' | 'emergency'
   ): 'allow' | 'throttle' | 'block' | 'emergency' {
     const actionPriority = { allow: 0, throttle: 1, block: 2, emergency: 3 };
-    
-    return actionPriority[newAction] > actionPriority[current] ? newAction : current;
+
+    return actionPriority[newAction] > actionPriority[current]
+      ? newAction
+      : current;
   }
 
   /**
@@ -465,9 +487,9 @@ export class EnterpriseSecurityManager {
         rateLimiting: true,
         ddosProtection: true,
         encryption: true,
-        audit: true
+        audit: true,
       },
-      requestsProcessed: this.requestCounter
+      requestsProcessed: this.requestCounter,
     };
   }
 }
